@@ -34,7 +34,7 @@ function formatDate(dateString) {
   });
 }
 
-// Функция для создания HTML элемента задачи
+// Функция для создания HTML э��емента задачи
 function createTaskElement(task) {
   const taskElement = document.createElement("div");
   taskElement.className = "task-item";
@@ -82,8 +82,13 @@ function createTaskElement(task) {
                 .map(
                   (comment) => `
           <div class="comment">
-            <span class="comment-author">${comment.staffName}</span>
-            <span class="comment-time">${formatDate(comment.timestamp)}</span>
+            <div class="comment-header">
+              <span class="comment-author">
+                <i class="fas fa-user"></i> ${comment.staffName}
+                ${comment.staffName === task.assignedTo ? " (Assigned)" : ""}
+              </span>
+              <span class="comment-time">${formatDate(comment.timestamp)}</span>
+            </div>
             <div class="comment-text">${comment.text}</div>
           </div>
         `
@@ -92,16 +97,12 @@ function createTaskElement(task) {
             : ""
         }
       </div>
-      ${
-        task.assignedTo
-          ? `
-        <div class="comment-form">
-          <textarea class="comment-input" placeholder="Add a comment..."></textarea>
-          <button class="comment-btn" data-task-id="${task.requestId}">Add Comment</button>
-        </div>
-      `
-          : ""
-      }
+      <div class="comment-form">
+        <textarea class="comment-input" placeholder="Add a comment..."></textarea>
+        <button class="comment-btn" data-task-id="${task.requestId}">
+          <i class="fas fa-paper-plane"></i> Add Comment
+        </button>
+      </div>
     </div>
   `;
 
@@ -122,12 +123,48 @@ function createTaskElement(task) {
   if (commentBtn) {
     commentBtn.addEventListener("click", async function () {
       const taskId = this.dataset.taskId;
-      const commentText =
-        this.parentElement.querySelector(".comment-input").value;
-      if (commentText.trim()) {
-        const user = JSON.parse(localStorage.getItem("maintenanceStaffAuth"));
-        await db.addComment(taskId, commentText, user.name);
-        updateTasksList(await db.getAllTasks());
+      const commentInput = this.parentElement.querySelector(".comment-input");
+      const commentText = commentInput.value.trim();
+
+      if (commentText) {
+        try {
+          const user = JSON.parse(localStorage.getItem("maintenanceStaffAuth"));
+          if (!user || user.role !== "maintenance") {
+            throw new Error("Unauthorized");
+          }
+
+          const success = await db.addComment(taskId, commentText, user.name);
+
+          if (success) {
+            // Очищаем поле ввода
+            commentInput.value = "";
+
+            // Обновляем список комментариев сразу после добавления
+            const commentsContainer =
+              this.closest(".task-item").querySelector(".comments-list");
+            const newComment = document.createElement("div");
+            newComment.className = "comment";
+            newComment.innerHTML = `
+              <div class="comment-header">
+                <span class="comment-author">
+                  <i class="fas fa-user"></i> ${user.name}
+                  ${user.name === task.assignedTo ? " (Assigned)" : ""}
+                </span>
+                <span class="comment-time">${formatDate(new Date())}</span>
+              </div>
+              <div class="comment-text">${commentText}</div>
+            `;
+            commentsContainer.appendChild(newComment);
+
+            // Прокручиваем к новому комментарию
+            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+          } else {
+            throw new Error("Failed to add comment");
+          }
+        } catch (error) {
+          console.error("Error adding comment:", error);
+          alert("Error adding comment. Please try again.");
+        }
       }
     });
   }
