@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="main.css" />
+    <title>Maintenance Portal</title>
+  </head>
+  <body>
+    <div class="img-box">
+      <img src="Alcuin-School.jpeg" alt="AlcuinHawks" />
+    </div>
+    <div class="user-account" style="display: none">
+      <div class="user-info">
+        <span id="userAvatar">👤</span>
+        <span id="userName"></span>
+      </div>
+      <div class="user-menu">
+        <button id="logoutButton">Logout</button>
+      </div>
+    </div>
+    <div class="main-container">
+      <header>
+        <h1>School Maintenance Portal</h1>
+      </header>
+
+      <div class="menu-container">
+        <div class="menu-item">
+          <h2>Submit Maintenance Request</h2>
+          <p>Report issues and request maintenance services</p>
+          <a href="request.html" class="menu-button">Submit Request</a>
+        </div>
+
+        <div class="menu-item maintenance-staff">
+          <h2>Maintenance Staff Portal</h2>
+          <p>Access maintenance tasks and manage requests</p>
+          <a href="login.html" class="menu-button staff-button">Staff Login</a>
+        </div>
+
+        <div class="menu-item">
+          <h2>New User Registration</h2>
+          <p>Register to submit maintenance requests</p>
+          <a href="register.html" class="menu-button">Register</a>
+        </div>
+      </div>
+    </div>
+    <script src="database.js"></script>
+    <script>
+      async function checkCurrentUser() {
+        try {
+          await db.waitForDB();
+          const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+          if (currentUser) {
+            document.getElementById("userName").textContent =
+              currentUser.fullName;
+            document.querySelector(".user-account").style.display = "flex";
+          }
+        } catch (error) {
+          console.error("Error checking current user:", error);
+        }
+      }
+
+      document
+        .getElementById("logoutButton")
+        .addEventListener("click", function () {
+          localStorage.removeItem("currentUser");
+          localStorage.removeItem("maintenanceStaffAuth");
+          window.location.reload();
+        });
+
+      document.addEventListener("DOMContentLoaded", checkCurrentUser);
+    </script>
+  </body>
+</html>

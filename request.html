@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="CSS.css" />
+    <title>Maintenance Request</title>
+  </head>
+  <body>
+    <a href="index.html" class="back-button">Back to Main</a>
+    <div class="img-box">
+      <img src="Alcuin-School.jpeg" alt="AlcuinHawks" />
+    </div>
+    <div class="user-account">
+      <div class="user-info">
+        <span id="userAvatar">👤</span>
+        <span id="userName"></span>
+      </div>
+      <div class="user-menu">
+        <button id="logoutButton">Logout</button>
+      </div>
+    </div>
+    <div class="opacityScreen">
+      <div id="mainScreen">
+        <h1 class="mainHeader">Maintenance Request</h1>
+        <form>
+          <div id="community">
+            <label>
+              <strong>Select building:</strong>
+              <br />
+              <br />
+            </label>
+            <select
+              id="buildingSelect"
+              style="width: 220px; height: 40px; font-size: 18px"
+            >
+              <option value="">Select Building</option>
+              <option value="westWing">West Wing</option>
+              <option value="southWing">South Wing</option>
+              <option value="northWing">North Wing</option>
+              <option value="upperSchool">Upper School</option>
+              <option value="GFB">GFB</option>
+              <option value="WLFA">WLFA</option>
+              <option value="Administration">Administration</option>
+            </select>
+
+            <div id="roomSelection" style="margin-top: 20px; display: none">
+              <label for="roomSelect">
+                <strong>Select room:</strong>
+                <br />
+                <br />
+              </label>
+              <select
+                id="roomSelect"
+                style="width: 220px; height: 40px; font-size: 18px"
+              ></select>
+            </div>
+
+            <div id="teacherSelection" style="margin-top: 20px; display: none">
+              <div>
+                <label>
+                  <strong>Select staff type:</strong>
+                  <br />
+                  <br />
+                </label>
+                <div style="margin-bottom: 20px">
+                  <input
+                    type="radio"
+                    id="mainTeacherRadio"
+                    name="staffType"
+                    value="mainTeacher"
+                  />
+                  <label for="mainTeacherRadio">Main Teacher</label>
+                  <input
+                    type="radio"
+                    id="assistantRadio"
+                    name="staffType"
+                    value="assistant"
+                    style="margin-left: 20px"
+                  />
+                  <label for="assistantRadio">Teaching Assistant</label>
+                </div>
+              </div>
+              <div id="staffSelectContainer" style="display: none">
+                <label for="staffSelect">
+                  <strong>Select staff member:</strong>
+                  <br />
+                  <br />
+                </label>
+                <select
+                  id="staffSelect"
+                  style="width: 220px; height: 40px; font-size: 18px"
+                ></select>
+              </div>
+            </div>
+
+            <div id="requestForm" style="display: none; margin-top: 30px">
+              <div class="priority-selection">
+                <label>
+                  <strong>Priority Level:</strong>
+                  <br />
+                  <br />
+                </label>
+                <div class="priority-buttons">
+                  <button
+                    type="button"
+                    class="priority-btn"
+                    data-priority="low"
+                  >
+                    Low
+                  </button>
+                  <button
+                    type="button"
+                    class="priority-btn"
+                    data-priority="medium"
+                  >
+                    Medium
+                  </button>
+                  <button
+                    type="button"
+                    class="priority-btn"
+                    data-priority="high"
+                  >
+                    High
+                  </button>
+                  <button
+                    type="button"
+                    class="priority-btn"
+                    data-priority="urgent"
+                  >
+                    Urgent
+                  </button>
+                </div>
+              </div>
+
+              <div class="maintenance-request">
+                <label for="requestDetails">
+                  <strong>Maintenance Request Details:</strong>
+                  <br />
+                  <br />
+                </label>
+                <textarea
+                  id="requestDetails"
+                  rows="6"
+                  placeholder="Please describe the maintenance issue..."
+                ></textarea>
+              </div>
+
+              <button type="submit" id="submitRequest">Submit Request</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Модальное окно подтверждения -->
+    <div id="confirmationModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Request Submitted</h2>
+        </div>
+        <div class="modal-body">
+          <p>
+            Your maintenance request has been received and is being processed.
+          </p>
+          <p>Request ID: <span id="requestId"></span></p>
+          <p>Status: <span class="status-badge">In Progress</span></p>
+        </div>
+        <div class="modal-footer">
+          <button id="closeModal">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="jawa script.js"></script>
+  </body>
+</html>

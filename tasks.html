@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="tasks.css" />
+    <title>Maintenance Tasks</title>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Maintenance Tasks</h1>
+        <div class="user-info">
+          <span id="staffName"></span>
+          <button id="logoutBtn">Logout</button>
+        </div>
+        <div class="date-filter">
+          <button id="todayTasks" class="active">Today</button>
+          <button id="allTasks">All Tasks</button>
+          <input type="date" id="dateFilter" />
+        </div>
+      </header>
+
+      <main>
+        <div class="tasks-container">
+          <div class="tasks-list" id="tasksList">
+            <!-- Задачи будут добавляться здесь динамически -->
+          </div>
+        </div>
+      </main>
+
+      <div class="task-stats">
+        <div class="stat-item">
+          <span class="stat-label">Total Tasks:</span>
+          <span id="totalTasks" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Completed:</span>
+          <span id="completedTasks" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Pending:</span>
+          <span id="pendingTasks" class="stat-value">0</span>
+        </div>
+      </div>
+
+      <div class="nav-links">
+        <a href="index.html">Back to Main</a>
+      </div>
+    </div>
+    <script src="database.js"></script>
+    <script src="auth.js"></script>
+    <script src="tasks.js"></script>
+  </body>
+</html>

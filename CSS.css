@@ -1,0 +1,332 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  position: relative;
+}
+
+.img-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+.img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.opacityScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+#mainScreen {
+  position: relative;
+  width: 600px;
+  max-height: 90vh;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  overflow-y: auto;
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(3px);
+}
+
+.mainHeader {
+  color: #2196f3;
+  text-align: center;
+  font-size: 2.5em;
+  margin: 0 0 30px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#community {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 25px;
+}
+
+select,
+input {
+  width: 220px;
+  height: 40px;
+  font-size: 18px;
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: white;
+}
+
+.priority-selection {
+  text-align: center;
+  margin: 25px 0;
+}
+
+.priority-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.priority-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+  min-width: 80px;
+}
+
+.priority-btn.selected {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.maintenance-request {
+  text-align: center;
+  margin: 25px 0;
+}
+
+textarea {
+  width: 90%;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  resize: vertical;
+}
+
+#submitRequest {
+  display: block;
+  width: 200px;
+  margin: 30px auto;
+  padding: 12px 0;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#submitRequest:hover {
+  background-color: #1976d2;
+}
+
+/* Стили для скроллбара */
+#mainScreen::-webkit-scrollbar {
+  width: 8px;
+}
+
+#mainScreen::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#mainScreen::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+/* Добавляем кнопку возврата на главную */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 20px;
+  background-color: #2196f3;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  z-index: 10;
+}
+
+.back-button:hover {
+  background-color: #1976d2;
+}
+
+/* Стили для модального окна */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 20;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  color: #2196f3;
+  margin: 0;
+  font-size: 24px;
+}
+
+.modal-body {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-body p {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+#requestId {
+  font-weight: bold;
+  color: #2196f3;
+}
+
+.status-badge {
+  background-color: #ffc107;
+  color: black;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.modal-footer {
+  text-align: center;
+}
+
+#closeModal {
+  padding: 10px 25px;
+  font-size: 16px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#closeModal:hover {
+  background-color: #1976d2;
+}
+
+/* Стили для кнопок приоритета */
+.priority-btn[data-priority="low"] {
+  background-color: #4caf50;
+  color: white;
+}
+
+.priority-btn[data-priority="medium"] {
+  background-color: #ffc107;
+  color: black;
+}
+
+.priority-btn[data-priority="high"] {
+  background-color: #ff9800;
+  color: white;
+}
+
+.priority-btn[data-priority="urgent"] {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Стили для блока информации о пользователе */
+.user-account {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 8px 15px;
+  border-radius: 25px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#userAvatar {
+  font-size: 24px;
+  color: #2196f3;
+}
+
+#userName {
+  font-weight: bold;
+  color: #333;
+}
+
+.user-menu {
+  position: relative;
+}
+
+#logoutButton {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+#logoutButton:hover {
+  background-color: #d32f2f;
+  transform: scale(1.05);
+}

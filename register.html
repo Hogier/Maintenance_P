@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="register.css" />
+    <title>User Registration</title>
+  </head>
+  <body>
+    <div class="register-container">
+      <div class="register-box">
+        <h2>User Registration</h2>
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" required />
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <select id="department" required>
+              <option value="">Select Department</option>
+              <option value="teaching">Teaching Staff</option>
+              <option value="admin">Administration</option>
+              <option value="support">Support Staff</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" required />
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" required />
+          </div>
+          <button type="submit">Register</button>
+        </form>
+        <div id="errorMessage" class="error-message"></div>
+        <div class="login-link">
+          Already have an account? <a href="index.html">Back to Main Menu</a>
+        </div>
+      </div>
+    </div>
+    <script src="register.js"></script>
+    <script src="database.js"></script>
+  </body>
+</html>
