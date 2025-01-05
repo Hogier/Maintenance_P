@@ -34,10 +34,12 @@ function formatDate(dateString) {
   });
 }
 
-// Функция для создания HTML э��емента задачи
+// Функция для создания HTML элемента задачи
 function createTaskElement(task) {
   const taskElement = document.createElement("div");
   taskElement.className = "task-item";
+
+  // Основная информация о задаче
   taskElement.innerHTML = `
     <div class="task-info">
       <div class="task-header">
@@ -74,6 +76,38 @@ function createTaskElement(task) {
         }>Pending</option>
       </select>
     </div>
+    
+    <!-- Медиафайлы -->
+    ${
+      task.media && task.media.length > 0
+        ? `
+      <div class="task-media">
+        <h4>Attached Media:</h4>
+        <div class="task-media-grid">
+          ${task.media
+            .map((media) => {
+              if (media.type === "image") {
+                return `
+                <div class="media-item">
+                  <img src="${media.data}" alt="Task media" onclick="showMediaFullscreen('${media.data}', 'image')">
+                  <span class="media-name">${media.name}</span>
+                </div>`;
+              } else {
+                return `
+                <div class="media-item">
+                  <video src="${media.data}" controls onclick="showMediaFullscreen('${media.data}', 'video')"></video>
+                  <span class="media-name">${media.name}</span>
+                </div>`;
+              }
+            })
+            .join("")}
+        </div>
+      </div>
+    `
+        : ""
+    }
+    
+    <!-- Комментарии -->
     <div class="task-comments">
       <div class="comments-list">
         ${
@@ -219,9 +253,29 @@ async function updateTasksList(tasks) {
 function filterTasksByDate(tasks, date) {
   return tasks.filter((task) => {
     const taskDate = new Date(task.timestamp);
-    return taskDate.toDateString() === date.toDateString();
+    return (
+      taskDate.getFullYear() === date.getFullYear() &&
+      taskDate.getMonth() === date.getMonth() &&
+      taskDate.getDate() === date.getDate()
+    );
   });
 }
+
+// Добавим функцию в глобальную область видимости
+window.showMediaFullscreen = function (src, type) {
+  const fullscreen = document.createElement("div");
+  fullscreen.className = "media-fullscreen";
+
+  const media =
+    type === "image"
+      ? `<img src="${src}" alt="Fullscreen media">`
+      : `<video src="${src}" controls autoplay></video>`;
+
+  fullscreen.innerHTML = media;
+
+  fullscreen.onclick = () => fullscreen.remove();
+  document.body.appendChild(fullscreen);
+};
 
 // Инициализация страницы
 document.addEventListener("DOMContentLoaded", async () => {
@@ -257,13 +311,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   document
     .getElementById("dateFilter")
     .addEventListener("change", async (e) => {
-      document
-        .querySelectorAll(".date-filter button")
-        .forEach((btn) => btn.classList.remove("active"));
-      const selectedDate = new Date(e.target.value);
-      const tasks = await getTasks();
-      const filteredTasks = filterTasksByDate(tasks, selectedDate);
-      await updateTasksList(filteredTasks);
+      try {
+        document
+          .querySelectorAll(".date-filter button")
+          .forEach((btn) => btn.classList.remove("active"));
+
+        const selectedDate = new Date(e.target.value);
+        const tasks = await getTasks();
+        console.log("Selected date:", selectedDate);
+        console.log("Available tasks:", tasks);
+
+        const filteredTasks = filterTasksByDate(tasks, selectedDate);
+        console.log("Filtered tasks:", filteredTasks);
+
+        await updateTasksList(filteredTasks);
+      } catch (error) {
+        console.error("Error filtering tasks by date:", error);
+      }
     });
 
   // Добавим обработчик выхода

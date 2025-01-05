@@ -284,6 +284,8 @@ async function initializeForm() {
         return;
       }
 
+      const mediaFiles = document.getElementById("mediaFiles").files;
+
       try {
         // Получаем информацию о текущем пользователе
         const currentUser = JSON.parse(localStorage.getItem("currentUser"));
@@ -304,8 +306,8 @@ async function initializeForm() {
 
         console.log("Attempting to save task:", requestData); // Для отладки
 
-        // Сохраняем задачу в базу данных
-        const success = await db.addTask(requestData);
+        // Сохраняем задачу с медиафайлами
+        const success = await db.addTaskWithMedia(requestData, mediaFiles);
 
         if (success) {
           console.log("Task saved successfully"); // Для отладки
@@ -318,17 +320,51 @@ async function initializeForm() {
           document
             .querySelectorAll(".priority-btn")
             .forEach((btn) => btn.classList.remove("selected"));
+          document.getElementById("mediaPreview").innerHTML = "";
         } else {
-          throw new Error("Failed to save task");
+          throw new Error("Failed to save request");
         }
       } catch (error) {
         console.error("Error saving request:", error);
         alert("Error saving request. Please try again.");
       }
     });
+
+  // Добавим обработчик для предпросмотра медиафайлов
+  document
+    .getElementById("mediaFiles")
+    .addEventListener("change", function (e) {
+      const preview = document.getElementById("mediaPreview");
+      preview.innerHTML = "";
+
+      if (this.files.length > 0) {
+        preview.style.display = "grid";
+
+        Array.from(this.files).forEach((file) => {
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+            if (file.type.startsWith("image/")) {
+              const img = document.createElement("img");
+              img.src = e.target.result;
+              preview.appendChild(img);
+            } else if (file.type.startsWith("video/")) {
+              const video = document.createElement("video");
+              video.src = e.target.result;
+              video.controls = true;
+              preview.appendChild(video);
+            }
+          };
+
+          reader.readAsDataURL(file);
+        });
+      } else {
+        preview.style.display = "none";
+      }
+    });
 }
 
-// Фун��ция для генерации ID запроса
+// Функция для генерации ID запроса
 function generateRequestId() {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substr(2, 5);

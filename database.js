@@ -44,12 +44,14 @@ class Database {
               keyPath: "requestId",
             });
             tasksStore.createIndex("timestamp", "timestamp", { unique: false });
+            tasksStore.createIndex("date", "date", { unique: false });
             tasksStore.createIndex("status", "status", { unique: false });
             tasksStore.createIndex("staff", "staff", { unique: false });
             tasksStore.createIndex("assignedTo", "assignedTo", {
               unique: false,
             });
             tasksStore.createIndex("comments", "comments", { unique: false });
+            tasksStore.createIndex("media", "media", { unique: false });
           }
         };
       });
@@ -120,6 +122,8 @@ class Database {
   async addTask(taskData) {
     try {
       await this.waitForDB();
+      taskData.date = new Date(taskData.timestamp).toISOString().split("T")[0];
+
       return new Promise((resolve, reject) => {
         const tx = this.db.transaction("tasks", "readwrite");
         const store = tx.objectStore("tasks");
@@ -133,10 +137,6 @@ class Database {
         request.onerror = () => {
           console.error("Error adding task:", request.error);
           reject(request.error);
-        };
-
-        tx.oncomplete = () => {
-          console.log("Transaction completed");
         };
       });
     } catch (error) {
@@ -231,6 +231,54 @@ class Database {
 
       request.onsuccess = () => resolve(request.result > 0);
       request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Добавим метод для сохранения медиафайлов
+  async addTaskWithMedia(taskData, mediaFiles) {
+    try {
+      await this.waitForDB();
+      taskData.date = new Date(taskData.timestamp).toISOString().split("T")[0];
+      taskData.media = [];
+
+      // Конвертируем каждый файл в base64
+      for (const file of mediaFiles) {
+        const base64Data = await this.convertFileToBase64(file);
+        taskData.media.push({
+          type: file.type.startsWith("image/") ? "image" : "video",
+          data: base64Data,
+          name: file.name,
+        });
+      }
+
+      return new Promise((resolve, reject) => {
+        const tx = this.db.transaction("tasks", "readwrite");
+        const store = tx.objectStore("tasks");
+        const request = store.add(taskData);
+
+        request.onsuccess = () => {
+          console.log("Task with media added successfully:", taskData);
+          resolve(true);
+        };
+
+        request.onerror = () => {
+          console.error("Error adding task with media:", request.error);
+          reject(request.error);
+        };
+      });
+    } catch (error) {
+      console.error("Error in addTaskWithMedia:", error);
+      return false;
+    }
+  }
+
+  // Вспомогательный метод для конвертации файла в base64
+  convertFileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
     });
   }
 }
