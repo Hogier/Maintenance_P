@@ -152,9 +152,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     await db.waitForDB();
     await checkCurrentUser(); // Добавляем проверку пользователя
-    const users = await db.getAllUsers();
-
-    if (users && users.length > 0) {
+    //   const users = await db.getAllUsers();
+    let currUser = JSON.parse(localStorage.getItem("currentUser"));
+    //   if (users && users.length > 0) {
+    if (currUser != null) {
       await initializeForm();
     } else {
       console.log("No registered users found");
@@ -222,6 +223,7 @@ async function initializeForm() {
 
   // Обработчик выбора сотрудника
   staffSelect.addEventListener("change", async function () {
+    console.log("sel.staf. " + this.value);
     if (this.value) {
       const selectedStaff = this.value;
       const isAuthorized = await checkUserAuthorization(selectedStaff);

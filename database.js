@@ -281,6 +281,49 @@ class Database {
       reader.readAsDataURL(file);
     });
   }
+
+  async addUserToServer(userData) {
+    const response = await fetch('database.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            action: 'addUser',
+            email: userData.email,
+            fullName: userData.fullName,
+            department: userData.department,
+            role: userData.role,
+            password: userData.password,
+        }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+        console.log('User added successfully:', result.message);
+    } else {
+        console.error('Error adding user:', result.message);
+    }
+  }
+
+  async fetchUsersFromServer() {
+    const response = await fetch('database.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            action: 'getUsers',
+        }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+        console.log('Users:', result.data);
+    } else {
+        console.error('Error fetching users:', result.message);
+    }
+}
 }
 
 // Создаем и экспортируем экземпляр базы данных

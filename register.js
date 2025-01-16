@@ -37,7 +37,7 @@ document
         return;
       }
 
-      const success = await db.addUser(user);
+      const success = await db.addUserToServer(user);
       if (success) {
         // Сохраняем информацию о текущем пользователе
         localStorage.setItem(
