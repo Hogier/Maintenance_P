@@ -14,6 +14,9 @@
     <div class="container">
       <header>
         <h1>Maintenance Tasks</h1>
+        <div class="current-time">
+          <span id="dallasTime"></span>
+        </div>
         <div class="user-info">
           <span id="staffName"></span>
           <button id="logoutBtn">Logout</button>
@@ -49,11 +52,22 @@
       </div>
 
       <div class="nav-links">
-        <a href="index.html">Back to Main</a>
+        <a href="main.html" class="back-button">Back to Main</a>
       </div>
     </div>
     <script src="database.js"></script>
     <script src="auth.js"></script>
+    <script src="dateUtils.js"></script>
     <script src="tasks.js"></script>
+    <script>
+      // Обновление времени каждую секунду
+      function updateDallasTime() {
+        const timeElement = document.getElementById("dallasTime");
+        timeElement.textContent = getDallasDateTime();
+      }
+
+      setInterval(updateDallasTime, 1000);
+      updateDallasTime(); // Первоначальное обновление
+    </script>
   </body>
 </html>

@@ -1,8 +1,8 @@
 export const config = {
   db: {
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'maintenancedb'
-  }
-}; 
+    host: "localhost",
+    user: "root",
+    password: "",
+    database: "maintenancedb",
+  },
+};

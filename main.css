@@ -44,6 +44,7 @@ body {
   background-color: rgba(245, 245, 245, 0.7);
   border-radius: 15px;
   backdrop-filter: blur(3px);
+  margin-top: 0;
 }
 
 header {
@@ -117,6 +118,19 @@ header h1 {
   background-color: #d32f2f;
 }
 
+.event-portal {
+  background-color: #f8f9fa;
+  border: 2px solid #4caf50;
+}
+
+.event-button {
+  background-color: #4caf50;
+}
+
+.event-button:hover {
+  background-color: #388e3c;
+}
+
 @media (max-width: 768px) {
   .menu-container {
     grid-template-columns: 1fr;
@@ -128,5 +142,138 @@ header h1 {
 
   .menu-item {
     padding: 20px;
+  }
+}
+
+.header-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 10px 20px;
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-account {
+  display: none;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 5px 15px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 8px 15px;
+  border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(5px);
+}
+
+.avatar-container {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e3f2fd;
+  border-radius: 50%;
+}
+
+#userAvatar {
+  font-size: 20px;
+  color: #2196f3;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#userName {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.user-department {
+  font-size: 12px;
+  color: #666;
+}
+
+#logoutButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 15px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(5px);
+}
+
+#logoutButton:hover {
+  background-color: #ff5252;
+  color: white;
+}
+
+.logout-icon {
+  font-size: 16px;
+  transform: rotate(180deg);
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    padding: 5px 10px;
+  }
+
+  .user-account {
+    padding: 5px;
+  }
+
+  .user-info {
+    padding: 5px 10px;
+  }
+
+  .avatar-container {
+    width: 30px;
+    height: 30px;
+  }
+
+  #userAvatar {
+    font-size: 16px;
+  }
+
+  #userName {
+    font-size: 13px;
+  }
+
+  .user-department {
+    display: none;
+  }
+
+  #logoutButton {
+    padding: 6px 12px;
+  }
+
+  .logout-text {
+    display: none;
+  }
+
+  .logout-icon {
+    margin: 0;
   }
 }

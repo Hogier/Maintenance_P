@@ -29,7 +29,7 @@ document
 
       // Проверяем существующих пользователей
       const existingUser = await db.getUser(email);
-      const existingName = await db.getUserByName(fullName);
+      const existingName = await db.getUserByNameFromServer(fullName);
 
       if (existingUser || existingName) {
         document.getElementById("errorMessage").textContent =

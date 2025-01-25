@@ -23,46 +23,38 @@
         </form>
         <div id="errorMessage" class="error-message"></div>
         <div class="login-link">
-          <a href="index.html">Back to Main Menu</a>
+          <a href="main.html" class="back-button">Back to Main</a>
         </div>
       </div>
     </div>
     <script src="database.js"></script>
     <script src="auth.js"></script>
     <script>
-document
-      .getElementById("loginForm")
-      .addEventListener("submit", function (e) {
-        e.preventDefault();
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
 
-        loginMaintenanceStaff(username, password).then(user => {
-          if (user) {
-            localStorage.setItem(
-              "currentUser",
-              JSON.stringify({
-                fullName: user.name,
-                username: user.username,
-                role: user.role,
-              })
-            );
-            alert(
-              "Login successful! You can now submit maintenance requests."
-            );
-            window.location.href = "request.html";
-          } else {
-            document.getElementById("errorMessage").textContent =
-             "Invalid username or password";
-          }
+          loginMaintenanceStaff(username, password).then((user) => {
+            if (user) {
+              localStorage.setItem(
+                "currentUser",
+                JSON.stringify({
+                  fullName: user.name,
+                  username: user.username,
+                  role: "maintenance",
+                })
+              );
+              alert("Login successful!");
+              window.location.href = "tasks.html";
+            } else {
+              document.getElementById("errorMessage").textContent =
+                "Invalid username or password";
+            }
+          });
         });
-        /* if (loginUser(email, password)) {
-           window.location.href = "index.html";
-         } else {
-           document.getElementById("errorMessage").textContent =
-             "Invalid username or password";
-         }*/
-      });
     </script>
   </body>
 </html>

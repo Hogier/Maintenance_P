@@ -7,17 +7,25 @@
     <title>Maintenance Portal</title>
   </head>
   <body>
+    <div class="header-container">
+      <div class="user-account">
+        <div class="user-info">
+          <div class="avatar-container">
+            <span id="userAvatar">👤</span>
+          </div>
+          <div class="user-details">
+            <span id="userName"></span>
+            <span class="user-department"></span>
+          </div>
+        </div>
+        <button id="logoutButton">
+          <span class="logout-icon">↪</span>
+          <span class="logout-text">Logout</span>
+        </button>
+      </div>
+    </div>
     <div class="img-box">
       <img src="Alcuin-School.jpeg" alt="AlcuinHawks" />
-    </div>
-    <div class="user-account" style="display: none">
-      <div class="user-info">
-        <span id="userAvatar">👤</span>
-        <span id="userName"></span>
-      </div>
-      <div class="user-menu">
-        <button id="logoutButton">Logout</button>
-      </div>
     </div>
     <div class="main-container">
       <header>
@@ -37,6 +45,14 @@
           <a href="login.html" class="menu-button staff-button">Staff Login</a>
         </div>
 
+        <div class="menu-item event-portal">
+          <h2>Event Request Form</h2>
+          <p>View and schedule school events</p>
+          <a href="events.html" class="menu-button event-button"
+            >Event Portal</a
+          >
+        </div>
+
         <div class="menu-item">
           <h2>New User Registration</h2>
           <p>Register to submit maintenance requests</p>
@@ -50,30 +66,34 @@
       </div>
     </div>
     <script src="database.js"></script>
+    <script src="dateUtils.js"></script>
     <script>
-      async function checkCurrentUser() {
-        try {
-          await db.waitForDB();
-          const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-          if (currentUser) {
-            document.getElementById("userName").textContent =
-              currentUser.fullName;
-            document.querySelector(".user-account").style.display = "flex";
+      // Функция для отображения информации о пользователе
+      function displayUserInfo() {
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        if (user) {
+          const userNameElement = document.getElementById("userName");
+          if (userNameElement) {
+            userNameElement.textContent = user.fullName;
           }
-        } catch (error) {
-          console.error("Error checking current user:", error);
+          document.querySelector(".user-account").style.display = "flex";
         }
       }
 
-      document
-        .getElementById("logoutButton")
-        .addEventListener("click", function () {
-          localStorage.removeItem("currentUser");
-          localStorage.removeItem("maintenanceStaffAuth");
-          window.location.reload();
-        });
+      // Проверяем пользователя при загрузке страницы
+      document.addEventListener("DOMContentLoaded", function () {
+        displayUserInfo();
 
-      document.addEventListener("DOMContentLoaded", checkCurrentUser);
+        // Обработчик для кнопки выхода
+        const logoutButton = document.getElementById("logoutButton");
+        if (logoutButton) {
+          logoutButton.addEventListener("click", function () {
+            localStorage.removeItem("currentUser");
+            localStorage.removeItem("maintenanceStaffAuth");
+            window.location.reload();
+          });
+        }
+      });
     </script>
   </body>
 </html>

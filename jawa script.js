@@ -168,21 +168,39 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 // Функция инициализации формы
 async function initializeForm() {
+  // Проверяем существование формы
+  const form = document.querySelector("form");
+  if (!form) return; // Если формы нет, прекращаем выполнение
+
   const buildingSelect = document.getElementById("buildingSelect");
   const roomSelection = document.getElementById("roomSelection");
   const roomSelect = document.getElementById("roomSelect");
   const teacherSelection = document.getElementById("teacherSelection");
-  const mainTeacherRadio = document.getElementById("mainTeacherRadio");
-  const assistantRadio = document.getElementById("assistantRadio");
+  const staffTypeRadios = document.getElementsByName("staffType");
   const staffSelectContainer = document.getElementById("staffSelectContainer");
   const staffSelect = document.getElementById("staffSelect");
   const requestForm = document.getElementById("requestForm");
 
-  let selectedPriority = null;
+  // Проверяем наличие необходимых элементов
+  if (
+    !buildingSelect ||
+    !roomSelection ||
+    !roomSelect ||
+    !teacherSelection ||
+    !staffSelectContainer ||
+    !staffSelect ||
+    !requestForm
+  ) {
+    console.log("Some form elements are missing");
+    return;
+  }
 
+  let selectedPriority = null;
+  console.log("selectedBuilding: ");
   // Обработчик выбора здания
   buildingSelect.addEventListener("change", function () {
     const selectedBuilding = this.value;
+    console.log("selectedBuilding: " + selectedBuilding);
     if (selectedBuilding) {
       roomSelection.style.display = "block";
       populateRoomSelect(selectedBuilding);
@@ -197,8 +215,8 @@ async function initializeForm() {
   roomSelect.addEventListener("change", function () {
     if (this.value) {
       teacherSelection.style.display = "block";
-      mainTeacherRadio.checked = false;
-      assistantRadio.checked = false;
+      staffTypeRadios[0].checked = false;
+      staffTypeRadios[1].checked = false;
       staffSelectContainer.style.display = "none";
       requestForm.style.display = "none";
     } else {
@@ -211,15 +229,14 @@ async function initializeForm() {
   async function handleStaffTypeSelection() {
     const selectedRoom = roomSelect.value;
     const staffType = this.value;
-
     if (selectedRoom && staffType) {
       staffSelectContainer.style.display = "block";
       await populateStaffSelect(selectedRoom, staffType);
     }
   }
 
-  mainTeacherRadio.addEventListener("change", handleStaffTypeSelection);
-  assistantRadio.addEventListener("change", handleStaffTypeSelection);
+  staffTypeRadios[0].addEventListener("change", handleStaffTypeSelection);
+  staffTypeRadios[1].addEventListener("change", handleStaffTypeSelection);
 
   // Обработчик выбора сотрудника
   staffSelect.addEventListener("change", async function () {
@@ -243,7 +260,7 @@ async function initializeForm() {
   async function checkUserAuthorization(selectedStaff) {
     try {
       await db.waitForDB(); // Дожидаемся инициализации базы данных
-      const user = await db.getUserByName(selectedStaff);
+      const user = await db.getUserByNameFromServer(selectedStaff);
       return !!user;
     } catch (error) {
       console.error("Error checking authorization:", error);
@@ -266,6 +283,10 @@ async function initializeForm() {
   });
 
   // Обработчик отправки формы
+  //generateRequestId()
+  //addTaskWithMedia()
+  //showConfirmationModal()
+
   document
     .getElementById("submitRequest")
     .addEventListener("click", async function (e) {
@@ -299,14 +320,15 @@ async function initializeForm() {
           staff,
           priority: selectedPriority,
           details,
-          timestamp: new Date().toISOString(),
+          timestamp: getDallasDateTime(),
           status: "In Progress",
           assignedTo: null,
           comments: [],
+          media: [],
           submittedBy: currentUser ? currentUser.fullName : "Anonymous",
         };
 
-        console.log("Attempting to save task:", requestData); // Для отладки
+        console.log("Attempting to save task:", requestData);
 
         // Сохраняем задачу с медиафайлами
         const success = await db.addTaskWithMedia(requestData, mediaFiles);
@@ -438,11 +460,12 @@ async function populateStaffSelect(room, staffType) {
           ? roomTeachers[room].mainTeacher
           : roomTeachers[room].assistant;
 
-      const registeredUsers = await db.getAllUsers();
+      const registeredUsers = await db.getAllUsersFromServer();
       console.log("Registered users:", registeredUsers); // Для отладки
+      console.log("staffList users:", staffList);
 
       const availableStaff = staffList.filter((staff) =>
-        registeredUsers.some((user) => user.fullName === staff)
+        registeredUsers.some((user) => user.full_name === staff)
       );
       console.log("Available staff:", availableStaff); // Для отладки
 
@@ -469,3 +492,15 @@ document
       console.error("Error logging out:", error);
     }
   });
+
+// Обновим функцию отправки запроса
+async function submitRequest(formData) {
+  try {
+    // Добавим текущее время Далласа
+    formData.timestamp = getDallasDateTime();
+
+    // ... остальной код отправки ...
+  } catch (error) {
+    console.error("Error submitting request:", error);
+  }
+}

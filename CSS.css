@@ -151,7 +151,7 @@ textarea {
   border-radius: 4px;
 }
 
-/* Добавляем кнопку возврата на главную */
+/* Возвращаем исходные стили для кнопки возврата на главную */
 .back-button {
   position: absolute;
   top: 20px;

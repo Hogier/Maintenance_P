@@ -7,17 +7,21 @@
     <title>Maintenance Request</title>
   </head>
   <body>
-    <a href="index.html" class="back-button">Back to Main</a>
-    <div class="img-box">
-      <img src="Alcuin-School.jpeg" alt="AlcuinHawks" />
-    </div>
-    <div class="user-account">
-      <div class="user-info">
-        <span id="userAvatar">👤</span>
-        <span id="userName"></span>
+    <div class="header-container">
+      <div class="nav-buttons">
+        <a href="main.html" class="back-button">Back to Main</a>
       </div>
-      <div class="user-menu">
-        <button id="logoutButton">Logout</button>
+      <div class="img-box">
+        <img src="Alcuin-School.jpeg" alt="AlcuinHawks" />
+      </div>
+      <div class="user-account">
+        <div class="user-info">
+          <span id="userAvatar">👤</span>
+          <span id="userName"></span>
+        </div>
+        <div class="user-menu">
+          <button id="logoutButton">Logout</button>
+        </div>
       </div>
     </div>
     <div class="opacityScreen">
@@ -157,7 +161,7 @@
                   type="file"
                   id="mediaFiles"
                   multiple
-                  accept="image/*,video/*"
+                  accept="image/*,video/*, audio/*"
                   class="media-input"
                 />
                 <div id="mediaPreview" class="media-preview"></div>
@@ -190,6 +194,20 @@
     </div>
 
     <script src="database.js"></script>
+    <script src="dateUtils.js"></script>
     <script src="jawa script.js"></script>
+    <script>
+      // Добавим проверку и отображение информации о пользователе
+      document.addEventListener("DOMContentLoaded", function () {
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        if (user) {
+          const userNameElement = document.getElementById("userName");
+          if (userNameElement) {
+            userNameElement.textContent = user.fullName;
+          }
+          document.querySelector(".user-account").style.display = "flex";
+        }
+      });
+    </script>
   </body>
 </html>

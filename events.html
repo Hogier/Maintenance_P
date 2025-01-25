@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>School Events Portal</title>
+    <link rel="stylesheet" href="events.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="header-container">
+      <div class="user-account">
+        <!-- User info will be populated by JavaScript -->
+      </div>
+      <a href="main.html" class="back-button">Back to Main</a>
+    </div>
+
+    <div class="events-container">
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+          <h2 id="currentMonth">September 2023</h2>
+          <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="calendar-grid">
+          <!-- Calendar will be populated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="events-section">
+        <div class="events-header">
+          <h3>Events for <span id="selectedDate">Today</span></h3>
+          <button id="addEventBtn" class="add-event-btn">
+            <i class="fas fa-plus"></i> Add Event
+          </button>
+        </div>
+        <div class="events-list" id="eventsList">
+          <!-- Events will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for adding/editing events -->
+    <div id="eventModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Add New Event</h2>
+        <form id="eventForm">
+          <div class="form-group">
+            <label for="eventName"
+              >NAME OF EVENT: <span class="required">*</span></label
+            >
+            <input
+              type="text"
+              id="eventName"
+              name="eventName"
+              required
+              placeholder="Enter your name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="eventStartDateTime"
+              >START TIME & DATE OF EVENT:
+              <span class="required">*</span></label
+            >
+            <div class="datetime-inputs">
+              <input
+                type="date"
+                id="eventStartDate"
+                name="eventStartDate"
+                required
+              />
+              <input
+                type="time"
+                id="eventStartTime"
+                name="eventStartTime"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="setupDateTime"
+              >SETUP DATE & TIME: <span class="required">*</span></label
+            >
+            <p class="field-hint">
+              What time would you like to begin setting up for your event?
+            </p>
+            <div class="datetime-inputs">
+              <input type="date" id="setupDate" name="setupDate" required />
+              <input type="time" id="setupTime" name="setupTime" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="endDateTime"
+              >SCHEDULED END DATE & TIME: <span class="required">*</span></label
+            >
+            <p class="field-hint">
+              What time do you need for the event setup to be completed?
+            </p>
+            <div class="datetime-inputs">
+              <input type="date" id="endDate" name="endDate" required />
+              <input type="time" id="endTime" name="endTime" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="eventLocation"
+              >LOCATION OF EVENT: <span class="required">*</span></label
+            >
+            <select id="eventLocation" name="eventLocation" required>
+              <option value="">Choose one...</option>
+              <option value="westWing">West Wing</option>
+              <option value="southWing">South Wing</option>
+              <option value="northWing">North Wing</option>
+              <option value="upperSchool">Upper School</option>
+              <option value="GFB">GFB</option>
+              <option value="WLFA">WLFA</option>
+              <option value="Administration">Administration</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="eventContact"
+              >EVENT CONTACT: <span class="required">*</span></label
+            >
+            <p class="field-hint">
+              This can be a staff member or non-Alcuin event representative.
+            </p>
+            <input
+              type="text"
+              id="eventContact"
+              name="eventContact"
+              required
+              placeholder="Enter your answer"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="eventEmail"
+              >EVENT CONTACT EMAIL ADDRESS:
+              <span class="required">*</span></label
+            >
+            <input
+              type="email"
+              id="eventEmail"
+              name="eventEmail"
+              required
+              placeholder="Enter your email address"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="eventPhone"
+              >EVENT CONTACT MOBILE NUMBER:
+              <span class="required">*</span></label
+            >
+            <input
+              type="tel"
+              id="eventPhone"
+              name="eventPhone"
+              required
+              placeholder="Enter a number"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="alcuinContact"
+              >NAME OF ALCUIN CONTACT: <span class="required">*</span></label
+            >
+            <p class="field-hint">
+              If this is event representative is a non-Alcuin staff, please list
+              an Alcuin contact affiliated with the event.
+            </p>
+            <input
+              type="text"
+              id="alcuinContact"
+              name="alcuinContact"
+              required
+              placeholder="Enter your answer"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="attendees"
+              >NUMBER OF PARTICIPANTS/ATTENDEES:
+              <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              id="attendees"
+              name="attendees"
+              required
+              placeholder="Enter a number"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="setupImage"
+              >PLEASE UPLOAD IMAGE/DRAWING OF SETUP:</label
+            >
+            <div class="file-upload-container">
+              <div class="file-upload-box">
+                <span class="file-upload-text">Select files...</span>
+                <span class="file-upload-hint"
+                  >or drag and drop files here</span
+                >
+              </div>
+              <input
+                type="file"
+                id="setupImage"
+                name="setupImage"
+                multiple
+                accept="image/*"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="tablesNeeded"
+              >TABLES NEEDED (YES/NO): <span class="required">*</span></label
+            >
+            <select id="tablesNeeded" name="tablesNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="chairsNeeded"
+              >CHAIRS NEEDED (YES/NO): <span class="required">*</span></label
+            >
+            <select id="chairsNeeded" name="chairsNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="podiumNeeded"
+              >PODIUM (YES/NO): <span class="required">*</span></label
+            >
+            <select id="podiumNeeded" name="podiumNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="monitorsNeeded"
+              >ARE MONITORS NEEDED TO PRESENT (YES/NO):
+              <span class="required">*</span></label
+            >
+            <select id="monitorsNeeded" name="monitorsNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="laptopNeeded"
+              >LAPTOP NEEDED (YES/NO): <span class="required">*</span></label
+            >
+            <select id="laptopNeeded" name="laptopNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="ipadNeeded"
+              >iPAD NEEDED FOR TICKET SALES:
+              <span class="required">*</span></label
+            >
+            <select id="ipadNeeded" name="ipadNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="microphonesNeeded"
+              >ARE MICROPHONES NEEDED (YES/NO):
+              <span class="required">*</span></label
+            >
+            <select id="microphonesNeeded" name="microphonesNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="speakerNeeded"
+              >PORTABLE SPEAKER (YES/NO): <span class="required">*</span></label
+            >
+            <select id="speakerNeeded" name="speakerNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="avAssistance"
+              >A/V ASSISTANCE (YES/NO): <span class="required">*</span></label
+            >
+            <select id="avAssistance" name="avAssistance" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="securityNeeded"
+              >ADDITIONAL SECURITY NEEDED (YES/NO):
+              <span class="required">*</span></label
+            >
+            <p class="field-hint">
+              If your event is after hours or on the weekend, you must schedule
+              security coverage.
+            </p>
+            <select id="securityNeeded" name="securityNeeded" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="buildingAccess"
+              >BUILDING/GATE ACCESS FOR VOLUNTEERS/VENDORS (YES/NO):
+              <span class="required">*</span></label
+            >
+            <select id="buildingAccess" name="buildingAccess" required>
+              <option value="">Choose one...</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="otherConsiderations">Other things to consider:</label>
+            <p class="field-hint">
+              Do you need directional or other signage? Are accessibility needs
+              covered? Have guests with wheelchairs, walkers, etc been given
+              instructions on how to reach their destination?
+            </p>
+            <textarea
+              id="otherConsiderations"
+              name="otherConsiderations"
+              rows="4"
+              placeholder="Enter your answer"
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="submit-btn">
+              Submit Event Request
+            </button>
+            <button type="button" class="cancel-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="dateUtils.js"></script>
+    <script src="events.js"></script>
+  </body>
+</html>

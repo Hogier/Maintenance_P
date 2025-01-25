@@ -70,7 +70,7 @@ class Database {
     }
   }
 
-  // Методы для работы с пользователями
+  /*// Методы для работы с пользователями
   async addUser(userData) {
     await this.waitForDB();
     try {
@@ -83,6 +83,9 @@ class Database {
       return false;
     }
   }
+*/
+
+///////////////////////////////////////////////////////////////// USER METHODS /////////////////////////////////////////////////////////////////
 
   async getUser(email) {
     return new Promise((resolve, reject) => {
@@ -117,9 +120,23 @@ class Database {
       request.onerror = () => reject(request.error);
     });
   }
+/*
+  async userExists(fullName) {
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction("users", "readonly");
+      const store = tx.objectStore("users");
+      const index = store.index("fullName");
+      const request = index.count(fullName);
+
+      request.onsuccess = () => resolve(request.result > 0);
+      request.onerror = () => reject(request.error);
+    });
+  }
+*/
+///////////////////////////////////////////////////////////////// TASK METHODS /////////////////////////////////////////////////////////////////
 
   // Методы для работы с задачами
-  async addTask(taskData) {
+  /*async addTask(taskData) {
     try {
       await this.waitForDB();
       taskData.date = new Date(taskData.timestamp).toISOString().split("T")[0];
@@ -143,24 +160,9 @@ class Database {
       console.error("Error in addTask:", error);
       return false;
     }
-  }
+  }*/
 
-  async updateTaskStatus(requestId, newStatus) {
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction("tasks", "readwrite");
-      const store = tx.objectStore("tasks");
-      const request = store.get(requestId);
-
-      request.onsuccess = () => {
-        const task = request.result;
-        task.status = newStatus;
-        store.put(task);
-        resolve(true);
-      };
-      request.onerror = () => reject(request.error);
-    });
-  }
-
+/*
   async getAllTasks() {
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction("tasks", "readonly");
@@ -171,19 +173,9 @@ class Database {
       request.onerror = () => reject(request.error);
     });
   }
+*/
 
-  async getTasksByStatus(status) {
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction("tasks", "readonly");
-      const store = tx.objectStore("tasks");
-      const index = store.index("status");
-      const request = index.getAll(status);
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
+/*
   async assignTask(requestId, maintenanceStaff) {
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction("tasks", "readwrite");
@@ -200,87 +192,11 @@ class Database {
       request.onerror = () => reject(request.error);
     });
   }
+*/
 
-  async addComment(requestId, comment, staffName) {
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction("tasks", "readwrite");
-      const store = tx.objectStore("tasks");
-      const request = store.get(requestId);
+/////////////////////////////////////////////////////////////// S E R V E R  M E T H O D S /////////////////////////////////////////////////////////////////
 
-      request.onsuccess = () => {
-        const task = request.result;
-        if (!task.comments) task.comments = [];
-        task.comments.push({
-          text: comment,
-          staffName: staffName,
-          timestamp: new Date().toISOString(),
-        });
-        store.put(task);
-        resolve(true);
-      };
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async userExists(fullName) {
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction("users", "readonly");
-      const store = tx.objectStore("users");
-      const index = store.index("fullName");
-      const request = index.count(fullName);
-
-      request.onsuccess = () => resolve(request.result > 0);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  // Добавим метод для сохранения медиафайлов
-  async addTaskWithMedia(taskData, mediaFiles) {
-    try {
-      await this.waitForDB();
-      taskData.date = new Date(taskData.timestamp).toISOString().split("T")[0];
-      taskData.media = [];
-
-      // Конвертируем каждый файл в base64
-      for (const file of mediaFiles) {
-        const base64Data = await this.convertFileToBase64(file);
-        taskData.media.push({
-          type: file.type.startsWith("image/") ? "image" : "video",
-          data: base64Data,
-          name: file.name,
-        });
-      }
-
-      return new Promise((resolve, reject) => {
-        const tx = this.db.transaction("tasks", "readwrite");
-        const store = tx.objectStore("tasks");
-        const request = store.add(taskData);
-
-        request.onsuccess = () => {
-          console.log("Task with media added successfully:", taskData);
-          resolve(true);
-        };
-
-        request.onerror = () => {
-          console.error("Error adding task with media:", request.error);
-          reject(request.error);
-        };
-      });
-    } catch (error) {
-      console.error("Error in addTaskWithMedia:", error);
-      return false;
-    }
-  }
-
-  // Вспомогательный метод для конвертации файла в base64
-  convertFileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
-    });
-  }
+///////////////////////////////////////////////////////////////// USER METHODS /////////////////////////////////////////////////////////////////
 
   async addUserToServer(userData) {
     const response = await fetch('database.php', {
@@ -306,24 +222,223 @@ class Database {
     }
   }
 
-  async fetchUsersFromServer() {
+  async getUserByNameFromServer(fullName) {
     const response = await fetch('database.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-            action: 'getUsers',
+            action: 'getUserByName',
+            fullName: fullName,
+        }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+        console.log('(getUserByNameFromServer) - User:', result.data);
+        return result.data;
+    } else {
+        console.error('(getUserByNameFromServer) - Error fetching user:', result.message);
+    }
+}
+
+  async getAllUsersFromServer() {
+    const response = await fetch('database.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            action: 'getAllUsers',
         }),
     });
 
     const result = await response.json();
     if (result.success) {
         console.log('Users:', result.data);
+        return result.data;
     } else {
         console.error('Error fetching users:', result.message);
     }
 }
+
+///////////////////////////////////////////////////////////////// TASK METHODS /////////////////////////////////////////////////////////////////
+// Добавим метод для сохранения медиафайлов
+async addTaskWithMedia(taskData, files) {
+  try {
+    await this.waitForDB();
+    taskData.date = new Date(taskData.timestamp).toISOString().split("T")[0];
+
+    const formData = new FormData();
+    formData.append('action', 'addTask');
+
+    for (const key in taskData) {
+      if (taskData.hasOwnProperty(key)) {
+        formData.append(key, Array.isArray(taskData[key]) ? JSON.stringify(taskData[key]) : taskData[key]);
+      }
+    }
+
+    if (files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        formData.append('media[]', files[i]);
+      }
+    } else {
+      console.warn("No files selected for upload.");
+    }
+
+    const response = await fetch('task.php', {
+      method: "POST",
+      body: formData,
+    });
+
+    const text = await response.text();
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (error) {
+      console.error("Failed to parse JSON response:", text);
+      return false;
+    }
+
+    if (result.success) {
+      console.log("Task with media added successfully:", result.message);
+      return true;
+    } else {
+      console.error("Error adding task with media:", result.message);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error in addTaskWithMedia:", error);
+    return false;
+  }
+}
+
+async getAllTasksFromServer() {
+  const response = await fetch('task.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      action: 'getAllTask',
+    }),
+  });
+
+  const result = await response.json();
+  if (result.success) {
+    console.log('Tasks:', result.data);
+    return result.data;
+  } else {
+    console.error('Error fetching tasks:', result.message);
+  }
+}
+
+async assignTaskInServer(requestId, maintenanceStaff) {
+  try {
+    const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'assignTask',
+        requestId: requestId,
+        assignedTo: maintenanceStaff,
+        assignedAt: new Date().toISOString().slice(0, 19).replace('T', ' ')
+      }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      console.log('Task assigned successfully:', result.message);
+      return true;
+    } else {
+      console.error('Error assigning task:', result.message);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error in assignTaskInServer:', error);
+    return false;
+  }
+}
+
+
+async updateTaskStatus(requestId, newStatus) {
+  const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+          action: 'updateTaskStatus',
+          requestId: requestId,
+          newStatus: newStatus,
+      }),
+  });
+
+  const result = await response.json();
+  if (result.success) {
+      console.log('User added successfully:', result.message);
+  } else {
+      console.error('Error adding user:', result.message);
+  }
+}
+
+async getTasksByStatus(status) {
+  const response = await fetch('task.php', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+        action: 'updateTaskStatus',
+        status: status,
+    }),
+});
+
+const result = await response.json();
+if (result.success) {
+    console.log('User added successfully:', result.message);
+} else {
+    console.error('Error adding user:', result.message);
+}
+
+}
+async addComment(requestId, comment, staffName) {
+  const response = await fetch('task.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      action: 'addComment',
+      requestId: requestId,
+      comment: comment,
+      staffName: staffName,
+      timestamp: new Date().toISOString().slice(0, 19).replace('T', ' ')
+    }),
+  });
+
+  const text = await response.text();
+  try {
+    const result = JSON.parse(text);
+    if (result.success) {
+      console.log('Comment added successfully:', result.message);
+      return true;
+    } else {
+      console.error('Error adding comment:', result.message);
+      return false;
+    }
+  } catch (e) {
+    console.error('Invalid JSON response:', text);
+    return false;
+  }
+}
+
+  
+
+
 }
 
 // Создаем и экспортируем экземпляр базы данных

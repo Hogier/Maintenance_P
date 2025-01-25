@@ -70,6 +70,7 @@ h1 {
   margin-bottom: 20px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .task-item:last-child {
@@ -126,6 +127,8 @@ h1 {
   font-size: 14px;
   font-weight: bold;
   text-transform: uppercase;
+  display: inline-block;
+  margin: 5px 0;
 }
 
 .priority-low {
@@ -454,4 +457,54 @@ h1 {
   margin-top: 15px;
   padding-top: 15px;
   border-top: 1px solid #eee;
+}
+
+.update-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(33, 150, 243, 0.9);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: none;
+  animation: fadeInOut 0.5s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.tasks-list {
+  transition: opacity 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.current-time {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+#dallasTime {
+  font-weight: bold;
+  color: #2196f3;
 }
