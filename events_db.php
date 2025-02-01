@@ -5,44 +5,56 @@ ob_start();
 header('Content-Type: application/json');
 date_default_timezone_set('America/Chicago');
 
-// Включаем отображение ошибок для отладки
+// Настройка обработки ошибок
 error_reporting(E_ALL);
-ini_set('display_errors', 1); // Временно включим для отладки
-
-// Настраиваем PHP error log
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/php_errors.log');
+ini_set('error_log', __DIR__ . '/debug.log');
 
-// Функция для логирования
+// Улучшенная функция логирования
 function debug_log($message, $data = null) {
+    $logFile = __DIR__ . '/debug.log';
     $log = date('Y-m-d H:i:s') . " - " . $message;
     if ($data !== null) {
-        $log .= "\n" . print_r($data, true);
+        if (is_array($data) || is_object($data)) {
+            $log .= "\n" . print_r($data, true);
+        } else {
+            $log .= "\n" . $data;
+        }
     }
-    file_put_contents(__DIR__ . '/debug.log', $log . "\n\n", FILE_APPEND);
+    error_log($log . "\n\n", 3, $logFile);
 }
 
 try {
+    // Логируем все входящие данные
+    debug_log("Received request", [
+        'POST' => $_POST,
+        'FILES' => $_FILES ?? [],
+        'RAW' => file_get_contents('php://input')
+    ]);
+
     // Параметры подключения к базе данных
     $host = 'localhost';
     $user = 'root';
     $password = '';
     $database = 'maintenancedb';
 
-    debug_log("Connecting to database");
-
     // Подключение к базе данных
     $conn = new mysqli($host, $user, $password, $database);
     if ($conn->connect_error) {
-        throw new Exception('Connection failed: ' . $conn->connect_error);
+        throw new Exception('Database connection failed: ' . $conn->connect_error);
     }
     $conn->set_charset('utf8');
 
-    debug_log("Connected successfully");
+    debug_log("Database connected successfully");
 
-    // Получение данных из POST-запроса
-    $action = $_POST['action'] ?? '';
-    debug_log("Action received", $action);
+    // Проверяем наличие action
+    if (!isset($_POST['action'])) {
+        throw new Exception('No action specified');
+    }
+
+    $action = $_POST['action'];
+    debug_log("Processing action", $action);
 
     switch ($action) {
         case 'getEvents':
@@ -100,10 +112,17 @@ try {
 
             $eventData = json_decode($_POST['eventData'], true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception('JSON decode error: ' . json_last_error_msg());
+                throw new Exception('Invalid JSON data: ' . json_last_error_msg());
             }
 
-            // Полный SQL запрос
+            // Преобразуем формат даты createdAt из ISO в MySQL datetime
+            $createdAtISO = $eventData['createdAt'];
+            $createdAt = date('Y-m-d H:i:s', strtotime($createdAtISO));
+            $eventData['createdAt'] = $createdAt;
+
+            debug_log("Parsed event data", $eventData);
+
+            // Подготовка SQL запроса
             $sql = "INSERT INTO events (
                 name, startDate, startTime, setupDate, setupTime,
                 endDate, endTime, location, contact, email,
@@ -114,6 +133,8 @@ try {
                 setupImages
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+            debug_log("Preparing SQL statement", $sql);
+
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
                 throw new Exception('Prepare failed: ' . $conn->error);
@@ -121,8 +142,11 @@ try {
 
             $setupImagesJson = json_encode($eventData['setupImages'] ?? []);
 
-            // Привязываем все параметры
-            if (!$stmt->bind_param('ssssssssssssisssssssssssssssss',
+            // Исправляем строку типов - должно быть 29 параметров
+            $types = str_repeat('s', 28) . 's'; // 29 параметров типа string
+            debug_log("Binding parameters with types", $types);
+
+            if (!$stmt->bind_param($types,
                 $eventData['name'],
                 $eventData['startDate'],
                 $eventData['startTime'],
@@ -150,7 +174,7 @@ try {
                 $eventData['otherConsiderations'],
                 $eventData['status'],
                 $eventData['createdBy'],
-                $eventData['createdAt'],
+                $createdAt,
                 $setupImagesJson
             )) {
                 throw new Exception('Bind failed: ' . $stmt->error);
@@ -160,6 +184,8 @@ try {
                 throw new Exception('Execute failed: ' . $stmt->error);
             }
 
+            debug_log("Event created successfully");
+
             $response = [
                 'success' => true,
                 'message' => 'Event created successfully',
@@ -167,7 +193,7 @@ try {
             ];
 
             $stmt->close();
-
+            
             // Очищаем буфер и отправляем ответ
             ob_end_clean();
             echo json_encode($response);
@@ -269,19 +295,22 @@ try {
     // Очищаем буфер и отправляем ошибку
     ob_end_clean();
     http_response_code(500);
-    $error = [
+    echo json_encode([
         'success' => false,
         'message' => $e->getMessage(),
-        'trace' => $e->getTraceAsString()
-    ];
-    echo json_encode($error);
+        'debug' => [
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]
+    ]);
     exit;
 }
 
+// Закрываем соединение с БД
 if (isset($conn)) {
     $conn->close();
 }
 
-// Завершаем буферизацию и отправляем вывод
+// Завершаем буферизацию
 ob_end_flush();
 ?> 

@@ -1,0 +1,741 @@
+2025-02-01 11:07:35 - Connecting to database
+
+2025-02-01 11:07:35 - Connected successfully
+
+2025-02-01 11:07:35 - Action received
+getEvents
+
+2025-02-01 11:07:35 - Getting events
+
+2025-02-01 11:07:35 - Found events
+4
+
+2025-02-01 11:10:51 - Connecting to database
+
+2025-02-01 11:10:51 - Connected successfully
+
+2025-02-01 11:10:51 - Action received
+getEvents
+
+2025-02-01 11:10:51 - Getting events
+
+2025-02-01 11:10:51 - Found events
+4
+
+2025-02-01 11:12:51 - Connecting to database
+
+2025-02-01 11:12:51 - Connected successfully
+
+2025-02-01 11:12:51 - Action received
+addEvent
+
+[01-Feb-2025 11:12:51 America/Chicago] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/events_db.php:124
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/events_db.php(124): mysqli_stmt->bind_param('ssssssssssssiss...', 'test3', '2025-02-02', '10:00', '2025-02-02', '09:00', '2025-02-02', '15:00', 'westWing', 'mike', 'mike@gmail.com', '9452587485', 'dmytro', '200', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'fsjrjyjrj', 'pending', 'Linda Wilson', '2025-02-01T17:1...', '[]')
+#1 {main}
+  thrown in /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/events_db.php on line 124
+2025-02-01 11:25:01 - Connecting to database
+
+2025-02-01 11:25:01 - Connected successfully
+
+2025-02-01 11:25:01 - Action received
+getEvents
+
+2025-02-01 11:25:01 - Getting events
+
+2025-02-01 11:25:01 - Found events
+4
+
+2025-02-01 11:25:07 - Connecting to database
+
+2025-02-01 11:25:07 - Connected successfully
+
+2025-02-01 11:25:07 - Action received
+getEvents
+
+2025-02-01 11:25:07 - Getting events
+
+2025-02-01 11:25:07 - Found events
+4
+
+2025-02-01 11:26:29 - Connecting to database
+
+2025-02-01 11:26:29 - Connected successfully
+
+2025-02-01 11:26:29 - Action received
+addEvent
+
+2025-02-01 11:26:29 - Adding new event
+
+2025-02-01 11:26:29 - Received event data
+Array
+(
+    [name] => test7
+    [startDate] => 2025-02-02
+    [startTime] => 12:00
+    [setupDate] => 2025-02-02
+    [setupTime] => 10:00
+    [endDate] => 2025-02-02
+    [endTime] => 18:00
+    [location] => westWing
+    [contact] => mike
+    [email] => mike@gmail.com
+    [phone] => 6854587485
+    [alcuinContact] => dmytro
+    [attendees] => 100
+    [tables] => yes
+    [chairs] => yes
+    [podium] => yes
+    [monitors] => yes
+    [laptop] => yes
+    [ipad] => yes
+    [microphones] => yes
+    [speaker] => yes
+    [avAssistance] => yes
+    [security] => yes
+    [buildingAccess] => yes
+    [otherConsiderations] => dgnfnfnyxf
+    [status] => pending
+    [createdBy] => Linda Wilson
+    [createdAt] => 2025-02-01T17:26:29.926Z
+    [setupImages] => Array
+        (
+        )
+
+)
+
+
+2025-02-01 11:26:29 - Preparing SQL statement
+INSERT INTO events (
+                    name, startDate, startTime, setupDate, setupTime,
+                    endDate, endTime, location, contact, email,
+                    phone, alcuinContact, attendees, tables, chairs,
+                    podium, monitors, laptop, ipad, microphones,
+                    speaker, avAssistance, security, buildingAccess,
+                    otherConsiderations, status, createdBy, createdAt,
+                    setupImages
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+[01-Feb-2025 11:26:29 America/Chicago] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/events_db.php:130
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/events_db.php(130): mysqli_stmt->bind_param('ssssssssssssiss...', 'test7', '2025-02-02', '12:00', '2025-02-02', '10:00', '2025-02-02', '18:00', 'westWing', 'mike', 'mike@gmail.com', '6854587485', 'dmytro', 100, 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'yes', 'dgnfnfnyxf', 'pending', 'Linda Wilson', '2025-02-01T17:2...', '[]')
+#1 {main}
+  thrown in /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/events_db.php on line 130
+2025-02-01 11:30:44 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:30:44 - Database connected successfully
+
+2025-02-01 11:30:44 - Processing action
+getEvents
+
+2025-02-01 11:30:44 - Getting events
+
+2025-02-01 11:30:44 - Found events
+4
+
+2025-02-01 11:30:45 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:30:45 - Database connected successfully
+
+2025-02-01 11:30:45 - Processing action
+getEvents
+
+2025-02-01 11:30:45 - Getting events
+
+2025-02-01 11:30:45 - Found events
+4
+
+2025-02-01 11:31:54 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [eventName] => test10
+            [eventStartDate] => 2025-02-02
+            [eventStartTime] => 10:00
+            [setupDate] => 2025-02-02
+            [setupTime] => 10:00
+            [endDate] => 2025-02-02
+            [endTime] => 15:00
+            [eventLocation] => southWing
+            [eventContact] => mike
+            [eventEmail] => mike@gmail.com
+            [eventPhone] => 6982587485
+            [alcuinContact] => dmytro
+            [attendees] => 100
+            [tablesNeeded] => yes
+            [chairsNeeded] => yes
+            [podiumNeeded] => yes
+            [monitorsNeeded] => yes
+            [laptopNeeded] => yes
+            [ipadNeeded] => yes
+            [microphonesNeeded] => yes
+            [speakerNeeded] => yes
+            [avAssistance] => yes
+            [securityNeeded] => yes
+            [buildingAccess] => yes
+            [otherConsiderations] => xbdbdzgnfzng
+            [action] => addEvent
+            [eventData] => {"name":"test10","startDate":"2025-02-02","startTime":"10:00","setupDate":"2025-02-02","setupTime":"10:00","endDate":"2025-02-02","endTime":"15:00","location":"southWing","contact":"mike","email":"mike@gmail.com","phone":"6982587485","alcuinContact":"dmytro","attendees":100,"tables":"yes","chairs":"yes","podium":"yes","monitors":"yes","laptop":"yes","ipad":"yes","microphones":"yes","speaker":"yes","avAssistance":"yes","security":"yes","buildingAccess":"yes","otherConsiderations":"xbdbdzgnfzng","status":"pending","createdBy":"Linda Wilson","createdAt":"2025-02-01T17:31:54.405Z","setupImages":[]}
+        )
+
+    [FILES] => Array
+        (
+            [setupImage] => Array
+                (
+                    [name] => 
+                    [full_path] => 
+                    [type] => 
+                    [tmp_name] => 
+                    [error] => 4
+                    [size] => 0
+                )
+
+        )
+
+    [RAW] => 
+)
+
+
+2025-02-01 11:31:54 - Database connected successfully
+
+2025-02-01 11:31:54 - Processing action
+addEvent
+
+2025-02-01 11:31:54 - Parsed event data
+Array
+(
+    [name] => test10
+    [startDate] => 2025-02-02
+    [startTime] => 10:00
+    [setupDate] => 2025-02-02
+    [setupTime] => 10:00
+    [endDate] => 2025-02-02
+    [endTime] => 15:00
+    [location] => southWing
+    [contact] => mike
+    [email] => mike@gmail.com
+    [phone] => 6982587485
+    [alcuinContact] => dmytro
+    [attendees] => 100
+    [tables] => yes
+    [chairs] => yes
+    [podium] => yes
+    [monitors] => yes
+    [laptop] => yes
+    [ipad] => yes
+    [microphones] => yes
+    [speaker] => yes
+    [avAssistance] => yes
+    [security] => yes
+    [buildingAccess] => yes
+    [otherConsiderations] => xbdbdzgnfzng
+    [status] => pending
+    [createdBy] => Linda Wilson
+    [createdAt] => 2025-02-01T17:31:54.405Z
+    [setupImages] => Array
+        (
+        )
+
+)
+
+
+2025-02-01 11:31:54 - Preparing SQL statement
+INSERT INTO events (
+                name, startDate, startTime, setupDate, setupTime,
+                endDate, endTime, location, contact, email,
+                phone, alcuinContact, attendees, tables, chairs,
+                podium, monitors, laptop, ipad, microphones,
+                speaker, avAssistance, security, buildingAccess,
+                otherConsiderations, status, createdBy, createdAt,
+                setupImages
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+2025-02-01 11:31:54 - Binding parameters with types
+sssssssssssssssssssssssssssss
+
+2025-02-01 11:31:54 - Error occurred
+Array
+(
+    [message] => Incorrect datetime value: '2025-02-01T17:31:54.405Z' for column `maintenancedb`.`events`.`createdAt` at row 1
+    [trace] => #0 /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/events_db.php(178): mysqli_stmt->execute()
+#1 {main}
+)
+
+
+2025-02-01 11:33:28 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [eventName] => test10
+            [eventStartDate] => 2025-02-02
+            [eventStartTime] => 10:00
+            [setupDate] => 2025-02-02
+            [setupTime] => 10:00
+            [endDate] => 2025-02-02
+            [endTime] => 15:00
+            [eventLocation] => southWing
+            [eventContact] => mike
+            [eventEmail] => mike@gmail.com
+            [eventPhone] => 6982587485
+            [alcuinContact] => dmytro
+            [attendees] => 100
+            [tablesNeeded] => yes
+            [chairsNeeded] => yes
+            [podiumNeeded] => yes
+            [monitorsNeeded] => yes
+            [laptopNeeded] => yes
+            [ipadNeeded] => yes
+            [microphonesNeeded] => yes
+            [speakerNeeded] => yes
+            [avAssistance] => yes
+            [securityNeeded] => yes
+            [buildingAccess] => yes
+            [otherConsiderations] => xbdbdzgnfzng
+            [action] => addEvent
+            [eventData] => {"name":"test10","startDate":"2025-02-02","startTime":"10:00","setupDate":"2025-02-02","setupTime":"10:00","endDate":"2025-02-02","endTime":"15:00","location":"southWing","contact":"mike","email":"mike@gmail.com","phone":"6982587485","alcuinContact":"dmytro","attendees":100,"tables":"yes","chairs":"yes","podium":"yes","monitors":"yes","laptop":"yes","ipad":"yes","microphones":"yes","speaker":"yes","avAssistance":"yes","security":"yes","buildingAccess":"yes","otherConsiderations":"xbdbdzgnfzng","status":"pending","createdBy":"Linda Wilson","createdAt":"2025-02-01T17:33:28.302Z","setupImages":[]}
+        )
+
+    [FILES] => Array
+        (
+            [setupImage] => Array
+                (
+                    [name] => 
+                    [full_path] => 
+                    [type] => 
+                    [tmp_name] => 
+                    [error] => 4
+                    [size] => 0
+                )
+
+        )
+
+    [RAW] => 
+)
+
+
+2025-02-01 11:33:28 - Database connected successfully
+
+2025-02-01 11:33:28 - Processing action
+addEvent
+
+2025-02-01 11:33:28 - Parsed event data
+Array
+(
+    [name] => test10
+    [startDate] => 2025-02-02
+    [startTime] => 10:00
+    [setupDate] => 2025-02-02
+    [setupTime] => 10:00
+    [endDate] => 2025-02-02
+    [endTime] => 15:00
+    [location] => southWing
+    [contact] => mike
+    [email] => mike@gmail.com
+    [phone] => 6982587485
+    [alcuinContact] => dmytro
+    [attendees] => 100
+    [tables] => yes
+    [chairs] => yes
+    [podium] => yes
+    [monitors] => yes
+    [laptop] => yes
+    [ipad] => yes
+    [microphones] => yes
+    [speaker] => yes
+    [avAssistance] => yes
+    [security] => yes
+    [buildingAccess] => yes
+    [otherConsiderations] => xbdbdzgnfzng
+    [status] => pending
+    [createdBy] => Linda Wilson
+    [createdAt] => 2025-02-01 11:33:28
+    [setupImages] => Array
+        (
+        )
+
+)
+
+
+2025-02-01 11:33:28 - Preparing SQL statement
+INSERT INTO events (
+                name, startDate, startTime, setupDate, setupTime,
+                endDate, endTime, location, contact, email,
+                phone, alcuinContact, attendees, tables, chairs,
+                podium, monitors, laptop, ipad, microphones,
+                speaker, avAssistance, security, buildingAccess,
+                otherConsiderations, status, createdBy, createdAt,
+                setupImages
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+2025-02-01 11:33:28 - Binding parameters with types
+sssssssssssssssssssssssssssss
+
+2025-02-01 11:33:28 - Event created successfully
+
+2025-02-01 11:33:28 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:33:28 - Database connected successfully
+
+2025-02-01 11:33:28 - Processing action
+getEvents
+
+2025-02-01 11:33:28 - Getting events
+
+2025-02-01 11:33:28 - Found events
+5
+
+2025-02-01 11:33:49 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => deleteEvent
+            [eventId] => 24
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=deleteEvent&eventId=24
+)
+
+
+2025-02-01 11:33:49 - Database connected successfully
+
+2025-02-01 11:33:49 - Processing action
+deleteEvent
+
+2025-02-01 11:33:49 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:33:49 - Database connected successfully
+
+2025-02-01 11:33:49 - Processing action
+getEvents
+
+2025-02-01 11:33:49 - Getting events
+
+2025-02-01 11:33:49 - Found events
+4
+
+2025-02-01 11:33:54 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => deleteEvent
+            [eventId] => 22
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=deleteEvent&eventId=22
+)
+
+
+2025-02-01 11:33:54 - Database connected successfully
+
+2025-02-01 11:33:54 - Processing action
+deleteEvent
+
+2025-02-01 11:33:54 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:33:54 - Database connected successfully
+
+2025-02-01 11:33:54 - Processing action
+getEvents
+
+2025-02-01 11:33:54 - Getting events
+
+2025-02-01 11:33:54 - Found events
+3
+
+2025-02-01 11:40:38 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:40:38 - Database connected successfully
+
+2025-02-01 11:40:38 - Processing action
+getEvents
+
+2025-02-01 11:40:38 - Getting events
+
+2025-02-01 11:40:38 - Found events
+3
+
+2025-02-01 11:42:18 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:42:18 - Database connected successfully
+
+2025-02-01 11:42:18 - Processing action
+getEvents
+
+2025-02-01 11:42:18 - Getting events
+
+2025-02-01 11:42:18 - Found events
+3
+
+2025-02-01 11:44:48 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [eventName] => test 10
+            [eventStartDate] => 2025-02-02
+            [eventStartTime] => 15:00
+            [setupDate] => 2025-02-02
+            [setupTime] => 12:00
+            [endDate] => 2025-02-02
+            [endTime] => 18:00
+            [eventLocation] => upperSchool
+            [eventContact] => inga
+            [eventEmail] => inga@gmail.com
+            [eventPhone] => 9452587485
+            [alcuinContact] => dmytro
+            [attendees] => 50
+            [tablesNeeded] => no
+            [chairsNeeded] => no
+            [podiumNeeded] => no
+            [monitorsNeeded] => yes
+            [laptopNeeded] => yes
+            [ipadNeeded] => yes
+            [microphonesNeeded] => no
+            [speakerNeeded] => no
+            [avAssistance] => no
+            [securityNeeded] => no
+            [buildingAccess] => yes
+            [otherConsiderations] => sgnfnxghgx
+            [action] => addEvent
+            [eventData] => {"name":"test 10","startDate":"2025-02-02","startTime":"15:00","setupDate":"2025-02-02","setupTime":"12:00","endDate":"2025-02-02","endTime":"18:00","location":"upperSchool","contact":"inga","email":"inga@gmail.com","phone":"9452587485","alcuinContact":"dmytro","attendees":50,"tables":"no","chairs":"no","podium":"no","monitors":"yes","laptop":"yes","ipad":"yes","microphones":"no","speaker":"no","avAssistance":"no","security":"no","buildingAccess":"yes","otherConsiderations":"sgnfnxghgx","status":"pending","createdBy":"Linda Wilson","createdAt":"2025-02-01T17:44:48.958Z","setupImages":[]}
+        )
+
+    [FILES] => Array
+        (
+            [setupImage] => Array
+                (
+                    [name] => IMG_8975.jpeg
+                    [full_path] => IMG_8975.jpeg
+                    [type] => image/jpeg
+                    [tmp_name] => /Applications/XAMPP/xamppfiles/temp/phpCIx6jb
+                    [error] => 0
+                    [size] => 108830
+                )
+
+        )
+
+    [RAW] => 
+)
+
+
+2025-02-01 11:44:48 - Database connected successfully
+
+2025-02-01 11:44:48 - Processing action
+addEvent
+
+2025-02-01 11:44:48 - Parsed event data
+Array
+(
+    [name] => test 10
+    [startDate] => 2025-02-02
+    [startTime] => 15:00
+    [setupDate] => 2025-02-02
+    [setupTime] => 12:00
+    [endDate] => 2025-02-02
+    [endTime] => 18:00
+    [location] => upperSchool
+    [contact] => inga
+    [email] => inga@gmail.com
+    [phone] => 9452587485
+    [alcuinContact] => dmytro
+    [attendees] => 50
+    [tables] => no
+    [chairs] => no
+    [podium] => no
+    [monitors] => yes
+    [laptop] => yes
+    [ipad] => yes
+    [microphones] => no
+    [speaker] => no
+    [avAssistance] => no
+    [security] => no
+    [buildingAccess] => yes
+    [otherConsiderations] => sgnfnxghgx
+    [status] => pending
+    [createdBy] => Linda Wilson
+    [createdAt] => 2025-02-01 11:44:48
+    [setupImages] => Array
+        (
+        )
+
+)
+
+
+2025-02-01 11:44:48 - Preparing SQL statement
+INSERT INTO events (
+                name, startDate, startTime, setupDate, setupTime,
+                endDate, endTime, location, contact, email,
+                phone, alcuinContact, attendees, tables, chairs,
+                podium, monitors, laptop, ipad, microphones,
+                speaker, avAssistance, security, buildingAccess,
+                otherConsiderations, status, createdBy, createdAt,
+                setupImages
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+
+2025-02-01 11:44:48 - Binding parameters with types
+sssssssssssssssssssssssssssss
+
+2025-02-01 11:44:48 - Event created successfully
+
+2025-02-01 11:44:48 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:44:48 - Database connected successfully
+
+2025-02-01 11:44:48 - Processing action
+getEvents
+
+2025-02-01 11:44:48 - Getting events
+
+2025-02-01 11:44:48 - Found events
+4
+
+2025-02-01 11:46:49 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-01 11:46:49 - Database connected successfully
+
+2025-02-01 11:46:49 - Processing action
+getEvents
+
+2025-02-01 11:46:49 - Getting events
+
+2025-02-01 11:46:49 - Found events
+4
+

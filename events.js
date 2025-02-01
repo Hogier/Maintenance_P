@@ -223,7 +223,11 @@ async function handleEventSubmit(e) {
 
   try {
     const formData = new FormData(e.target);
-    console.log("All form data:", Object.fromEntries(formData.entries()));
+
+    // Добавляем action в FormData
+    formData.append("action", "addEvent");
+
+    // Создаем объект с данными события
     const eventData = {
       name: formData.get("eventName"),
       startDate: formData.get("eventStartDate"),
@@ -237,61 +241,62 @@ async function handleEventSubmit(e) {
       email: formData.get("eventEmail"),
       phone: formData.get("eventPhone"),
       alcuinContact: formData.get("alcuinContact"),
-      attendees: formData.get("attendees"),
-      tables: formData.get("tablesNeeded"),
-      chairs: formData.get("chairsNeeded"),
-      podium: formData.get("podiumNeeded"),
-      monitors: formData.get("monitorsNeeded"),
-      laptop: formData.get("laptopNeeded"),
-      ipad: formData.get("ipadNeeded"),
-      microphones: formData.get("microphonesNeeded"),
-      speaker: formData.get("speakerNeeded"),
-      avAssistance: formData.get("avAssistance"),
-      security: formData.get("securityNeeded"),
-      buildingAccess: formData.get("buildingAccess"),
-      otherConsiderations: formData.get("otherConsiderations"),
+      attendees: parseInt(formData.get("attendees")) || 0,
+      tables: formData.get("tablesNeeded") || "no",
+      chairs: formData.get("chairsNeeded") || "no",
+      podium: formData.get("podiumNeeded") || "no",
+      monitors: formData.get("monitorsNeeded") || "no",
+      laptop: formData.get("laptopNeeded") || "no",
+      ipad: formData.get("ipadNeeded") || "no",
+      microphones: formData.get("microphonesNeeded") || "no",
+      speaker: formData.get("speakerNeeded") || "no",
+      avAssistance: formData.get("avAssistance") || "no",
+      security: formData.get("securityNeeded") || "no",
+      buildingAccess: formData.get("buildingAccess") || "no",
+      otherConsiderations: formData.get("otherConsiderations") || "",
       status: "pending",
       createdBy: JSON.parse(localStorage.getItem("currentUser")).fullName,
       createdAt: new Date().toISOString(),
       setupImages: [],
     };
 
-    // Проверяем данные перед отправкой
-    console.log("Sending event data:", eventData);
+    // Добавляем eventData в FormData
+    formData.append("eventData", JSON.stringify(eventData));
+
+    console.log("Sending form data:", Object.fromEntries(formData.entries()));
 
     const response = await fetch("events_db.php", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "addEvent",
-        eventData: JSON.stringify(eventData),
-      }),
+      body: formData,
     });
 
-    // Проверяем ответ сервера
-    const responseText = await response.text();
-    console.log("Raw server response:", responseText);
-
-    let result;
-    try {
-      result = JSON.parse(responseText);
-    } catch (e) {
-      console.error("Failed to parse server response:", responseText);
-      console.error("Parse error:", e);
-      throw new Error("Invalid server response");
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error response:", errorText);
+      throw new Error(
+        `Server error: ${response.status} ${response.statusText}`
+      );
     }
 
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const responseText = await response.text();
+      console.error(
+        "Invalid content type:",
+        contentType,
+        "Response:",
+        responseText
+      );
+      throw new Error("Invalid response format from server");
+    }
+
+    const result = await response.json();
     if (result.success) {
       hideEventModal();
       await loadEvents();
-      selectedDate = new Date(eventData.startDate);
-      updateCalendar();
-      updateEventsList();
       showNotification("Event successfully created!");
     } else {
-      throw new Error(result.message || "Unknown error occurred");
+      throw new Error(result.message || "Failed to create event");
     }
   } catch (error) {
     console.error("Error submitting event:", error);
@@ -317,43 +322,161 @@ function createEventElement(event) {
   const eventElement = document.createElement("div");
   eventElement.className = "event-item";
 
-  eventElement.innerHTML = `
+  // Создаем основную информацию (всегда видимую)
+  const basicInfo = `
     <div class="event-header">
-      <h4 class="event-name">${event.name}</h4>
-      <span class="event-time">${event.startTime} - ${event.endTime}</span>
+      <div class="event-title">
+        <h4 class="event-name">${event.name}</h4>
+        <span class="event-status ${event.status}">${event.status}</span>
+      </div>
+      <div class="event-time-info">
+        <div class="event-date">${formatDate(event.startDate)}</div>
+        <div class="event-time">${event.startTime} - ${event.endTime}</div>
+      </div>
     </div>
-    <div class="event-details">
-      <p><strong>Location:</strong> ${event.location}</p>
-      <p><strong>Contact:</strong> ${event.contact}</p>
-      <p><strong>Attendees:</strong> ${event.attendees}</p>
+    <div class="event-preview">
+      <div class="event-basic-details">
+        <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
+        <p><i class="fas fa-users"></i> ${event.attendees} attendees</p>
+        <p><i class="fas fa-user-edit"></i> Created by ${event.createdBy}</p>
+      </div>
+      <button class="toggle-details">Show Details</button>
+    </div>`;
+
+  // Создаем детальную информацию (скрытую по умолчанию)
+  const detailedInfo = `
+    <div class="event-details hidden">
+      <div class="details-section">
+        <h5>Contact Information</h5>
+        <p><strong>Contact:</strong> ${event.contact}</p>
+        <p><strong>Email:</strong> ${event.email}</p>
+        <p><strong>Phone:</strong> ${event.phone}</p>
+        <p><strong>Alcuin Contact:</strong> ${event.alcuinContact}</p>
+      </div>
+
+      <div class="details-section">
+        <h5>Setup Information</h5>
+        <p><strong>Setup Date:</strong> ${formatDate(event.setupDate)}</p>
+        <p><strong>Setup Time:</strong> ${event.setupTime}</p>
+        <p><strong>Breakdown Date:</strong> ${event.endDate}</p>
+        <p><strong>Breakdown Time:</strong> ${event.endTime}</p>
+      </div>
+
+      <div class="details-section">
+        <h5>Equipment Needed</h5>
+        <div class="equipment-grid">
+          ${createEquipmentItem("Tables", event.tables)}
+          ${createEquipmentItem("Chairs", event.chairs)}
+          ${createEquipmentItem("Podium", event.podium)}
+          ${createEquipmentItem("Monitors", event.monitors)}
+          ${createEquipmentItem("Laptop", event.laptop)}
+          ${createEquipmentItem("iPad", event.ipad)}
+          ${createEquipmentItem("Microphones", event.microphones)}
+          ${createEquipmentItem("Speaker", event.speaker)}
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h5>Additional Services</h5>
+        <div class="services-grid">
+          ${createServiceItem("AV Assistance", event.avAssistance)}
+          ${createServiceItem("Security", event.security)}
+          ${createServiceItem("Building Access", event.buildingAccess)}
+        </div>
+      </div>
+
       ${
-        event.setupImages && event.setupImages.length > 0
+        event.otherConsiderations
           ? `
-        <div class="event-images">
-          ${event.setupImages
-            .map(
-              (url) => `
-            <img src="${url}" alt="Setup image" class="setup-image">
-          `
-            )
-            .join("")}
+        <div class="details-section">
+          <h5>Other Considerations</h5>
+          <p>${event.otherConsiderations}</p>
         </div>
       `
           : ""
       }
-      <div class="event-status ${event.status}">${event.status}</div>
-    </div>
-    <div class="event-actions">
-      <button class="edit-btn" data-event-id="${event.id}">
-        <i class="fas fa-edit"></i> Edit
-      </button>
-      <button class="delete-btn" data-event-id="${event.id}">
-        <i class="fas fa-trash"></i> Delete
-      </button>
-    </div>
-  `;
 
-  // Добавляем обработчики для кнопок
+      ${
+        event.setupImages && event.setupImages.length > 0
+          ? `
+        <div class="details-section">
+          <h5>Setup Images</h5>
+          <div class="setup-images-grid">
+            ${event.setupImages
+              .map(
+                (url) => `
+              <div class="setup-image-container">
+                <img src="${url}" alt="Setup image" class="setup-image">
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
+      `
+          : ""
+      }
+
+      <div class="event-meta">
+        <p><strong>Created By:</strong> ${event.createdBy}</p>
+        <p><strong>Created At:</strong> ${formatDateTime(event.createdAt)}</p>
+      </div>
+
+      <div class="event-actions">
+        <button class="edit-btn" data-event-id="${event.id}">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="delete-btn" data-event-id="${event.id}">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>`;
+
+  eventElement.innerHTML = basicInfo + detailedInfo;
+
+  // Добавляем вспомогательные функции
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function formatDateTime(dateTimeStr) {
+    const date = new Date(dateTimeStr);
+    return date.toLocaleString("en-US");
+  }
+
+  function createEquipmentItem(name, value) {
+    return `
+      <div class="equipment-item ${value === "yes" ? "needed" : "not-needed"}">
+        <i class="fas ${value === "yes" ? "fa-check" : "fa-times"}"></i>
+        <span>${name}</span>
+      </div>`;
+  }
+
+  function createServiceItem(name, value) {
+    return `
+      <div class="service-item ${value === "yes" ? "needed" : "not-needed"}">
+        <i class="fas ${value === "yes" ? "fa-check" : "fa-times"}"></i>
+        <span>${name}</span>
+      </div>`;
+  }
+
+  // Добавляем обработчики событий
+  const toggleButton = eventElement.querySelector(".toggle-details");
+  const detailsSection = eventElement.querySelector(".event-details");
+
+  toggleButton.addEventListener("click", () => {
+    detailsSection.classList.toggle("hidden");
+    toggleButton.textContent = detailsSection.classList.contains("hidden")
+      ? "Show Details"
+      : "Hide Details";
+  });
+
+  // Добавляем обработчики для кнопок редактирования и удаления
   const editBtn = eventElement.querySelector(".edit-btn");
   const deleteBtn = eventElement.querySelector(".delete-btn");
 
