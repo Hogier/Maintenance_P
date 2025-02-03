@@ -112,13 +112,28 @@ h1 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.task-location {
+.task-meta-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin: 10px 0;
+}
+
+.task-location, .task-priority {
+  margin: 0; /* Убираем внешние отступы */
+}
+
+.task-location {
   padding: 8px;
-  background-color: #e3f2fd;
-  border-radius: 4px;
+  background-color: #f5f5f5;
+  border-radius: 12px 4px 4px 12px;
   font-size: 14px;
-  color: #1976d2;
+  color: #1c77c2;
+}
+
+.task-location::before {
+  content: "📍";
+  margin-right: 5px; /* Отступ между символом и текстом */
 }
 
 .task-priority {
@@ -128,7 +143,7 @@ h1 {
   font-weight: bold;
   text-transform: uppercase;
   display: inline-block;
-  margin: 5px 0;
+  margin: 0px 0;
 }
 
 .priority-low {
@@ -147,7 +162,7 @@ h1 {
 }
 
 .priority-urgent {
-  background-color: #ff5252;
+  background-color: #ff5445fc;
   color: white;
 }
 
@@ -227,7 +242,7 @@ h1 {
 .status-select {
   padding: 6px 12px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: 14px;
   color: #333;
   background-color: white;
@@ -277,17 +292,20 @@ h1 {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, color 0.3s, width 0.3s;
 }
 
-.assign-btn:hover {
-  background-color: #1976d2;
+.assign-btn.assigned {
+  background-color: white;
+  color: #2196f3;
+  border: 1px solid #2196f3;
+  width: auto; /* Позволяет кнопке изменять ширину */
 }
+
 
 .task-comments {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
+  margin-top: 0px;
+  padding-top: 0px;
 }
 
 .comments-list {
@@ -296,11 +314,16 @@ h1 {
 }
 
 .comment {
+  position: relative;
   background-color: #f8f9fa;
   padding: 12px;
   margin-bottom: 12px;
   border-radius: 8px;
   border-left: 3px solid #2196f3;
+}
+
+.comment.visible {
+  opacity: 1;
 }
 
 .comment-header {
@@ -454,9 +477,8 @@ h1 {
 
 /* Разделитель между медиа и комментариями */
 .task-comments {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
+  margin-top: 0px;
+  padding-top: 0px;
 }
 
 .update-indicator {
@@ -507,4 +529,231 @@ h1 {
 #dallasTime {
   font-weight: bold;
   color: #2196f3;
+}
+
+.comment-delete {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  color: #adadad;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.comment-delete i {
+  font-size: 16px;
+}
+
+.comment-delete:hover {
+  color: #888;
+}
+
+.status-local {
+  color: #888;
+  margin-left: 5px;
+}
+
+.status-server {
+  color: rgb(33, 150, 243);
+  margin-left: 5px;
+}
+
+.clock, .refuse-clock {
+  position: relative;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 10px;
+  opacity: 0; /* Изначально невидимы */
+  transition: opacity 0.3s ease; /* Плавное появление */
+}
+
+.clock {
+  border: 2px solid #2196f3;
+}
+
+.refuse-clock {
+  border: 2px solid red;
+}
+
+.clock.visible, .refuse-clock.visible {
+  opacity: 1; /* Видимы, когда добавлен класс visible */
+}
+
+.hour-hand, .minute-hand, .refuse-hour-hand, .refuse-minute-hand {
+  position: absolute;
+  transform-origin: bottom center;
+  bottom: 50%;
+  left: 50%;
+}
+
+.hour-hand, .refuse-hour-hand {
+  width: 1px;
+  height: 4px;
+  transform: translateX(-50%) rotate(45deg);
+  animation: rotateHourHand 20s linear infinite; /* Анимация для часовой стрелки */
+}
+
+.minute-hand, .refuse-minute-hand {
+  width: 1px;
+  height: 6px;
+  transform: translateX(-50%) rotate(90deg);
+  animation: rotateMinuteHand 4s linear infinite; /* Анимация для минутной стрелки */
+}
+
+.hour-hand, .minute-hand {
+  background-color: #2196f3;
+}
+
+.refuse-hour-hand, .refuse-minute-hand {
+  background-color: red;
+}
+
+.assign-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.refuse-btn {
+  background-color: red;
+  color: white;
+  margin-left: 10px;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.6s, color 0.6s;
+}
+
+.refuse-btn:hover {
+  background-color: darkred;
+}
+
+@keyframes rotateHourHand {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+@keyframes rotateMinuteHand {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
+.timer-circle {
+  background-color: #ffffff;
+  border-radius: 50%;
+  padding: 3px;
+  margin-left: 5px;
+  font-size: 11px;
+  color: #535353;
+  display: inline-block;
+  width: 17px;
+  height: 17px;
+  text-align: center;
+}
+
+.status-pending {
+  background-color: #ff5445fc;
+}
+
+.status-in-progress {
+  background-color: #ffd545fc;
+}
+
+.status-completed {
+  background-color: #5bff45fc;
+}
+
+.discussion-toggle {
+  width: 100%;
+  margin: 20px auto;
+  padding: 10px;
+  background: linear-gradient(135deg, #c595f9, #2196f3);
+  color: white;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  text-align: center;
+}
+
+.discussion-toggle:hover {
+  -webkit-box-shadow: 0px 0px 21px 0px rgba(34, 60, 80, 0.2);
+  -moz-box-shadow: 0px 0px 21px 0px rgba(34, 60, 80, 0.2);
+  box-shadow: 0px 0px 21px 0px rgba(34, 60, 80, 0.2);
+}
+
+.comments-list {
+  max-height: 0px;
+  opacity: 0;
+  transition: max-height 0.7s ease, opacity 0.5s ease;
+}
+
+.comment-input-container {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: height 0.5s ease, opacity 0.5s ease;
+}
+
+.comments-list.expanded {
+  /*height: auto;*/
+  max-height: 200px; /* Максимальная высота для comments-list */
+  opacity: 1;
+}
+
+.comment-input-container.expanded {
+  height: auto;
+  opacity: 1;
+}
+
+.discussion-toggle-clock {
+  display: inline-block;
+  position: relative;
+  width: 18px;
+  height: 18px;
+  margin-left: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-sizing: border-box;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.discussion-toggle-clock .hour-hand,
+.discussion-toggle-clock .minute-hand {
+  position: absolute;
+  background-color: white;
+  border-radius: 2px;
+  transform-origin: bottom center;
+}
+
+.discussion-toggle-clock .hour-hand {
+  width: 2px;
+  height: 5px;
+  top: 4px;
+  left: 8px;
+  transform: rotate(90deg);
+}
+
+.discussion-toggle-clock .minute-hand {
+  width: 2px;
+  height: 7px;
+  top: 2px;
+  left: 8px;
+  transform: rotate(180deg);
 }
