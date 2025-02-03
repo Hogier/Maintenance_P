@@ -436,9 +436,87 @@ async addComment(requestId, comment, staffName) {
   }
 }
 
-  
+async fetchComments(taskId) {
+  try {
+    const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'getComments',
+        requestId: taskId,
+      }),
+    });
 
+    const result = await response.json();
+    if (result.success) {
+      return result.comments;
+    } else {
+      console.error('Error fetching comments:', result.message);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    return [];
+  }
+}  
 
+async deleteCommentFromServer(requestId, timestamp) {
+  try {
+    const response = await fetch('database.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'deleteComment',
+        requestId: requestId,
+        timestamp: timestamp,
+      }),
+    });
+
+    const responseText = await response.text();
+    console.log("Server response:", responseText); // Логируем ответ сервера
+
+    const result = JSON.parse(responseText);
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting comment from server:", error);
+    return false;
+  }
+}
+/*
+async getTasksByDate(date) {
+  try {
+    const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'getTasksByDate',
+        date: date,
+      }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      console.log('Tasks for date:', date, result.data);
+      return result.data;
+    } else {
+      console.error('Error fetching tasks by date:', result.message);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching tasks by date:', error);
+    return [];
+  }
+}
+*/
 }
 
 // Создаем и экспортируем экземпляр базы данных
