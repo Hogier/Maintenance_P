@@ -739,3 +739,55 @@ getEvents
 2025-02-01 11:46:49 - Found events
 4
 
+2025-02-02 20:18:56 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-02 20:18:56 - Database connected successfully
+
+2025-02-02 20:18:56 - Processing action
+getEvents
+
+2025-02-02 20:18:56 - Getting events
+
+2025-02-02 20:18:56 - Found events
+6
+
+2025-02-02 20:20:12 - Received request
+Array
+(
+    [POST] => Array
+        (
+            [action] => getEvents
+        )
+
+    [FILES] => Array
+        (
+        )
+
+    [RAW] => action=getEvents
+)
+
+
+2025-02-02 20:20:12 - Database connected successfully
+
+2025-02-02 20:20:12 - Processing action
+getEvents
+
+2025-02-02 20:20:12 - Getting events
+
+2025-02-02 20:20:12 - Found events
+6
+
