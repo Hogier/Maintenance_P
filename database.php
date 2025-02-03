@@ -1,11 +1,16 @@
 <?php
 // В начале файла добавим настройку временной зоны
 date_default_timezone_set('America/Chicago');
+header("Cache-Control: max-age=604800, public");
+header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
+// Включаем отображение ошибок для отладки
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Параметры подключения к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 // Подключение к базе данных
@@ -166,6 +171,71 @@ if ($action === 'addUser') {
         $stmt->close();
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid input data']);
+    }
+} elseif ($action === 'deleteComment') {
+    $requestId = $_POST['requestId'] ?? '';
+    $timestamp = $_POST['timestamp'] ?? '';
+
+    error_log("Attempting to delete comment. Request ID: $requestId, Timestamp: $timestamp");
+
+    if ($requestId && $timestamp) {
+        // Получаем текущие комментарии
+        $stmt = $conn->prepare("SELECT comments FROM tasks WHERE request_id = ?");
+        $stmt->bind_param('s', $requestId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 1) {
+            $row = $result->fetch_assoc();
+            $comments = json_decode($row['comments'], true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $jsonError = json_last_error_msg();
+                error_log("JSON decode error: $jsonError");
+                echo json_encode(['success' => false, 'message' => "JSON decode error: $jsonError"]);
+                exit;
+            }
+
+            error_log("Comments before deletion: " . print_r($comments, true));
+
+            // Фильтруем комментарии, удаляя тот, который соответствует timestamp
+            $updatedComments = array_filter($comments, function($comment) use ($timestamp) {
+                return $comment['timestamp'] !== $timestamp;
+            });
+
+            error_log("Comments after deletion: " . print_r($updatedComments, true));
+
+            // Обновляем поле comments
+            $updatedCommentsJson = json_encode(array_values($updatedComments));
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $jsonError = json_last_error_msg();
+                error_log("JSON encode error: $jsonError");
+                echo json_encode(['success' => false, 'message' => "JSON encode error: $jsonError"]);
+                exit;
+            }
+
+            $updateStmt = $conn->prepare("UPDATE tasks SET comments = ?, commentCount = commentCount - 1 WHERE request_id = ?");
+            $updateStmt->bind_param('ss', $updatedCommentsJson, $requestId);
+
+            if ($updateStmt->execute()) {
+                error_log("Comment deleted successfully for request ID: $requestId");
+                echo json_encode(['success' => true, 'message' => 'Comment deleted successfully']);
+            } else {
+                $updateError = $updateStmt->error;
+                error_log("Error updating comments: $updateError");
+                echo json_encode(['success' => false, 'message' => "Error updating comments: $updateError"]);
+            }
+
+            $updateStmt->close();
+        } else {
+            error_log("Task not found for request ID: $requestId");
+            echo json_encode(['success' => false, 'message' => 'Task not found']);
+        }
+
+        $stmt->close();
+    } else {
+        error_log("Invalid request ID or timestamp");
+        echo json_encode(['success' => false, 'message' => 'Invalid request ID or timestamp']);
     }
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid action']);

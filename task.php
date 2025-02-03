@@ -1,4 +1,8 @@
 <?php
+// Устанавливаем заголовки для кэширования на 1 неделю
+header("Cache-Control: max-age=604800, public");
+header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
+
 // Папка для сохранения загруженных файлов
 $uploadDir = "uploads/";
 
@@ -22,7 +26,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -58,13 +62,27 @@ if ($action === 'addTask') {
                     exit;
                 }
 
-                // Сохраняем оригинальный файл в base64
-                $base64Data = base64_encode(file_get_contents($tmpName));
-                $fileName = uniqid() . '.txt';
+                $originalFileName = basename($_FILES['media']['name'][$key]);
+                $fileName = uniqid() . '_' . $originalFileName;
                 $filePath = $uploadDir . $fileName;
-                
-                if (file_put_contents($filePath, $base64Data)) {
+
+                // Сохранение изображения с качеством 70%
+                if (move_uploaded_file($tmpName, $filePath)) {
                     $mediaFiles[] = $fileName;
+                    if (strpos($fileType, 'image') !== false) {
+                        // Сжатие изображения без потерь
+                        compressImage($filePath, $filePath, 70);
+
+                        // Создание уменьшенной версии
+                        $miniDir = $uploadDir . 'mini/';
+                        if (!file_exists($miniDir)) {
+                            mkdir($miniDir, 0777, true);
+                        }
+                        $miniFileName = 'mini_' . $fileName;
+                        $miniFilePath = $miniDir . $miniFileName;
+
+                        createMiniImage($filePath, $miniFilePath, 135, 50);
+                    }
                 }
             }
         }
@@ -76,15 +94,18 @@ if ($action === 'addTask') {
     // Преобразование timestamp в нужный формат
     $timestamp = date('Y-m-d H:i:s', strtotime($_POST['timestamp']));
 
+    // Инициализация commentCount
+    $commentCount = 0;
+
     // Сохранение данных в базу данных
-    $stmt = $conn->prepare("INSERT INTO tasks (request_id, building, room, staff, priority, details, timestamp, status, media, submittedBy, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO tasks (request_id, building, room, staff, priority, details, timestamp, status, media, submittedBy, date, commentCount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     if ($stmt === false) {
         echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
         exit;
     }
 
     $stmt->bind_param(
-        "sssssssssss", 
+        "sssssssssssi", 
         $_POST['requestId'],
         $_POST['building'],
         $_POST['room'],
@@ -96,7 +117,8 @@ if ($action === 'addTask') {
         //json_encode($_POST['comments']),
         json_encode($mediaFiles),
         $_POST['submittedBy'],
-        $_POST['date']
+        $_POST['date'],
+        $commentCount
     );
 
     if ($stmt->execute()) {
@@ -122,25 +144,19 @@ if ($action === 'addTask') {
 
     echo json_encode(['success' => true, 'data' => $tasks]);
 } elseif ($action === 'getMediaFile') {
-    $fileName = $_POST['fileName'] ?? '';
-    $uploadsDir = 'uploads/';
-    $filePath = $uploadsDir . $fileName;
+    $fileName = $_POST['fileName'];
+    $uploadDir = 'uploads/';
+    $filePath = $uploadDir . $fileName;
 
+
+    // Проверка существования файла и прав доступа
     if (file_exists($filePath)) {
-        // Читаем содержимое файла и декодируем base64
-        $fileContent = file_get_contents($filePath);
-        $decodedContent = base64_decode($fileContent);
-        
-        // Создаем временный файл для декодированного содержимого
-        $tempFileName = uniqid() . '_decoded_' . $fileName;
-        $tempFilePath = $uploadsDir . $tempFileName;
-        file_put_contents($tempFilePath, $decodedContent);
-        
+
         // Определяем MIME-тип файла
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $tempFilePath);
+        $mimeType = finfo_file($finfo, $filePath);
         finfo_close($finfo);
-        
+
         $type = 'unknown';
         if (strpos($mimeType, 'image/') === 0) {
             $type = 'image';
@@ -151,7 +167,41 @@ if ($action === 'addTask') {
         echo json_encode([
             'success' => true,
             'type' => $type,
-            'url' => $tempFilePath,
+            'url' => $filePath,
+            'name' => $fileName,
+            'mimeType' => $mimeType
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'File not found'
+        ]);
+    }
+} elseif ($action === 'getMINIMediaFile') {
+    $fileName = $_POST['fileName'];
+    $uploadDir = 'uploads/mini/';
+    $filePath = $uploadDir . 'mini_' . $fileName;
+
+
+    // Проверка существования файла и прав доступа
+    if (file_exists($filePath)) {
+
+        // Определяем MIME-тип файла
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $filePath);
+        finfo_close($finfo);
+
+        $type = 'unknown';
+        if (strpos($mimeType, 'image/') === 0) {
+            $type = 'image';
+        } elseif (strpos($mimeType, 'video/') === 0) {
+            $type = 'video';
+        }
+
+        echo json_encode([
+            'success' => true,
+            'type' => $type,
+            'url' => $filePath,
             'name' => $fileName,
             'mimeType' => $mimeType
         ]);
@@ -265,7 +315,7 @@ if ($action === 'addTask') {
         ];
         $comments[] = $newComment;
 
-        $stmt = $conn->prepare("UPDATE tasks SET comments = ? WHERE request_id = ?");
+        $stmt = $conn->prepare("UPDATE tasks SET comments = ?, commentCount = commentCount + 1 WHERE request_id = ?");
         if (!$stmt) {
             echo json_encode([
                 'success' => false,
@@ -294,7 +344,147 @@ if ($action === 'addTask') {
         ]);
     }
     $stmt->close();
+} elseif ($action === 'getComments') {
+    $requestId = $_POST['requestId'] ?? '';
+
+    $stmt = $conn->prepare("SELECT comments FROM tasks WHERE request_id = ?");
+    $stmt->bind_param("s", $requestId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $task = $result->fetch_assoc();
+
+    if ($task) {
+        $comments = json_decode($task['comments'], true) ?? [];
+        echo json_encode([
+            'success' => true,
+            'comments' => $comments
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Task not found'
+        ]);
+    }
+    $stmt->close();
+} elseif ($action === 'getTasksByDate') {
+    $date = $_POST['date'];
+
+    // Логирование полученной даты
+    error_log("Received date for filtering tasks: " . $date);
+
+    $stmt = $conn->prepare("SELECT * FROM tasks WHERE DATE(date) = ?");
+    if (!$stmt) {
+        error_log("SQL prepare error: " . $conn->error);
+        echo json_encode(['success' => false, 'message' => 'Database error']);
+        exit;
+    }
+
+    $stmt->bind_param("s", $date);
+    if (!$stmt->execute()) {
+        error_log("SQL execute error: " . $stmt->error);
+        echo json_encode(['success' => false, 'message' => 'Database error']);
+        exit;
+    }
+
+    $result = $stmt->get_result();
+    if (!$result) {
+        error_log("SQL get_result error: " . $stmt->error);
+        echo json_encode(['success' => false, 'message' => 'Database error']);
+        exit;
+    }
+
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Логирование количества найденных заданий
+    error_log("Number of tasks found: " . count($tasks));
+
+    // Преобразование JSON-строк в массивы
+    foreach ($tasks as &$task) {
+        if (isset($task['comments'])) {
+            $task['comments'] = json_decode($task['comments'], true);
+        }
+        if (isset($task['media'])) {
+            $task['media'] = json_decode($task['media'], true);
+        }
+    }
+
+    echo json_encode(['success' => true, 'data' => $tasks]);
+    exit;
+} elseif ($action === 'refuseTask') {
+    $requestId = $_POST['requestId'] ?? '';
+
+    $stmt = $conn->prepare("UPDATE tasks SET assigned_to = NULL, assigned_at = NULL WHERE request_id = ?");
+    $stmt->bind_param("s", $requestId);
+
+    if ($stmt->execute()) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Task assignment refused successfully'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error refusing task assignment: ' . $stmt->error
+        ]);
+    }
+    $stmt->close();
 }
 
 $conn->close();
+
+function compressImage($sourcePath, $destinationPath, $quality) {
+    $info = getimagesize($sourcePath);
+    $image = null;
+
+    switch ($info['mime']) {
+        case 'image/jpeg':
+            $image = imagecreatefromjpeg($sourcePath);
+            imagejpeg($image, $destinationPath, $quality);
+            break;
+        case 'image/png':
+            $image = imagecreatefrompng($sourcePath);
+            imagepng($image, $destinationPath, $quality / 10); // PNG quality is 0-9
+            break;
+        default:
+            return false;
+    }
+
+    imagedestroy($image);
+    return true;
+}
+
+function createMiniImage($sourcePath, $destinationPath, $newSize, $quality) {
+    list($width, $height, $type) = getimagesize($sourcePath);
+    $scale = $newSize / min($width, $height);
+    $newWidth = $width * $scale;
+    $newHeight = $height * $scale;
+
+    $image = null;
+    switch ($type) {
+        case IMAGETYPE_JPEG:
+            $image = imagecreatefromjpeg($sourcePath);
+            break;
+        case IMAGETYPE_PNG:
+            $image = imagecreatefrompng($sourcePath);
+            break;
+        default:
+            return false;
+    }
+
+    $miniImage = imagecreatetruecolor($newWidth, $newHeight);
+    imagecopyresampled($miniImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+    switch ($type) {
+        case IMAGETYPE_JPEG:
+            imagejpeg($miniImage, $destinationPath, $quality);
+            break;
+        case IMAGETYPE_PNG:
+            imagepng($miniImage, $destinationPath, $quality / 10); // PNG quality is 0-9
+            break;
+    }
+
+    imagedestroy($image);
+    imagedestroy($miniImage);
+    return true;
+}
 ?>
