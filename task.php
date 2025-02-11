@@ -1,64 +1,24 @@
 <?php
-// Отключаем вывод ошибок в браузер
-ini_set('display_errors', 0);
-error_reporting(0);
-
-// Устанавливаем заголовок JSON
-header('Content-Type: application/json');
-
-// Логирование ошибок в файл
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/error.log');
-
-// Проверяем права доступа к директориям
-$uploadDir = __DIR__ . '/uploads/';
-$miniDir = $uploadDir . 'mini/';
-
-// Создаем директории с правильными правами
-if (!file_exists($uploadDir)) {
-    if (!mkdir($uploadDir, 0777, true)) {
-        error_log("Failed to create upload directory");
-        echo json_encode(['success' => false, 'error' => 'Failed to create upload directory']);
-        exit;
-    }
-}
-
-if (!file_exists($miniDir)) {
-    if (!mkdir($miniDir, 0777, true)) {
-        error_log("Failed to create mini directory");
-        echo json_encode(['success' => false, 'error' => 'Failed to create mini directory']);
-        exit;
-    }
-}
-
-// Устанавливаем права
-$dirs = [$uploadDir, $miniDir];
-foreach ($dirs as $dir) {
-    if (!chmod($dir, 0777)) {
-        error_log("Failed to set permissions for: " . $dir);
-        echo json_encode(['success' => false, 'error' => 'Failed to set directory permissions']);
-        exit;
-    }
-    
-    if (!is_writable($dir)) {
-        error_log("Directory not writable: " . $dir);
-        echo json_encode(['success' => false, 'error' => 'Directory not writable']);
-        exit;
-    }
-}
-
-// Добавим логирование
-function debug_log($message, $data = null) {
-    $log = date('Y-m-d H:i:s') . " - " . $message;
-    if ($data !== null) {
-        $log .= "\n" . print_r($data, true);
-    }
-    error_log($log . "\n", 3, __DIR__ . '/debug.log');
-}
-
 // Устанавливаем заголовки для кэширования на 1 неделю
 header("Cache-Control: max-age=604800, public");
 header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
+
+// Папка для сохранения загруженных файлов
+$uploadDir = "uploads/";
+
+// Проверяем существование директории и создаем её при необходимости
+if (!file_exists($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
+
+// Проверяем права доступа
+if (!is_writable($uploadDir)) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Upload directory is not writable'
+    ]);
+    exit;
+}
 
 // Разрешенные типы файлов
 $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp3'];
@@ -66,7 +26,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -76,6 +36,8 @@ if ($conn->connect_error) {
 }
 
 $action = $_POST['action'] ?? '';
+
+header('Content-Type: application/json');
 
 if ($action === 'addTask') {
     // Проверка и обработка загруженных файлов
@@ -212,15 +174,16 @@ if ($action === 'addTask') {
     } else {
         echo json_encode([
             'success' => false,
-            'message' => 'File not found'
+            'message' => 'fullFile not found'
         ]);
     }
 } elseif ($action === 'getMINIMediaFile') {
+    error_log("Начало выполнения действия 'getMINIMediaFile'");
     $fileName = $_POST['fileName'];
     $uploadDir = 'uploads/mini/';
     $filePath = $uploadDir . 'mini_' . $fileName;
-
-
+    error_log("Имя файла: " . $fileName);
+    error_log("Путь к файлу: " . $filePath);
     // Проверка существования файла и прав доступа
     if (file_exists($filePath)) {
 
@@ -235,7 +198,7 @@ if ($action === 'addTask') {
         } elseif (strpos($mimeType, 'video/') === 0) {
             $type = 'video';
         }
-
+        error_log("Тип файла: " . $type);
         echo json_encode([
             'success' => true,
             'type' => $type,
@@ -246,7 +209,7 @@ if ($action === 'addTask') {
     } else {
         echo json_encode([
             'success' => false,
-            'message' => 'File not found'
+            'message' => 'miniFile not found'
         ]);
     }
 } elseif ($action === 'assignTask') {
@@ -405,45 +368,49 @@ if ($action === 'addTask') {
     }
     $stmt->close();
 } elseif ($action === 'getTasksByDate') {
-    $date = $_POST['date'] ?? '';
-    
-    if (!$date) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Date parameter is required'
-        ]);
+    $date = $_POST['date'];
+
+    // Логирование полученной даты
+    error_log("Received date for filtering tasks: " . $date);
+
+    $stmt = $conn->prepare("SELECT * FROM tasks WHERE DATE(date) = ?");
+    if (!$stmt) {
+        error_log("SQL prepare error: " . $conn->error);
+        echo json_encode(['success' => false, 'message' => 'Database error']);
         exit;
     }
 
-    try {
-        // Меняем created_at на date
-        $stmt = $conn->prepare("SELECT * FROM tasks WHERE DATE(date) = ?");
-        $stmt->bind_param('s', $date);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        $tasks = [];
-        while ($row = $result->fetch_assoc()) {
-            // Декодируем JSON поля
-            if (isset($row['comments'])) {
-                $row['comments'] = json_decode($row['comments'], true);
-            }
-            if (isset($row['media'])) {
-                $row['media'] = json_decode($row['media'], true);
-            }
-            $tasks[] = $row;
-        }
-        
-        echo json_encode([
-            'success' => true,
-            'tasks' => $tasks
-        ]);
-    } catch (Exception $e) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Error fetching tasks: ' . $e->getMessage()
-        ]);
+    $stmt->bind_param("s", $date);
+    if (!$stmt->execute()) {
+        error_log("SQL execute error: " . $stmt->error);
+        echo json_encode(['success' => false, 'message' => 'Database error']);
+        exit;
     }
+
+    $result = $stmt->get_result();
+    if (!$result) {
+        error_log("SQL get_result error: " . $stmt->error);
+        echo json_encode(['success' => false, 'message' => 'Database error']);
+        exit;
+    }
+
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Логирование количества найденных заданий
+    error_log("Number of tasks found: " . count($tasks));
+
+    // Преобразование JSON-строк в массивы
+    foreach ($tasks as &$task) {
+        if (isset($task['comments'])) {
+            $task['comments'] = json_decode($task['comments'], true);
+        }
+        if (isset($task['media'])) {
+            $task['media'] = json_decode($task['media'], true);
+        }
+    }
+
+    echo json_encode(['success' => true, 'data' => $tasks]);
+    exit;
 } elseif ($action === 'refuseTask') {
     $requestId = $_POST['requestId'] ?? '';
 
@@ -462,43 +429,6 @@ if ($action === 'addTask') {
         ]);
     }
     $stmt->close();
-} elseif ($action === 'getMiniFile') {
-    try {
-        $fileName = $_POST['fileName'] ?? '';
-        
-        if (!$fileName) {
-            throw new Exception('No filename provided');
-        }
-
-        $originalPath = $uploadDir . $fileName;
-        $miniPath = $miniDir . 'mini_' . $fileName;
-        
-        if (file_exists($miniPath)) {
-            echo json_encode([
-                'success' => true,
-                'miniPath' => 'uploads/mini/mini_' . $fileName
-            ]);
-        } else if (file_exists($originalPath)) {
-            if (createMiniImage($originalPath, $miniPath, 135, 50)) {
-                echo json_encode([
-                    'success' => true,
-                    'miniPath' => 'uploads/mini/mini_' . $fileName
-                ]);
-            } else {
-                throw new Exception('Failed to create mini image');
-            }
-        } else {
-            throw new Exception('Original file not found');
-        }
-    } catch (Exception $e) {
-        error_log("Error in getMiniFile: " . $e->getMessage());
-        echo json_encode([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'originalPath' => 'uploads/' . $fileName
-        ]);
-    }
-    exit;
 }
 
 $conn->close();
@@ -525,85 +455,37 @@ function compressImage($sourcePath, $destinationPath, $quality) {
 }
 
 function createMiniImage($sourcePath, $destinationPath, $newSize, $quality) {
-    try {
-        // Проверяем права доступа к директории назначения
-        $targetDir = dirname($destinationPath);
-        if (!is_writable($targetDir)) {
-            chmod($targetDir, 0777);
-            if (!is_writable($targetDir)) {
-                error_log("Target directory not writable: " . $targetDir);
-                return false;
-            }
-        }
+    list($width, $height, $type) = getimagesize($sourcePath);
+    $scale = $newSize / min($width, $height);
+    $newWidth = $width * $scale;
+    $newHeight = $height * $scale;
 
-        list($width, $height, $type) = getimagesize($sourcePath);
-        $scale = $newSize / min($width, $height);
-        $newWidth = $width * $scale;
-        $newHeight = $height * $scale;
-
-        $image = null;
-        switch ($type) {
-            case IMAGETYPE_JPEG:
-                $image = imagecreatefromjpeg($sourcePath);
-                break;
-            case IMAGETYPE_PNG:
-                $image = imagecreatefrompng($sourcePath);
-                break;
-            default:
-                return false;
-        }
-
-        if (!$image) {
-            error_log("Failed to create image from source: " . $sourcePath);
+    $image = null;
+    switch ($type) {
+        case IMAGETYPE_JPEG:
+            $image = imagecreatefromjpeg($sourcePath);
+            break;
+        case IMAGETYPE_PNG:
+            $image = imagecreatefrompng($sourcePath);
+            break;
+        default:
             return false;
-        }
-
-        $miniImage = imagecreatetruecolor($newWidth, $newHeight);
-        if (!$miniImage) {
-            error_log("Failed to create true color image");
-            imagedestroy($image);
-            return false;
-        }
-
-        if (!imagecopyresampled($miniImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height)) {
-            error_log("Failed to resample image");
-            imagedestroy($image);
-            imagedestroy($miniImage);
-            return false;
-        }
-
-        $success = false;
-        switch ($type) {
-            case IMAGETYPE_JPEG:
-                $success = imagejpeg($miniImage, $destinationPath, $quality);
-                break;
-            case IMAGETYPE_PNG:
-                $success = imagepng($miniImage, $destinationPath, $quality / 10);
-                break;
-        }
-
-        imagedestroy($image);
-        imagedestroy($miniImage);
-
-        if (!$success) {
-            error_log("Failed to save mini image to: " . $destinationPath);
-            return false;
-        }
-
-        return true;
-    } catch (Exception $e) {
-        error_log("Error in createMiniImage: " . $e->getMessage());
-        return false;
     }
-}
 
-function recursiveChmod($path, $mode) {
-    $dir = new DirectoryIterator($path);
-    foreach ($dir as $item) {
-        if ($item->isDot()) continue;
-        chmod($item->getPathname(), $mode);
-        if ($item->isDir()) {
-            recursiveChmod($item->getPathname(), $mode);
-        }
+    $miniImage = imagecreatetruecolor($newWidth, $newHeight);
+    imagecopyresampled($miniImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+    switch ($type) {
+        case IMAGETYPE_JPEG:
+            imagejpeg($miniImage, $destinationPath, $quality);
+            break;
+        case IMAGETYPE_PNG:
+            imagepng($miniImage, $destinationPath, $quality / 10); // PNG quality is 0-9
+            break;
     }
+
+    imagedestroy($image);
+    imagedestroy($miniImage);
+    return true;
 }
+?>

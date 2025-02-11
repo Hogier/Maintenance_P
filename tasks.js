@@ -1,3 +1,5 @@
+
+
 if (!checkAuth()) {
   window.location.href = "login.html";
 }
@@ -16,7 +18,7 @@ let updateIndicator;
 
 let currentFilter = "today"; // возможные значения: 'today', 'all', 'custom'
 let currentDate = new Date();
-let checkDate = currentDate.toISOString().split("T")[0];
+let checkDate = currentDate.toISOString().split('T')[0];
 
 let localComments = {};
 
@@ -40,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Добавляем обработчики для кнопок фильтрации
   document.getElementById("todayTasks").addEventListener("click", async (e) => {
     currentFilter = "today";
-    checkDate = currentDate.toISOString().split("T")[0];
+    checkDate = currentDate.toISOString().split('T')[0];
 
     document
       .querySelectorAll(".date-filter button")
@@ -67,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .addEventListener("change", async (e) => {
       currentFilter = "custom";
       currentDate = new Date(e.target.value);
-      checkDate = currentDate.toISOString().split("T")[0];
+      checkDate = currentDate.toISOString().split('T')[0];
       document
         .querySelectorAll(".date-filter button")
         .forEach((btn) => btn.classList.remove("active"));
@@ -80,11 +82,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("logoutBtn").addEventListener("click", logout);
 });
 
+
 //////////////////////////////////ОСНОВНЫЕ ФУНКЦИИ////////////////////////////
 
 async function getTasks() {
   try {
-    // await db.waitForDB();
+   // await db.waitForDB();
     const tasks = await db.getAllTasksFromServer();
     console.log("Retrieved tasks:", tasks); // Для отладки
     return tasks;
@@ -149,54 +152,62 @@ async function updateTasksList(tasks) {
 }
 
 async function createTaskElement(task) {
-  const eventElement = document.createElement("div");
-  eventElement.className = "task-item";
-  eventElement.setAttribute("data-task-id", task.request_id);
+  const taskElement = document.createElement('div');
+  taskElement.className = 'task-item';
+  taskElement.setAttribute("data-task-id", task.request_id);
 
-  // Получаем отформатированную дату
   const timestamp = formatDallasDate(task.timestamp);
 
-  eventElement.innerHTML = `
+  taskElement.innerHTML = `
     <div class="task-info">
       <div class="task-header">
         <span class="task-id">${task.request_id}</span>
         <span class="task-timestamp">${timestamp}</span>
       </div>
-      <div class="task-details">${task.details}</div>
+      <div class="task-details task-details-${task.priority}">${task.details}
+      <div class="task-location">
+        <div class="task-location-icon">📍</div>
+        <div class="task-location-text">${task.building} - ${task.room} (Staff: ${task.staff})</div>
+      </div>
+      </div>
       <div class="task-meta-container">
-        <div class="task-location">
-          ${task.building} - ${task.room} (Staff: ${task.staff})
-        </div>
         <div class="task-priority ${getPriorityClass(task.priority)}">
           Priority: ${task.priority}
         </div>
       </div>
-      <div class="task-status">
-        Status: 
-        <select class="status-select" data-task-id="${task.request_id}">
-          <option value="Pending" ${
-            task.status === "Pending" ? "selected" : ""
-          }>Pending</option>
-          <option value="In Progress" ${
-            task.status === "In Progress" ? "selected" : ""
-          }>In Progress</option>
-          <option value="Completed" ${
-            task.status === "Completed" ? "selected" : ""
-          }>Completed</option>
-        </select>
+      <div class="task-action-container">
+        ${
+          !task.assigned_to
+            ? `<div class="assign-container">
+
+                 <div class="assign-btn" data-task-id="${task.request_id}">Assign to Me
+                   <div class="clock">
+                      <div class="hour-hand"></div>
+                      <div class="minute-hand"></div>
+                    </div>
+                 </div>
+                 <div class="assigned-to-you-btn">
+                   Assigned to You
+                 </div>
+               </div>`
+            : `<div class="assigned-to">Assigned to: ${task.assigned_to}</div>`
+
+        }
+        <div class="task-status">
+          Status: 
+          <select class="status-select" data-task-id="${task.request_id}">
+            <option value="Pending" ${task.status === "Pending" ? "selected" : ""}>Pending</option>
+            <option value="In Progress" ${task.status === "In Progress" ? "selected" : ""}>In Progress</option>
+            <option value="Completed" ${task.status === "Completed" ? "selected" : ""}>Completed</option>
+          </select>
+          <div class="status-clock">
+            <div class="hour-hand"></div>
+            <div class="minute-hand"></div>
+            <div class="status-check">✔</div>
+          </div>
+        </div>
       </div>
-      ${
-        !task.assigned_to
-          ? `<div class="assign-container">
-             <button class="assign-btn" data-task-id="${task.request_id}">Assign to Me</button>
-             <div class="clock">
-               <div class="hour-hand"></div>
-               <div class="minute-hand"></div>
-             </div>
-           </div>`
-          : `<div class="assigned-to">Assigned to: ${task.assigned_to}</div>`
-      }
-      <div class="media-section"></div>
+      ${await createMediaSection(task)}
       <div class="task-comments">
         <div class="discussion-toggle">
           💬 Discussion 
@@ -208,106 +219,185 @@ async function createTaskElement(task) {
         <div class="comments-list"></div>
         <div class="comment-input-container">
           <input type="text" class="comment-input" placeholder="Add a comment...">
-          <button class="comment-btn" data-task-id="${
-            task.request_id
-          }">Send</button>
+          <button class="comment-btn" data-task-id="${task.request_id}">Send</button>
         </div>
       </div>
     </div>
   `;
-
-  // Добавляем медиа-секцию сразу после создания элемента
-  const mediaSection = await createMediaSection(task.media);
-  if (mediaSection) {
-    eventElement.querySelector(".media-section").appendChild(mediaSection);
-  }
-
+  
   // Устанавливаем начальный цвет для task-status
-  const statusSelect = eventElement.querySelector(".status-select");
-  const taskStatusDiv = eventElement.querySelector(".task-status");
+  const statusSelect = taskElement.querySelector(".status-select");
+  const taskStatusDiv = taskElement.querySelector('.task-status');
   if (statusSelect.value === "Pending") {
-    taskStatusDiv.classList.add("status-pending");
+    taskStatusDiv.classList.add('status-pending');
   } else if (statusSelect.value === "In Progress") {
-    taskStatusDiv.classList.add("status-in-progress");
+    taskStatusDiv.classList.add('status-in-progress');
   } else if (statusSelect.value === "Completed") {
-    taskStatusDiv.classList.add("status-completed");
+    taskStatusDiv.classList.add('status-completed');
   }
 
-  const commentsContainer = eventElement.querySelector(".comments-list");
-  const commentInputContainer = eventElement.querySelector(
-    ".comment-input-container"
-  );
-
+  const commentsContainer = taskElement.querySelector(".comments-list");
+  const commentInputContainer = taskElement.querySelector(".comment-input-container");
+ 
   let isFirstLoad = true;
   let openComments = false;
-  const discussionToggle = eventElement.querySelector(".discussion-toggle");
+  let commentsUpdateInterval;
+  const discussionToggle = taskElement.querySelector(".discussion-toggle");
+
+  // Создаем контейнер для уведомления о новом комментарии
+  let showNewCommentNotification = false;
+  const newCommentNotification = document.createElement("div");
+  newCommentNotification.className = "new-comment-notification";
+  newCommentNotification.textContent = "💬";
+  newCommentNotification.style.display = "none"; // Скрываем по умолчанию
+  document.body.appendChild(newCommentNotification);
+
+  const counterNewCommentNotification = document.createElement("div");
+  counterNewCommentNotification.className = "counterNewCommentNotification";
+  counterNewCommentNotification.style.display = "none"; // Скрываем по умолчанию
+  document.body.appendChild(counterNewCommentNotification);
 
   discussionToggle.addEventListener("click", async function () {
     if (!openComments) {
-      // Показать часики
-      const clock = discussionToggle.querySelector(".discussion-toggle-clock");
-      console.log(!!clock);
-      clock.style.opacity = "1";
+      const clock = discussionToggle.querySelector('.discussion-toggle-clock');
+      clock.style.opacity = '1';
 
       await updateComments(task, commentsContainer, isFirstLoad);
-      console.log(!!clock);
-      // Скрыть часики после загрузки
-      clock.style.opacity = "0";
+      clock.style.opacity = '0';
+
+      commentsUpdateInterval = setInterval(async () => {
+        isFirstLoad = false;
+        const hasNewComments = await updateComments(task, commentsContainer, isFirstLoad);
+
+        // Проверяем, находится ли пользователь в области видимости комментариев
+        //const commentsRect = commentsContainer.getBoundingClientRect();
+        if (!showNewCommentNotification && hasNewComments) {
+          showNewCommentNotification = true;
+        } 
+        if (showNewCommentNotification) {
+          newCommentNotification.style.display = "block";
+        }
+
+        const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
+        if(notifications.length > 1) {
+          console.log("Внутри ИНТЕРВАЛА условие + notifications.length: ", notifications.length);
+          counterNewCommentNotification.textContent = notifications.length;
+          counterNewCommentNotification.style.display = "block";
+        }
+        else {
+          console.log("Внутри ИНТЕРВАЛА условие - notifications.length: ", notifications.length);
+          counterNewCommentNotification.style.display = "none";
+        }
+
+
+
+
+      }, 3500);
+
+    } else {
+      clearInterval(commentsUpdateInterval);
+      newCommentNotification.style.display = "none"; // Скрываем уведомление при закрытии
+
     }
     openComments = !openComments;
-
-    // Переключаем классы для анимации раскрытия
+    console.log("openComments: ", openComments);
     commentsContainer.classList.toggle("expanded", openComments);
     commentInputContainer.classList.toggle("expanded", openComments);
 
-    // Обновляем текст кнопки
-    discussionToggle.innerHTML = openComments
-      ? "▲"
-      : "💬 Discussion <div class='discussion-toggle-clock'><div class='hour-hand'></div><div class='minute-hand'></div></div>";
+    discussionToggle.innerHTML = openComments ? "▲" : "💬 Discussion <div class='discussion-toggle-clock'><div class='hour-hand'></div><div class='minute-hand'></div></div>";
   });
 
-  /*setInterval(async () => {
-    isFirstLoad = false;
-    await updateComments(task, commentsContainer, isFirstLoad);
-  }, 3500);*/
+  // Добавляем обработчик события scroll для скрытия уведомления
+ window.addEventListener("scroll", () => {
+    if (openComments && showNewCommentNotification) {
+      const commentsRect = commentsContainer.getBoundingClientRect();
+      if (commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight) {
+        newCommentNotification.style.display = "none";
+        showNewCommentNotification = false;
+
+
+        
+        const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
+        console.log("notifications.length: ", notifications.length);
+
+        if (notifications.length > 1) {
+           console.log("Внутри SCROLL условие + notifications.length: ", notifications.length);
+          counterNewCommentNotification.textContent = notifications.length;
+        } else {
+          console.log("Внутри SCROLL условие - notifications.length: ", notifications.length);
+          counterNewCommentNotification.style.display = "none";
+          console.log("TURN OFF! ");
+
+        }
+
+
+        
+        /*const notificationCount = parseInt(counterNewCommentNotification.textContent);
+        if (notificationCount > 1) {
+          counterNewCommentNotification.textContent = notificationCount - 1;
+        } else {
+          counterNewCommentNotification.style.display = "none";
+        }*/
+
+      }
+    }
+  });
+
+  
+newCommentNotification.addEventListener("click", () => {
+    const commentsRect = commentsContainer.getBoundingClientRect();
+    window.scrollY = commentsRect.top;
+    console.log("commentsContainer.scrollTop: ", commentsContainer.scrollTop);
+    console.log("commentsContainer.scrollHeight: ", commentsContainer.scrollHeight);
+    //commentsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    /*if(parseInt(counterNewCommentNotification.textContent) > 1) {
+          counterNewCommentNotification.textContent = parseInt(counterNewCommentNotification.textContent) - 1;
+          counterNewCommentNotification.style.display = "block";
+    } else {
+          counterNewCommentNotification.style.display = "none";
+    }*/
+});
+
 
   // Добавляем обработчики событий
-  const assignBtn = eventElement.querySelector(".assign-btn");
+  const assignBtn = taskElement.querySelector(".assign-btn");
+  const assignedToYouBtn = taskElement.querySelector(".assigned-to-you-btn");
   if (assignBtn) {
     assignBtn.addEventListener("click", async function () {
       const taskId = this.dataset.taskId;
       console.log("Assigning task:", taskId);
       const user = JSON.parse(localStorage.getItem("currentUser"));
       if (user && user.role === "maintenance") {
-        const clock = this.nextElementSibling;
-        clock.classList.add("visible"); // Показываем часы
+        let clock = this.querySelector(".clock");
+        
+        // Если часы не найдены, создаем их заново
+        if (!clock) {
+          clock = document.createElement("div");
+          clock.className = "clock";
+          clock.innerHTML = `
+            <div class="hour-hand"></div>
+            <div class="minute-hand"></div>
+          `;
+          this.appendChild(clock);
+        }
 
-        // Обработчик для скрытия часов после завершения перехода
-        clock.addEventListener("transitionend", async function () {
-          if (!clock.classList.contains("visible")) {
-            clock.style.display = "none";
-          }
-        });
+        clock.classList.add("visible"); // Показываем часы
 
         try {
           await db.assignTaskInServer(taskId, user.fullName);
-          // Изменяем стиль кнопки после успешного назначения
-          this.classList.add("assigned");
-          this.textContent = "Assigned to You";
+          assignBtn.style.top = '-40px';
+          assignedToYouBtn.style.top = '-40px';
 
-          // Проверяем, существует ли уже кнопка "Refuse"
-          if (!this.parentElement.querySelector(".refuse-btn")) {
-            // Добавляем кнопку "Refuse"
+          if (!this.parentElement.parentElement.querySelector(".refuse-btn")) {
             const refuseBtn = document.createElement("button");
             refuseBtn.className = "refuse-btn";
             refuseBtn.textContent = "Refuse ";
 
-            // Создаем элемент для таймера
             const timerElement = document.createElement("span");
             timerElement.className = "timer-circle";
             refuseBtn.appendChild(timerElement);
 
-            // Создаем красные часы
             const refuseClock = document.createElement("div");
             refuseClock.className = "refuse-clock";
             refuseClock.innerHTML = `
@@ -318,43 +408,43 @@ async function createTaskElement(task) {
             let countdown = 30;
             timerElement.textContent = countdown;
 
-            // Запускаем таймер обратного отсчета
             const timerInterval = setInterval(() => {
               countdown -= 1;
               timerElement.textContent = countdown;
               if (countdown <= 0) {
                 clearInterval(timerInterval);
                 refuseBtn.remove();
-                refuseClock.remove(); // Удаляем красные часы
+                refuseClock.remove();
               }
             }, 1000);
 
             refuseBtn.addEventListener("click", async () => {
-              refuseClock.classList.add("visible"); // Показываем красные часы
+              refuseClock.classList.add("visible");
               if (await refuseTaskInServer(taskId)) {
-                // Возвращаем кнопку в изначальное состояние
-                this.classList.remove("assigned");
-                this.textContent = "Assign to Me";
-                clearInterval(timerInterval); // Останавливаем таймер
+                assignBtn.style.top = '0px';
+                assignedToYouBtn.style.top = '0px';
+                clearInterval(timerInterval);
                 refuseBtn.remove();
-                refuseClock.remove(); // Удаляем красные часы
-              } else {
-                refuseClock.classList.remove("visible"); // Скрываем красные часы при ошибке
+                refuseClock.remove();
+                // Восстанавливаем часы в кнопку
+                this.appendChild(clock);
               }
             });
-            this.parentElement.appendChild(refuseBtn);
-            this.parentElement.appendChild(refuseClock);
+            
+            this.parentElement.insertAdjacentElement('afterend', refuseBtn);
+            refuseBtn.insertAdjacentElement('afterend', refuseClock);
+
           }
         } catch (error) {
           console.error("Error assigning task:", error);
         } finally {
-          clock.classList.remove("visible"); // Скрываем часы после завершения
+          clock.classList.remove("visible");
         }
       }
     });
   }
 
-  const commentBtn = eventElement.querySelector(".comment-btn");
+  const commentBtn = taskElement.querySelector(".comment-btn");
   if (commentBtn) {
     commentBtn.addEventListener("click", async function () {
       const taskId = this.dataset.taskId;
@@ -373,22 +463,21 @@ async function createTaskElement(task) {
 
           // Очищаем поле ввода после успешного добавления
           commentInput.value = "";
+
         } catch (error) {
           console.error("Error adding comment:", error);
-          alert(
-            "Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз."
-          );
+          alert("Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз.");
         }
       }
     });
   }
 
-  const commentInput = eventElement.querySelector(".comment-input");
+  const commentInput = taskElement.querySelector(".comment-input");
   if (commentInput) {
     commentInput.addEventListener("keydown", async function (event) {
       if (event.key === "Enter") {
         event.preventDefault(); // Предотвращаем добавление новой строки
-        const taskId = this.closest(".task-item").dataset.taskId;
+        const taskId = this.closest('.task-item').dataset.taskId;
         const commentText = this.value.trim();
 
         if (commentText) {
@@ -403,11 +492,10 @@ async function createTaskElement(task) {
 
             // Очищаем поле ввода после успешного добавления
             this.value = "";
+
           } catch (error) {
             console.error("Error adding comment:", error);
-            alert(
-              "Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз."
-            );
+            alert("Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз.");
           }
         }
       }
@@ -419,141 +507,133 @@ async function createTaskElement(task) {
       const taskId = this.dataset.taskId;
 
       // Удаляем все классы статуса
-      taskStatusDiv.classList.remove(
-        "status-pending",
-        "status-in-progress",
-        "status-completed"
-      );
+      taskStatusDiv.classList.remove('status-pending', 'status-in-progress', 'status-completed');
 
       // Добавляем соответствующий класс в зависимости от выбранного значения
       if (this.value === "Pending") {
-        taskStatusDiv.classList.add("status-pending");
+        taskStatusDiv.classList.add('status-pending');
       } else if (this.value === "In Progress") {
-        taskStatusDiv.classList.add("status-in-progress");
+        taskStatusDiv.classList.add('status-in-progress');
       } else if (this.value === "Completed") {
-        taskStatusDiv.classList.add("status-completed");
+        taskStatusDiv.classList.add('status-completed');
       }
 
-      await db.updateTaskStatus(taskId, this.value);
-      updateTasksList(await db.getAllTasksFromServer());
+      await changeTaskStatusOnServer(taskId, this.value);
     });
   }
 
-  return eventElement;
+  // Отложенная загрузка медиафайлов
+  /*if (task.media && task.media.length > 0) {
+    setTimeout(async () => {
+      const mediaContainer = taskElement.querySelector(".task-media");
+      for (const mediaFile of task.media) {
+        const mediaUrl = await getMediaFileFromServer(mediaFile);
+        const img = document.createElement('img');
+        img.src = mediaUrl;
+        mediaContainer.appendChild(img);
+      }
+    }, 0);
+  }*/
+
+  return taskElement;
 }
 
-async function createMediaSection(mediaFiles) {
-  if (!mediaFiles || !Array.isArray(mediaFiles) || mediaFiles.length === 0) {
-    return "";
+async function createMediaSection(task) {
+  if (!task.media || task.media.length === 0) {
+    return ""; // Если нет медиафайлов, возвращаем пустую строку
   }
 
-  const mediaSection = document.createElement("div");
-  mediaSection.className = "task-media";
+  let mediaHtml = `
+    <div class="task-media">
+      <h4>Attached Media:</h4>
+      <div class="task-media-grid">
+  `;
 
-  for (const fileName of mediaFiles) {
-    try {
-      if (fileName.match(/\.(jpg|jpeg|png|gif)$/i)) {
-        const imgContainer = document.createElement("div");
-        imgContainer.className = "image-container";
+  // Преобразуем строку media в массив, если это строка
+  const mediaArray = typeof task.media === "string" ? [task.media] : task.media;
 
-        const img = document.createElement("img");
-        img.alt = "Task media";
-        img.style.maxWidth = "135px"; // Добавляем явный размер
-        img.style.height = "auto";
+  for (const fileName of mediaArray) {
+    const mediaFile = await getMiniMediaFileFromServer(fileName);
+    if (mediaFile) {
+      const isImage = mediaFile.type.startsWith("image");
+      const isVideo = mediaFile.type.startsWith("video");
 
-        // Сначала устанавливаем путь к оригиналу как запасной вариант
-        img.src = `/maintenance_P/uploads/${fileName}`;
-
-        // Пытаемся загрузить миниатюру
-        const miniPath = await getMiniMediaFileFromServer(fileName);
-        if (miniPath) {
-          img.src = `/maintenance_P/${miniPath}`;
-        }
-
-        // Добавляем обработчик ошибок загрузки
-        img.onerror = () => {
-          console.log("Failed to load mini image, falling back to original");
-          img.src = `/maintenance_P/uploads/${fileName}`;
-        };
-
-        img.addEventListener("click", () => {
-          showFullImage(`/maintenance_P/uploads/${fileName}`);
-        });
-
-        imgContainer.appendChild(img);
-        mediaSection.appendChild(imgContainer);
+      if (isImage) {
+        console.log("isImage: ",mediaFile);
+        mediaHtml += `
+          <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url.replace('uploads/mini/mini_', 'uploads/')}', 'image')">
+            
+          <img src="${mediaFile.url}" alt="${mediaFile.name}">
+            <span class="media-name">${mediaFile.name}</span>
+          </div>
+        `;
+      } else if (isVideo) {
+        mediaHtml += `
+          <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url}', 'video')">
+            <video src="${mediaFile.url}"></video>
+            <span class="media-name">${mediaFile.name}</span>
+          </div>
+        `;
       }
-    } catch (error) {
-      console.error("Error creating media element:", error, fileName);
-      continue;
     }
   }
 
-  return mediaSection;
+  mediaHtml += `
+      </div>
+    </div>
+  `;
+
+  return mediaHtml;
 }
 
 async function updateComments(task, commentsContainer, isFirstLoad) {
   try {
     const serverComments = await db.fetchComments(task.request_id);
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
     // Объединяем локальные комментарии с комментариями с сервера
-    const allComments = [
-      ...serverComments,
-      ...(localComments[task.request_id] || []),
-    ];
+    const allComments = [...serverComments, ...(localComments[task.request_id] || [])];
 
-    const isScrolledToBottom =
-      Math.abs(
-        commentsContainer.scrollHeight -
-          commentsContainer.scrollTop -
-          commentsContainer.clientHeight
-      ) < 1;
+    let isNewComments = false;
 
-    const newCommentsHtml = allComments
-      .map((comment) => {
-        const isLocal = localComments[task.request_id]?.some(
-          (localComment) => localComment.timestamp === comment.timestamp
-        );
-        const statusClass = isLocal ? "status-local" : "status-server";
+    const isScrolledToBottom = Math.abs(commentsContainer.scrollHeight - commentsContainer.scrollTop - commentsContainer.clientHeight) < 1;
 
-        return `
+    const newCommentsHtml = allComments.map(comment => {
+      const isLocal = localComments[task.request_id]?.some(localComment => localComment.timestamp === comment.timestamp);
+      const statusClass = isLocal ? 'status-local' : 'status-server';
+
+      return `
         <div class="comment">
           <div class="comment-header">
             <span class="comment-author">
               <i class="fas fa-user"></i> ${comment.staffName}
               ${comment.staffName === task.assigned_to ? " (Assigned)" : ""}
             </span>
-            <span class="comment-time" data-timestamp="${
-              comment.timestamp
-            }">${formatDate(comment.timestamp)} <span class="${statusClass}">${
-          isLocal ? "&#128337;" : "&#10003;"
-        }</span></span>
+            <span class="comment-time" data-timestamp="${comment.timestamp}">${formatDate(comment.timestamp)} <span class="${statusClass}">${isLocal ? '&#128337;' : '&#10003;'}</span></span>
           </div>
           <div class="comment-text">${comment.text}</div>
-          ${
-            comment.staffName === currentUser.fullName
-              ? `
+          ${comment.staffName === currentUser.fullName ? `
             <div class="comment-delete">
             <i class="fas fa-trash" title="delete" onclick="deleteComment('${task.request_id}', '${comment.timestamp}')"></i>
             </div>
-          `
-              : ""
-          }
+          ` : ''}
         </div>
       `;
-      })
-      .join("");
+    }).join("");
 
     if (newCommentsHtml) {
+      isNewComments = allComments.length != commentsContainer.children.length;
       commentsContainer.innerHTML = newCommentsHtml;
     }
 
     if (isFirstLoad || isScrolledToBottom) {
       commentsContainer.scrollTop = commentsContainer.scrollHeight;
     }
+
+    // Возвращаем true, если есть новые комментарии
+    return isNewComments;
   } catch (error) {
     console.error("Error fetching comments:", error);
+    return false; // Возвращаем false в случае ошибки
   }
 }
 
@@ -568,22 +648,18 @@ async function handleAddComment(taskId, commentText, userFullName) {
   localComments[taskId].push(newComment);
 
   // Отображаем новый комментарий сразу
-  const commentsContainer = document.querySelector(
-    `.task-item[data-task-id="${taskId}"] .comments-list`
-  );
+  const commentsContainer = document.querySelector(`.task-item[data-task-id="${taskId}"] .comments-list`);
   const newCommentElement = document.createElement("div");
   newCommentElement.className = "comment";
   newCommentElement.style.opacity = 0;
-  newCommentElement.style.transition = "opacity 350ms";
+  newCommentElement.style.transition = 'opacity 350ms';
   console.log("Создание мгновенного комментария");
   newCommentElement.innerHTML = `
     <div class="comment-header">
       <span class="comment-author">
         <i class="fas fa-user"></i> ${userFullName}
       </span>
-      <span class="comment-time" data-timestamp="${timestamp}">${formatDate(
-    new Date()
-  )} <span class="status-local">&#128337;</span></span>
+      <span class="comment-time" data-timestamp="${timestamp}">${formatDate(new Date())} <span class="status-local">&#128337;</span></span>
     </div>
     <div class="comment-text">${commentText}</div>
   `;
@@ -601,16 +677,12 @@ async function handleAddComment(taskId, commentText, userFullName) {
     const success = await db.addComment(taskId, commentText, userFullName);
     if (success) {
       // Удаляем комментарий из локального состояния после успешной отправки
-      localComments[taskId] = localComments[taskId].filter(
-        (comment) => comment.timestamp !== timestamp
-      );
+      localComments[taskId] = localComments[taskId].filter(comment => comment.timestamp !== timestamp);
 
       // Обновляем символ статуса на ✓
-      const statusSpan = newCommentElement.querySelector(
-        ".comment-time .status-local"
-      );
-      statusSpan.innerHTML = "&#10003;";
-      statusSpan.className = "status-server";
+      const statusSpan = newCommentElement.querySelector('.comment-time .status-local');
+      statusSpan.innerHTML = '&#10003;';
+      statusSpan.className = 'status-server';
 
       // Добавляем иконку удаления
       const deleteIcon = document.createElement("div");
@@ -656,29 +728,25 @@ window.showMediaFullscreen = function (src, type) {
   document.body.appendChild(fullscreen);
 };
 
-window.deleteComment = async function (requestId, timestamp) {
+window.deleteComment = async function(requestId, timestamp) {
   if (confirm("Вы уверены, что хотите удалить этот комментарий?")) {
     try {
       // Найдите соответствующий элемент комментария
-      const commentElement = document
-        .querySelector(
-          `.task-item[data-task-id="${requestId}"] .comment-time[data-timestamp="${timestamp}"]`
-        )
-        .closest(".comment");
-
+      const commentElement = document.querySelector(`.task-item[data-task-id="${requestId}"] .comment-time[data-timestamp="${timestamp}"]`).closest('.comment');
+      
       if (commentElement) {
         // Заменяем значок мусорки на значок часов
-        const deleteIcon = commentElement.querySelector(".comment-delete i");
-        deleteIcon.classList.remove("fa-trash");
-        deleteIcon.classList.add("fa-clock");
+        const deleteIcon = commentElement.querySelector('.comment-delete i');
+        deleteIcon.classList.remove('fa-trash');
+        deleteIcon.classList.add('fa-clock');
 
         const success = await db.deleteCommentFromServer(requestId, timestamp);
         if (success) {
           commentElement.remove(); // Удаляем элемент комментария из DOM
         } else {
           // Восстанавливаем значок мусорки, если удаление не удалось
-          deleteIcon.classList.remove("fa-clock");
-          deleteIcon.classList.add("fa-trash");
+          deleteIcon.classList.remove('fa-clock');
+          deleteIcon.classList.add('fa-trash');
           alert("Ошибка при удалении комментария.");
         }
       } else {
@@ -690,6 +758,7 @@ window.deleteComment = async function (requestId, timestamp) {
     }
   }
 };
+
 
 ////////////////////////////////КЛИЕНТСКИЕ ФУНКЦИИ////////////////////////////
 
@@ -753,10 +822,12 @@ function getPriorityClass(priority) {
   }
 }
 
+
 ////////////////////////////////FETCH ФУНКЦИИ////////////////////////////
 
+
 async function getMediaFileFromServer(fileName) {
-  console.log("getMediaFileFromServer: ", fileName);
+  console.log("getMediaFileFromServer: ",fileName);
   try {
     if (!fileName) {
       console.log("No file name provided");
@@ -784,7 +855,7 @@ async function getMediaFileFromServer(fileName) {
       console.log("Server returned error:", result.message);
       return null;
     }
-    console.log("resultMedia: ", {
+console.log("resultMedia: ",{
       type: result.type || "unknown",
       url: result.url || "",
       name: fileName,
@@ -801,54 +872,59 @@ async function getMediaFileFromServer(fileName) {
 }
 
 async function getMiniMediaFileFromServer(fileName) {
+  console.log("getMiniMediaFileFromServer: ",fileName);
   try {
-    console.log("Requesting mini file:", fileName);
-
-    const response = await fetch("/maintenance_P/task.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "getMiniFile",
-        fileName: fileName,
-      }),
-    });
-
-    const responseText = await response.text();
-    console.log("Server response for", fileName, ":", responseText);
-
-    try {
-      const data = JSON.parse(responseText);
-      if (!data.success) {
-        throw new Error(data.error || "Unknown error");
-      }
-      console.log("Mini path for", fileName, ":", data.miniPath);
-      return data.miniPath;
-    } catch (parseError) {
-      console.error(
-        "Failed to parse response for",
-        fileName,
-        ":",
-        responseText
-      );
+    if (!fileName) {
+      console.log("No file name provided");
       return null;
     }
-  } catch (error) {
-    console.error("Error getting mini file:", error);
-    return null;
-  }
-}
 
-async function refuseTaskInServer(taskId) {
-  try {
     const response = await fetch("task.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        action: "refuseTask",
+        action: "getMINIMediaFile",
+        fileName: fileName,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      console.log("Server returned error:", result.message);
+      return null;
+    }
+console.log("resultMedia: ",{
+      type: result.type || "unknown",
+      url: result.url || "",
+      name: fileName,
+    });
+    return {
+      type: result.type || "unknown",
+      url: result.url || "",
+      name: fileName,
+    };
+  } catch (error) {
+    console.error("Error fetching media file:", error);
+    return null;
+  }
+}
+
+async function refuseTaskInServer(taskId) {
+  try {
+    const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'refuseTask',
         requestId: taskId,
       }),
     });
@@ -908,97 +984,77 @@ setTimeout(AJAXUpdateTask, 20000);
 
 async function getTasksByDate(date) {
   try {
-    // Форматируем дату в формат YYYY-MM-DD
-    const formattedDate =
-      typeof date === "string" ? date : date.toISOString().split("T")[0];
-
-    const response = await fetch("/maintenance_P/task.php", {
-      method: "POST",
+    const response = await fetch('task.php', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        action: "getTasksByDate",
-        date: formattedDate,
+        action: 'getTasksByDate',
+        date: date.toISOString().split('T')[0],
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
     }
-
-    const responseText = await response.text();
-    console.log("Raw server response:", responseText);
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      console.error("Failed to parse server response:", responseText);
-      throw new Error("Invalid server response");
-    }
-
-    if (data.success) {
-      return data.tasks || [];
-    } else {
-      throw new Error(data.message || "Failed to load tasks");
-    }
+    return result.data;
   } catch (error) {
     console.error("Error fetching tasks by date:", error);
-    throw new Error("Unable to load tasks. Please try again later.");
+    return [];
   }
 }
 
-// Функция для показа полноразмерного изображения
-function showFullImage(imagePath) {
-  const modal = document.createElement("div");
-  modal.className = "image-modal";
+async function changeTaskStatusOnServer(requestId, newStatus) {
+  const statusClock = document.querySelector(`.status-select[data-task-id="${requestId}"]`).nextElementSibling;
+  const statusCheck = statusClock.querySelector('.status-check');
+  const hourHand = statusClock.querySelector('.hour-hand');
+  const minuteHand = statusClock.querySelector('.minute-hand');
 
-  const img = document.createElement("img");
-  img.src = imagePath;
+  // Показываем часики
+  statusClock.style.border = '2px solid rgba(255, 255, 255, 1)';
+  statusClock.style.opacity = '1';
+  hourHand.style.opacity = '1';
+  minuteHand.style.opacity = '1';
 
-  modal.appendChild(img);
-  modal.addEventListener("click", () => {
-    modal.remove();
-  });
+  try {
+    const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'updateTaskStatus',
+        requestId: requestId,
+        newStatus: newStatus,
+      }),
+    });
 
-  document.body.appendChild(modal);
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+    console.log('Task status updated successfully');
+
+    // Скрываем часики
+    hourHand.style.opacity = '0';
+    minuteHand.style.opacity = '0';
+    statusClock.style.border = '2px solid rgba(255, 255, 255, 0)';
+    // Показать галочку после исчезновения часиков с задержкой
+    setTimeout(() => {
+      statusCheck.style.opacity = '1';
+ // Плавное появление галочки
+    }, 500); // Задержка перед появлением галочки
+    setTimeout(() => {
+      statusCheck.style.opacity = '0';
+      statusClock.style.opacity = '0'; // Плавное исчезновение галочки
+
+    }, 2500); // Время отображения галочки
+  } catch (error) {
+    console.error('Error updating task status:', error);
+  } finally {
+
+  }
 }
 
-// Добавляем стили
-const styles = `
-    .image-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .image-modal img {
-        max-width: 90%;
-        max-height: 90%;
-        object-fit: contain;
-    }
-
-    .image-container {
-        display: inline-block;
-        margin: 5px;
-        cursor: pointer;
-    }
-
-    .image-container img {
-        max-width: 135px;
-        height: auto;
-    }
-`;
-
-// Добавляем стили на страницу
-const styleSheet = document.createElement("style");
-styleSheet.textContent = styles;
-document.head.appendChild(styleSheet);

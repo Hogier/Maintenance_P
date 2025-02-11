@@ -1,3 +1,15 @@
 [03-Feb-2025 02:55:18 Europe/Berlin] Directory permissions error: Upload dir writable: yes, Mini dir writable: no
 [03-Feb-2025 02:57:47 Europe/Berlin] Failed to set permissions for: /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/uploads/mini/
 [03-Feb-2025 02:57:48 Europe/Berlin] Failed to set permissions for: /Applications/XAMPP/xamppfiles/htdocs/maintenance_P/uploads/mini/
+[11-Feb-2025 20:24:41 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:41 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:41 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:41 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:41 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:41 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:44 Europe/Moscow] Error in getMiniFile: Original file not found
+[11-Feb-2025 20:24:44 Europe/Moscow] Error in getMiniFile: Original file not found
+[11-Feb-2025 20:24:44 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:44 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:44 Europe/Moscow] Error in getMiniFile: Failed to create mini image
+[11-Feb-2025 20:24:50 Europe/Moscow] Error in getMiniFile: Failed to create mini image
