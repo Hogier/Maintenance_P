@@ -45,6 +45,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Настройка drag and drop для загрузки файлов
   setupFileUpload();
+
+  // Добавляем обработчики для показа/скрытия дополнительных полей
+  document
+    .getElementById("tablesNeeded")
+    .addEventListener("change", function () {
+      const tablesOptions = document.getElementById("tablesOptionsContainer");
+      tablesOptions.classList.toggle("hidden", this.value !== "yes");
+
+      // Сбрасываем значения при выборе "No"
+      if (this.value !== "yes") {
+        document
+          .querySelectorAll('.table-type input[type="checkbox"]')
+          .forEach((checkbox) => {
+            checkbox.checked = false;
+            const countInput = checkbox.parentElement.querySelector(
+              'input[type="number"]'
+            );
+            countInput.value = "";
+            countInput.disabled = true;
+          });
+      }
+    });
+
+  document
+    .getElementById("chairsNeeded")
+    .addEventListener("change", function () {
+      const chairsInput = document.getElementById("chairsInputContainer");
+      chairsInput.classList.toggle("hidden", this.value !== "yes");
+
+      // Сбрасываем значение при выборе "No"
+      if (this.value !== "yes") {
+        document.getElementById("chairs").value = "";
+      }
+    });
 });
 
 // Функция обновления календаря
@@ -217,92 +251,154 @@ function hideEventModal() {
   modal.style.display = "none";
 }
 
-// Обработка отправки формы
+// Функция для загрузки файлов на сервер
+async function uploadFiles(files) {
+  const uploadedUrls = [];
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("action", "uploadFile");
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("events_db.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        uploadedUrls.push(result.fileUrl);
+      } else {
+        console.error("Failed to upload file:", file.name);
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  }
+
+  return uploadedUrls;
+}
+
+// Обновляем функцию handleEventSubmit
 async function handleEventSubmit(e) {
   e.preventDefault();
 
   try {
-    const formData = new FormData(e.target);
+    const files = document.getElementById("setupImage").files;
+    const setupImages = await uploadFiles(Array.from(files));
 
-    // Добавляем action в FormData
-    formData.append("action", "addEvent");
+    // Собираем данные о столах и скатертях
+    const tablesNeeded = document.getElementById("tablesNeeded").value;
+    console.log("tablesNeeded", tablesNeeded);
+    const tables = {
+      "6ft":
+        tablesNeeded === "yes"
+          ? document.getElementById("table6ftCount").value || 0
+          : 0,
+      "8ft":
+        tablesNeeded === "yes"
+          ? document.getElementById("table8ftCount").value || 0
+          : 0,
+      round:
+        tablesNeeded === "yes"
+          ? document.getElementById("tableRoundCount").value || 0
+          : 0,
+      tablecloth:
+        tablesNeeded === "yes"
+          ? document.getElementById("tableclothColor").value || null
+          : null,
+    };
 
-    // Создаем объект с данными события
-    const eventData = {
-      name: formData.get("eventName"),
-      startDate: formData.get("eventStartDate"),
-      startTime: formData.get("eventStartTime"),
-      setupDate: formData.get("setupDate"),
-      setupTime: formData.get("setupTime"),
-      endDate: formData.get("endDate"),
-      endTime: formData.get("endTime"),
-      location: formData.get("eventLocation"),
-      contact: formData.get("eventContact"),
-      email: formData.get("eventEmail"),
-      phone: formData.get("eventPhone"),
-      alcuinContact: formData.get("alcuinContact"),
-      attendees: parseInt(formData.get("attendees")) || 0,
-      tables: formData.get("tablesNeeded") || "no",
-      chairs: formData.get("chairsNeeded") || "no",
-      podium: formData.get("podiumNeeded") || "no",
-      monitors: formData.get("monitorsNeeded") || "no",
-      laptop: formData.get("laptopNeeded") || "no",
-      ipad: formData.get("ipadNeeded") || "no",
-      microphones: formData.get("microphonesNeeded") || "no",
-      speaker: formData.get("speakerNeeded") || "no",
-      avAssistance: formData.get("avAssistance") || "no",
-      security: formData.get("securityNeeded") || "no",
-      buildingAccess: formData.get("buildingAccess") || "no",
-      otherConsiderations: formData.get("otherConsiderations") || "",
+    // Собираем данные о стульях
+    const chairsNeeded = document.getElementById("chairsNeeded").value;
+    console.log("chairsNeeded", chairsNeeded);
+    const chairs =
+      chairsNeeded === "yes" ? document.getElementById("chairs").value : 0;
+
+    // Собираем данные формы
+    const formData = {
+      name: document.getElementById("eventName").value,
+      startDate: document.getElementById("eventStartDate").value,
+      startTime: document.getElementById("eventStartTime").value,
+      setupDate: document.getElementById("setupDate").value,
+      setupTime: document.getElementById("setupTime").value,
+      endDate: document.getElementById("endDate").value,
+      endTime: document.getElementById("endTime").value,
+      location: document.getElementById("eventLocation").value,
+      contact: document.getElementById("eventContact").value,
+      email: document.getElementById("eventEmail").value,
+      phone: document.getElementById("eventPhone").value,
+      alcuinContact: document.getElementById("alcuinContact").value,
+      attendees: document.getElementById("attendees").value,
+      tables: JSON.stringify(tables),
+      chairs: document.getElementById("chairs").value,
+      tables_needed: document.getElementById("tablesNeeded").value,
+      chairs_needed: document.getElementById("chairsNeeded").value,
+      podium: document.getElementById("podiumNeeded").value,
+      monitors: document.getElementById("monitorsNeeded").value,
+      laptop: document.getElementById("laptopNeeded").value,
+      ipad: document.getElementById("ipadNeeded").value,
+      microphones: document.getElementById("microphonesNeeded").value,
+      speaker: document.getElementById("speakerNeeded").value,
+      avAssistance: document.getElementById("avAssistance").value,
+      security: document.getElementById("securityNeeded").value,
+      buildingAccess: document.getElementById("buildingAccess").value,
+      otherConsiderations: document.getElementById("otherConsiderations").value,
       status: "pending",
       createdBy: JSON.parse(localStorage.getItem("currentUser")).fullName,
       createdAt: new Date().toISOString(),
-      setupImages: [],
+      setupImages: JSON.stringify(setupImages),
+      tables6ft: tables["6ft"] ? "yes" : "no",
+      tables8ft: tables["8ft"] ? "yes" : "no",
+      tablesRound: tables["round"] ? "yes" : "no",
+      tables6ftCount: parseInt(tables["6ft"] || 0),
+      tables8ftCount: parseInt(tables["8ft"] || 0),
+      tablesRoundCount: parseInt(tables["round"] || 0),
+      chairsNeeded: document.getElementById("chairsNeeded").value,
+      chairs_count: parseInt(document.getElementById("chairs").value || 0),
     };
 
-    // Добавляем eventData в FormData
-    formData.append("eventData", JSON.stringify(eventData));
-
-    console.log("Sending form data:", Object.fromEntries(formData.entries()));
-
+    // Отправляем данные на сервер
     const response = await fetch("events_db.php", {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "addEvent",
+        eventData: JSON.stringify(formData),
+      }),
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server error response:", errorText);
-      throw new Error(
-        `Server error: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      const responseText = await response.text();
-      console.error(
-        "Invalid content type:",
-        contentType,
-        "Response:",
-        responseText
-      );
-      throw new Error("Invalid response format from server");
-    }
 
     const result = await response.json();
     if (result.success) {
       hideEventModal();
-      await loadEvents();
-      showNotification("Event successfully created!");
+      await loadEvents(); // Перезагружаем список событий
+      showNotification("Event created successfully!");
     } else {
       throw new Error(result.message || "Failed to create event");
     }
   } catch (error) {
-    console.error("Error submitting event:", error);
+    console.error("Error creating event:", error);
     showNotification("Error creating event: " + error.message, "error");
   }
 }
+
+// Добавляем обработчики для чекбоксов столов
+document
+  .querySelectorAll('.table-type input[type="checkbox"]')
+  .forEach((checkbox) => {
+    checkbox.addEventListener("change", function () {
+      const countInput = this.parentElement.querySelector(
+        'input[type="number"]'
+      );
+      countInput.disabled = !this.checked;
+      if (!this.checked) {
+        countInput.value = "";
+      }
+    });
+  });
 
 // Функция для отображения уведомлений
 function showNotification(message, type = "success") {
@@ -317,96 +413,144 @@ function showNotification(message, type = "success") {
   }, 3000);
 }
 
-// Функция создания элемента события для списка
+// Функция для создания элемента оборудования
+function createEquipmentItem(label, value) {
+  if (!value || value === "no" || value === "0") return "";
+
+  if (label === "Tables") {
+    try {
+      const tables = JSON.parse(value);
+      let tableInfo = [];
+
+      // Добавляем информацию о каждом типе столов
+      if (tables["6ft"] > 0) {
+        tableInfo.push(`${tables["6ft"]} 6ft tables`);
+      }
+      if (tables["8ft"] > 0) {
+        tableInfo.push(`${tables["8ft"]} 8ft tables`);
+      }
+      if (tables.round > 0) {
+        tableInfo.push(`${tables.round} round tables`);
+      }
+
+      // Добавляем информацию о скатертях
+      const tableclothInfo = tables.tablecloth
+        ? ` with ${tables.tablecloth} tablecloths`
+        : "";
+
+      return tableInfo.length > 0
+        ? `
+        <div class="equipment-item">
+          <span class="equipment-label">Tables:</span>
+          <span class="equipment-value">${tableInfo.join(
+            ", "
+          )}${tableclothInfo}</span>
+        </div>
+      `
+        : "";
+    } catch (e) {
+      console.error("Error parsing tables data:", e);
+      return "";
+    }
+  }
+
+  if (label === "Chairs") {
+    try {
+      const chairsCount = parseInt(value);
+      if (chairsCount > 0) {
+        return `
+          <div class="equipment-item">
+            <span class="equipment-label">Chairs:</span>
+            <span class="equipment-value">${chairsCount} chairs</span>
+          </div>
+        `;
+      }
+      return "";
+    } catch (e) {
+      console.error("Error parsing chairs data:", e);
+      return "";
+    }
+  }
+
+  return `
+    <div class="equipment-item">
+      <span class="equipment-label">${label}:</span>
+      <span class="equipment-value">${value}</span>
+    </div>
+  `;
+}
+
+// Функция форматирования даты
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleString("en-US", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// Обновленная функция создания элемента события
 function createEventElement(event) {
   const eventElement = document.createElement("div");
   eventElement.className = "event-item";
 
-  // Создаем основную информацию (всегда видимую)
+  // Преобразуем строку setupImages в массив
+  let setupImages = [];
+  try {
+    setupImages = event.setupImages ? JSON.parse(event.setupImages) : [];
+  } catch (e) {
+    console.error("Error parsing setupImages:", e);
+    setupImages = [];
+  }
+
+  // Базовая информация о событии
   const basicInfo = `
     <div class="event-header">
-      <div class="event-title">
-        <h4 class="event-name">${event.name}</h4>
-        <span class="event-status ${event.status}">${event.status}</span>
-      </div>
-      <div class="event-time-info">
-        <div class="event-date">${formatDate(event.startDate)}</div>
-        <div class="event-time">${event.startTime} - ${event.endTime}</div>
-      </div>
+      <h3>${event.name || "Untitled Event"}</h3>
+      <span class="event-date">${formatDate(event.startDate)}</span>
     </div>
     <div class="event-preview">
-      <div class="event-basic-details">
-        <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
-        <p><i class="fas fa-users"></i> ${event.attendees} attendees</p>
-        <p><i class="fas fa-user-edit"></i> Created by ${event.createdBy}</p>
+      <div class="event-main-info">
+        <p><strong>Location:</strong> ${event.location || "Not specified"}</p>
+        <p><strong>Time:</strong> ${event.startTime || "Not set"} - ${
+    event.endTime || "Not set"
+  }</p>
+        <p><strong>Contact:</strong> ${event.contact || "Not specified"}</p>
+        <p><strong>Attendees:</strong> ${event.attendees || "Not specified"}</p>
       </div>
-      <button class="toggle-details">Show Details</button>
-    </div>`;
+      <div class="event-security-info">
+        <p><strong>A/V Assistance:</strong> <span class="${
+          event.avAssistance === "yes" ? "status-yes" : "status-no"
+        }">${event.avAssistance?.toUpperCase() || "NO"}</span></p>
+        <p><strong>Security Needed:</strong> <span class="${
+          event.security === "yes" ? "status-yes" : "status-no"
+        }">${event.security?.toUpperCase() || "NO"}</span></p>
+        <p><strong>Building Access:</strong> <span class="${
+          event.buildingAccess ? "status-yes" : "status-no"
+        }">${event.buildingAccess ? "YES" : "NO"}</span></p>
+      </div>
+    </div>
+  `;
 
-  // Создаем детальную информацию (скрытую по умолчанию)
+  // Детальная информация о событии
   const detailedInfo = `
     <div class="event-details hidden">
-      <div class="details-section">
-        <h5>Contact Information</h5>
-        <p><strong>Contact:</strong> ${event.contact}</p>
-        <p><strong>Email:</strong> ${event.email}</p>
-        <p><strong>Phone:</strong> ${event.phone}</p>
-        <p><strong>Alcuin Contact:</strong> ${event.alcuinContact}</p>
-      </div>
-
-      <div class="details-section">
-        <h5>Setup Information</h5>
-        <p><strong>Setup Date:</strong> ${formatDate(event.setupDate)}</p>
-        <p><strong>Setup Time:</strong> ${event.setupTime}</p>
-        <p><strong>Breakdown Date:</strong> ${event.endDate}</p>
-        <p><strong>Breakdown Time:</strong> ${event.endTime}</p>
-      </div>
-
-      <div class="details-section">
-        <h5>Equipment Needed</h5>
-        <div class="equipment-grid">
-          ${createEquipmentItem("Tables", event.tables)}
-          ${createEquipmentItem("Chairs", event.chairs)}
-          ${createEquipmentItem("Podium", event.podium)}
-          ${createEquipmentItem("Monitors", event.monitors)}
-          ${createEquipmentItem("Laptop", event.laptop)}
-          ${createEquipmentItem("iPad", event.ipad)}
-          ${createEquipmentItem("Microphones", event.microphones)}
-          ${createEquipmentItem("Speaker", event.speaker)}
-        </div>
-      </div>
-
-      <div class="details-section">
-        <h5>Additional Services</h5>
-        <div class="services-grid">
-          ${createServiceItem("AV Assistance", event.avAssistance)}
-          ${createServiceItem("Security", event.security)}
-          ${createServiceItem("Building Access", event.buildingAccess)}
-        </div>
-      </div>
-
       ${
-        event.otherConsiderations
+        setupImages.length > 0
           ? `
-        <div class="details-section">
-          <h5>Other Considerations</h5>
-          <p>${event.otherConsiderations}</p>
-        </div>
-      `
-          : ""
-      }
-
-      ${
-        event.setupImages && event.setupImages.length > 0
-          ? `
-        <div class="details-section">
-          <h5>Setup Images</h5>
-          <div class="setup-images-grid">
-            ${event.setupImages
+        <div class="event-images-section">
+          <h4>Event Setup Images</h4>
+          <div class="event-images">
+            ${setupImages
               .map(
                 (url) => `
               <div class="setup-image-container">
-                <img src="${url}" alt="Setup image" class="setup-image">
+                <img src="${url}" alt="Setup image" class="setup-image" onclick="showFullImage('${url}')">
               </div>
             `
               )
@@ -416,74 +560,117 @@ function createEventElement(event) {
       `
           : ""
       }
+      
+      <div class="details-section">
+        <h5>Setup Details</h5>
+        <p><strong>Setup Date:</strong> ${formatDate(event.setupDate)}</p>
+        <p><strong>Setup Time:</strong> ${event.setupTime || "Not set"}</p>
+      </div>
 
-      <div class="event-meta">
-        <p><strong>Created By:</strong> ${event.createdBy}</p>
-        <p><strong>Created At:</strong> ${formatDateTime(event.createdAt)}</p>
+      <div class="details-section">
+        <h5>Equipment Needed</h5>
+        <div class="equipment-grid">
+          ${
+            event.tables_needed === "yes"
+              ? createEquipmentItem("Tables", event.tables)
+              : ""
+          }
+          ${
+            event.chairs_needed === "yes"
+              ? createEquipmentItem("Chairs", event.chairs_count)
+              : ""
+          }
+          ${createEquipmentItem("Podium", event.podium)}
+          ${createEquipmentItem("Monitors", event.monitors)}
+          ${createEquipmentItem("Laptop", event.laptop)}
+          ${createEquipmentItem("iPad", event.ipad)}
+          ${createEquipmentItem("Microphones", event.microphones)}
+          ${createEquipmentItem("Speaker", event.speaker)}
+        </div>
+      </div>
+
+      ${
+        event.otherConsiderations
+          ? `
+        <div class="details-section">
+          <h5>Additional Considerations</h5>
+          <p>${event.otherConsiderations}</p>
+        </div>
+      `
+          : ""
+      }
+
+      <div class="event-comments">
+        <div class="comments-header">Comments</div>
+        <div class="comments-list">
+          ${
+            event.comments
+              ? event.comments
+                  .map(
+                    (comment) => `
+            <div class="comment-item">
+              <div class="comment-header">
+                <span class="comment-author">${comment.author}</span>
+                <span class="comment-date">${formatDate(comment.date)}</span>
+              </div>
+              <div class="comment-text">${comment.text}</div>
+            </div>
+          `
+                  )
+                  .join("")
+              : ""
+          }
+        </div>
+        <form class="comment-form" onsubmit="addComment(event, '${event.id}')">
+          <input type="text" class="comment-input" placeholder="Add a comment..." required>
+          <button type="submit" class="comment-submit">Send</button>
+        </form>
       </div>
 
       <div class="event-actions">
-        <button class="edit-btn" data-event-id="${event.id}">
-          <i class="fas fa-edit"></i> Edit
-        </button>
-        <button class="delete-btn" data-event-id="${event.id}">
-          <i class="fas fa-trash"></i> Delete
-        </button>
+        <button class="event-btn edit-btn" onclick="editEvent('${
+          event.id
+        }')">Edit</button>
+        <button class="event-btn delete-btn" onclick="deleteEvent('${
+          event.id
+        }')">Delete</button>
       </div>
-    </div>`;
+    </div>
+  `;
 
   eventElement.innerHTML = basicInfo + detailedInfo;
 
-  // Добавляем вспомогательные функции
-  function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  }
-
-  function formatDateTime(dateTimeStr) {
-    const date = new Date(dateTimeStr);
-    return date.toLocaleString("en-US");
-  }
-
-  function createEquipmentItem(name, value) {
-    return `
-      <div class="equipment-item ${value === "yes" ? "needed" : "not-needed"}">
-        <i class="fas ${value === "yes" ? "fa-check" : "fa-times"}"></i>
-        <span>${name}</span>
-      </div>`;
-  }
-
-  function createServiceItem(name, value) {
-    return `
-      <div class="service-item ${value === "yes" ? "needed" : "not-needed"}">
-        <i class="fas ${value === "yes" ? "fa-check" : "fa-times"}"></i>
-        <span>${name}</span>
-      </div>`;
-  }
-
-  // Добавляем обработчики событий
-  const toggleButton = eventElement.querySelector(".toggle-details");
-  const detailsSection = eventElement.querySelector(".event-details");
-
-  toggleButton.addEventListener("click", () => {
-    detailsSection.classList.toggle("hidden");
-    toggleButton.textContent = detailsSection.classList.contains("hidden")
+  // Добавляем кнопку переключения деталей
+  const toggleButton = document.createElement("button");
+  toggleButton.className = "toggle-details";
+  toggleButton.textContent = "Show Details";
+  toggleButton.onclick = () => {
+    const details = eventElement.querySelector(".event-details");
+    details.classList.toggle("hidden");
+    toggleButton.textContent = details.classList.contains("hidden")
       ? "Show Details"
       : "Hide Details";
-  });
+  };
 
-  // Добавляем обработчики для кнопок редактирования и удаления
-  const editBtn = eventElement.querySelector(".edit-btn");
-  const deleteBtn = eventElement.querySelector(".delete-btn");
-
-  editBtn.addEventListener("click", () => editEvent(event));
-  deleteBtn.addEventListener("click", () => deleteEvent(event.id));
+  eventElement.querySelector(".event-preview").appendChild(toggleButton);
 
   return eventElement;
+}
+
+// Функция для показа полноразмерного изображения
+function showFullImage(url) {
+  const modal = document.createElement("div");
+  modal.className = "image-modal";
+
+  const img = document.createElement("img");
+  img.src = url;
+  img.alt = "Event setup image";
+
+  modal.appendChild(img);
+  modal.addEventListener("click", () => modal.remove());
+
+  document.body.appendChild(modal);
+  setTimeout(() => modal.classList.add("show"), 10);
 }
 
 // Функция настройки drag and drop для загрузки файлов
@@ -619,6 +806,95 @@ function displayUserInfo() {
 
     userAccount.style.display = "flex";
   }
+}
+
+// Функция добавления комментария
+async function addComment(e, eventId) {
+  e.preventDefault();
+  const form = e.target;
+  const input = form.querySelector(".comment-input");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (!user) {
+    showNotification("Please login to add comments", "error");
+    return;
+  }
+
+  // Получаем текущую дату в часовом поясе Далласа
+  const now = new Date();
+  // Конвертируем в часовой пояс Далласа
+  const dallasTime = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/Chicago" })
+  );
+
+  const formattedDate =
+    dallasTime.getFullYear() +
+    "-" +
+    String(dallasTime.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(dallasTime.getDate()).padStart(2, "0") +
+    " " +
+    String(dallasTime.getHours()).padStart(2, "0") +
+    ":" +
+    String(dallasTime.getMinutes()).padStart(2, "0") +
+    ":" +
+    String(dallasTime.getSeconds()).padStart(2, "0");
+
+  const commentData = {
+    eventId: eventId,
+    text: text,
+    author: user.fullName,
+    date: formattedDate,
+  };
+
+  try {
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "addComment",
+        commentData: JSON.stringify(commentData),
+      }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      // Добавляем комментарий в DOM без перезагрузки
+      const commentsList = form.previousElementSibling;
+      const commentElement = createCommentElement(commentData);
+      commentsList.appendChild(commentElement);
+
+      // Очищаем поле ввода
+      input.value = "";
+
+      // Плавно прокручиваем к новому комментарию
+      commentElement.scrollIntoView({ behavior: "smooth" });
+    } else {
+      throw new Error(result.message || "Failed to add comment");
+    }
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    showNotification("Error adding comment: " + error.message, "error");
+  }
+}
+
+// Функция создания элемента комментария
+function createCommentElement(comment) {
+  const div = document.createElement("div");
+  div.className = "comment-item";
+  div.innerHTML = `
+    <div class="comment-header">
+      <span class="comment-author">${comment.author}</span>
+      <span class="comment-date">${formatDate(comment.date)}</span>
+    </div>
+    <div class="comment-text">${comment.text}</div>
+  `;
+  return div;
 }
 
 // Продолжение следует...
