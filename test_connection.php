@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 try {
