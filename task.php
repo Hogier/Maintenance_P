@@ -174,15 +174,16 @@ if ($action === 'addTask') {
     } else {
         echo json_encode([
             'success' => false,
-            'message' => 'File not found'
+            'message' => 'fullFile not found'
         ]);
     }
 } elseif ($action === 'getMINIMediaFile') {
+    error_log("Начало выполнения действия 'getMINIMediaFile'");
     $fileName = $_POST['fileName'];
     $uploadDir = 'uploads/mini/';
     $filePath = $uploadDir . 'mini_' . $fileName;
-
-
+    error_log("Имя файла: " . $fileName);
+    error_log("Путь к файлу: " . $filePath);
     // Проверка существования файла и прав доступа
     if (file_exists($filePath)) {
 
@@ -197,7 +198,7 @@ if ($action === 'addTask') {
         } elseif (strpos($mimeType, 'video/') === 0) {
             $type = 'video';
         }
-
+        error_log("Тип файла: " . $type);
         echo json_encode([
             'success' => true,
             'type' => $type,
@@ -208,7 +209,7 @@ if ($action === 'addTask') {
     } else {
         echo json_encode([
             'success' => false,
-            'message' => 'File not found'
+            'message' => 'miniFile not found'
         ]);
     }
 } elseif ($action === 'assignTask') {

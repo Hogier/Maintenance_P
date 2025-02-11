@@ -321,7 +321,7 @@ async function initializeForm() {
           priority: selectedPriority,
           details,
           timestamp: getDallasDateTime(),
-          status: "In Progress",
+          status: "Pending",
           assignedTo: null,
           comments: [],
           media: [],
