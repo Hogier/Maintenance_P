@@ -1,8 +1,0 @@
-# Включаем CORS
-Header set Access-Control-Allow-Origin "*"
-Header set Access-Control-Allow-Methods "POST, GET, OPTIONS"
-Header set Access-Control-Allow-Headers "Content-Type"
-
-# Обработка ошибок PHP
-php_flag display_errors on
-php_value error_reporting E_ALL 
