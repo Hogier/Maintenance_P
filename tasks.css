@@ -412,6 +412,11 @@ h1 {
   margin-bottom: 12px;
   border-radius: 8px;
   border-left: 3px solid #2196f3;
+  transition: background-color 0.42s cubic-bezier(.78,.01,.35,.51);
+}
+
+.comment.new {
+  background-color: #93c5ee;
 }
 
 .comment.visible {
