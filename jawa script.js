@@ -328,13 +328,14 @@ async function initializeForm() {
           submittedBy: currentUser ? currentUser.fullName : "Anonymous",
         };
 
-        console.log("Attempting to save task:", requestData);
+        console.log("ХРЕН ТЕБЕ:", requestData);
 
         // Сохраняем задачу с медиафайлами
         const success = await db.addTaskWithMedia(requestData, mediaFiles);
 
         if (success) {
           console.log("Task saved successfully"); // Для отладки
+          console.log("getDallasDate(): ",getDallasDate());
           // Показываем модальное окно с подтверждением
           showConfirmationModal(requestData.requestId);
 
@@ -504,3 +505,13 @@ async function submitRequest(formData) {
     console.error("Error submitting request:", error);
   }
 }
+
+
+function formatDateFromTimestamp(timestamp) {
+  // Разбиваем строку на части
+  const [month, day, year] = timestamp.split(',')[0].split('/');
+  
+  // Форматируем дату в нужный формат
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}
+

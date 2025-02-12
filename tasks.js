@@ -1,5 +1,3 @@
-
-
 if (!checkAuth()) {
   window.location.href = "login.html";
 }
@@ -16,9 +14,13 @@ if (user && user.fullName) {
 // Создаем переменную для индикатора обновления
 let updateIndicator;
 
+let clientTasks = [];
+
 let currentFilter = "today"; // возможные значения: 'today', 'all', 'custom'
-let currentDate = new Date();
+let currentDate = new Date(getDallasDate());
 let checkDate = currentDate.toISOString().split('T')[0];
+
+let newCommentsPosition = [];
 
 let localComments = {};
 
@@ -36,12 +38,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Получаем задания на сегодня
   const today = new Date(getDallasDate());
+  //const today = new Date();
   const todayTasks = await getTasksByDate(today);
+  clientTasks = todayTasks;
   await updateTasksList(todayTasks);
 
   // Добавляем обработчики для кнопок фильтрации
   document.getElementById("todayTasks").addEventListener("click", async (e) => {
     currentFilter = "today";
+    console.log("today: ",today);
     checkDate = currentDate.toISOString().split('T')[0];
 
     document
@@ -87,13 +92,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function getTasks() {
   try {
-   // await db.waitForDB();
     const tasks = await db.getAllTasksFromServer();
-    console.log("Retrieved tasks:", tasks); // Для отладки
-    return tasks;
+    tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    clientTasks = tasks;
+    return tasks; 
   } catch (error) {
-    console.error("Error getting tasks:", error);
-    return [];
+    console.error("Ошибка при получении заданий:", error);
+    return []; 
   }
 }
 
@@ -267,12 +272,21 @@ async function createTaskElement(task) {
 
       commentsUpdateInterval = setInterval(async () => {
         isFirstLoad = false;
-        const hasNewComments = await updateComments(task, commentsContainer, isFirstLoad);
+        
+        let deltaComments = await updateComments(task, commentsContainer, isFirstLoad);
+        let hasNewComments = false;
+        if (deltaComments > 0) {
+          hasNewComments = true;
+        } else {
+          hasNewComments = false;
+        }
 
-        // Проверяем, находится ли пользователь в области видимости комментариев
-        //const commentsRect = commentsContainer.getBoundingClientRect();
-        if (!showNewCommentNotification && hasNewComments) {
+        const commentsRect = commentsContainer.getBoundingClientRect();
+        const isCommentsVisible = commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
+
+        if (!showNewCommentNotification && hasNewComments && !isCommentsVisible) {
           showNewCommentNotification = true;
+          newCommentsPosition.push(commentsRect.top + window.scrollY);
         } 
         if (showNewCommentNotification) {
           newCommentNotification.style.display = "block";
@@ -315,8 +329,8 @@ async function createTaskElement(task) {
         newCommentNotification.style.display = "none";
         showNewCommentNotification = false;
 
-
-        
+        newCommentsPosition = newCommentsPosition.filter(position => !(position > window.scrollY && position < window.scrollY + window.innerHeight));
+        console.log("newCommentsPosition: ", newCommentsPosition);
         const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
         console.log("notifications.length: ", notifications.length);
 
@@ -345,10 +359,26 @@ async function createTaskElement(task) {
 
   
 newCommentNotification.addEventListener("click", () => {
-    const commentsRect = commentsContainer.getBoundingClientRect();
-    window.scrollY = commentsRect.top;
-    console.log("commentsContainer.scrollTop: ", commentsContainer.scrollTop);
-    console.log("commentsContainer.scrollHeight: ", commentsContainer.scrollHeight);
+  let currentScrollY = window.scrollY;
+  //const commentsRect = commentsContainer.getBoundingClientRect();
+  newCommentsPosition.sort((a, b) => a - b);
+  console.log("newCommentsPosition: ", newCommentsPosition);
+  console.log("window.scrollY: ", window.scrollY);
+  if(window.scrollY < newCommentsPosition[0]) {
+    window.scrollTo({top: newCommentsPosition[0],behavior: "smooth"});
+    newCommentsPosition.shift();
+  }
+  else if(window.scrollY > newCommentsPosition[newCommentsPosition.length - 1]) {
+    window.scrollTo({top: newCommentsPosition[newCommentsPosition.length - 1],behavior: "smooth"});
+    newCommentsPosition.pop();
+  }
+  else {
+    const index = newCommentsPosition.findIndex(position => position > window.scrollY);
+    window.scrollTo({top: newCommentsPosition[index],behavior: "smooth"});
+    newCommentsPosition.splice(index, 1);
+  }
+
+
     //commentsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
 
     /*if(parseInt(counterNewCommentNotification.textContent) > 1) {
@@ -590,10 +620,9 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
   try {
     const serverComments = await db.fetchComments(task.request_id);
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    // Объединяем локальные комментарии с комментариями с сервера
     const allComments = [...serverComments, ...(localComments[task.request_id] || [])];
 
-    let isNewComments = false;
+    let deltaComments = 0;
 
     const isScrolledToBottom = Math.abs(commentsContainer.scrollHeight - commentsContainer.scrollTop - commentsContainer.clientHeight) < 1;
 
@@ -621,16 +650,26 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
     }).join("");
 
     if (newCommentsHtml) {
-      isNewComments = allComments.length != commentsContainer.children.length;
+      deltaComments = allComments.length - commentsContainer.children.length;
       commentsContainer.innerHTML = newCommentsHtml;
+
+      if (deltaComments > 0 && !isFirstLoad) {
+        const newCommentElements = commentsContainer.querySelectorAll('.comment');
+        const lastComment = newCommentElements[newCommentElements.length - 1]; // Получаем последний комментарий
+        lastComment.classList.add('new'); // Добавляем класс для анимации
+
+      // Убираем класс через 0.3 секунды, чтобы анимация сработала
+      setTimeout(() => {
+          lastComment.classList.remove('new');
+        }, 450);
+      }
     }
 
     if (isFirstLoad || isScrolledToBottom) {
       commentsContainer.scrollTop = commentsContainer.scrollHeight;
     }
 
-    // Возвращаем true, если есть новые комментарии
-    return isNewComments;
+    return deltaComments;
   } catch (error) {
     console.error("Error fetching comments:", error);
     return false; // Возвращаем false в случае ошибки
@@ -999,6 +1038,8 @@ async function getTasksByDate(date) {
     if (!result.success) {
       throw new Error(result.message);
     }
+    result.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    if(currentDate.toISOString().split('T')[0] === date.toISOString().split('T')[0]) clientTasks = result.data;
     return result.data;
   } catch (error) {
     console.error("Error fetching tasks by date:", error);
@@ -1057,4 +1098,50 @@ async function changeTaskStatusOnServer(requestId, newStatus) {
 
   }
 }
+
+async function checkNewTasksInServer() {
+  try {
+    const lastTaskDate = clientTasks.length > 0 ? clientTasks[0].timestamp : "1970-01-01 00:00:00";
+
+    const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'checkNewTasksI',
+        lastTaskDate: lastTaskDate,
+      }),
+    });
+
+    const text = await response.text();
+    try {
+      const result = JSON.parse(text);
+      return result;
+    } catch (jsonError) {
+      console.error("Ошибка при парсинге JSON:", jsonError, "Ответ:", text);
+      return false;
+    }
+  } catch (error) {
+    console.error("Ошибка при проверке новых заданий:", error);
+    return false;
+  }
+}
+
+function addNewTasksToPage(tasks) {
+  const tasksListElement = document.getElementById("tasksList");
+  tasks.forEach(async task => {
+    const taskElement = await createTaskElement(task);
+    tasksListElement.insertBefore(taskElement, tasksListElement.firstChild);
+  });
+}
+setInterval(async () => {
+  const newTasks = await checkNewTasksInServer();
+  if (newTasks && (currentFilter === "today" || currentFilter === "all")) {
+    addNewTasksToPage(newTasks);
+    clientTasks = [...clientTasks, ...newTasks];
+  }
+  console.log("newTasks: ", newTasks);
+  console.log("clientTasks: ", clientTasks);
+}, 5000);
 
