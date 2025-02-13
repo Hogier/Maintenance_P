@@ -167,12 +167,10 @@ const newTaskNotification = document.createElement("div");
 newTaskNotification.className = "new-task-notification";
 newTaskNotification.textContent = "📑";
 
-// Создаем круглый блок с "!"
 const alertIcon = document.createElement("div");
 alertIcon.className = "alert-icon";
 alertIcon.textContent = "!";
 
-// Добавляем круглый блок в уведомление
 newTaskNotification.appendChild(alertIcon);
 
 newTaskNotification.style.display = "none"; // Скрываем по умолчанию
@@ -626,24 +624,36 @@ async function createMediaSection(task) {
   const mediaArray = typeof task.media === "string" ? [task.media] : task.media;
 
   for (const fileName of mediaArray) {
-    const mediaFile = await getMiniMediaFileFromServer(fileName);
-    if (mediaFile) {
-      const isImage = mediaFile.type.startsWith("image");
-      const isVideo = mediaFile.type.startsWith("video");
+    let mediaFile;
+    const isImage = fileName.endsWith('.jpg') || fileName.endsWith('.png') || fileName.endsWith('.jpeg');
+    const isVideo = fileName.endsWith('.mp4') || fileName.endsWith('.avi');
+    const isAudio = fileName.endsWith('.mp3') || fileName.endsWith('.wav');
 
+    if (isImage) {
+      mediaFile = await getMiniMediaFileFromServer(fileName);
+    } else if (isVideo || isAudio) {
+      mediaFile = await getMediaFileFromServer(fileName);
+    }
+
+    if (mediaFile) {
       if (isImage) {
-        console.log("isImage: ",mediaFile);
         mediaHtml += `
           <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url.replace('uploads/mini/mini_', 'uploads/')}', 'image')">
-            
-          <img src="${mediaFile.url}" alt="${mediaFile.name}">
+            <img src="${mediaFile.url}" alt="${mediaFile.name}">
             <span class="media-name">${mediaFile.name}</span>
           </div>
         `;
       } else if (isVideo) {
         mediaHtml += `
-          <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url}', 'video')">
-            <video src="${mediaFile.url}"></video>
+          <div class="media-item-video">
+            <video src="${mediaFile.url}" controls></video>
+            <span class="media-name">${mediaFile.name}</span>
+          </div>
+        `;
+      } else if (isAudio) {
+        mediaHtml += `
+          <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url}', 'audio')">
+            <audio src="${mediaFile.url}" controls></audio>
             <span class="media-name">${mediaFile.name}</span>
           </div>
         `;
@@ -813,12 +823,12 @@ async function handleAddComment(taskId, commentText, userFullName) {
 }
 
 
-function addNewTasksToPage(tasks) {
+async function addNewTasksToPage(tasks) {
   const tasksListElement = document.getElementById("tasksList");
-  tasks.forEach(async task => {
+  for (const task of tasks) {
     const taskElement = await createTaskElement(task);
     tasksListElement.insertBefore(taskElement, tasksListElement.firstChild);
-  });
+  }
 }
 
 // Добавляем элемент для уведомления о новых задачах
@@ -833,7 +843,7 @@ setInterval(async () => {
   const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
   
   if (newTasks && showedPageWithTodayTasks) {
-    addNewTasksToPage(newTasks);
+    await addNewTasksToPage(newTasks);
     clientTasks = [...newTasks, ...clientTasks];
     clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }
@@ -1232,7 +1242,8 @@ async function changeTaskStatusOnServer(requestId, newStatus) {
 
 async function checkNewTasksInServer() {
   try {
-    const lastTaskDate = clientTasks.length > 0 ? clientTasks[0].timestamp : "1970-01-01 00:00:00";
+    const lastTaskDate = clientTasks.length > 0 ? clientTasks[0].timestamp : null;
+    console.log("formatDallasDateForServer(getDallasDate()) ", formatDallasDateForServer(getDallasDate()));
     const response = await fetch('task.php', {
       method: 'POST',
       headers: {
@@ -1240,21 +1251,25 @@ async function checkNewTasksInServer() {
       },
       body: new URLSearchParams({
         action: 'checkNewTasksI',
-        lastTaskDate: lastTaskDate,
+        lastTaskDate: lastTaskDate || formatDallasDateForServer(getDallasDate()),
       }),
     });
 
     const text = await response.text();
     try {
+      if(text === 'false') return false; 
       const result = JSON.parse(text);
-      return result;
+      // Удаляем проверку на result.success, так как сервер возвращает массив
+      return result; // Предполагается, что сервер возвращает массив новых заданий
     } catch (jsonError) {
       console.error("Ошибка при парсинге JSON:", jsonError, "Ответ:", text);
       return false;
     }
   } catch (error) {
     console.error("Ошибка при проверке новых заданий:", error);
-    return false;
+    return [];
   }
 }
+
+
 
