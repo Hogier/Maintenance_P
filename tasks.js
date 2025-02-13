@@ -1,5 +1,3 @@
-
-
 if (!checkAuth()) {
   window.location.href = "login.html";
 }
@@ -16,11 +14,16 @@ if (user && user.fullName) {
 // Создаем переменную для индикатора обновления
 let updateIndicator;
 
+let clientTasks = [];
+
 let currentFilter = "today"; // возможные значения: 'today', 'all', 'custom'
-let currentDate = new Date();
+let currentDate = new Date(getDallasDate());
 let checkDate = currentDate.toISOString().split('T')[0];
 
+let newCommentsPosition = [];
+
 let localComments = {};
+let counterNewTaskNotification = 0;
 
 //////////////////////////////////ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ////////////////////////////
 
@@ -36,12 +39,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Получаем задания на сегодня
   const today = new Date(getDallasDate());
+  //const today = new Date();
   const todayTasks = await getTasksByDate(today);
+  clientTasks = todayTasks;
   await updateTasksList(todayTasks);
 
   // Добавляем обработчики для кнопок фильтрации
   document.getElementById("todayTasks").addEventListener("click", async (e) => {
     currentFilter = "today";
+    console.log("today: ",today);
     checkDate = currentDate.toISOString().split('T')[0];
 
     document
@@ -68,8 +74,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("dateFilter")
     .addEventListener("change", async (e) => {
       currentFilter = "custom";
-      currentDate = new Date(e.target.value);
+      //currentDate = new Date(e.target.value);
+      // Преобразуем выбранную дату в дату по времени Далласа
+      const selectedDate = luxon.DateTime.fromISO(e.target.value, { zone: 'America/Chicago' });
+      currentDate = new Date(selectedDate.toISO());
+
+      console.log("currentDate: ", currentDate, "e.target.value: ", e.target.value);
       checkDate = currentDate.toISOString().split('T')[0];
+
       document
         .querySelectorAll(".date-filter button")
         .forEach((btn) => btn.classList.remove("active"));
@@ -87,13 +99,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function getTasks() {
   try {
-   // await db.waitForDB();
     const tasks = await db.getAllTasksFromServer();
-    console.log("Retrieved tasks:", tasks); // Для отладки
-    return tasks;
+    tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    clientTasks = tasks;
+    return tasks; 
   } catch (error) {
-    console.error("Error getting tasks:", error);
-    return [];
+    console.error("Ошибка при получении заданий:", error);
+    return []; 
   }
 }
 
@@ -150,6 +162,19 @@ async function updateTasksList(tasks) {
     }
   }
 }
+
+const newTaskNotification = document.createElement("div");
+newTaskNotification.className = "new-task-notification";
+newTaskNotification.textContent = "📑";
+
+const alertIcon = document.createElement("div");
+alertIcon.className = "alert-icon";
+alertIcon.textContent = "!";
+
+newTaskNotification.appendChild(alertIcon);
+
+newTaskNotification.style.display = "none"; // Скрываем по умолчанию
+document.body.appendChild(newTaskNotification);
 
 async function createTaskElement(task) {
   const taskElement = document.createElement('div');
@@ -249,6 +274,15 @@ async function createTaskElement(task) {
   const newCommentNotification = document.createElement("div");
   newCommentNotification.className = "new-comment-notification";
   newCommentNotification.textContent = "💬";
+
+  // Создаем круглый блок с "!"
+  const commentAlertIcon = document.createElement("div");
+  commentAlertIcon.className = "alert-icon";
+  commentAlertIcon.textContent = "!";
+
+  // Добавляем круглый блок в уведомление о комментариях
+  newCommentNotification.appendChild(commentAlertIcon);
+
   newCommentNotification.style.display = "none"; // Скрываем по умолчанию
   document.body.appendChild(newCommentNotification);
 
@@ -256,6 +290,7 @@ async function createTaskElement(task) {
   counterNewCommentNotification.className = "counterNewCommentNotification";
   counterNewCommentNotification.style.display = "none"; // Скрываем по умолчанию
   document.body.appendChild(counterNewCommentNotification);
+
 
   discussionToggle.addEventListener("click", async function () {
     if (!openComments) {
@@ -267,12 +302,21 @@ async function createTaskElement(task) {
 
       commentsUpdateInterval = setInterval(async () => {
         isFirstLoad = false;
-        const hasNewComments = await updateComments(task, commentsContainer, isFirstLoad);
+        
+        let deltaComments = await updateComments(task, commentsContainer, isFirstLoad);
+        let hasNewComments = false;
+        if (deltaComments > 0) {
+          hasNewComments = true;
+        } else {
+          hasNewComments = false;
+        }
 
-        // Проверяем, находится ли пользователь в области видимости комментариев
-        //const commentsRect = commentsContainer.getBoundingClientRect();
-        if (!showNewCommentNotification && hasNewComments) {
+        const commentsRect = commentsContainer.getBoundingClientRect();
+        const isCommentsVisible = commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
+
+        if (!showNewCommentNotification && hasNewComments && !isCommentsVisible) {
           showNewCommentNotification = true;
+          newCommentsPosition.push(commentsRect.top + window.scrollY);
         } 
         if (showNewCommentNotification) {
           newCommentNotification.style.display = "block";
@@ -308,27 +352,25 @@ async function createTaskElement(task) {
   });
 
   // Добавляем обработчик события scroll для скрытия уведомления
- window.addEventListener("scroll", () => {
+  window.addEventListener("scroll", () => {
     if (openComments && showNewCommentNotification) {
       const commentsRect = commentsContainer.getBoundingClientRect();
       if (commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight) {
         newCommentNotification.style.display = "none";
-        showNewCommentNotification = false;
 
-
-        
         const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
         console.log("notifications.length: ", notifications.length);
 
-        if (notifications.length > 1) {
-           console.log("Внутри SCROLL условие + notifications.length: ", notifications.length);
-          counterNewCommentNotification.textContent = notifications.length;
-        } else {
-          console.log("Внутри SCROLL условие - notifications.length: ", notifications.length);
+        if (notifications.length < 2) {
           counterNewCommentNotification.style.display = "none";
-          console.log("TURN OFF! ");
-
+        } else {
+          counterNewCommentNotification.textContent = notifications.length;
         }
+
+        showNewCommentNotification = false;
+
+        newCommentsPosition = newCommentsPosition.filter(position => !(position > window.scrollY && position < window.scrollY + window.innerHeight));
+        console.log("newCommentsPosition: ", newCommentsPosition);
 
 
         
@@ -341,22 +383,51 @@ async function createTaskElement(task) {
 
       }
     }
+
+    const currentDateString = currentDate.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
+  
+    if(showedPageWithTodayTasks && window.scrollY < 100){
+      newTaskNotification.style.display = "none";
+      counterNewTaskNotification = 0;
+    }
   });
 
   
 newCommentNotification.addEventListener("click", () => {
-    const commentsRect = commentsContainer.getBoundingClientRect();
-    window.scrollY = commentsRect.top;
-    console.log("commentsContainer.scrollTop: ", commentsContainer.scrollTop);
-    console.log("commentsContainer.scrollHeight: ", commentsContainer.scrollHeight);
+  let currentScrollY = window.scrollY;
+  //const commentsRect = commentsContainer.getBoundingClientRect();
+  newCommentsPosition.sort((a, b) => a - b);
+  console.log("newCommentsPosition: ", newCommentsPosition);
+  console.log("window.scrollY: ", window.scrollY);
+  if(window.scrollY < newCommentsPosition[0]) {
+    window.scrollTo({top: newCommentsPosition[0],behavior: "smooth"});
+    newCommentsPosition.shift();
+  }
+  else if(window.scrollY > newCommentsPosition[newCommentsPosition.length - 1]) {
+    window.scrollTo({top: newCommentsPosition[newCommentsPosition.length - 1],behavior: "smooth"});
+    newCommentsPosition.pop();
+  }
+  else {
+    const index = newCommentsPosition.findIndex(position => position > window.scrollY);
+    window.scrollTo({top: newCommentsPosition[index],behavior: "smooth"});
+    newCommentsPosition.splice(index, 1);
+  }
+
+
     //commentsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
 
-    /*if(parseInt(counterNewCommentNotification.textContent) > 1) {
-          counterNewCommentNotification.textContent = parseInt(counterNewCommentNotification.textContent) - 1;
-          counterNewCommentNotification.style.display = "block";
+    // Обновление отображения счетчика
+    const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
+    if (notifications.length < 2) {
+      counterNewCommentNotification.style.display = "none";
     } else {
-          counterNewCommentNotification.style.display = "none";
-    }*/
+      counterNewCommentNotification.textContent = notifications.length;
+    }
 });
 
 
@@ -553,24 +624,36 @@ async function createMediaSection(task) {
   const mediaArray = typeof task.media === "string" ? [task.media] : task.media;
 
   for (const fileName of mediaArray) {
-    const mediaFile = await getMiniMediaFileFromServer(fileName);
-    if (mediaFile) {
-      const isImage = mediaFile.type.startsWith("image");
-      const isVideo = mediaFile.type.startsWith("video");
+    let mediaFile;
+    const isImage = fileName.endsWith('.jpg') || fileName.endsWith('.png') || fileName.endsWith('.jpeg');
+    const isVideo = fileName.endsWith('.mp4') || fileName.endsWith('.avi');
+    const isAudio = fileName.endsWith('.mp3') || fileName.endsWith('.wav');
 
+    if (isImage) {
+      mediaFile = await getMiniMediaFileFromServer(fileName);
+    } else if (isVideo || isAudio) {
+      mediaFile = await getMediaFileFromServer(fileName);
+    }
+
+    if (mediaFile) {
       if (isImage) {
-        console.log("isImage: ",mediaFile);
         mediaHtml += `
           <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url.replace('uploads/mini/mini_', 'uploads/')}', 'image')">
-            
-          <img src="${mediaFile.url}" alt="${mediaFile.name}">
+            <img src="${mediaFile.url}" alt="${mediaFile.name}">
             <span class="media-name">${mediaFile.name}</span>
           </div>
         `;
       } else if (isVideo) {
         mediaHtml += `
-          <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url}', 'video')">
-            <video src="${mediaFile.url}"></video>
+          <div class="media-item-video">
+            <video src="${mediaFile.url}" controls></video>
+            <span class="media-name">${mediaFile.name}</span>
+          </div>
+        `;
+      } else if (isAudio) {
+        mediaHtml += `
+          <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url}', 'audio')">
+            <audio src="${mediaFile.url}" controls></audio>
             <span class="media-name">${mediaFile.name}</span>
           </div>
         `;
@@ -586,14 +669,30 @@ async function createMediaSection(task) {
   return mediaHtml;
 }
 
+function playNewMessageSound() {
+  const audio = new Audio('sound/newMessage.mp3');
+  audio.volume = 0.45;
+  audio.play().catch(error => {
+    console.error("Ошибка при воспроизведении аудио:", error);
+  });
+}
+
+function playNewTaskSound() {
+  const audio = new Audio('sound/newTask.mp3');
+  audio.volume = 0.6;
+  audio.play().catch(error => {
+    console.error("Ошибка при воспроизведении аудио:", error);
+  });
+}
+
+// Вызов функции при получении нового сообщения
 async function updateComments(task, commentsContainer, isFirstLoad) {
   try {
     const serverComments = await db.fetchComments(task.request_id);
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    // Объединяем локальные комментарии с комментариями с сервера
     const allComments = [...serverComments, ...(localComments[task.request_id] || [])];
 
-    let isNewComments = false;
+    let deltaComments = 0;
 
     const isScrolledToBottom = Math.abs(commentsContainer.scrollHeight - commentsContainer.scrollTop - commentsContainer.clientHeight) < 1;
 
@@ -621,16 +720,28 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
     }).join("");
 
     if (newCommentsHtml) {
-      isNewComments = allComments.length != commentsContainer.children.length;
+      deltaComments = allComments.length - commentsContainer.children.length;
       commentsContainer.innerHTML = newCommentsHtml;
+
+      if (deltaComments > 0 && !isFirstLoad) {
+        playNewMessageSound(); // Воспроизведение звука при новом сообщении
+
+        const newCommentElements = commentsContainer.querySelectorAll('.comment');
+        const lastComment = newCommentElements[newCommentElements.length - 1]; // Получаем последний комментарий
+        lastComment.classList.add('new'); // Добавляем класс для анимации
+
+        // Убираем класс через 0.3 секунды, чтобы анимация сработала
+        setTimeout(() => {
+          lastComment.classList.remove('new');
+        }, 450);
+      }
     }
 
     if (isFirstLoad || isScrolledToBottom) {
       commentsContainer.scrollTop = commentsContainer.scrollHeight;
     }
 
-    // Возвращаем true, если есть новые комментарии
-    return isNewComments;
+    return deltaComments;
   } catch (error) {
     console.error("Error fetching comments:", error);
     return false; // Возвращаем false в случае ошибки
@@ -711,6 +822,76 @@ async function handleAddComment(taskId, commentText, userFullName) {
   }
 }
 
+
+async function addNewTasksToPage(tasks) {
+  const tasksListElement = document.getElementById("tasksList");
+  for (const task of tasks) {
+    const taskElement = await createTaskElement(task);
+    tasksListElement.insertBefore(taskElement, tasksListElement.firstChild);
+  }
+}
+
+// Добавляем элемент для уведомления о новых задачах
+
+
+setInterval(async () => {
+  const newTasks = await checkNewTasksInServer();
+  console.log("newTasks: ", newTasks);
+  console.log("clientTasks: ", clientTasks);
+
+  const currentDateString = currentDate.toLocaleString("en-US", {year: "numeric",month: "2-digit",day: "2-digit",});
+  const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
+  
+  if (newTasks && showedPageWithTodayTasks) {
+    await addNewTasksToPage(newTasks);
+    clientTasks = [...newTasks, ...clientTasks];
+    clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  }
+
+  if (newTasks && newTasks.length > 0) {
+    counterNewTaskNotification = newTasks.length;
+    alertIcon.textContent = counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
+    newTaskNotification.style.display = "block";
+    playNewTaskSound();
+  }
+
+}, 7000);
+
+// Добавляем обработчик клика для скрытия уведомления
+newTaskNotification.addEventListener("click", async () => {
+
+  
+  const currentDateString = currentDate.toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
+
+  if(!showedPageWithTodayTasks){
+    const todays = new Date(getDallasDate());
+    currentFilter = "today";
+    checkDate = currentDate.toISOString().split('T')[0];
+    document
+      .querySelectorAll(".date-filter button")
+      .forEach((btn) => btn.classList.remove("active"));
+      document.getElementById("todayTasks").classList.add("active");
+
+    const todayTasks = await getTasksByDate(todays);
+    clientTasks = todayTasks;
+    await updateTasksList(todayTasks);
+    counterNewCommentNotification.style.display = "none";
+    document.querySelectorAll(".new-comment-notification[style='display: block;']").forEach(notification => {notification.style.display = "none";});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  newTaskNotification.style.display = "none";
+  counterNewTaskNotification = 0;
+});
+
+
 //Глобальные функции
 
 window.showMediaFullscreen = function (src, type) {
@@ -758,7 +939,6 @@ window.deleteComment = async function(requestId, timestamp) {
     }
   }
 };
-
 
 ////////////////////////////////КЛИЕНТСКИЕ ФУНКЦИИ////////////////////////////
 
@@ -999,6 +1179,8 @@ async function getTasksByDate(date) {
     if (!result.success) {
       throw new Error(result.message);
     }
+    result.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    if(getDallasDate() === date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })) clientTasks = result.data;
     return result.data;
   } catch (error) {
     console.error("Error fetching tasks by date:", error);
@@ -1057,4 +1239,37 @@ async function changeTaskStatusOnServer(requestId, newStatus) {
 
   }
 }
+
+async function checkNewTasksInServer() {
+  try {
+    const lastTaskDate = clientTasks.length > 0 ? clientTasks[0].timestamp : null;
+    console.log("formatDallasDateForServer(getDallasDate()) ", formatDallasDateForServer(getDallasDate()));
+    const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'checkNewTasksI',
+        lastTaskDate: lastTaskDate || formatDallasDateForServer(getDallasDate()),
+      }),
+    });
+
+    const text = await response.text();
+    try {
+      if(text === 'false') return false; 
+      const result = JSON.parse(text);
+      // Удаляем проверку на result.success, так как сервер возвращает массив
+      return result; // Предполагается, что сервер возвращает массив новых заданий
+    } catch (jsonError) {
+      console.error("Ошибка при парсинге JSON:", jsonError, "Ответ:", text);
+      return false;
+    }
+  } catch (error) {
+    console.error("Ошибка при проверке новых заданий:", error);
+    return [];
+  }
+}
+
+
 
