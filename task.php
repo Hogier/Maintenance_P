@@ -1,5 +1,5 @@
 <?php
-// Устанавливаем заголовки для кэширования на 1 неделю
+date_default_timezone_set('America/Chicago');
 header("Cache-Control: max-age=604800, public");
 header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
 
@@ -429,6 +429,38 @@ if ($action === 'addTask') {
         ]);
     }
     $stmt->close();
+} elseif ($action === 'checkNewTasksI') {
+    $lastTaskDate = $_POST['lastTaskDate'];
+
+    // Используем уже существующее подключение к базе данных
+    global $conn;
+
+    // Проверяем наличие новых заданий
+    $query = "SELECT * FROM tasks WHERE timestamp > ?";
+    $stmt = $conn->prepare($query);
+
+    if (!$stmt) {
+        // Логируем ошибку, если подготовка запроса не удалась
+        error_log("Ошибка подготовки запроса: " . $conn->error);
+        echo json_encode(['error' => 'Ошибка подготовки запроса']);
+        exit;
+    }
+
+    $stmt->bind_param('s', $lastTaskDate); // Используем 's' для строки
+    $stmt->execute();
+
+    $newTasks = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    if (empty($newTasks)) {
+        echo json_encode(false); // Нет новых заданий
+    } else {
+        // Декодируем JSON поля comments и media
+        foreach ($newTasks as &$task) {
+            $task['comments'] = json_decode($task['comments'], true);
+            $task['media'] = json_decode($task['media'], true);
+        }
+        echo json_encode($newTasks); // Возвращаем новые задания
+    }
 }
 
 $conn->close();

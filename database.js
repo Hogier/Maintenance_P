@@ -268,8 +268,10 @@ class Database {
 async addTaskWithMedia(taskData, files) {
   try {
     await this.waitForDB();
-    taskData.date = new Date(taskData.timestamp).toISOString().split("T")[0];
-
+    //    taskData.date = new Date(taskData.timestamp).toISOString().split("T")[0];
+    taskData.date = formatDateFromTimestamp(taskData.timestamp);
+    console.log("addTaskWithMedia timestamp: ",taskData.timestamp);
+    console.log("addTaskWithMedia date: ",taskData.date);
     const formData = new FormData();
     formData.append('action', 'addTask');
 
@@ -521,3 +523,11 @@ async getTasksByDate(date) {
 
 // Создаем и экспортируем экземпляр базы данных
 const db = new Database();
+
+function formatDateFromTimestamp(timestamp) {
+  // Разбиваем строку на части
+  const [month, day, year] = timestamp.split(',')[0].split('/');
+  
+  // Форматируем дату в нужный формат
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}

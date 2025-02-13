@@ -19,6 +19,11 @@ function formatDallasDate(date) {
   });
 }
 
+function formatDallasDateForServer(dateString) {
+  const [month, day, year] = dateString.split('/');
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} 00:00:00`;
+}
+
 // Функция для получения только даты в формате Далласа
 function getDallasDate() {
   return new Date().toLocaleString("en-US", {
