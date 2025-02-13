@@ -230,6 +230,68 @@
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
+
+            <div class="tables-options hidden" id="tablesOptionsContainer">
+              <div class="table-type">
+                <input
+                  type="checkbox"
+                  id="table6ft"
+                  name="tableSizes"
+                  value="6ft"
+                />
+                <label for="table6ft">6 Foot Tables</label>
+                <input
+                  type="number"
+                  id="table6ftCount"
+                  min="0"
+                  placeholder="Quantity"
+                  disabled
+                />
+              </div>
+              <div class="table-type">
+                <input
+                  type="checkbox"
+                  id="table8ft"
+                  name="tableSizes"
+                  value="8ft"
+                />
+                <label for="table8ft">8 Foot Tables</label>
+                <input
+                  type="number"
+                  id="table8ftCount"
+                  min="0"
+                  placeholder="Quantity"
+                  disabled
+                />
+              </div>
+              <div class="table-type">
+                <input
+                  type="checkbox"
+                  id="tableRound"
+                  name="tableSizes"
+                  value="round"
+                />
+                <label for="tableRound">Round Tables</label>
+                <input
+                  type="number"
+                  id="tableRoundCount"
+                  min="0"
+                  placeholder="Quantity"
+                  disabled
+                />
+              </div>
+
+              <div class="tablecloth-selection">
+                <label for="tableclothColor">Tablecloth Color:</label>
+                <select id="tableclothColor" name="tableclothColor">
+                  <option value="">Select color...</option>
+                  <option value="white">White</option>
+                  <option value="red">Red</option>
+                  <option value="blue">Blue</option>
+                  <option value="black">Black</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -241,6 +303,15 @@
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
+
+            <div class="chairs-input hidden" id="chairsInputContainer">
+              <input
+                type="number"
+                id="chairs"
+                min="0"
+                placeholder="Number of chairs needed"
+              />
+            </div>
           </div>
 
           <div class="form-group">

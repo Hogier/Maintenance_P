@@ -117,76 +117,296 @@ body {
   gap: 25px; /* Увеличиваем расстояние между карточками */
 }
 
-/* Стили для карточки события */
+/* Обновленные стили для карточки события */
 .event-item {
-  background: white;
-  border-radius: 12px;
-  padding: 25px; /* Увеличиваем внутренние отступы */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border: 1px solid #eef2f7; /* Добавляем тонкую рамку */
-  position: relative; /* Для псевдоэлемента */
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 25px;
+  overflow: visible; /* Изменяем с hidden на visible */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
 .event-item:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
-/* Добавляем декоративную полоску слева */
+/* Добавляем цветовую полоску слева */
 .event-item::before {
   content: "";
   position: absolute;
   left: 0;
   top: 0;
-  bottom: 0;
+  height: 100%;
   width: 4px;
-  background: #3498db;
-  border-radius: 4px 0 0 4px;
+  background: linear-gradient(to bottom, #3498db, #2980b9);
+  border-radius: 16px 0 0 16px;
 }
 
-/* Разные цвета полоски в зависимости от статуса */
-.event-item.pending::before {
-  background: #f1c40f; /* желтый для ожидающих */
-}
-
-.event-item.approved::before {
-  background: #2ecc71; /* зеленый для одобренных */
-}
-
-.event-item.rejected::before {
-  background: #e74c3c; /* красный для отклоненных */
-}
-
-/* Обновляем стили заголовка */
 .event-header {
-  padding-bottom: 15px;
+  padding: 20px 25px;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+}
+
+.event-header h3 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.event-date {
+  color: #475569;
+  font-size: 0.95rem;
+  padding: 6px 15px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.event-preview {
+  padding: 25px;
+  background: #fff;
+}
+
+.event-main-info {
   margin-bottom: 20px;
+  padding-bottom: 15px;
   border-bottom: 1px solid #eef2f7;
 }
 
-/* Обновляем стили превью */
-.event-preview {
-  background: #f8fafc;
+.event-security-info {
+  background: linear-gradient(145deg, #f8fafc, #f1f5f9);
   padding: 15px;
-  border-radius: 8px;
-  margin: 15px 0;
+  border-radius: 12px;
+  margin-top: 15px;
 }
 
-/* Обновляем стили для детальной информации */
-.event-details {
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 20px;
+.event-preview p {
+  margin: 12px 0;
+  color: #475569;
+  line-height: 1.7;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-preview strong {
+  color: #1e293b;
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.status-yes,
+.status-no {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-yes {
+  background: linear-gradient(145deg, #4ade80, #22c55e);
+  color: white;
+  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.2);
+}
+
+.status-no {
+  background: linear-gradient(145deg, #f87171, #ef4444);
+  color: white;
+  box-shadow: 0 2px 8px rgba(248, 113, 113, 0.2);
+}
+
+/* Добавляем иконки */
+.event-security-info p:nth-child(1) strong::before {
+  content: "🎥";
+  margin-right: 8px;
+}
+
+.event-security-info p:nth-child(2) strong::before {
+  content: "👮";
+  margin-right: 8px;
+}
+
+.event-security-info p:nth-child(3) strong::before {
+  content: "🔑";
+  margin-right: 8px;
+}
+
+.event-main-info p:first-child strong::before {
+  content: "📍";
+  margin-right: 8px;
+}
+
+.event-main-info p:nth-child(2) strong::before {
+  content: "⏰";
+  margin-right: 8px;
+}
+
+.event-main-info p:nth-child(3) strong::before {
+  content: "👤";
+  margin-right: 8px;
+}
+
+.event-main-info p:nth-child(4) strong::before {
+  content: "👥";
+  margin-right: 8px;
+}
+
+/* Улучшенные стили для секции изображений */
+.event-images-section {
+  padding: 25px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-radius: 12px;
+  margin: 20px;
+}
+
+.event-images-section h4 {
+  color: #1e293b;
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.event-images-section h4::before {
+  content: "📸";
+  margin-right: 10px;
+  font-size: 1.4rem;
+}
+
+.event-images {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 10px 5px 20px 5px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.setup-image-container {
+  flex: 0 0 auto;
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 3px solid #fff;
+}
+
+.setup-image-container:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.setup-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.5s ease;
+}
+
+.setup-image:hover {
+  transform: scale(1.1);
+}
+
+/* Улучшенная кнопка показа деталей */
+.toggle-details {
   margin-top: 20px;
+  padding: 10px 20px;
+  background: linear-gradient(145deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.toggle-details:hover {
+  background: linear-gradient(145deg, #2980b9, #2475a7);
+  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+  transform: translateY(-2px);
+}
+
+.toggle-details::after {
+  content: "👇";
+  font-size: 1.1rem;
+}
+
+.toggle-details.active::after {
+  content: "👆";
+}
+
+/* Улучшенные стили для деталей */
+.event-details {
+  padding: 0 25px 25px;
+  opacity: 1;
+  max-height: 2000px;
+  transition: all 0.5s ease;
+  background: #fff;
+}
+
+.event-details.hidden {
+  padding: 0;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
 }
 
 .details-section {
-  background: white;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  margin: 20px 0;
+  padding: 20px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f7;
+}
+
+.details-section h5 {
+  margin: 0 0 15px 0;
+  color: #1e293b;
+  font-size: 1.15rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Добавляем иконки к заголовкам секций */
+.details-section h5::before {
+  font-size: 1.2rem;
+}
+
+.details-section:nth-child(1) h5::before {
+  content: "🎯";
+}
+
+.details-section:nth-child(2) h5::before {
+  content: "🛠️";
+}
+
+.details-section:nth-child(3) h5::before {
+  content: "📝";
 }
 
 /* Стилизация скроллбара для списка событий */
@@ -465,9 +685,57 @@ body {
   color: #666;
 }
 
-.event-date {
-  font-weight: bold;
-  color: #2c3e50;
+.event-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  margin-left: 10px;
+}
+
+.event-status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.event-status.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.event-status.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Превью события */
+.event-basic-details {
+  color: #666;
+  flex: 1;
+}
+
+.event-basic-details p {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+}
+
+.event-basic-details i {
+  margin-right: 8px;
+  width: 16px;
+  text-align: center;
+}
+
+.event-basic-details i.fa-map-marker-alt {
+  color: #e74c3c;
+}
+
+.event-basic-details i.fa-users {
+  color: #3498db;
+}
+
+.event-basic-details i.fa-user-edit {
+  color: #2ecc71;
 }
 
 /* Статус события */
@@ -545,37 +813,43 @@ body {
 }
 
 /* Сетка для оборудования и услуг */
-.equipment-grid,
-.services-grid {
+.equipment-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
-  margin: 10px 0;
+  gap: 15px;
+  padding: 15px;
+  background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+  border-radius: 12px;
+  margin-top: 10px;
 }
 
-.equipment-item,
-.service-item {
+.equipment-item {
   display: flex;
   align-items: center;
-  padding: 8px;
+  gap: 10px;
+  padding: 10px;
+  background: white;
   border-radius: 8px;
-  background: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.equipment-item.needed,
-.service-item.needed {
-  background: #d4edda;
+.equipment-label {
+  font-weight: 600;
+  color: #1e293b;
+  min-width: 100px;
 }
 
-.equipment-item.not-needed,
-.service-item.not-needed {
-  background: #f8d7da;
-  color: #666;
+.equipment-value {
+  color: #475569;
 }
 
-.equipment-item i,
-.service-item i {
-  margin-right: 8px;
+.equipment-value.yes {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.equipment-value.no {
+  color: #ef4444;
+  font-weight: 500;
 }
 
 /* Сетка изображений */
@@ -623,47 +897,216 @@ body {
   color: #2c3e50;
 }
 
-/* Кнопки действий */
+/* Обновляем стили для кнопок действий */
 .event-actions {
   display: flex;
   gap: 10px;
-  margin-top: 15px;
+  padding: 20px 25px;
+  border-top: 1px solid #eef2f7;
+  background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+  margin-top: 20px; /* Добавляем отступ сверху */
+  justify-content: flex-end; /* Выравниваем кнопки по правому краю */
 }
 
-.edit-btn,
-.delete-btn {
-  padding: 8px 16px;
+.event-btn {
+  padding: 10px 20px;
   border: none;
-  border-radius: 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   transition: all 0.3s ease;
 }
 
 .edit-btn {
-  background: #3498db;
+  background: linear-gradient(145deg, #3498db, #2980b9);
   color: white;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
 }
 
 .edit-btn:hover {
-  background: #2980b9;
+  background: linear-gradient(145deg, #2980b9, #2475a7);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
 }
 
 .delete-btn {
-  background: #e74c3c;
+  background: linear-gradient(145deg, #e74c3c, #c0392b);
   color: white;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
 }
 
 .delete-btn:hover {
-  background: #c0392b;
+  background: linear-gradient(145deg, #c0392b, #a93226);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
 }
 
-/* Drag and drop styles */
-.drag-active {
-  border-color: #4caf50;
-  background-color: #e8f5e9;
+/* Стили для секции комментариев */
+.event-comments {
+  padding: 20px 25px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-top: 1px solid #eef2f7;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.comments-header {
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.comments-header::before {
+  content: "💬";
+  font-size: 1.2rem;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  overflow-y: auto;
+  padding-right: 10px;
+  flex: 1;
+}
+
+.comment-item {
+  background: #ffffff;
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comment-author::before {
+  content: "👤";
+  font-size: 1.1rem;
+}
+
+.comment-date {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.comment-text {
+  color: #475569;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Стили для формы добавления комментария */
+.comment-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #ffffff;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.comment-submit {
+  padding: 12px 24px;
+  background: linear-gradient(145deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-submit:hover {
+  background: linear-gradient(145deg, #2980b9, #2475a7);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+}
+
+.comment-submit::after {
+  content: "📤";
+}
+
+/* Стили для скроллбара в списке комментариев */
+.comments-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.comments-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* User account styles */
@@ -885,4 +1328,269 @@ select::-ms-expand {
 
 .image-container:hover img {
   transform: scale(1.05);
+}
+
+/* Стили для секции изображений */
+.event-images-section {
+  margin: 15px 0;
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.event-images {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px 0;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.setup-image-container {
+  flex: 0 0 auto;
+  width: 150px;
+  height: 150px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.setup-image-container:hover {
+  transform: scale(1.05);
+}
+
+.setup-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+/* Стили для скроллбара в секции изображений */
+.event-images::-webkit-scrollbar {
+  height: 6px;
+}
+
+.event-images::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.event-images::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.event-images::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* Стили для модального окна с полноразмерным изображением */
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-modal.show {
+  opacity: 1;
+}
+
+.image-modal img {
+  max-width: 90%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.equipment-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.equipment-label {
+  font-weight: 500;
+  color: #666;
+}
+
+.equipment-value {
+  color: #333;
+}
+
+.details-section {
+  margin: 15px 0;
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.details-section h5 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.1em;
+}
+
+/* Стили для выбора столов */
+.tables-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 15px;
+  background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.table-type {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 8px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.table-type input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3498db;
+}
+
+.table-type label {
+  flex: 1;
+  font-size: 0.95rem;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.table-type input[type="number"] {
+  width: 80px;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.table-type input[type="number"]:disabled {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+}
+
+/* Стили для поля с количеством стульев */
+#chairs {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: white;
+}
+
+#chairs:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  outline: none;
+}
+
+/* Стили для скрытия/показа дополнительных полей */
+.hidden {
+  display: none;
+}
+
+/* Отступ для дополнительных полей */
+.tables-options,
+.chairs-input {
+  margin-top: 10px;
+  padding-left: 20px;
+  border-left: 2px solid #e2e8f0;
+}
+
+/* Обновляем стили для select */
+select {
+  margin-bottom: 0; /* Убираем нижний отступ у select */
+}
+
+/* Стили для подсказки при наведении на disabled поля */
+input[type="number"]:disabled {
+  cursor: not-allowed;
+}
+
+/* Стили для выбора скатертей */
+.tablecloth-selection {
+  margin-top: 15px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tablecloth-selection label {
+  display: block;
+  margin-bottom: 8px;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.tablecloth-selection select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  background-color: white;
+}
+
+.tablecloth-selection select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+  outline: none;
+}
+
+/* Стили для опций с цветами */
+.tablecloth-selection select option[value="white"] {
+  background-color: white;
+  color: black;
+}
+
+.tablecloth-selection select option[value="red"] {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.tablecloth-selection select option[value="blue"] {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.tablecloth-selection select option[value="black"] {
+  background-color: #1f2937;
+  color: white;
 }
