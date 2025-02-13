@@ -23,6 +23,7 @@ let checkDate = currentDate.toISOString().split('T')[0];
 let newCommentsPosition = [];
 
 let localComments = {};
+let counterNewTaskNotification = 0;
 
 //////////////////////////////////ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ////////////////////////////
 
@@ -73,8 +74,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("dateFilter")
     .addEventListener("change", async (e) => {
       currentFilter = "custom";
-      currentDate = new Date(e.target.value);
+      //currentDate = new Date(e.target.value);
+      // Преобразуем выбранную дату в дату по времени Далласа
+      const selectedDate = luxon.DateTime.fromISO(e.target.value, { zone: 'America/Chicago' });
+      currentDate = new Date(selectedDate.toISO());
+
+      console.log("currentDate: ", currentDate, "e.target.value: ", e.target.value);
       checkDate = currentDate.toISOString().split('T')[0];
+
       document
         .querySelectorAll(".date-filter button")
         .forEach((btn) => btn.classList.remove("active"));
@@ -155,6 +162,21 @@ async function updateTasksList(tasks) {
     }
   }
 }
+
+const newTaskNotification = document.createElement("div");
+newTaskNotification.className = "new-task-notification";
+newTaskNotification.textContent = "📑";
+
+// Создаем круглый блок с "!"
+const alertIcon = document.createElement("div");
+alertIcon.className = "alert-icon";
+alertIcon.textContent = "!";
+
+// Добавляем круглый блок в уведомление
+newTaskNotification.appendChild(alertIcon);
+
+newTaskNotification.style.display = "none"; // Скрываем по умолчанию
+document.body.appendChild(newTaskNotification);
 
 async function createTaskElement(task) {
   const taskElement = document.createElement('div');
@@ -254,6 +276,15 @@ async function createTaskElement(task) {
   const newCommentNotification = document.createElement("div");
   newCommentNotification.className = "new-comment-notification";
   newCommentNotification.textContent = "💬";
+
+  // Создаем круглый блок с "!"
+  const commentAlertIcon = document.createElement("div");
+  commentAlertIcon.className = "alert-icon";
+  commentAlertIcon.textContent = "!";
+
+  // Добавляем круглый блок в уведомление о комментариях
+  newCommentNotification.appendChild(commentAlertIcon);
+
   newCommentNotification.style.display = "none"; // Скрываем по умолчанию
   document.body.appendChild(newCommentNotification);
 
@@ -261,6 +292,7 @@ async function createTaskElement(task) {
   counterNewCommentNotification.className = "counterNewCommentNotification";
   counterNewCommentNotification.style.display = "none"; // Скрываем по умолчанию
   document.body.appendChild(counterNewCommentNotification);
+
 
   discussionToggle.addEventListener("click", async function () {
     if (!openComments) {
@@ -322,27 +354,25 @@ async function createTaskElement(task) {
   });
 
   // Добавляем обработчик события scroll для скрытия уведомления
- window.addEventListener("scroll", () => {
+  window.addEventListener("scroll", () => {
     if (openComments && showNewCommentNotification) {
       const commentsRect = commentsContainer.getBoundingClientRect();
       if (commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight) {
         newCommentNotification.style.display = "none";
+
+        const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
+        console.log("notifications.length: ", notifications.length);
+
+        if (notifications.length < 2) {
+          counterNewCommentNotification.style.display = "none";
+        } else {
+          counterNewCommentNotification.textContent = notifications.length;
+        }
+
         showNewCommentNotification = false;
 
         newCommentsPosition = newCommentsPosition.filter(position => !(position > window.scrollY && position < window.scrollY + window.innerHeight));
         console.log("newCommentsPosition: ", newCommentsPosition);
-        const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
-        console.log("notifications.length: ", notifications.length);
-
-        if (notifications.length > 1) {
-           console.log("Внутри SCROLL условие + notifications.length: ", notifications.length);
-          counterNewCommentNotification.textContent = notifications.length;
-        } else {
-          console.log("Внутри SCROLL условие - notifications.length: ", notifications.length);
-          counterNewCommentNotification.style.display = "none";
-          console.log("TURN OFF! ");
-
-        }
 
 
         
@@ -354,6 +384,18 @@ async function createTaskElement(task) {
         }*/
 
       }
+    }
+
+    const currentDateString = currentDate.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
+  
+    if(showedPageWithTodayTasks && window.scrollY < 100){
+      newTaskNotification.style.display = "none";
+      counterNewTaskNotification = 0;
     }
   });
 
@@ -381,12 +423,13 @@ newCommentNotification.addEventListener("click", () => {
 
     //commentsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
 
-    /*if(parseInt(counterNewCommentNotification.textContent) > 1) {
-          counterNewCommentNotification.textContent = parseInt(counterNewCommentNotification.textContent) - 1;
-          counterNewCommentNotification.style.display = "block";
+    // Обновление отображения счетчика
+    const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
+    if (notifications.length < 2) {
+      counterNewCommentNotification.style.display = "none";
     } else {
-          counterNewCommentNotification.style.display = "none";
-    }*/
+      counterNewCommentNotification.textContent = notifications.length;
+    }
 });
 
 
@@ -616,6 +659,23 @@ async function createMediaSection(task) {
   return mediaHtml;
 }
 
+function playNewMessageSound() {
+  const audio = new Audio('sound/newMessage.mp3');
+  audio.volume = 0.45;
+  audio.play().catch(error => {
+    console.error("Ошибка при воспроизведении аудио:", error);
+  });
+}
+
+function playNewTaskSound() {
+  const audio = new Audio('sound/newTask.mp3');
+  audio.volume = 0.6;
+  audio.play().catch(error => {
+    console.error("Ошибка при воспроизведении аудио:", error);
+  });
+}
+
+// Вызов функции при получении нового сообщения
 async function updateComments(task, commentsContainer, isFirstLoad) {
   try {
     const serverComments = await db.fetchComments(task.request_id);
@@ -654,12 +714,14 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
       commentsContainer.innerHTML = newCommentsHtml;
 
       if (deltaComments > 0 && !isFirstLoad) {
+        playNewMessageSound(); // Воспроизведение звука при новом сообщении
+
         const newCommentElements = commentsContainer.querySelectorAll('.comment');
         const lastComment = newCommentElements[newCommentElements.length - 1]; // Получаем последний комментарий
         lastComment.classList.add('new'); // Добавляем класс для анимации
 
-      // Убираем класс через 0.3 секунды, чтобы анимация сработала
-      setTimeout(() => {
+        // Убираем класс через 0.3 секунды, чтобы анимация сработала
+        setTimeout(() => {
           lastComment.classList.remove('new');
         }, 450);
       }
@@ -750,6 +812,76 @@ async function handleAddComment(taskId, commentText, userFullName) {
   }
 }
 
+
+function addNewTasksToPage(tasks) {
+  const tasksListElement = document.getElementById("tasksList");
+  tasks.forEach(async task => {
+    const taskElement = await createTaskElement(task);
+    tasksListElement.insertBefore(taskElement, tasksListElement.firstChild);
+  });
+}
+
+// Добавляем элемент для уведомления о новых задачах
+
+
+setInterval(async () => {
+  const newTasks = await checkNewTasksInServer();
+  console.log("newTasks: ", newTasks);
+  console.log("clientTasks: ", clientTasks);
+
+  const currentDateString = currentDate.toLocaleString("en-US", {year: "numeric",month: "2-digit",day: "2-digit",});
+  const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
+  
+  if (newTasks && showedPageWithTodayTasks) {
+    addNewTasksToPage(newTasks);
+    clientTasks = [...newTasks, ...clientTasks];
+    clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  }
+
+  if (newTasks && newTasks.length > 0) {
+    counterNewTaskNotification = newTasks.length;
+    alertIcon.textContent = counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
+    newTaskNotification.style.display = "block";
+    playNewTaskSound();
+  }
+
+}, 7000);
+
+// Добавляем обработчик клика для скрытия уведомления
+newTaskNotification.addEventListener("click", async () => {
+
+  
+  const currentDateString = currentDate.toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
+
+  if(!showedPageWithTodayTasks){
+    const todays = new Date(getDallasDate());
+    currentFilter = "today";
+    checkDate = currentDate.toISOString().split('T')[0];
+    document
+      .querySelectorAll(".date-filter button")
+      .forEach((btn) => btn.classList.remove("active"));
+      document.getElementById("todayTasks").classList.add("active");
+
+    const todayTasks = await getTasksByDate(todays);
+    clientTasks = todayTasks;
+    await updateTasksList(todayTasks);
+    counterNewCommentNotification.style.display = "none";
+    document.querySelectorAll(".new-comment-notification[style='display: block;']").forEach(notification => {notification.style.display = "none";});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  newTaskNotification.style.display = "none";
+  counterNewTaskNotification = 0;
+});
+
+
 //Глобальные функции
 
 window.showMediaFullscreen = function (src, type) {
@@ -797,7 +929,6 @@ window.deleteComment = async function(requestId, timestamp) {
     }
   }
 };
-
 
 ////////////////////////////////КЛИЕНТСКИЕ ФУНКЦИИ////////////////////////////
 
@@ -1039,7 +1170,7 @@ async function getTasksByDate(date) {
       throw new Error(result.message);
     }
     result.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    if(currentDate.toISOString().split('T')[0] === date.toISOString().split('T')[0]) clientTasks = result.data;
+    if(getDallasDate() === date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })) clientTasks = result.data;
     return result.data;
   } catch (error) {
     console.error("Error fetching tasks by date:", error);
@@ -1102,7 +1233,6 @@ async function changeTaskStatusOnServer(requestId, newStatus) {
 async function checkNewTasksInServer() {
   try {
     const lastTaskDate = clientTasks.length > 0 ? clientTasks[0].timestamp : "1970-01-01 00:00:00";
-
     const response = await fetch('task.php', {
       method: 'POST',
       headers: {
@@ -1127,21 +1257,4 @@ async function checkNewTasksInServer() {
     return false;
   }
 }
-
-function addNewTasksToPage(tasks) {
-  const tasksListElement = document.getElementById("tasksList");
-  tasks.forEach(async task => {
-    const taskElement = await createTaskElement(task);
-    tasksListElement.insertBefore(taskElement, tasksListElement.firstChild);
-  });
-}
-setInterval(async () => {
-  const newTasks = await checkNewTasksInServer();
-  if (newTasks && (currentFilter === "today" || currentFilter === "all")) {
-    addNewTasksToPage(newTasks);
-    clientTasks = [...clientTasks, ...newTasks];
-  }
-  console.log("newTasks: ", newTasks);
-  console.log("clientTasks: ", clientTasks);
-}, 5000);
 

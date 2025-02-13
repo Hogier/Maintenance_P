@@ -906,21 +906,54 @@ h1 {
     z-index: 1000;
     cursor: pointer;
     transition: opacity 0.3s ease;
+    display: none;
 }
+
 
 .counterNewCommentNotification {
   position: fixed;
   width: 28px;
   height: 28px;
-  background-color: #e3e3e3;
+  background-color: #ff5647;
   border-radius: 50%;
-  top: 68px;
-  left: 74px;
+  color: #ffffff;
+  top: 20px;
+  left: 69px;
   z-index: 1001;
   display: block;
   line-height: 30px;
-  font-size: 16px;
+  font-size: 22px;
   text-align: center;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+}
 
+.new-task-notification {
+  position: fixed;
+  top: 110px;
+  left: 20px;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(45deg, #ff7164, #ffa552);
+  color: white;
+  font-size: 35px;
+  text-align: center;
+  line-height: 70px;
+  border-radius: 30%;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.alert-icon {
+  position: absolute;
+  top: 0px;
+  right: -7px;
+  width: 28px;
+  height: 28px;
+  background-color: #ff5445fc;
+  color: white;
+  font-size: 22px;
+  text-align: center;
+  line-height: 28px;
+  border-radius: 50%;
 }
