@@ -480,17 +480,14 @@ function createEquipmentItem(label, value) {
   `;
 }
 
-// Функция форматирования даты
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleString("en-US", {
-    timeZone: "America/Chicago",
-    year: "numeric",
+// Обновляем функцию форматирования даты
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: "numeric",
   });
 }
 
@@ -510,13 +507,15 @@ function createEventElement(event) {
 
   // Базовая информация о событии
   const basicInfo = `
-    <div class="event-header">
-      <h3>${event.name || "Untitled Event"}</h3>
-      <span class="event-date">${formatDate(event.startDate)}</span>
-    </div>
     <div class="event-preview">
+      <div class="event-header">
+        <h3>${event.name}</h3>
+        <div class="event-meta">
+          <span class="event-date">${formatDate(event.startDate)}</span>
+        </div>
+      </div>
       <div class="event-main-info">
-        <p><strong>Location:</strong> ${event.location || "Not specified"}</p>
+        <p><strong>Location:</strong> ${event.location}</p>
         <p><strong>Time:</strong> ${event.startTime || "Not set"} - ${
     event.endTime || "Not set"
   }</p>
@@ -628,12 +627,15 @@ function createEventElement(event) {
       </div>
 
       <div class="event-actions">
-        <button class="event-btn edit-btn" onclick="editEvent('${
-          event.id
-        }')">Edit</button>
-        <button class="event-btn delete-btn" onclick="deleteEvent('${
-          event.id
-        }')">Delete</button>
+        <button class="print-event-btn" onclick="printEvent(${event.id})">
+          <i class="fas fa-print"></i> Print
+        </button>
+        <button class="edit-event-btn" onclick="editEvent(${event.id})">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="delete-event-btn" onclick="deleteEvent(${event.id})">
+          <i class="fas fa-trash"></i> Delete
+        </button>
       </div>
     </div>
   `;
@@ -895,6 +897,187 @@ function createCommentElement(comment) {
     <div class="comment-text">${comment.text}</div>
   `;
   return div;
+}
+
+async function createEvent(eventData) {
+  try {
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "createEvent",
+        eventData: JSON.stringify(eventData),
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    return result.eventId;
+  } catch (error) {
+    console.error("Error creating event:", error);
+    throw error;
+  }
+}
+
+async function getEventsByDate(date) {
+  try {
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "getEventsByDate",
+        date: date.toISOString().split("T")[0],
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    return result.events;
+  } catch (error) {
+    console.error("Error loading events:", error);
+    throw error;
+  }
+}
+
+async function addEventComment(eventId, comment) {
+  try {
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "addComment",
+        eventId: eventId,
+        comment: JSON.stringify(comment),
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    return result.commentId;
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    throw error;
+  }
+}
+
+// Функция печати события
+function printEvent(eventId) {
+  const event = events.find((e) => e.id === eventId);
+  if (!event) return;
+
+  // Создаем содержимое для печати
+  const printContent = `
+        <div class="print-content">
+            <h2>${event.name}</h2>
+            <div class="event-details">
+                <p><strong>Date:</strong> ${formatDate(event.startDate)}</p>
+                <p><strong>Time:</strong> ${event.startTime}</p>
+                <p><strong>Location:</strong> ${event.location}</p>
+                <p><strong>Contact:</strong> ${event.contact}</p>
+                <p><strong>Email:</strong> ${event.email}</p>
+                <p><strong>Phone:</strong> ${event.phone}</p>
+                
+                <h3>Setup Details</h3>
+                <p><strong>Setup Date:</strong> ${formatDate(
+                  event.setupDate
+                )}</p>
+                <p><strong>Setup Time:</strong> ${event.setupTime}</p>
+                
+                <h3>Equipment Needed</h3>
+                <ul>
+                    ${
+                      event.tables_needed === "yes"
+                        ? `
+                        <li>Tables:
+                            <ul>
+                                ${
+                                  event.tables6ftCount > 0
+                                    ? `<li>6ft Tables: ${event.tables6ftCount}</li>`
+                                    : ""
+                                }
+                                ${
+                                  event.tables8ftCount > 0
+                                    ? `<li>8ft Tables: ${event.tables8ftCount}</li>`
+                                    : ""
+                                }
+                                ${
+                                  event.tablesRoundCount > 0
+                                    ? `<li>Round Tables: ${event.tablesRoundCount}</li>`
+                                    : ""
+                                }
+                            </ul>
+                        </li>
+                    `
+                        : ""
+                    }
+                    ${
+                      event.chairs_needed === "yes"
+                        ? `<li>Chairs: ${event.chairs_count}</li>`
+                        : ""
+                    }
+                    ${event.podium === "yes" ? "<li>Podium</li>" : ""}
+                    ${event.monitors === "yes" ? "<li>Monitors</li>" : ""}
+                    ${event.laptop === "yes" ? "<li>Laptop</li>" : ""}
+                    ${event.microphones === "yes" ? "<li>Microphones</li>" : ""}
+                </ul>
+                
+                <h3>Additional Information</h3>
+                <p><strong>AV Assistance:</strong> ${event.avAssistance}</p>
+                <p><strong>Security Needed:</strong> ${event.security}</p>
+                <p><strong>Building Access:</strong> ${event.buildingAccess}</p>
+                ${
+                  event.otherConsiderations
+                    ? `
+                    <h3>Other Considerations</h3>
+                    <p>${event.otherConsiderations}</p>
+                `
+                    : ""
+                }
+            </div>
+        </div>
+    `;
+
+  // Создаем временное окно для печати
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print Event - ${event.name}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+                    h2 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+                    h3 { color: #4CAF50; margin-top: 20px; }
+                    .event-details { margin-top: 20px; }
+                    ul { margin: 10px 0; padding-left: 20px; }
+                    li { margin: 5px 0; }
+                    @media print {
+                        body { padding: 0; }
+                        button { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${printContent}
+                <button onclick="window.print()" style="margin-top: 20px; padding: 10px 20px;">Print</button>
+            </body>
+        </html>
+    `);
+  printWindow.document.close();
 }
 
 // Продолжение следует...

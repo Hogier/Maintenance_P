@@ -37,16 +37,30 @@ try {
 
     // Параметры подключения к базе данных
     $host = 'localhost';
-    $user = 'root';
-    $password = 'root';
+    $user = 'root';     // Пользователь MySQL
+    $password = '';     // Пустой пароль (стандартно для XAMPP)
     $database = 'maintenancedb';
 
     // Подключение к базе данных
-    $conn = new mysqli($host, $user, $password, $database);
-    if ($conn->connect_error) {
-        throw new Exception('Database connection failed: ' . $conn->connect_error);
+    try {
+        $conn = new mysqli($host, $user, $password, $database);
+        
+        if ($conn->connect_error) {
+            throw new Exception('Database connection failed: ' . $conn->connect_error);
+        }
+        
+        $conn->set_charset('utf8');
+        debug_log("Database connected successfully");
+        
+    } catch (Exception $e) {
+        debug_log("Connection error", [
+            'message' => $e->getMessage(),
+            'host' => $host,
+            'user' => $user,
+            'database' => $database
+        ]);
+        throw $e;
     }
-    $conn->set_charset('utf8');
 
     // Добавляем после подключения к базе данных, перед обработкой action
 
@@ -146,8 +160,6 @@ try {
         ]);
         throw $e;
     }
-
-    debug_log("Database connected successfully");
 
     // Проверяем наличие action
     if (!isset($_POST['action'])) {
