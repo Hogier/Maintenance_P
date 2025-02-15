@@ -1594,3 +1594,95 @@ input[type="number"]:disabled {
   background-color: #1f2937;
   color: white;
 }
+
+/* Стили для кнопки печати */
+.print-event-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  transition: background-color 0.3s;
+}
+
+.print-event-btn:hover {
+  background-color: #45a049;
+}
+
+.print-event-btn i {
+  margin-right: 6px;
+}
+
+/* Стили для печатной версии */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-content,
+  .print-content * {
+    visibility: visible;
+  }
+  .print-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Стили для кнопок действий */
+.edit-event-btn,
+.delete-event-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  transition: background-color 0.3s;
+  color: white;
+}
+
+.edit-event-btn {
+  background-color: #3498db;
+}
+
+.edit-event-btn:hover {
+  background-color: #2980b9;
+}
+
+.delete-event-btn {
+  background-color: #e74c3c;
+}
+
+.delete-event-btn:hover {
+  background-color: #c0392b;
+}
+
+.edit-event-btn i,
+.delete-event-btn i {
+  margin-right: 6px;
+}
+
+/* Стили для контейнера кнопок */
+.event-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Общие стили для всех кнопок действий */
+.event-actions button {
+  min-width: 100px;
+  justify-content: center;
+}
