@@ -281,107 +281,55 @@ async function uploadFiles(files) {
 }
 
 // Обновляем функцию handleEventSubmit
-async function handleEventSubmit(e) {
-  e.preventDefault();
+async function handleEventSubmit(event) {
+  event.preventDefault();
 
   try {
-    const files = document.getElementById("setupImage").files;
-    const setupImages = await uploadFiles(Array.from(files));
-
-    // Собираем данные о столах и скатертях
-    const tablesNeeded = document.getElementById("tablesNeeded").value;
-    console.log("tablesNeeded", tablesNeeded);
-    const tables = {
-      "6ft":
-        tablesNeeded === "yes"
-          ? document.getElementById("table6ftCount").value || 0
-          : 0,
-      "8ft":
-        tablesNeeded === "yes"
-          ? document.getElementById("table8ftCount").value || 0
-          : 0,
-      round:
-        tablesNeeded === "yes"
-          ? document.getElementById("tableRoundCount").value || 0
-          : 0,
-      tablecloth:
-        tablesNeeded === "yes"
-          ? document.getElementById("tableclothColor").value || null
-          : null,
-    };
-
-    // Собираем данные о стульях
-    const chairsNeeded = document.getElementById("chairsNeeded").value;
-    console.log("chairsNeeded", chairsNeeded);
-    const chairs =
-      chairsNeeded === "yes" ? document.getElementById("chairs").value : 0;
+    const formData = new FormData(event.target);
+    const eventData = {};
 
     // Собираем данные формы
-    const formData = {
-      name: document.getElementById("eventName").value,
-      startDate: document.getElementById("eventStartDate").value,
-      startTime: document.getElementById("eventStartTime").value,
-      setupDate: document.getElementById("setupDate").value,
-      setupTime: document.getElementById("setupTime").value,
-      endDate: document.getElementById("endDate").value,
-      endTime: document.getElementById("endTime").value,
-      location: document.getElementById("eventLocation").value,
-      contact: document.getElementById("eventContact").value,
-      email: document.getElementById("eventEmail").value,
-      phone: document.getElementById("eventPhone").value,
-      alcuinContact: document.getElementById("alcuinContact").value,
-      attendees: document.getElementById("attendees").value,
-      tables: JSON.stringify(tables),
-      chairs: document.getElementById("chairs").value,
-      tables_needed: document.getElementById("tablesNeeded").value,
-      chairs_needed: document.getElementById("chairsNeeded").value,
-      podium: document.getElementById("podiumNeeded").value,
-      monitors: document.getElementById("monitorsNeeded").value,
-      laptop: document.getElementById("laptopNeeded").value,
-      ipad: document.getElementById("ipadNeeded").value,
-      microphones: document.getElementById("microphonesNeeded").value,
-      speaker: document.getElementById("speakerNeeded").value,
-      avAssistance: document.getElementById("avAssistance").value,
-      security: document.getElementById("securityNeeded").value,
-      buildingAccess: document.getElementById("buildingAccess").value,
-      otherConsiderations: document.getElementById("otherConsiderations").value,
-      status: "pending",
-      createdBy: JSON.parse(localStorage.getItem("currentUser")).fullName,
-      createdAt: new Date().toISOString(),
-      setupImages: JSON.stringify(setupImages),
-      tables6ft: tables["6ft"] ? "yes" : "no",
-      tables8ft: tables["8ft"] ? "yes" : "no",
-      tablesRound: tables["round"] ? "yes" : "no",
-      tables6ftCount: parseInt(tables["6ft"] || 0),
-      tables8ftCount: parseInt(tables["8ft"] || 0),
-      tablesRoundCount: parseInt(tables["round"] || 0),
-      chairsNeeded: document.getElementById("chairsNeeded").value,
-      chairs_count: parseInt(document.getElementById("chairs").value || 0),
-    };
+    for (let [key, value] of formData.entries()) {
+      eventData[key] = value;
+    }
 
-    // Отправляем данные на сервер
+    // Логируем данные перед отправкой
+    console.log("Sending event data:", eventData);
+
     const response = await fetch("events_db.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        action: "addEvent",
-        eventData: JSON.stringify(formData),
+        action: "createEvent",
+        eventData: JSON.stringify(eventData),
       }),
     });
 
-    const result = await response.json();
-    if (result.success) {
-      hideEventModal();
-      await loadEvents(); // Перезагружаем список событий
-      showNotification("Event created successfully!");
-    } else {
-      throw new Error(result.message || "Failed to create event");
+    // Логируем ответ сервера
+    const responseText = await response.text();
+    console.log("Server response text:", responseText);
+
+    // Пробуем распарсить JSON
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Failed to parse server response:", responseText);
+      throw new Error("Invalid server response");
     }
+
+    if (!result.success) {
+      throw new Error(result.message || "Unknown error occurred");
+    }
+
+    // Успешное создание события
+    alert("Event created successfully!");
+    window.location.reload();
   } catch (error) {
-    console.error("Error creating event:", error);
-    showNotification("Error creating event: " + error.message, "error");
+    console.error("Error details:", error);
+    alert("Failed to create event: " + error.message);
   }
 }
 
@@ -491,7 +439,26 @@ function formatDate(dateString) {
   });
 }
 
-// Обновленная функция создания элемента события
+// Обновляем функцию проверки статуса
+function canChangeStatus(event, newStatus) {
+  const eventDate = new Date(event.startDate);
+  const eventTime = event.endTime ? event.endTime.split(":") : null;
+  if (eventTime) {
+    eventDate.setHours(eventTime[0], eventTime[1]);
+  }
+  const now = new Date();
+
+  switch (newStatus) {
+    case "cancelled":
+      return true; // Можно отменить в любое время
+    case "completed":
+      return now > eventDate; // Можно завершить только после окончания
+    default:
+      return true; // Для других статусов (pending)
+  }
+}
+
+// Обновляем HTML для select в createEventElement
 function createEventElement(event) {
   const eventElement = document.createElement("div");
   eventElement.className = "event-item";
@@ -511,7 +478,27 @@ function createEventElement(event) {
       <div class="event-header">
         <h3>${event.name}</h3>
         <div class="event-meta">
-          <span class="event-date">${formatDate(event.startDate)}</span>
+          <div class="event-time">
+            <span class="event-date">${formatDate(event.startDate)}</span>
+          </div>
+          <div class="event-status">
+            <select class="status-select" 
+                    onchange="updateEventStatus(${event.id}, this.value)" 
+                    data-event-id="${event.id}"
+                    data-status="${event.status || "pending"}">
+              <option value="pending" ${
+                event.status === "pending" ? "selected" : ""
+              }>Pending</option>
+              <option value="completed" ${
+                event.status === "completed" ? "selected" : ""
+              } ${
+    canChangeStatus(event, "completed") ? "" : "disabled"
+  }>Completed</option>
+              <option value="cancelled" ${
+                event.status === "cancelled" ? "selected" : ""
+              }>Cancelled</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="event-main-info">
@@ -926,6 +913,7 @@ async function createEvent(eventData) {
 
 async function getEventsByDate(date) {
   try {
+    console.log("Requesting events for date:", date.toISOString());
     const response = await fetch("events_db.php", {
       method: "POST",
       headers: {
@@ -938,6 +926,8 @@ async function getEventsByDate(date) {
     });
 
     const result = await response.json();
+    console.log("Server response:", result); // Добавляем для отладки
+
     if (!result.success) {
       throw new Error(result.message);
     }
@@ -1078,6 +1068,60 @@ function printEvent(eventId) {
         </html>
     `);
   printWindow.document.close();
+}
+
+// Обновляем функцию обновления статуса
+async function updateEventStatus(eventId, newStatus) {
+  try {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    if (!canChangeStatus(event, newStatus)) {
+      alert("Cannot change to this status at this time");
+      // Возвращаем select к предыдущему значению
+      const statusSelect = document.querySelector(
+        `select[data-event-id="${eventId}"]`
+      );
+      if (statusSelect) {
+        statusSelect.value = event.status;
+      }
+      return;
+    }
+
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "updateEventStatus",
+        eventId: eventId,
+        status: newStatus,
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    // Обновляем локальное состояние
+    event.status = newStatus;
+
+    // Обновляем UI
+    const statusSelect = document.querySelector(
+      `select[data-event-id="${eventId}"]`
+    );
+    if (statusSelect) {
+      statusSelect.value = newStatus;
+      statusSelect.setAttribute("data-status", newStatus);
+    }
+  } catch (error) {
+    console.error("Error updating event status:", error);
+    alert("Failed to update event status");
+  }
 }
 
 // Продолжение следует...
