@@ -10,12 +10,12 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-// Изменяем путь к лог-файлу на директорию с гарантированными правами на запись
-ini_set('error_log', sys_get_temp_dir() . '/maintenance_debug.log');
+// Изменяем путь к лог-файлу на директорию с гарантированными правами
+ini_set('error_log', '/Applications/XAMPP/xamppfiles/logs/php_error.log');
 
 // Улучшенная функция логирования
 function debug_log($message, $data = null) {
-    $logFile = sys_get_temp_dir() . '/maintenance_debug.log';
+    $logFile = '/Applications/XAMPP/xamppfiles/logs/php_error.log';
     $log = date('Y-m-d H:i:s') . " - " . $message;
     if ($data !== null) {
         if (is_array($data) || is_object($data)) {
@@ -244,6 +244,11 @@ try {
                 throw new Exception('Invalid JSON data: ' . json_last_error_msg());
             }
 
+            // Преобразуем строки дат в объекты DateTime для правильной обработки
+            $startDate = new DateTime($eventData['startDate']);
+            $setupDate = !empty($eventData['setupDate']) ? new DateTime($eventData['setupDate']) : null;
+            $endDate = !empty($eventData['endDate']) ? new DateTime($eventData['endDate']) : null;
+
             // Преобразуем формат даты createdAt из ISO в MySQL datetime
             $createdAtISO = $eventData['createdAt'];
             $createdAt = date('Y-m-d H:i:s', strtotime($createdAtISO));
@@ -299,52 +304,59 @@ try {
                 throw new Exception('Failed to prepare statement: ' . $conn->error);
             }
 
-            // Создаем переменную для статуса
-            $status = 'pending';
+            // Создаем временные переменные для всех параметров
+            $name = $eventData['name'];
+            $startDateStr = $startDate->format('Y-m-d');
+            $startTimeStr = $eventData['startTime'];
+            $setupDateStr = $setupDate ? $setupDate->format('Y-m-d') : null;
+            $setupTimeStr = $eventData['setupTime'] ?? null;
+            $endDateStr = $endDate ? $endDate->format('Y-m-d') : null;
+            $endTimeStr = $eventData['endTime'] ?? null;
+            $locationStr = $eventData['location'];
+            $contactStr = $eventData['contact'];
+            $emailStr = $eventData['email'];
+            $phoneStr = $eventData['phone'];
+            $alcuinContactStr = $eventData['alcuinContact'];
+            $attendeesStr = $eventData['attendees'];
+            $tablesStr = $eventData['tables'];
+            $chairsStr = $eventData['chairs'];
+            $podiumStr = $eventData['podium'];
+            $monitorsStr = $eventData['monitors'];
+            $laptopStr = $eventData['laptop'];
+            $ipadStr = $eventData['ipad'];
+            $microphonesStr = $eventData['microphones'];
+            $speakerStr = $eventData['speaker'];
+            $avAssistanceStr = $eventData['avAssistance'];
+            $securityStr = $eventData['security'];
+            $buildingAccessStr = $eventData['buildingAccess'];
+            $otherConsiderationsStr = $eventData['otherConsiderations'];
+            $statusStr = 'pending';
+            $createdByStr = $eventData['createdBy'];
+            $createdAtStr = $eventData['createdAt'];
+            $setupImagesStr = $eventData['setupImages'];
+            $tables6ftStr = $tables6ft;
+            $tables8ftStr = $tables8ft;
+            $tablesRoundStr = $tablesRound;
+            $tables6ftCountInt = intval($tables6ftCount);
+            $tables8ftCountInt = intval($tables8ftCount);
+            $tablesRoundCountInt = intval($tablesRoundCount);
+            $tableclothColorStr = $tablecloth_color;
+            $chairsCountInt = intval($chairs_count);
+            $chairsNeededStr = $chairsNeeded;
+            $tablesNeededStr = $tablesNeeded;
 
             if (!$stmt->bind_param('ssssssssssssssssssssssssssssssssiiiisss',
-    $eventData['name'],          // 1  varchar(255)
-    $eventData['startDate'],     // 2  date
-    $eventData['startTime'],     // 3  time
-    $eventData['setupDate'],     // 4  date
-    $eventData['setupTime'],     // 5  time
-    $eventData['endDate'],       // 6  date
-    $eventData['endTime'],       // 7  time
-    $eventData['location'],      // 8  varchar(255)
-    $eventData['contact'],       // 9  varchar(255)
-    $eventData['email'],         // 10 varchar(255)
-    $eventData['phone'],         // 11 varchar(50)
-    $eventData['alcuinContact'], // 12 varchar(255)
-    $eventData['attendees'],     // 13 text
-    $eventData['tables'],        // 14 text
-    $eventData['chairs'],        // 15 text
-    $eventData['podium'],        // 16 varchar(50)
-    $eventData['monitors'],      // 17 varchar(50)
-    $eventData['laptop'],        // 18 varchar(50)
-    $eventData['ipad'],          // 19 varchar(50)
-    $eventData['microphones'],   // 20 varchar(50)
-    $eventData['speaker'],       // 21 varchar(50)
-    $eventData['avAssistance'],  // 22 varchar(50)
-    $eventData['security'],      // 23 varchar(50)
-    $eventData['buildingAccess'],// 24 tinytext
-    $eventData['otherConsiderations'], // 25 text
-    $status,                     // 26 tinytext
-    $eventData['createdBy'],     // 27 varchar(255)
-    $eventData['createdAt'],     // 28 datetime
-    $eventData['setupImages'],   // 29 text
-    $tables6ft,                  // 30 tinytext
-    $tables8ft,                  // 31 tinytext
-    $tablesRound,               // 32 tinytext//i=>s
-    $tables6ftCount,            // 33 int(11)
-    $tables8ftCount,            // 34 int(11)
-    $tablesRoundCount,          // 35 int(11)
-    $tablecloth_color,           // 36 varchar(50)
-    $chairs_count,              // 37 int(11)
-    $chairsNeeded,              // 38 tinytext
-    $tablesNeeded               // 39 tinytext
-)) {
-    throw new Exception('Failed to bind parameters: ' . $stmt->error);
-}
+                $name, $startDateStr, $startTimeStr, $setupDateStr, $setupTimeStr,
+                $endDateStr, $endTimeStr, $locationStr, $contactStr, $emailStr,
+                $phoneStr, $alcuinContactStr, $attendeesStr, $tablesStr, $chairsStr,
+                $podiumStr, $monitorsStr, $laptopStr, $ipadStr, $microphonesStr,
+                $speakerStr, $avAssistanceStr, $securityStr, $buildingAccessStr, $otherConsiderationsStr,
+                $statusStr, $createdByStr, $createdAtStr, $setupImagesStr, $tables6ftStr,
+                $tables8ftStr, $tablesRoundStr, $tables6ftCountInt, $tables8ftCountInt, $tablesRoundCountInt,
+                $tableclothColorStr, $chairsCountInt, $chairsNeededStr, $tablesNeededStr
+            )) {
+                throw new Exception('Failed to bind parameters: ' . $stmt->error);
+            }
 
             if (!$stmt->execute()) {
                 throw new Exception('Execute failed: ' . $stmt->error);
@@ -540,6 +552,201 @@ try {
                 'success' => true,
                 'comments' => $comments
             ]);
+            break;
+
+        case 'updateEventStatus':
+            if (!isset($_POST['eventId']) || !isset($_POST['status'])) {
+                throw new Exception('Missing required parameters');
+            }
+
+            $eventId = $_POST['eventId'];
+            $status = $_POST['status'];
+            
+            $stmt = $conn->prepare("UPDATE events SET status = ? WHERE id = ?");
+            $stmt->bind_param('si', $status, $eventId);
+            
+            if (!$stmt->execute()) {
+                throw new Exception('Failed to update event status: ' . $stmt->error);
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Event status updated successfully'
+            ]);
+            exit;
+
+        case 'createEvent':
+            try {
+                // Логируем входящие данные
+                debug_log("Creating event - received data:", $_POST);
+
+                if (!isset($_POST['eventData'])) {
+                    throw new Exception('No event data provided');
+                }
+
+                $eventData = json_decode($_POST['eventData'], true);
+                
+                // Проверяем успешность декодирования JSON
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new Exception('Invalid JSON data: ' . json_last_error_msg());
+                }
+
+                // Логируем декодированные данные
+                debug_log("Decoded event data:", $eventData);
+
+                // Преобразуем строки дат в объекты DateTime для правильной обработки
+                $startDate = new DateTime($eventData['startDate']);
+                $setupDate = !empty($eventData['setupDate']) ? new DateTime($eventData['setupDate']) : null;
+                $endDate = !empty($eventData['endDate']) ? new DateTime($eventData['endDate']) : null;
+
+                // Преобразуем формат даты createdAt из ISO в MySQL datetime
+                $createdAtISO = $eventData['createdAt'];
+                $createdAt = date('Y-m-d H:i:s', strtotime($createdAtISO));
+                $eventData['createdAt'] = $createdAt;
+
+                // Декодируем данные о столах из JSON
+                $tablesData = json_decode($eventData['tables'], true);
+                
+                // Подготавливаем данные
+                error_log("tables_needed before: " . print_r($eventData['tables_needed'], true));
+                error_log("chairs_needed before: " . print_r($eventData['chairs_needed'], true));
+                
+                $tablesNeeded = isset($eventData['tables_needed']) ? $eventData['tables_needed'] : 'no';
+                $table6ft = isset($tablesData['6ft']) ? intval($tablesData['6ft']) : 0;
+                $table8ft = isset($tablesData['8ft']) ? intval($tablesData['8ft']) : 0;
+                $tableRound = isset($tablesData['round']) ? intval($tablesData['round']) : 0;
+                $tableclothColor = isset($tablesData['tablecloth']) ? $tablesData['tablecloth'] : null;
+                
+                // Подготавливаем данные для стульев
+                $chairsNeeded = isset($eventData['chairsNeeded']) ? $eventData['chairsNeeded'] : 'no';
+                $chairs_count = isset($eventData['chairs_count']) ? intval($eventData['chairs_count']) : 0;
+
+                // Подготавливаем данные для столов
+                $tables6ft = isset($eventData['tables6ft']) ? $eventData['tables6ft'] : 'no';
+                $tables8ft = isset($eventData['tables8ft']) ? $eventData['tables8ft'] : 'no';
+                $tablesRound = isset($eventData['tablesRound']) ? $eventData['tablesRound'] : 'no';
+                $tables6ftCount = isset($eventData['tables6ftCount']) ? intval($eventData['tables6ftCount']) : 0;
+                $tables8ftCount = isset($eventData['tables8ftCount']) ? intval($eventData['tables8ftCount']) : 0;
+                $tablesRoundCount = isset($eventData['tablesRoundCount']) ? intval($eventData['tablesRoundCount']) : 0;
+
+                error_log("tables_needed after: " . print_r($eventData['tables_needed'], true));
+                error_log("chairs_needed after: " . print_r($chairsNeeded, true));
+
+                $stmt = $conn->prepare("INSERT INTO events (
+                    name, startDate, startTime, setupDate, setupTime, 
+                    endDate, endTime, location, contact, email, 
+                    phone, alcuinContact, attendees, tables, chairs, 
+                    podium, monitors, laptop, ipad, microphones, 
+                    speaker, avAssistance, security, buildingAccess, otherConsiderations, 
+                    status, createdBy, createdAt, setupImages, tables6ft, 
+                    tables8ft, tablesRound, tables6ftCount, tables8ftCount, tablesRoundCount, 
+                    tablecloth_color, chairs_count, chairs_needed, tables_needed
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?
+                )");
+
+                if (!$stmt) {
+                    throw new Exception('Failed to prepare statement: ' . $conn->error);
+                }
+
+                // Создаем временные переменные для setupTime и endTime
+                $setupTimeTemp = $eventData['setupTime'] ?? null;
+                $endTimeTemp = $eventData['endTime'] ?? null;
+
+                // Создаем переменные для привязки параметров
+                $name = $eventData['name'];
+                $startDateFormatted = $startDate->format('Y-m-d');
+                $startTime = $eventData['startTime'];
+                $setupDateFormatted = $setupDate ? $setupDate->format('Y-m-d') : null;
+                $setupTime = $setupTimeTemp;
+                $endDateFormatted = $endDate ? $endDate->format('Y-m-d') : null;
+                $endTime = $endTimeTemp;
+                $location = $eventData['location'];
+                $contact = $eventData['contact'];
+                $email = $eventData['email'];
+                $phone = $eventData['phone'];
+                $alcuinContact = $eventData['alcuinContact'];
+                $attendeesVal = $eventData['attendees'];
+                $tablesVal = $eventData['tables'];
+                $chairsVal = $eventData['chairs'];
+                $podium = $eventData['podium'];
+                $monitors = $eventData['monitors'];
+                $laptop = $eventData['laptop'];
+                $ipad = $eventData['ipad'];
+                $microphones = $eventData['microphones'];
+                $speaker = $eventData['speaker'];
+                $avAssistance = $eventData['avAssistance'];
+                $security = $eventData['security'];
+                $buildingAccess = $eventData['buildingAccess'];
+                $otherConsiderations = $eventData['otherConsiderations'];
+                $statusVal = 'pending';
+                $createdBy = $eventData['createdBy'];
+                $createdAt = $eventData['createdAt'];
+                $setupImages = $eventData['setupImages'];
+                $tables6ftVal = $tables6ft;
+                $tables8ftVal = $tables8ft;
+                $tablesRoundVal = $tablesRound;
+                $tables6ftCountVal = intval($tables6ftCount);
+                $tables8ftCountVal = intval($tables8ftCount);
+                $tablesRoundCountVal = intval($tablesRoundCount);
+                $tableclothColorVal = $tablecloth_color;
+                $chairsCountVal = intval($chairs_count);
+                $chairsNeededVal = $chairsNeeded;
+                $tablesNeededVal = $tablesNeeded;
+
+                if (!$stmt->bind_param('ssssssssssssssssssssssssssssssssiiiisss',
+                    $name, $startDateFormatted, $startTime, $setupDateFormatted, $setupTime,
+                    $endDateFormatted, $endTime, $location, $contact, $email,
+                    $phone, $alcuinContact, $attendeesVal, $tablesVal, $chairsVal,
+                    $podium, $monitors, $laptop, $ipad, $microphones,
+                    $speaker, $avAssistance, $security, $buildingAccess, $otherConsiderations,
+                    $statusVal, $createdBy, $createdAt, $setupImages, $tables6ftVal,
+                    $tables8ftVal, $tablesRoundVal, $tables6ftCountVal, $tables8ftCountVal, $tablesRoundCountVal,
+                    $tableclothColorVal, $chairsCountVal, $chairsNeededVal, $tablesNeededVal
+                )) {
+                    throw new Exception('Failed to bind parameters: ' . $stmt->error);
+                }
+
+                if (!$stmt->execute()) {
+                    throw new Exception('Execute failed: ' . $stmt->error);
+                }
+
+                debug_log("Event created successfully");
+
+                $response = [
+                    'success' => true,
+                    'message' => 'Event created successfully',
+                    'eventId' => $conn->insert_id
+                ];
+
+                $stmt->close();
+                
+                // Очищаем буфер и отправляем ответ
+                ob_end_clean();
+                echo json_encode($response);
+                exit;
+
+            } catch (Exception $e) {
+                debug_log("Error in createEvent:", [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                // Отправляем детальный ответ об ошибке
+                echo json_encode([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'debug' => [
+                        'error_type' => get_class($e),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine()
+                    ]
+                ]);
+                exit;
+            }
             break;
 
         default:
