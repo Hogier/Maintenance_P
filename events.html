@@ -51,14 +51,14 @@
         <form id="eventForm">
           <div class="form-group">
             <label for="eventName"
-              >NAME OF EVENT: <span class="required">*</span></label
+              >EVENT NAME: <span class="required">*</span></label
             >
             <input
               type="text"
               id="eventName"
               name="eventName"
               required
-              placeholder="Enter your name"
+              placeholder="Enter event name"
             />
           </div>
 
@@ -210,14 +210,14 @@
                 <span class="file-upload-hint"
                   >or drag and drop files here</span
                 >
+                <input
+                  type="file"
+                  id="setupImage"
+                  name="setupImage"
+                  multiple
+                  accept="image/*"
+                />
               </div>
-              <input
-                type="file"
-                id="setupImage"
-                name="setupImage"
-                multiple
-                accept="image/*"
-              />
             </div>
           </div>
 
@@ -231,54 +231,33 @@
               <option value="no">No</option>
             </select>
 
-            <div class="tables-options hidden" id="tablesOptionsContainer">
+            <div class="tables-options hidden">
               <div class="table-type">
                 <input
                   type="checkbox"
-                  id="table6ft"
-                  name="tableSizes"
-                  value="6ft"
+                  id="tables6ft"
+                  name="tables6ft_enabled"
                 />
-                <label for="table6ft">6 Foot Tables</label>
-                <input
-                  type="number"
-                  id="table6ftCount"
-                  min="0"
-                  placeholder="Quantity"
-                  disabled
-                />
+                <label for="tables6ft">6ft Tables:</label>
+                <input type="number" name="tables6ft" min="0" disabled />
               </div>
               <div class="table-type">
                 <input
                   type="checkbox"
-                  id="table8ft"
-                  name="tableSizes"
-                  value="8ft"
+                  id="tables8ft"
+                  name="tables8ft_enabled"
                 />
-                <label for="table8ft">8 Foot Tables</label>
-                <input
-                  type="number"
-                  id="table8ftCount"
-                  min="0"
-                  placeholder="Quantity"
-                  disabled
-                />
+                <label for="tables8ft">8ft Tables:</label>
+                <input type="number" name="tables8ft" min="0" disabled />
               </div>
               <div class="table-type">
                 <input
                   type="checkbox"
-                  id="tableRound"
-                  name="tableSizes"
-                  value="round"
+                  id="tablesRound"
+                  name="tablesRound_enabled"
                 />
-                <label for="tableRound">Round Tables</label>
-                <input
-                  type="number"
-                  id="tableRoundCount"
-                  min="0"
-                  placeholder="Quantity"
-                  disabled
-                />
+                <label for="tablesRound">Round Tables:</label>
+                <input type="number" name="tablesRound" min="0" disabled />
               </div>
 
               <div class="tablecloth-selection">
@@ -304,13 +283,9 @@
               <option value="no">No</option>
             </select>
 
-            <div class="chairs-input hidden" id="chairsInputContainer">
-              <input
-                type="number"
-                id="chairs"
-                min="0"
-                placeholder="Number of chairs needed"
-              />
+            <div class="chairs-input hidden">
+              <label for="chairs">Number of Chairs:</label>
+              <input type="number" id="chairs" name="chairs" min="0" disabled />
             </div>
           </div>
 
