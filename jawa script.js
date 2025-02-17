@@ -230,8 +230,8 @@ async function initializeForm() {
     const selectedRoom = roomSelect.value;
     const staffType = this.value;
     if (selectedRoom && staffType) {
-      staffSelectContainer.style.display = "block";
       await populateStaffSelect(selectedRoom, staffType);
+      staffSelectContainer.style.display = "block";
     }
   }
 
