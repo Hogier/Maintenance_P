@@ -631,20 +631,33 @@ body {
   margin-top: 30px;
 }
 
+/* Обновляем стили для кнопки отправки */
 .submit-btn {
   flex: 1;
   padding: 12px;
-  background-color: #4caf50;
+  background: linear-gradient(145deg, #4caf50, #45a049); /* Зеленый градиент */
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3); /* Зеленая тень */
 }
 
 .submit-btn:hover {
-  background-color: #388e3c;
+  background: linear-gradient(
+    145deg,
+    #45a049,
+    #388e3c
+  ); /* Более темный зеленый при наведении */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(76, 175, 80, 0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
 }
 
 .cancel-btn {
@@ -818,19 +831,45 @@ body {
   color: #2ecc71;
 }
 
-/* Кнопка показа деталей */
+/* Обновляем стили для кнопки показа деталей */
 .toggle-details {
-  background: #3498db;
-  color: white;
+  display: block;
+  width: 80%;
+  margin: 15px auto;
+  padding: 12px 20px;
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
   border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 .toggle-details:hover {
-  background: #2980b9;
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
+}
+
+.toggle-details:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Обновляем стрелку для лучшей видимости на синем фоне */
+.toggle-details::after {
+  content: "▼";
+  margin-left: 8px;
+  font-size: 0.8em;
+  transition: transform 0.3s ease;
+  opacity: 0.8;
+}
+
+.toggle-details.active::after {
+  transform: rotate(180deg);
 }
 
 /* Детальная информация */
@@ -1099,21 +1138,22 @@ body {
   box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
 }
 
-/* Стили для кнопки Edit */
+/* Обновляем стили для кнопки редактирования */
 .edit-btn {
-  background-color: #2196f3;
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
   color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 .edit-btn:hover {
-  background-color: #1976d2;
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
 }
 
 .edit-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 /* Стили для кнопки Delete */
@@ -1248,13 +1288,18 @@ body {
 
 .comment-input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+/* Обновляем стили для кнопки отправки комментария */
 .comment-submit {
   padding: 12px 24px;
-  background: linear-gradient(145deg, #3498db, #2980b9);
+  background: linear-gradient(
+    145deg,
+    #3b82f6,
+    #2563eb
+  ); /* Синий градиент как у toggle-details */
   color: white;
   border: none;
   border-radius: 12px;
@@ -1262,20 +1307,32 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); /* Синяя тень */
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 100px;
+  justify-content: center;
 }
 
 .comment-submit:hover {
-  background: linear-gradient(145deg, #2980b9, #2475a7);
+  background: linear-gradient(
+    145deg,
+    #2563eb,
+    #1d4ed8
+  ); /* Более темный синий при наведении */
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
+}
+
+.comment-submit:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 .comment-submit::after {
   content: "📤";
+  opacity: 0.8;
 }
 
 /* Стили для скроллбара в списке комментариев */
