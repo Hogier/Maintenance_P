@@ -46,39 +46,77 @@ document.addEventListener("DOMContentLoaded", function () {
   // Настройка drag and drop для загрузки файлов
   setupFileUpload();
 
-  // Добавляем обработчики для показа/скрытия дополнительных полей
-  document
-    .getElementById("tablesNeeded")
-    .addEventListener("change", function () {
-      const tablesOptions = document.getElementById("tablesOptionsContainer");
-      tablesOptions.classList.toggle("hidden", this.value !== "yes");
+  // Обработчик для столов
+  const tablesSelect = document.getElementById("tablesNeeded");
+  const tablesOptions = document.querySelector(".tables-options");
 
-      // Сбрасываем значения при выборе "No"
-      if (this.value !== "yes") {
+  if (tablesSelect && tablesOptions) {
+    // Устанавливаем начальное состояние
+    tablesOptions.classList.add("hidden");
+
+    tablesSelect.addEventListener("change", function () {
+      console.log("Tables select changed:", this.value);
+      if (this.value === "yes") {
+        tablesOptions.classList.remove("hidden");
+      } else {
+        tablesOptions.classList.add("hidden");
+        // Сбрасываем значения
+        document
+          .querySelectorAll('.table-type input[type="number"]')
+          .forEach((input) => {
+            input.value = "";
+            input.disabled = true;
+          });
         document
           .querySelectorAll('.table-type input[type="checkbox"]')
           .forEach((checkbox) => {
             checkbox.checked = false;
-            const countInput = checkbox.parentElement.querySelector(
-              'input[type="number"]'
-            );
-            countInput.value = "";
-            countInput.disabled = true;
           });
+        document.getElementById("tableclothColor").value = "";
       }
     });
 
-  document
-    .getElementById("chairsNeeded")
-    .addEventListener("change", function () {
-      const chairsInput = document.getElementById("chairsInputContainer");
-      chairsInput.classList.toggle("hidden", this.value !== "yes");
+    // Обработчики для чекбоксов столов
+    document
+      .querySelectorAll('.table-type input[type="checkbox"]')
+      .forEach((checkbox) => {
+        checkbox.addEventListener("change", function () {
+          const numberInput = this.parentElement.querySelector(
+            'input[type="number"]'
+          );
+          if (numberInput) {
+            numberInput.disabled = !this.checked;
+            if (!this.checked) {
+              numberInput.value = "";
+            }
+          }
+        });
+      });
+  }
 
-      // Сбрасываем значение при выборе "No"
-      if (this.value !== "yes") {
-        document.getElementById("chairs").value = "";
+  // Обработчик для стульев
+  const chairsSelect = document.getElementById("chairsNeeded");
+  const chairsInput = document.querySelector(".chairs-input");
+
+  if (chairsSelect && chairsInput) {
+    // Устанавливаем начальное состояние
+    chairsInput.classList.add("hidden");
+
+    chairsSelect.addEventListener("change", function () {
+      console.log("Chairs select changed:", this.value);
+      if (this.value === "yes") {
+        chairsInput.classList.remove("hidden");
+        chairsInput.querySelector('input[type="number"]').disabled = false;
+      } else {
+        chairsInput.classList.add("hidden");
+        const numberInput = chairsInput.querySelector('input[type="number"]');
+        if (numberInput) {
+          numberInput.disabled = true;
+          numberInput.value = "";
+        }
       }
     });
+  }
 });
 
 // Функция обновления календаря
@@ -283,122 +321,153 @@ async function uploadFiles(files) {
 // Обновляем функцию handleEventSubmit
 async function handleEventSubmit(e) {
   e.preventDefault();
+  const form = e.target;
+  const formData = new FormData();
+
+  // Базовые данные события
+  formData.append("action", "createEvent");
+  formData.append("eventName", form.querySelector("#eventName").value);
+  formData.append(
+    "eventStartDate",
+    form.querySelector("#eventStartDate").value
+  );
+  formData.append(
+    "eventStartTime",
+    form.querySelector("#eventStartTime").value
+  );
+  formData.append("setupDate", form.querySelector("#setupDate").value);
+  formData.append("setupTime", form.querySelector("#setupTime").value);
+  formData.append("endDate", form.querySelector("#endDate").value);
+  formData.append("endTime", form.querySelector("#endTime").value);
+  formData.append("eventLocation", form.querySelector("#eventLocation").value);
+  formData.append("eventContact", form.querySelector("#eventContact").value);
+  formData.append("eventEmail", form.querySelector("#eventEmail").value);
+  formData.append("eventPhone", form.querySelector("#eventPhone").value);
+  formData.append("alcuinContact", form.querySelector("#alcuinContact").value);
+  formData.append("attendees", form.querySelector("#attendees").value);
+
+  // Данные о создателе события
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  formData.append("createdBy", currentUser.username);
+
+  // Данные о столах
+  formData.append("tablesNeeded", form.querySelector("#tablesNeeded").value);
+  if (form.querySelector("#tablesNeeded").value === "yes") {
+    // Проверяем каждый тип стола отдельно
+    const tables6ftCheckbox = form
+      .querySelector('[name="tables6ft"]')
+      .closest(".table-type")
+      .querySelector('input[type="checkbox"]');
+    const tables8ftCheckbox = form
+      .querySelector('[name="tables8ft"]')
+      .closest(".table-type")
+      .querySelector('input[type="checkbox"]');
+    const tablesRoundCheckbox = form
+      .querySelector('[name="tablesRound"]')
+      .closest(".table-type")
+      .querySelector('input[type="checkbox"]');
+
+    const tables6ftInput = form.querySelector('[name="tables6ft"]');
+    const tables8ftInput = form.querySelector('[name="tables8ft"]');
+    const tablesRoundInput = form.querySelector('[name="tablesRound"]');
+
+    // Отправляем "yes" если чекбокс отмечен
+    formData.append("tables6ft", tables6ftCheckbox.checked ? "yes" : "no");
+    formData.append("tables8ft", tables8ftCheckbox.checked ? "yes" : "no");
+    formData.append("tablesRound", tablesRoundCheckbox.checked ? "yes" : "no");
+
+    // Отправляем количество только если чекбокс отмечен
+    formData.append(
+      "tables6ftCount",
+      tables6ftCheckbox.checked ? tables6ftInput.value || "0" : "0"
+    );
+    formData.append(
+      "tables8ftCount",
+      tables8ftCheckbox.checked ? tables8ftInput.value || "0" : "0"
+    );
+    formData.append(
+      "tablesRoundCount",
+      tablesRoundCheckbox.checked ? tablesRoundInput.value || "0" : "0"
+    );
+    formData.append(
+      "tableclothColor",
+      form.querySelector("#tableclothColor").value
+    );
+  } else {
+    formData.append("tables6ft", "no");
+    formData.append("tables8ft", "no");
+    formData.append("tablesRound", "no");
+    formData.append("tables6ftCount", "0");
+    formData.append("tables8ftCount", "0");
+    formData.append("tablesRoundCount", "0");
+    formData.append("tableclothColor", "");
+  }
+
+  // Данные о стульях
+  formData.append("chairsNeeded", form.querySelector("#chairsNeeded").value);
+  if (form.querySelector("#chairsNeeded").value === "yes") {
+    const chairsInput = form.querySelector("#chairs");
+    formData.append("chairs", chairsInput.value || "0");
+    formData.append("chairs_count", chairsInput.value || "0");
+  } else {
+    formData.append("chairs", "0");
+    formData.append("chairs_count", "0");
+  }
+
+  // Оборудование
+  formData.append("podiumNeeded", form.querySelector("#podiumNeeded").value);
+  formData.append(
+    "monitorsNeeded",
+    form.querySelector("#monitorsNeeded").value
+  );
+  formData.append("laptopNeeded", form.querySelector("#laptopNeeded").value);
+  formData.append("ipadNeeded", form.querySelector("#ipadNeeded").value);
+  formData.append(
+    "microphonesNeeded",
+    form.querySelector("#microphonesNeeded").value
+  );
+  formData.append("speakerNeeded", form.querySelector("#speakerNeeded").value);
+  formData.append("avAssistance", form.querySelector("#avAssistance").value);
+  formData.append(
+    "securityNeeded",
+    form.querySelector("#securityNeeded").value
+  );
+  formData.append(
+    "buildingAccess",
+    form.querySelector("#buildingAccess").value
+  );
+  formData.append(
+    "otherConsiderations",
+    form.querySelector("#otherConsiderations").value
+  );
+
+  // Обработка файлов
+  const setupImageFiles = form.querySelector("#setupImage").files;
+  if (setupImageFiles.length > 0) {
+    for (let i = 0; i < setupImageFiles.length; i++) {
+      formData.append("setupImages[]", setupImageFiles[i]);
+    }
+  }
 
   try {
-    const files = document.getElementById("setupImage").files;
-    const setupImages = await uploadFiles(Array.from(files));
-
-    // Собираем данные о столах и скатертях
-    const tablesNeeded = document.getElementById("tablesNeeded").value;
-    console.log("tablesNeeded", tablesNeeded);
-    const tables = {
-      "6ft":
-        tablesNeeded === "yes"
-          ? document.getElementById("table6ftCount").value || 0
-          : 0,
-      "8ft":
-        tablesNeeded === "yes"
-          ? document.getElementById("table8ftCount").value || 0
-          : 0,
-      round:
-        tablesNeeded === "yes"
-          ? document.getElementById("tableRoundCount").value || 0
-          : 0,
-      tablecloth:
-        tablesNeeded === "yes"
-          ? document.getElementById("tableclothColor").value || null
-          : null,
-    };
-
-    // Собираем данные о стульях
-    const chairsNeeded = document.getElementById("chairsNeeded").value;
-    console.log("chairsNeeded", chairsNeeded);
-    const chairs =
-      chairsNeeded === "yes" ? document.getElementById("chairs").value : 0;
-
-    // Собираем данные формы
-    const formData = {
-      name: document.getElementById("eventName").value,
-      startDate: document.getElementById("eventStartDate").value,
-      startTime: document.getElementById("eventStartTime").value,
-      setupDate: document.getElementById("setupDate").value,
-      setupTime: document.getElementById("setupTime").value,
-      endDate: document.getElementById("endDate").value,
-      endTime: document.getElementById("endTime").value,
-      location: document.getElementById("eventLocation").value,
-      contact: document.getElementById("eventContact").value,
-      email: document.getElementById("eventEmail").value,
-      phone: document.getElementById("eventPhone").value,
-      alcuinContact: document.getElementById("alcuinContact").value,
-      attendees: document.getElementById("attendees").value,
-      tables: JSON.stringify(tables),
-      chairs: document.getElementById("chairs").value,
-      tables_needed: document.getElementById("tablesNeeded").value,
-      chairs_needed: document.getElementById("chairsNeeded").value,
-      podium: document.getElementById("podiumNeeded").value,
-      monitors: document.getElementById("monitorsNeeded").value,
-      laptop: document.getElementById("laptopNeeded").value,
-      ipad: document.getElementById("ipadNeeded").value,
-      microphones: document.getElementById("microphonesNeeded").value,
-      speaker: document.getElementById("speakerNeeded").value,
-      avAssistance: document.getElementById("avAssistance").value,
-      security: document.getElementById("securityNeeded").value,
-      buildingAccess: document.getElementById("buildingAccess").value,
-      otherConsiderations: document.getElementById("otherConsiderations").value,
-      status: "pending",
-      createdBy: JSON.parse(localStorage.getItem("currentUser")).fullName,
-      createdAt: new Date().toISOString(),
-      setupImages: JSON.stringify(setupImages),
-      tables6ft: tables["6ft"] ? "yes" : "no",
-      tables8ft: tables["8ft"] ? "yes" : "no",
-      tablesRound: tables["round"] ? "yes" : "no",
-      tables6ftCount: parseInt(tables["6ft"] || 0),
-      tables8ftCount: parseInt(tables["8ft"] || 0),
-      tablesRoundCount: parseInt(tables["round"] || 0),
-      chairsNeeded: document.getElementById("chairsNeeded").value,
-      chairs_count: parseInt(document.getElementById("chairs").value || 0),
-    };
-
-    // Отправляем данные на сервер
     const response = await fetch("events_db.php", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "addEvent",
-        eventData: JSON.stringify(formData),
-      }),
+      body: formData,
     });
 
-    const result = await response.json();
-    if (result.success) {
+    const data = await response.json();
+    if (data.success) {
+      clearFileUpload();
       hideEventModal();
-      await loadEvents(); // Перезагружаем список событий
-      showNotification("Event created successfully!");
+      loadEvents();
     } else {
-      throw new Error(result.message || "Failed to create event");
+      throw new Error(data.message || "Failed to create event");
     }
   } catch (error) {
     console.error("Error creating event:", error);
-    showNotification("Error creating event: " + error.message, "error");
+    alert("Failed to create event: " + error.message);
   }
 }
-
-// Добавляем обработчики для чекбоксов столов
-document
-  .querySelectorAll('.table-type input[type="checkbox"]')
-  .forEach((checkbox) => {
-    checkbox.addEventListener("change", function () {
-      const countInput = this.parentElement.querySelector(
-        'input[type="number"]'
-      );
-      countInput.disabled = !this.checked;
-      if (!this.checked) {
-        countInput.value = "";
-      }
-    });
-  });
 
 // Функция для отображения уведомлений
 function showNotification(message, type = "success") {
@@ -440,13 +509,13 @@ function createEquipmentItem(label, value) {
 
       return tableInfo.length > 0
         ? `
-        <div class="equipment-item">
-          <span class="equipment-label">Tables:</span>
-          <span class="equipment-value">${tableInfo.join(
-            ", "
-          )}${tableclothInfo}</span>
-        </div>
-      `
+                    <div class="equipment-item">
+                        <span class="equipment-label">Tables:</span>
+                        <span class="equipment-value">${tableInfo.join(
+                          ", "
+                        )}${tableclothInfo}</span>
+                    </div>
+                `
         : "";
     } catch (e) {
       console.error("Error parsing tables data:", e);
@@ -459,11 +528,11 @@ function createEquipmentItem(label, value) {
       const chairsCount = parseInt(value);
       if (chairsCount > 0) {
         return `
-          <div class="equipment-item">
-            <span class="equipment-label">Chairs:</span>
-            <span class="equipment-value">${chairsCount} chairs</span>
-          </div>
-        `;
+                    <div class="equipment-item">
+                        <span class="equipment-label">Chairs:</span>
+                        <span class="equipment-value">${chairsCount} chairs</span>
+                    </div>
+                `;
       }
       return "";
     } catch (e) {
@@ -473,28 +542,169 @@ function createEquipmentItem(label, value) {
   }
 
   return `
-    <div class="equipment-item">
-      <span class="equipment-label">${label}:</span>
-      <span class="equipment-value">${value}</span>
-    </div>
-  `;
+        <div class="equipment-item">
+            <span class="equipment-label">${label}:</span>
+            <span class="equipment-value">${value}</span>
+        </div>
+    `;
 }
 
-// Функция форматирования даты
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleString("en-US", {
-    timeZone: "America/Chicago",
-    year: "numeric",
+// Обновляем функцию форматирования даты
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: "numeric",
   });
 }
 
-// Обновленная функция создания элемента события
+// Обновляем функцию проверки статуса
+function canChangeStatus(event, newStatus) {
+  const eventDate = new Date(event.startDate);
+  const eventTime = event.endTime ? event.endTime.split(":") : null;
+  if (eventTime) {
+    eventDate.setHours(eventTime[0], eventTime[1]);
+  }
+  const now = new Date();
+
+  switch (newStatus) {
+    case "cancelled":
+      return true; // Можно отменить в любое время
+    case "completed":
+      return now > eventDate; // Можно завершить только после окончания
+    default:
+      return true; // Для других статусов (pending)
+  }
+}
+
+// Обновляем функцию создания галереи изображений
+function createImageGallery(images) {
+  if (!images || images === "[]") return "";
+
+  try {
+    const imageUrls = JSON.parse(images);
+    console.log("Creating image gallery:", {
+      rawImages: images,
+      parsedUrls: imageUrls,
+    });
+
+    if (!Array.isArray(imageUrls) || imageUrls.length === 0) {
+      console.log("No valid images found");
+      return "";
+    }
+
+    const flatImageUrls = imageUrls
+      .flat()
+      .filter((url) => url && typeof url === "string");
+
+    if (flatImageUrls.length === 0) {
+      console.log("No valid image URLs after flattening");
+      return "";
+    }
+
+    return `
+      <div class="event-images">
+        ${flatImageUrls
+          .map((image) => {
+            // Используем полные пути к изображениям
+            const miniPath = `/maintenance_P/uploads/mini/${image}`;
+            const fullPath = `/maintenance_P/uploads/${image}`;
+
+            console.log("Processing image:", {
+              original: image,
+              miniPath,
+              fullPath,
+            });
+
+            return `
+            <div class="image-thumbnail">
+              <img src="${miniPath}" 
+                data-full="${fullPath}"
+                onerror="handleImageError(this)"
+                onclick="showFullImage(this)"
+                alt="Event setup"
+                loading="lazy"
+                class="event-image">
+            </div>
+          `;
+          })
+          .join("")}
+      </div>
+    `;
+  } catch (e) {
+    console.error("Error creating image gallery:", e);
+    return "";
+  }
+}
+
+// Обновленная функция обработки ошибок загрузки
+function handleImageError(img) {
+  const originalSrc = img.src;
+  const fullSrc = img.dataset.full;
+
+  console.log("Image load error:", {
+    originalSrc,
+    fullSrc,
+    isMiniature: originalSrc.includes("/mini/"),
+  });
+
+  if (originalSrc.includes("/mini/")) {
+    img.src = fullSrc;
+    img.classList.add("fallback-image");
+
+    // Добавляем обработчик для проверки загрузки оригинального изображения
+    img.onload = () => {
+      console.log("Original image loaded successfully:", fullSrc);
+      img.classList.remove("loading");
+    };
+
+    img.onerror = () => {
+      console.error("Failed to load both miniature and original image");
+      img.classList.add("error");
+    };
+
+    img.classList.add("loading");
+  } else {
+    img.classList.add("error");
+  }
+}
+
+// Обновляем функцию для показа полноразмерного изображения
+function showFullImage(imgElement) {
+  // Создаем модальное окно
+  const modal = document.createElement("div");
+  modal.className = "image-modal";
+
+  // Создаем изображение
+  const img = document.createElement("img");
+  img.src = imgElement.dataset.full;
+  img.alt = "Full size image";
+
+  // Добавляем обработчик для закрытия по клику вне изображения
+  modal.onclick = function (e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  };
+
+  // Добавляем кнопку закрытия
+  const closeButton = document.createElement("button");
+  closeButton.className = "modal-close";
+  closeButton.innerHTML = "×";
+  closeButton.onclick = () => modal.remove();
+
+  // Собираем модальное окно
+  modal.appendChild(img);
+  modal.appendChild(closeButton);
+  document.body.appendChild(modal);
+
+  // Добавляем класс для анимации появления
+  setTimeout(() => modal.classList.add("show"), 10);
+}
+
+// Обновляем функцию createEventElement, убирая секцию Event Setup Images из детальной информации
 function createEventElement(event) {
   const eventElement = document.createElement("div");
   eventElement.className = "event-item";
@@ -509,14 +719,104 @@ function createEventElement(event) {
   }
 
   // Базовая информация о событии
+  const imageGallery = createImageGallery(event.setupImages);
+
+  // Формируем информацию о столах и стульях
+  let tablesAndChairsHtml = "";
+
+  // Информация о столах
+  if (event.tables_needed === "yes") {
+    let tablesInfo = [];
+
+    if (event.tables6ft === "yes" && parseInt(event.tables6ftCount) > 0) {
+      tablesInfo.push(
+        `<div>6ft Tables: <span class="count-value">${event.tables6ftCount}</span></div>`
+      );
+    }
+    if (event.tables8ft === "yes" && parseInt(event.tables8ftCount) > 0) {
+      tablesInfo.push(
+        `<div>8ft Tables: <span class="count-value">${event.tables8ftCount}</span></div>`
+      );
+    }
+    if (event.tablesRound === "yes" && parseInt(event.tablesRoundCount) > 0) {
+      tablesInfo.push(
+        `<div>Round Tables: <span class="count-value">${event.tablesRoundCount}</span></div>`
+      );
+    }
+
+    if (tablesInfo.length > 0) {
+      tablesAndChairsHtml += `
+            <div class="equipment-item">
+                <div class="equipment-label">Tables:</div>
+                <div class="equipment-value tables-list">
+                    ${tablesInfo.join("")}
+                </div>
+            </div>`;
+    }
+
+    // Добавляем информацию о скатерти, если она указана
+    if (event.tablecloth_color) {
+      tablesAndChairsHtml += `
+            <div class="equipment-item">
+                <span class="equipment-label">Tablecloth:</span>
+                <span class="equipment-value color-value">${event.tablecloth_color}</span>
+            </div>`;
+    }
+  }
+
+  // Информация о стульях
+  if (event.chairs_needed === "yes" && parseInt(event.chairs_count) > 0) {
+    tablesAndChairsHtml += `
+        <div class="equipment-item">
+            <span class="equipment-label">Chairs:</span>
+            <span class="equipment-value">${event.chairs_count}</span>
+        </div>`;
+  }
+
+  // Добавляем отладочную информацию
+  console.log("Event data:", {
+    tables_needed: event.tables_needed,
+    tables6ft: event.tables6ft,
+    tables8ft: event.tables8ft,
+    tablesRound: event.tablesRound,
+    tables6ftCount: event.tables6ftCount,
+    tables8ftCount: event.tables8ftCount,
+    tablesRoundCount: event.tablesRoundCount,
+    tablecloth_color: event.tablecloth_color,
+    chairs_needed: event.chairs_needed,
+    chairs_count: event.chairs_count,
+  });
+
   const basicInfo = `
-    <div class="event-header">
-      <h3>${event.name || "Untitled Event"}</h3>
-      <span class="event-date">${formatDate(event.startDate)}</span>
-    </div>
     <div class="event-preview">
+      <div class="event-header">
+        <h3>${event.name}</h3>
+        <div class="event-meta">
+          <div class="event-time">
+            <span class="event-date">${formatDate(event.startDate)}</span>
+          </div>
+          <div class="event-status">
+            <select class="status-select" 
+                    onchange="updateEventStatus(${event.id}, this.value)" 
+                    data-event-id="${event.id}"
+                    data-status="${event.status || "pending"}">
+              <option value="pending" ${
+                event.status === "pending" ? "selected" : ""
+              }>Pending</option>
+              <option value="completed" ${
+                event.status === "completed" ? "selected" : ""
+              } ${
+    canChangeStatus(event, "completed") ? "" : "disabled"
+  }>Completed</option>
+              <option value="cancelled" ${
+                event.status === "cancelled" ? "selected" : ""
+              }>Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
       <div class="event-main-info">
-        <p><strong>Location:</strong> ${event.location || "Not specified"}</p>
+        <p><strong>Location:</strong> ${event.location}</p>
         <p><strong>Time:</strong> ${event.startTime || "Not set"} - ${
     event.endTime || "Not set"
   }</p>
@@ -534,107 +834,89 @@ function createEventElement(event) {
           event.buildingAccess ? "status-yes" : "status-no"
         }">${event.buildingAccess ? "YES" : "NO"}</span></p>
       </div>
+      ${imageGallery}
     </div>
   `;
 
-  // Детальная информация о событии
+  // Детальная информация о событии (убираем секцию с изображениями)
   const detailedInfo = `
     <div class="event-details hidden">
-      ${
-        setupImages.length > 0
-          ? `
-        <div class="event-images-section">
-          <h4>Event Setup Images</h4>
-          <div class="event-images">
-            ${setupImages
-              .map(
-                (url) => `
-              <div class="setup-image-container">
-                <img src="${url}" alt="Setup image" class="setup-image" onclick="showFullImage('${url}')">
-              </div>
-            `
-              )
-              .join("")}
-          </div>
-        </div>
-      `
-          : ""
-      }
-      
-      <div class="details-section">
-        <h5>Setup Details</h5>
-        <p><strong>Setup Date:</strong> ${formatDate(event.setupDate)}</p>
-        <p><strong>Setup Time:</strong> ${event.setupTime || "Not set"}</p>
-      </div>
-
-      <div class="details-section">
-        <h5>Equipment Needed</h5>
-        <div class="equipment-grid">
-          ${
-            event.tables_needed === "yes"
-              ? createEquipmentItem("Tables", event.tables)
-              : ""
-          }
-          ${
-            event.chairs_needed === "yes"
-              ? createEquipmentItem("Chairs", event.chairs_count)
-              : ""
-          }
-          ${createEquipmentItem("Podium", event.podium)}
-          ${createEquipmentItem("Monitors", event.monitors)}
-          ${createEquipmentItem("Laptop", event.laptop)}
-          ${createEquipmentItem("iPad", event.ipad)}
-          ${createEquipmentItem("Microphones", event.microphones)}
-          ${createEquipmentItem("Speaker", event.speaker)}
-        </div>
-      </div>
-
-      ${
-        event.otherConsiderations
-          ? `
         <div class="details-section">
-          <h5>Additional Considerations</h5>
-          <p>${event.otherConsiderations}</p>
+            <h5>Setup Details</h5>
+            <p><strong>Setup Date:</strong> ${formatDate(event.setupDate)}</p>
+            <p><strong>Setup Time:</strong> ${event.setupTime || "Not set"}</p>
         </div>
-      `
-          : ""
-      }
 
-      <div class="event-comments">
-        <div class="comments-header">Comments</div>
-        <div class="comments-list">
-          ${
-            event.comments
-              ? event.comments
-                  .map(
-                    (comment) => `
-            <div class="comment-item">
-              <div class="comment-header">
-                <span class="comment-author">${comment.author}</span>
-                <span class="comment-date">${formatDate(comment.date)}</span>
-              </div>
-              <div class="comment-text">${comment.text}</div>
+        <div class="details-section">
+            <h5>Equipment Needed</h5>
+            <div class="equipment-grid">
+                ${tablesAndChairsHtml}
+                ${createEquipmentItem("Podium", event.podium)}
+                ${createEquipmentItem("Monitors", event.monitors)}
+                ${createEquipmentItem("Laptop", event.laptop)}
+                ${createEquipmentItem("iPad", event.ipad)}
+                ${createEquipmentItem("Microphones", event.microphones)}
+                ${createEquipmentItem("Speaker", event.speaker)}
             </div>
-          `
-                  )
-                  .join("")
-              : ""
-          }
         </div>
-        <form class="comment-form" onsubmit="addComment(event, '${event.id}')">
-          <input type="text" class="comment-input" placeholder="Add a comment..." required>
-          <button type="submit" class="comment-submit">Send</button>
-        </form>
-      </div>
 
-      <div class="event-actions">
-        <button class="event-btn edit-btn" onclick="editEvent('${
-          event.id
-        }')">Edit</button>
-        <button class="event-btn delete-btn" onclick="deleteEvent('${
-          event.id
-        }')">Delete</button>
-      </div>
+        ${
+          event.otherConsiderations
+            ? `
+            <div class="details-section">
+                <h5>Additional Considerations</h5>
+                <p>${event.otherConsiderations}</p>
+            </div>
+        `
+            : ""
+        }
+
+        <div class="event-comments">
+            <div class="comments-header">Comments</div>
+            <div class="comments-list">
+                ${
+                  event.comments
+                    ? event.comments
+                        .map(
+                          (comment) => `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-date">${formatDate(
+                          comment.date
+                        )}</span>
+                    </div>
+                    <div class="comment-text">${comment.text}</div>
+                </div>
+            `
+                        )
+                        .join("")
+                    : ""
+                }
+            </div>
+            <form class="comment-form" onsubmit="addComment(event, '${
+              event.id
+            }')">
+                <input type="text" class="comment-input" placeholder="Add a comment..." required>
+                <button type="submit" class="comment-submit">Send</button>
+            </form>
+        </div>
+
+        <div class="event-actions">
+            <button class="event-btn print-btn" onclick="printEvent(${
+              event.id
+            })">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <button class="event-btn edit-btn" onclick="editEvent(${event.id})">
+                <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="event-btn delete-btn" onclick="deleteEvent(${
+              event.id
+            })">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
     </div>
   `;
 
@@ -644,92 +926,23 @@ function createEventElement(event) {
   const toggleButton = document.createElement("button");
   toggleButton.className = "toggle-details";
   toggleButton.textContent = "Show Details";
+
+  // Находим контейнер деталей
+  const details = eventElement.querySelector(".event-details");
+
+  // Добавляем обработчик клика
   toggleButton.onclick = () => {
-    const details = eventElement.querySelector(".event-details");
     details.classList.toggle("hidden");
     toggleButton.textContent = details.classList.contains("hidden")
       ? "Show Details"
       : "Hide Details";
+    toggleButton.classList.toggle("active");
   };
 
+  // Добавляем кнопку в превью события
   eventElement.querySelector(".event-preview").appendChild(toggleButton);
 
   return eventElement;
-}
-
-// Функция для показа полноразмерного изображения
-function showFullImage(url) {
-  const modal = document.createElement("div");
-  modal.className = "image-modal";
-
-  const img = document.createElement("img");
-  img.src = url;
-  img.alt = "Event setup image";
-
-  modal.appendChild(img);
-  modal.addEventListener("click", () => modal.remove());
-
-  document.body.appendChild(modal);
-  setTimeout(() => modal.classList.add("show"), 10);
-}
-
-// Функция настройки drag and drop для загрузки файлов
-function setupFileUpload() {
-  const fileUploadContainer = document.querySelector(".file-upload-container");
-  const fileInput = document.getElementById("setupImage");
-
-  // Добавляем поддержку множественных файлов
-  fileInput.setAttribute("multiple", "");
-
-  // Предотвращаем стандартное поведение браузера при перетаскивании
-  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-    fileUploadContainer.addEventListener(eventName, preventDefaults, false);
-  });
-
-  function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
-  // Добавляем визуальный эффект при перетаскивании
-  ["dragenter", "dragover"].forEach((eventName) => {
-    fileUploadContainer.addEventListener(eventName, () => {
-      fileUploadContainer.classList.add("drag-active");
-    });
-  });
-
-  ["dragleave", "drop"].forEach((eventName) => {
-    fileUploadContainer.addEventListener(eventName, () => {
-      fileUploadContainer.classList.remove("drag-active");
-    });
-  });
-
-  // Обработка сброшенных файлов
-  fileUploadContainer.addEventListener("drop", (e) => {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    fileInput.files = files;
-
-    // Показываем имя файла
-    if (files.length > 0) {
-      const fileName = files[0].name;
-      fileUploadContainer.querySelector(".file-upload-text").textContent =
-        fileName;
-    }
-  });
-
-  // Обновляем отображение имен файлов
-  fileInput.addEventListener("change", (e) => {
-    if (e.target.files.length > 0) {
-      const fileNames = Array.from(e.target.files)
-        .map((file) => file.name)
-        .join(", ");
-      fileUploadContainer.querySelector(".file-upload-text").textContent =
-        e.target.files.length > 1
-          ? `Selected ${e.target.files.length} files`
-          : fileNames;
-    }
-  });
 }
 
 // Функции редактирования и удаления событий
@@ -895,6 +1108,381 @@ function createCommentElement(comment) {
     <div class="comment-text">${comment.text}</div>
   `;
   return div;
+}
+
+async function createEvent(eventData) {
+  try {
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "createEvent",
+        eventData: JSON.stringify(eventData),
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    return result.eventId;
+  } catch (error) {
+    console.error("Error creating event:", error);
+    throw error;
+  }
+}
+
+async function getEventsByDate(date) {
+  try {
+    console.log("Requesting events for date:", date.toISOString());
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "getEventsByDate",
+        date: date.toISOString().split("T")[0],
+      }),
+    });
+
+    const result = await response.json();
+    console.log("Server response:", result); // Добавляем для отладки
+
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    return result.events;
+  } catch (error) {
+    console.error("Error loading events:", error);
+    throw error;
+  }
+}
+
+async function addEventComment(eventId, comment) {
+  try {
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "addComment",
+        eventId: eventId,
+        comment: JSON.stringify(comment),
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    return result.commentId;
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    throw error;
+  }
+}
+
+// Функция печати события
+function printEvent(eventId) {
+  const event = events.find((e) => e.id === eventId);
+  if (!event) return;
+
+  // Создаем содержимое для печати
+  const printContent = `
+        <div class="print-content">
+            <h2>${event.name}</h2>
+            <div class="event-details">
+                <p><strong>Date:</strong> ${formatDate(event.startDate)}</p>
+                <p><strong>Time:</strong> ${event.startTime}</p>
+                <p><strong>Location:</strong> ${event.location}</p>
+                <p><strong>Contact:</strong> ${event.contact}</p>
+                <p><strong>Email:</strong> ${event.email}</p>
+                <p><strong>Phone:</strong> ${event.phone}</p>
+                
+                <h3>Setup Details</h3>
+                <p><strong>Setup Date:</strong> ${formatDate(
+                  event.setupDate
+                )}</p>
+                <p><strong>Setup Time:</strong> ${event.setupTime}</p>
+                
+                <h3>Equipment Needed</h3>
+                <ul>
+                    ${
+                      event.tables_needed === "yes"
+                        ? `
+                        <li>Tables:
+                            <ul>
+                                ${
+                                  event.tables6ftCount > 0
+                                    ? `<li>6ft Tables: ${event.tables6ftCount}</li>`
+                                    : ""
+                                }
+                                ${
+                                  event.tables8ftCount > 0
+                                    ? `<li>8ft Tables: ${event.tables8ftCount}</li>`
+                                    : ""
+                                }
+                                ${
+                                  event.tablesRoundCount > 0
+                                    ? `<li>Round Tables: ${event.tablesRoundCount}</li>`
+                                    : ""
+                                }
+                            </ul>
+                        </li>
+                    `
+                        : ""
+                    }
+                    ${
+                      event.chairs_needed === "yes"
+                        ? `<li>Chairs: ${event.chairs_count}</li>`
+                        : ""
+                    }
+                    ${event.podium === "yes" ? "<li>Podium</li>" : ""}
+                    ${event.monitors === "yes" ? "<li>Monitors</li>" : ""}
+                    ${event.laptop === "yes" ? "<li>Laptop</li>" : ""}
+                    ${event.microphones === "yes" ? "<li>Microphones</li>" : ""}
+                </ul>
+                
+                <h3>Additional Information</h3>
+                <p><strong>AV Assistance:</strong> ${event.avAssistance}</p>
+                <p><strong>Security Needed:</strong> ${event.security}</p>
+                <p><strong>Building Access:</strong> ${event.buildingAccess}</p>
+                ${
+                  event.otherConsiderations
+                    ? `
+                    <h3>Other Considerations</h3>
+                    <p>${event.otherConsiderations}</p>
+                `
+                    : ""
+                }
+            </div>
+        </div>
+    `;
+
+  // Создаем временное окно для печати
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print Event - ${event.name}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+                    h2 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+                    h3 { color: #4CAF50; margin-top: 20px; }
+                    .event-details { margin-top: 20px; }
+                    ul { margin: 10px 0; padding-left: 20px; }
+                    li { margin: 5px 0; }
+                    @media print {
+                        body { padding: 0; }
+                        button { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${printContent}
+                <button onclick="window.print()" style="margin-top: 20px; padding: 10px 20px;">Print</button>
+            </body>
+        </html>
+    `);
+  printWindow.document.close();
+}
+
+// Обновляем функцию обновления статуса
+async function updateEventStatus(eventId, newStatus) {
+  try {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    if (!canChangeStatus(event, newStatus)) {
+      alert("Cannot change to this status at this time");
+      // Возвращаем select к предыдущему значению
+      const statusSelect = document.querySelector(
+        `select[data-event-id="${eventId}"]`
+      );
+      if (statusSelect) {
+        statusSelect.value = event.status;
+      }
+      return;
+    }
+
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "updateEventStatus",
+        eventId: eventId,
+        status: newStatus,
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    // Обновляем локальное состояние
+    event.status = newStatus;
+
+    // Обновляем UI
+    const statusSelect = document.querySelector(
+      `select[data-event-id="${eventId}"]`
+    );
+    if (statusSelect) {
+      statusSelect.value = newStatus;
+      statusSelect.setAttribute("data-status", newStatus);
+    }
+  } catch (error) {
+    console.error("Error updating event status:", error);
+    alert("Failed to update event status");
+  }
+}
+
+// Функция настройки загрузки файлов
+function setupFileUpload() {
+  const fileUploadBox = document.querySelector(".file-upload-box");
+  const fileInput = document.querySelector("#setupImage");
+
+  if (!fileUploadBox || !fileInput) {
+    console.warn("File upload elements not found");
+    return;
+  }
+
+  // Делаем элемент кликабельным только для области текста
+  const uploadText = fileUploadBox.querySelector(".file-upload-text");
+  const uploadHint = fileUploadBox.querySelector(".file-upload-hint");
+
+  if (uploadText && uploadHint) {
+    uploadText.addEventListener("click", () => {
+      fileInput.click();
+    });
+    uploadHint.addEventListener("click", () => {
+      fileInput.click();
+    });
+  }
+
+  // Обработка drag & drop
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+    fileUploadBox.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  // Визуальная обратная связь при перетаскивании
+  ["dragenter", "dragover"].forEach((eventName) => {
+    fileUploadBox.addEventListener(eventName, () => {
+      fileUploadBox.classList.add("highlight");
+    });
+  });
+
+  ["dragleave", "drop"].forEach((eventName) => {
+    fileUploadBox.addEventListener(eventName, () => {
+      fileUploadBox.classList.remove("highlight");
+    });
+  });
+
+  // Обработка сброса файлов
+  fileUploadBox.addEventListener("drop", handleDrop);
+  fileInput.addEventListener("change", handleFiles);
+
+  function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles({ target: { files } });
+  }
+
+  function handleFiles(e) {
+    const files = [...e.target.files];
+    console.log("Selected files:", files);
+
+    // Проверяем, что это изображения
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+    if (imageFiles.length !== files.length) {
+      alert("Please upload only image files");
+      return;
+    }
+
+    // Создаем или получаем существующий контейнер для превью
+    let previewContainer = fileUploadBox.querySelector(
+      ".image-preview-container"
+    );
+    if (!previewContainer) {
+      previewContainer = document.createElement("div");
+      previewContainer.className = "image-preview-container";
+      fileUploadBox.appendChild(previewContainer);
+    }
+
+    // Добавляем новые превью к существующим
+    imageFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const preview = document.createElement("div");
+        preview.className = "image-preview";
+        preview.innerHTML = `
+          <img src="${e.target.result}" alt="Preview">
+          <span class="file-name">${file.name}</span>
+          <button type="button" class="remove-image" onclick="removePreview(this)">×</button>
+        `;
+        previewContainer.appendChild(preview);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Обновляем текст
+    updateUploadText(previewContainer);
+  }
+}
+
+// Функция обновления текста загрузки
+function updateUploadText(container) {
+  const fileUploadText = document.querySelector(".file-upload-text");
+  if (fileUploadText) {
+    const count = container.querySelectorAll(".image-preview").length;
+    fileUploadText.textContent =
+      count > 0 ? `${count} file(s) selected` : "Select files...";
+  }
+}
+
+// Функция удаления превью
+function removePreview(button) {
+  const preview = button.parentElement;
+  const container = preview.parentElement;
+  preview.remove();
+  updateUploadText(container);
+}
+
+// Добавляем новую функцию для очистки загруженных файлов
+function clearFileUpload() {
+  // Очищаем input file
+  const fileInput = document.querySelector("#setupImage");
+  if (fileInput) {
+    fileInput.value = "";
+  }
+
+  // Очищаем контейнер превью
+  const previewContainer = document.querySelector(".image-preview-container");
+  if (previewContainer) {
+    previewContainer.innerHTML = "";
+  }
+
+  // Сбрасываем текст
+  const fileUploadText = document.querySelector(".file-upload-text");
+  if (fileUploadText) {
+    fileUploadText.textContent = "Select files...";
+  }
 }
 
 // Продолжение следует...
