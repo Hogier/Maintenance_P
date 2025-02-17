@@ -65,6 +65,44 @@
         </div>
       </div>
     </div>
+    <div class="user-dashboard">
+      <span class="close-button">×</span>
+      <div class="user-profile">
+        <div class="user-photo">
+          <div class="user-photo-container">
+          <img src="#"/>
+          </div>
+          <div class="change-photo" id="changePhotoButton">&#128247;</div>
+        </div>
+        <div class="user-info">
+          <h2 id="dashboardUserName">Имя пользователя</h2>
+          <p id="dashboardUserEmail">email@example.com</p>
+          <!-- Добавьте другие данные о пользователе здесь -->
+        </div>
+      </div>
+      <div class="user-tasks">
+        <h3>Your requests</h3>
+        <ul id="userTasksList">
+          <!-- Здесь будут отображаться задания пользователя -->
+        </ul>
+      </div>
+     <div class="loading-overlay" id="loadingOverlay"></div>
+     <div class="loading-indicator" id="loadingIndicator"></div> 
+    </div>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Модальное окно для загрузки фотографии -->
+    <div class="modal" id="photoModal">
+      <div class="modal-content">
+        <span class="close-modal" id="closeModalButton">×</span>
+        <h2>Upload photo</h2>
+        <div class="drop-area" id="dropArea">
+          <span id="fileName">Drag and drop or click to select a file</span>
+          <input type="file" id="photoInput" accept="image/*" hidden />
+        </div>
+        <button id="uploadPhotoButton">Confirm</button>
+      </div>
+    </div>
     <script src="database.js"></script>
     <script src="dateUtils.js"></script>
     <script>
@@ -92,6 +130,312 @@
             localStorage.removeItem("maintenanceStaffAuth");
             window.location.reload();
           });
+        }
+      });
+
+      // Функция для отображения информации о пользователе в личном кабинете
+      function displayDashboardUserInfo() {
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        if (user) {
+          const userNameElement = document.getElementById("dashboardUserName");
+          const userEmailElement = document.getElementById("dashboardUserEmail");
+          if (userNameElement && userEmailElement) {
+            userNameElement.textContent = user.fullName;
+            userEmailElement.textContent = user.email;
+          }
+        }
+      }
+
+      // Функция для получения заданий пользователя
+      async function getUserTasks() {
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        if (user && user.role !== "maintenance") {
+          try {
+            const formData = new FormData();
+            formData.append('action', 'getUserTasks');
+            formData.append('staff', user.fullName);
+
+            const response = await fetch('database.php', {
+              method: 'POST',
+              body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+              data.tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+              return data.tasks;
+            } else {
+              console.error('Ошибка получения заданий:', data.message);
+              return [];
+            }
+          } catch (error) {
+            console.error('Ошибка:', error);
+            return [];
+          }
+        }
+        return [];
+      }
+
+      // Функция для отображения заданий пользователя
+      function displayUserTasks(tasks) {
+        const tasksListElement = document.getElementById("userTasksList");
+        if (tasksListElement) {
+          tasksListElement.innerHTML = tasks.map(task => {
+            const priorityColor = {
+              low: '#12bb1a',
+              medium: '#fff000',
+              high: '#ff7300',
+              urgent: '#ff5445fc'
+            }[task.priority.toLowerCase()] || '#ccc';
+
+            const statusBorderColor = {
+              Pending: '#ff5445fc',
+              'In Progress': '#e1d400',
+              Completed: '#12bb1a'
+            }[task.status] || '#2196f3';
+
+            const assignedInfo = task.assigned_to 
+              ? `The task was assigned to ${task.assigned_to} <span style="font-size: 0.8em; color: #666;">at ${new Date(task.assigned_at).toLocaleString()}</span>`
+              : "No one has been assigned yet";
+
+            return `
+              <li class="task-item">
+                <div class="task-header">
+                  <div class="task-header-left">
+                    <span class="priority-indicator" style="background-color: ${priorityColor};"></span>
+                    <span class="task-id">${task.request_id}</span>
+                  </div>
+                  <div class="task-header-right">
+                    <span class="task-timestamp">${new Date(task.timestamp).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div class="task-status">
+                  Request <span class="status-container" style="border-color: ${statusBorderColor};">${task.status}</span>
+                </div>
+                <div class="task-assigned">${assignedInfo}</div>
+                <div class="task-details-wrapper">
+                  <div class="task-details">${task.details}</div>
+                </div>
+              </li>
+            `;
+          }).join('');
+
+          // Добавляем обработчик клика для разворачивания задания
+          tasksListElement.querySelectorAll('.task-item').forEach(item => {
+            item.addEventListener('click', function() {
+              const detailsWrapper = this.querySelector('.task-details-wrapper');
+              if (detailsWrapper.style.maxHeight === '0px' || !detailsWrapper.style.maxHeight) {
+                detailsWrapper.style.maxHeight = detailsWrapper.scrollHeight + 'px';
+              } else {
+                detailsWrapper.style.maxHeight = '0px';
+              }
+            });
+          });
+        }
+      }
+
+      // Инициализация личного кабинета при загрузке страницы
+      document.addEventListener("DOMContentLoaded", function () {
+        displayDashboardUserInfo();
+        getUserTasks().then(tasks => {
+          displayUserTasks(tasks);
+        });
+        loadUserPhoto();
+
+        const userDashboard = document.querySelector('.user-dashboard');
+        const headerContainer = document.querySelector('.header-container');
+        const closeButton = document.querySelector('.close-button');
+        const changePhotoButton = document.getElementById('changePhotoButton');
+        const photoModal = document.getElementById('photoModal');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const uploadPhotoButton = document.getElementById('uploadPhotoButton');
+        const dropArea = document.getElementById('dropArea');
+        const photoInput = document.getElementById('photoInput');
+        const fileNameDisplay = document.getElementById('fileName');
+        const overlay = document.getElementById('overlay');
+        const loadingIndicator = document.getElementById("loadingIndicator");
+        const loadingOverlay = document.getElementById("loadingOverlay");
+
+        headerContainer.addEventListener('click', function () {
+          userDashboard.classList.add('active');
+          overlay.style.display = 'block';
+        });
+
+        closeButton.addEventListener('click', function () {
+          userDashboard.classList.remove('active');
+          overlay.style.display = 'none';
+        });
+
+        overlay.addEventListener('click', function () {
+          userDashboard.classList.remove('active');
+          overlay.style.display = 'none';
+        });
+
+        changePhotoButton.addEventListener('click', function () {
+          photoModal.style.display = 'block';
+        });
+
+        closeModalButton.addEventListener('click', function () {
+          photoModal.style.display = 'none';
+        });
+
+        uploadPhotoButton.addEventListener('click', function () {
+          if (photoInput.files.length > 0) {
+            addUserPhotoToServer(photoInput.files[0]);
+            photoModal.style.display = 'none';
+          } else {
+            alert("No image added, please try again.");
+          }
+        });
+
+        dropArea.addEventListener('click', () => photoInput.click());
+
+        dropArea.addEventListener('dragover', (event) => {
+          event.preventDefault();
+          dropArea.style.backgroundColor = '#e0e0e0';
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+          dropArea.style.backgroundColor = '';
+        });
+
+        dropArea.addEventListener('drop', (event) => {
+          event.preventDefault();
+          dropArea.style.backgroundColor = '';
+          const files = event.dataTransfer.files;
+          if (files.length > 0) {
+            photoInput.files = files;
+            const file = files[0];
+            fileNameDisplay.textContent = `Selected file: ${file.name}`;
+            console.log('File dropped:', file.name);
+          }
+        });
+
+        // Обработчик для изменения текста при выборе файла
+        photoInput.addEventListener('change', function() {
+          if (photoInput.files.length > 0) {
+            const fileName = photoInput.files[0].name;
+            fileNameDisplay.textContent = `File "${fileName}" uploaded`;
+          } else {
+            fileNameDisplay.textContent = 'Drag and drop or click to select a file';
+          }
+        });
+
+        function addUserPhotoToServer(file) {
+          const formData = new FormData();
+          formData.append('action', 'addUserPhoto');
+          formData.append('userPhoto', file);
+
+          const currentUserEmail = document.getElementById('dashboardUserEmail').textContent;
+          formData.append('email', currentUserEmail);
+
+          fetch('database.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              console.log('Фото успешно загружено');
+            } else {
+              console.error('Ошибка загрузки фото:', data.message);
+            }
+          })
+          .catch(error => console.error('Ошибка:', error));
+        }
+
+        async function getUserPhotoFromServer() {
+          const currentUserEmail = document.getElementById('dashboardUserEmail').textContent;
+          const formData = new FormData();
+          formData.append('action', 'getUserPhoto');
+          formData.append('email', currentUserEmail);
+
+          return fetch('database.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              return data.photo === "nophoto" ? "user.png" : data.photo;
+            } else {
+              console.error('Ошибка получения фото:', data.message);
+              return "user.png"; // Возвращаем "user.png" в случае ошибки
+            }
+          })
+          .catch(error => {
+            console.error('Ошибка:', error);
+            return "user.png"; // Возвращаем "user.png" в случае ошибки
+          });
+        }
+
+        async function loadUserPhoto() {
+          try {
+            const photoFileName = await getUserPhotoFromServer();
+            const userPhotoElement = document.querySelector('.user-photo img');
+            if (userPhotoElement) {
+              userPhotoElement.src = `users/img/${photoFileName}`;
+            }
+          } catch (error) {
+            console.error('Ошибка загрузки фото:', error);
+          }
+        }
+
+        // Показать индикатор загрузки и вуаль
+        function showLoadingIndicator() {
+          loadingOverlay.style.display = 'block';
+          loadingIndicator.style.display = 'block';
+        }
+
+        // Скрыть индикатор загрузки и вуаль с плавным исчезновением
+        function hideLoadingIndicator() {
+          loadingOverlay.style.opacity = '0';
+          loadingIndicator.style.opacity = '0';
+          setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+            loadingIndicator.style.display = 'none';
+            loadingOverlay.style.opacity = '1'; // Сбросить прозрачность для следующего использования
+            loadingIndicator.style.opacity = '1'; // Сбросить прозрачность для следующего использования
+          }, 500); // Время должно совпадать с transition в CSS
+        }
+
+        // Пример асинхронной функции
+        async function loadUserDashboardData() {
+          showLoadingIndicator();
+          try {
+            const tasks = await getUserTasks();
+            displayUserTasks(tasks);
+            // Здесь можно добавить другие асинхронные операции
+          } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
+          } finally {
+            hideLoadingIndicator();
+          }
+        }
+
+        // Запуск загрузки данных
+        loadUserDashboardData();
+
+        const userPhotoContainer = document.querySelector('.user-photo-container');
+        const userPhoto = userPhotoContainer.querySelector('img');
+
+        function adjustImageSize() {
+          if (userPhoto.naturalWidth > userPhoto.naturalHeight) {
+            // Горизонтальная ориентация
+            userPhoto.style.width = 'auto';
+            userPhoto.style.height = '100%';
+          } else {
+            // Вертикальная ориентация
+            userPhoto.style.width = '100%';
+            userPhoto.style.height = 'auto';
+          }
+        }
+
+        // Убедитесь, что изображение загружено перед изменением размеров
+        if (userPhoto.complete) {
+          adjustImageSize();
+        } else {
+          userPhoto.onload = adjustImageSize;
         }
       });
     </script>

@@ -1263,7 +1263,7 @@ async function checkNewTasksInServer() {
       return result; // Предполагается, что сервер возвращает массив новых заданий
     } catch (jsonError) {
       console.error("Ошибка при парсинге JSON:", jsonError, "Ответ:", text);
-      return false;
+   return false;
     }
   } catch (error) {
     console.error("Ошибка при проверке новых заданий:", error);
