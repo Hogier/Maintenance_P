@@ -40,31 +40,7 @@ function checkAuth() {
   return true;
 }
 
-// Функция входа
-function login(username, password) {
-  const user = authorizedStaff.find(
-    (staff) => staff.username === username && staff.password === password
-  );
 
-  if (user) {
-    /* const authData = {
-      id: user.id,
-      name: user.name,
-      username: user.username,
-      role: user.role,
-    };
-    localStorage.setItem("currentUser", JSON.stringify(authData));*/
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify({
-        fullName: user.name,
-        role: user.role,
-      })
-    );
-    return true;
-  }
-  return false;
-}
 
 async function loginMaintenanceStaff(username, password) {
   try {
