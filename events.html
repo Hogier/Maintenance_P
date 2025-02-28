@@ -5,17 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>School Events Portal</title>
     <link rel="stylesheet" href="events.css" />
+    <link rel="stylesheet" href="user-profile.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
   </head>
   <body>
+    <div class="nav-buttons">
+      <a href="main.html" class="main-button">Back to Main</a>
+    </div>
     <div class="header-container">
       <div class="user-account">
-        <!-- User info will be populated by JavaScript -->
+        <div class="user-info">
+          <div class="avatar-container">
+            <span id="userAvatar">👤</span>
+          </div>
+          <div class="user-details">
+            <span id="userName"></span>
+            <span class="user-department"></span>
+          </div>
+        </div>
+        <button id="logoutButton">
+          <span class="logout-icon">↪</span>
+          <span class="logout-text">Logout</span>
+        </button>
       </div>
-      <a href="main.html" class="back-button">Back to Main</a>
+    </div>
+
+    <div class="user-dashboard">
+      <span class="close-button">×</span>
+      <div class="user-profile">
+        <div class="user-photo">
+          <div class="user-photo-container">
+          <img src="#"/>
+          </div>
+          <div class="change-photo" id="changePhotoButton">&#128247;</div>
+        </div>
+        <div class="user-info">
+          <h2 id="dashboardUserName"></h2>
+          <p id="dashboardUserEmail"></p>
+          <!-- Добавьте другие данные о пользователе здесь -->
+        </div>
+      </div>
+      <div class="user-tasks">
+        <div class="menu-header">
+          <div id="userTasks" class="menu-header-item"><h3>Your requests</h3></div>
+          <div id="events" class="menu-header-item"><h3>Events</h3></div>
+        </div>
+        <div class="info-content">
+          
+        </div>
+      </div>
+     <div class="loading-overlay" id="loadingOverlay"></div>
+     <div class="loading-indicator" id="loadingIndicator"></div> 
+    </div>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Модальное окно для загрузки фотографии -->
+    <div class="modal" id="photoModal">
+      <div class="modal-content">
+        <span class="close-modal" id="closeModalButton">×</span>
+        <h2>Upload photo</h2>
+        <div class="drop-area" id="dropArea">
+          <span id="fileName">Drag and drop or click to select a file</span>
+          <input type="file" id="photoInput" accept="image/*" hidden />
+        </div>
+        <button id="uploadPhotoButton">Confirm</button>
+      </div>
     </div>
 
     <div class="events-container">
@@ -425,5 +482,6 @@
     <script src="database.js"></script>
     <script src="dateUtils.js"></script>
     <script src="events.js"></script>
+    <script src="user-profile.js"></script>
   </body>
 </html>

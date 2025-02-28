@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Отображение информации о пользователе
-  displayUserInfo();
+  //displayUserInfo();
 
   // Инициализация календаря
   updateCalendar();
@@ -348,7 +348,7 @@ async function handleEventSubmit(e) {
 
   // Данные о создателе события
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  formData.append("createdBy", currentUser.username);
+  formData.append("createdBy", currentUser.fullName);
 
   // Данные о столах
   formData.append("tablesNeeded", form.querySelector("#tablesNeeded").value);
