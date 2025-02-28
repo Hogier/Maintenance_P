@@ -26,7 +26,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';  // Пустой пароль для XAMPP
+$password = 'root';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -86,9 +86,6 @@ if ($action === 'addTask') {
                 }
             }
         }
-    } else {
-        echo json_encode(['success' => false, 'message' => 'No files uploaded']);
-        exit;
     }
 
     // Преобразование timestamp в нужный формат
@@ -114,7 +111,6 @@ if ($action === 'addTask') {
         $_POST['details'],
         $timestamp,
         $_POST['status'],
-        //json_encode($_POST['comments']),
         json_encode($mediaFiles),
         $_POST['submittedBy'],
         $_POST['date'],

@@ -6,6 +6,10 @@ body {
   position: relative;
 }
 
+h3 {
+  margin: 0;
+}
+
 .img-box {
   position: fixed;
   top: 0;
@@ -160,7 +164,7 @@ textarea {
   background-color: #2196f3;
   color: white;
   text-decoration: none;
-  border-radius: 5px;
+  border-radius: 10px;
   font-size: 16px;
   transition: background-color 0.3s ease;
   z-index: 10;
@@ -278,57 +282,6 @@ textarea {
 .priority-btn[data-priority="urgent"] {
   background-color: #f44336;
   color: white;
-}
-
-/* Стили для блока информации о пользователе */
-.user-account {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 8px 15px;
-  border-radius: 25px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#userAvatar {
-  font-size: 24px;
-  color: #2196f3;
-}
-
-#userName {
-  font-weight: bold;
-  color: #333;
-}
-
-.user-menu {
-  position: relative;
-}
-
-#logoutButton {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 5px 12px;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-#logoutButton:hover {
-  background-color: #d32f2f;
-  transform: scale(1.05);
 }
 
 /* Стили для выбора типа сотрудника */

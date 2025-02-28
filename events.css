@@ -12,7 +12,7 @@ body {
 
 .events-container {
   max-width: 1200px;
-  margin: 20px auto;
+  margin: 55px auto;
   padding: 20px;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1352,98 +1352,6 @@ body {
 
 .comments-list::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-/* User account styles */
-.user-account {
-  display: none;
-  align-items: center;
-  gap: 15px;
-  padding: 10px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 50px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar-container {
-  width: 35px;
-  height: 35px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e3f2fd;
-  border-radius: 50%;
-}
-
-#userAvatar {
-  font-size: 20px;
-  color: #2196f3;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-}
-
-#userName {
-  font-weight: 600;
-  color: #333;
-  font-size: 14px;
-}
-
-.user-department {
-  font-size: 12px;
-  color: #666;
-}
-
-#logoutButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  padding: 8px;
-  font-size: 14px;
-  transition: color 0.3s;
-}
-
-#logoutButton:hover {
-  color: #f44336;
-}
-
-.logout-icon {
-  transform: rotate(180deg);
-}
-
-@media (max-width: 768px) {
-  .user-account {
-    padding: 5px 10px;
-  }
-
-  .avatar-container {
-    width: 30px;
-    height: 30px;
-  }
-
-  #userAvatar {
-    font-size: 16px;
-  }
-
-  .user-department {
-    display: none;
-  }
-
-  .logout-text {
-    display: none;
-  }
 }
 
 /* Стилизация скроллбара */

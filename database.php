@@ -10,7 +10,7 @@ ini_set('display_errors', 1);
 // Параметры подключения к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 // Подключение к базе данных
@@ -31,7 +31,7 @@ if ($action === 'addUser') {
     $department = $_POST['department'] ?? '';
     $role = $_POST['role'] ?? '';
     $password = $_POST['password'] ?? '';
-
+    error_log("Received data: email=$email, fullName=$fullName, department=$department, role=$role, password=$password");
     // Проверка, что все данные получены
     if ($email && $fullName && $department && $role && $password) {
         // Хэширование пароля
@@ -40,15 +40,18 @@ if ($action === 'addUser') {
         // Подготовка и выполнение запроса
         $stmt = $conn->prepare("INSERT INTO users (email, full_name, department, role, password) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param('sssss', $email, $fullName, $department, $role, $passwordHash);
-
+        error_log("Executing query: " . $stmt->query());
         if ($stmt->execute()) {
+            error_log("Query executed successfully");
             echo json_encode(['success' => true, 'message' => 'User added successfully']);
         } else {
+            error_log("Query execution failed: " . $stmt->error);
             echo json_encode(['success' => false, 'message' => 'Error adding user: ' . $stmt->error]);
         }
 
         $stmt->close();
     } else {
+        error_log("Invalid input data: email=$email, fullName=$fullName, department=$department, role=$role, password=$password");
         echo json_encode(['success' => false, 'message' => 'Invalid input data']);
     }
 
@@ -328,6 +331,26 @@ if ($action === 'addUser') {
         echo json_encode(['success' => true, 'tasks' => $tasks]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid staff name']);
+    }
+} elseif ($action === 'getEventsByProfile') {
+    $date = $_POST['date'] ?? '';
+
+    if ($date) {
+        $stmt = $conn->prepare("SELECT name, startDate, startTime, setupDate, setupTime, endDate, endTime, location, contact, email, phone, alcuinContact, attendees, status, createdBy, createdAt FROM events WHERE endDate >= ?");
+        $stmt->bind_param('s', $date);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result) {
+            $events = $result->fetch_all(MYSQLI_ASSOC);
+            echo json_encode(['success' => true, 'events' => $events]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error fetching events: ' . $conn->error]);
+        }
+
+        $stmt->close();
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid date']);
     }
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid action']);
