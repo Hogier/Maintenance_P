@@ -552,8 +552,11 @@ function createEquipmentItem(label, value) {
 // Обновляем функцию форматирования даты
 function formatDate(dateString) {
   if (!dateString) return "";
-  const date = new Date(dateString);
+  // Добавляем 'T12:00:00' к дате, чтобы избежать проблем с часовыми поясами
+  const date = new Date(dateString + "T12:00:00");
+  // Используем часовой пояс Далласа для форматирования
   return date.toLocaleDateString("en-US", {
+    timeZone: "America/Chicago",
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -1038,11 +1041,11 @@ async function addComment(e, eventId) {
 
   // Получаем текущую дату в часовом поясе Далласа
   const now = new Date();
-  // Конвертируем в часовой пояс Далласа
   const dallasTime = new Date(
     now.toLocaleString("en-US", { timeZone: "America/Chicago" })
   );
 
+  // Форматируем дату в MySQL формат
   const formattedDate =
     dallasTime.getFullYear() +
     "-" +
@@ -1100,10 +1103,23 @@ async function addComment(e, eventId) {
 function createCommentElement(comment) {
   const div = document.createElement("div");
   div.className = "comment-item";
+
+  // Форматируем дату для отображения
+  const commentDate = new Date(comment.date);
+  const formattedDate = commentDate.toLocaleString("en-US", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
   div.innerHTML = `
     <div class="comment-header">
       <span class="comment-author">${comment.author}</span>
-      <span class="comment-date">${formatDate(comment.date)}</span>
+      <span class="comment-date">${formattedDate}</span>
     </div>
     <div class="comment-text">${comment.text}</div>
   `;
