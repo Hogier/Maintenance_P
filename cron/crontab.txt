@@ -1,0 +1,2 @@
+# Generate access code on the first day of each month at 00:00
+0 0 1 * * /usr/local/bin/php /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/cron/generate_monthly_code.php >> /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/logs/cron.log 2>&1 

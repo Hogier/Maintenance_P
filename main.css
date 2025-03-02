@@ -140,6 +140,18 @@ header h1 {
   background-color: #388e3c;
 }
 
+.user-account {
+  display: none; /* Скрыто по умолчанию */
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 10px;
+  width: calc(100% - 40px);
+}
+
 @media (max-width: 768px) {
   .menu-container {
     grid-template-columns: 1fr;
