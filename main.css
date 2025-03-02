@@ -24,7 +24,7 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 1;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .img-box img {
@@ -73,6 +73,7 @@ header h1 {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
   transition: transform 0.3s ease;
+  border: 2px solid #2196f3;
 }
 
 .menu-item:hover {
@@ -105,6 +106,14 @@ header h1 {
   background-color: #1976d2;
 }
 
+.submit-button {
+  background-color: #fa8100;
+}
+
+.submit-button:hover {
+  background-color: #f8740f;
+}
+
 .maintenance-staff {
   background-color: #f8f9fa;
   border: 2px solid #2196f3;
@@ -120,7 +129,7 @@ header h1 {
 
 .event-portal {
   background-color: #f8f9fa;
-  border: 2px solid #4caf50;
+  border: 2px solid #2196f3;
 }
 
 .event-button {
