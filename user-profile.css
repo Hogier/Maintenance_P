@@ -220,8 +220,8 @@ font-size: 12px;
 
 .close-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 20px;
   font-size: 24px;
   color: gray;
   cursor: pointer;
@@ -551,7 +551,7 @@ font-size: 12px;
 .event-list-item {
   margin: 0 0 10px 0;
   padding: 15px;
-  background: #d2ecd3;
+  background: #cceccd;
   border-radius: 8px;
   box-shadow: inset 0px 0px 9px 1px rgb(39 156 22 / 8%);
   transition: 0.3s ease;
@@ -629,3 +629,16 @@ font-size: 12px;
   overflow: hidden;
   transition: max-height 0.3s ease;
 }
+
+.settings-button {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  cursor: pointer;
+}
+
+.settings-button img {
+  width: 30px;
+  height: 30px;
+}
+
