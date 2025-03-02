@@ -69,16 +69,32 @@ button:hover {
   min-height: 20px;
 }
 
-.back-link {
+.login-links {
   text-align: center;
   margin-top: 20px;
 }
 
-.back-link a {
-  color: #2196f3;
-  text-decoration: none;
+.login-links p {
+  margin-bottom: 10px;
+  color: #666;
 }
 
-.back-link a:hover {
+.register-link {
+  color: #2196f3;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-link:hover {
   text-decoration: underline;
+}
+
+.back-link {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.back-link:hover {
+  color: #2196f3;
 }

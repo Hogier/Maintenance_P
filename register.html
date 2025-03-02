@@ -41,11 +41,22 @@
         </form>
         <div id="errorMessage" class="error-message"></div>
         <div class="login-link">
-          Already have an account? <a href="main.html">Back to Main Menu</a>
+          Already have an account? <a href="loginUser.html">Login</a>
+          <br />
+          <a href="main.html" class="back-link">Back to Main Menu</a>
         </div>
       </div>
     </div>
-    <script src="register.js"></script>
+    <script src="teachers-data.js"></script>
     <script src="database.js"></script>
+    <script src="register.js"></script>
+    <script>
+      // Check registration access
+      document.addEventListener("DOMContentLoaded", function () {
+        if (!sessionStorage.getItem("registrationAccess")) {
+          window.location.href = "verify_code.html";
+        }
+      });
+    </script>
   </body>
 </html>

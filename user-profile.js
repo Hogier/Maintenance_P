@@ -1,6 +1,18 @@
 let isFirstLoadEvents = false;
 
 document.addEventListener("DOMContentLoaded", async function () {
+  // Проверяем авторизацию
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const maintenanceStaff = JSON.parse(
+    localStorage.getItem("maintenanceStaffAuth")
+  );
+
+  // Если пользователь не авторизован, скрываем элементы профиля
+  if (!user && !maintenanceStaff) {
+    document.querySelector(".user-account").style.display = "none";
+    return;
+  }
+
   await loadUserPhoto();
   displayUserInfo();
   displayDashboardUserInfo();
