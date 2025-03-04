@@ -9,7 +9,7 @@ ini_set('display_errors', 1);
 class Database {
     private $host = 'localhost';
     private $user = 'root';
-    private $password = '';
+    private $password = 'root';
     private $database = 'maintenancedb';
     private $conn;
 
@@ -51,6 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $department = $_POST['department'] ?? '';
             $role = $_POST['role'] ?? '';
             $password = $_POST['password'] ?? '';
+            $building = $_POST['building'] ?? '';
+            $room = $_POST['room'] ?? '';
+            $staffType = $_POST['staffType'] ?? '';
             
             // Check if email or full name already exists
             $checkStmt = $conn->prepare("SELECT email, full_name FROM users WHERE email = ? OR full_name = ?");
@@ -69,13 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // If no duplicates found, proceed with registration
-            if ($email && $fullName && $department && $role && $password) {
+            if ($email && $fullName && $department && $role && $password && $building && $room && $staffType) {
                 // Хэширование пароля
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
                 // Подготовка и выполнение запроса
-                $stmt = $conn->prepare("INSERT INTO users (email, full_name, department, role, password) VALUES (?, ?, ?, ?, ?)");
-                $stmt->bind_param('sssss', $email, $fullName, $department, $role, $passwordHash);
+                $stmt = $conn->prepare("INSERT INTO users (email, full_name, department, role, password, building, room, staffType) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param('ssssssss', $email, $fullName, $department, $role, $passwordHash, $building, $room, $staffType);
                 
                 if ($stmt->execute()) {
                     echo json_encode(['success' => true, 'message' => 'User registered successfully']);
