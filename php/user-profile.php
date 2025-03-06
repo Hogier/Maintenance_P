@@ -25,40 +25,120 @@ if ($conn->connect_error) {
 $action = $_POST['action'] ?? '';
 
 if ($action === 'addUserPhoto') {
-    $email = $_POST['email'] ?? ''; // Получаем email из POST-запроса
+    $email = $_POST['email'] ?? '';
 
     if (isset($_FILES['userPhoto'])) {
         $file = $_FILES['userPhoto'];
+        
+        // Проверка ошибок загрузки
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $uploadErrors = array(
+                UPLOAD_ERR_INI_SIZE => 'Файл превышает максимально допустимый размер',
+                UPLOAD_ERR_FORM_SIZE => 'Файл превышает максимально допустимый размер',
+                UPLOAD_ERR_PARTIAL => 'Файл был загружен частично',
+                UPLOAD_ERR_NO_FILE => 'Файл не был загружен',
+                UPLOAD_ERR_NO_TMP_DIR => 'Отсутствует временная папка',
+                UPLOAD_ERR_CANT_WRITE => 'Не удалось записать файл на диск',
+                UPLOAD_ERR_EXTENSION => 'PHP-расширение остановило загрузку файла'
+            );
+            echo json_encode(['success' => false, 'message' => $uploadErrors[$file['error']]]);
+            exit;
+        }
+
+        // Проверка типа файла
+        $allowed = array('jpg', 'jpeg', 'png', 'gif');
         $fileName = basename($file['name']);
-        $targetDir = __DIR__ . '/users/img/';
-        $miniDir = __DIR__ . '/users/mini/';
+        $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        
+        if (!in_array($fileExt, $allowed)) {
+            echo json_encode(['success' => false, 'message' => 'Допустимы только изображения форматов: ' . implode(', ', $allowed)]);
+            exit;
+        }
+
+        // Получаем путь к корневой директории сайта
+        $rootPath = $_SERVER['DOCUMENT_ROOT'] . '/MaintenanceP.ua';
+        
+        // Формируем абсолютные пути
+        $targetDir = $rootPath . '/users/img/';
+        $miniDir = $rootPath . '/users/mini/';
         $targetFile = $targetDir . $fileName;
         $miniFile = $miniDir . 'mini_' . $fileName;
 
-        // Проверка и создание директорий, если они не существуют
+        // Проверка и создание директорий
         if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0777, true);
+            if (!@mkdir($targetDir, 0755, true)) {
+                echo json_encode(['success' => false, 'message' => 'Не удалось создать директорию для загрузки']);
+                exit;
+            }
         }
         if (!is_dir($miniDir)) {
-            mkdir($miniDir, 0777, true);
+            if (!@mkdir($miniDir, 0755, true)) {
+                echo json_encode(['success' => false, 'message' => 'Не удалось создать директорию для миниатюр']);
+                exit;
+            }
+        }
+
+        // Проверка прав на запись
+        if (!is_writable($targetDir)) {
+            echo json_encode(['success' => false, 'message' => 'Нет прав на запись в директорию загрузки']);
+            exit;
         }
 
         // Сохранение оригинального изображения
-        if (move_uploaded_file($file['tmp_name'], $targetFile)) {
-            // Изменение размера и качества изображения
-            $image = imagecreatefromstring(file_get_contents($targetFile));
+        if (!move_uploaded_file($file['tmp_name'], $targetFile)) {
+            echo json_encode(['success' => false, 'message' => 'Ошибка при перемещении загруженного файла']);
+            exit;
+        }
+
+        // Создание изображения на основе загруженного файла
+        switch($fileExt) {
+            case 'jpg':
+            case 'jpeg':
+                $image = @imagecreatefromjpeg($targetFile);
+                break;
+            case 'png':
+                $image = @imagecreatefrompng($targetFile);
+                break;
+            case 'gif':
+                $image = @imagecreatefromgif($targetFile);
+                break;
+            default:
+                $image = false;
+        }
+
+        if (!$image) {
+            unlink($targetFile); // Удаляем файл, если не удалось создать изображение
+            echo json_encode(['success' => false, 'message' => 'Не удалось обработать загруженное изображение']);
+            exit;
+        }
+
+        // Изменение размера и сохранение
+        try {
             $width = imagesx($image);
             $height = imagesy($image);
             $newWidth = 300;
             $newHeight = ($height / $width) * $newWidth;
+            
             $resizedImage = imagescale($image, $newWidth, $newHeight);
-            imagejpeg($resizedImage, $targetFile, 70);
+            if (!$resizedImage) {
+                throw new Exception('Ошибка при изменении размера изображения');
+            }
+            
+            if (!imagejpeg($resizedImage, $targetFile, 70)) {
+                throw new Exception('Ошибка при сохранении обработанного изображения');
+            }
 
             // Создание миниатюры
             $miniWidth = 40;
             $miniHeight = ($height / $width) * $miniWidth;
             $miniImage = imagescale($image, $miniWidth, $miniHeight);
-            imagejpeg($miniImage, $miniFile, 60);
+            if (!$miniImage) {
+                throw new Exception('Ошибка при создании миниатюры');
+            }
+            
+            if (!imagejpeg($miniImage, $miniFile, 60)) {
+                throw new Exception('Ошибка при сохранении миниатюры');
+            }
 
             // Освобождение памяти
             imagedestroy($image);
@@ -68,14 +148,18 @@ if ($action === 'addUserPhoto') {
             // Обновление информации в базе данных
             $stmt = $conn->prepare("UPDATE users SET photo = ? WHERE email = ?");
             $stmt->bind_param('ss', $fileName, $email);
-            if ($stmt->execute()) {
-                echo json_encode(['success' => true, 'message' => 'Фото успешно добавлено']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Ошибка обновления базы данных: ' . $stmt->error]);
+            if (!$stmt->execute()) {
+                throw new Exception('Ошибка обновления базы данных: ' . $stmt->error);
             }
             $stmt->close();
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Ошибка загрузки файла']);
+
+            echo json_encode(['success' => true, 'message' => 'Фото успешно добавлено']);
+
+        } catch (Exception $e) {
+            // Удаляем файлы в случае ошибки
+            if (file_exists($targetFile)) unlink($targetFile);
+            if (file_exists($miniFile)) unlink($miniFile);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     } else {
         echo json_encode(['success' => false, 'message' => 'Файл не получен']);

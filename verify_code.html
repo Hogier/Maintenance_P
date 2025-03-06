@@ -113,6 +113,22 @@
         background-color: #f8d7da;
         color: #721c24;
       }
+
+      .back-link {
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9em;
+      }
+
+      .back-link:hover {
+       color: #2196f3;
+      }
+
+      .back-link-container {
+        width: 100%;
+        text-align: center;
+        margin-top: 3px;
+      }
     </style>
   </head>
   <body>
@@ -144,12 +160,9 @@
           />
         </div>
         <button id="verify-btn" class="btn">Verify Code</button>
-        <button
-          onclick="window.location.href='/Maintenance_P/main.html'"
-          class="btn btn-secondary"
-        >
-          Back to Main Menu
-        </button>
+        <div class="back-link-container">
+          <a href="main.html" class="back-link">Back to Main Menu</a>
+        </div>
       </div>
 
       <div id="message" class="message" style="display: none"></div>

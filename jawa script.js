@@ -137,10 +137,9 @@ async function checkCurrentUser() {
     await db.waitForDB();
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     if (currentUser) {
-      document.getElementById("userName").textContent = currentUser.fullName;
-      document.querySelector(".user-account").style.display = "flex";
+
     } else {
-      document.querySelector(".user-account").style.display = "none";
+      console.error("Error checking current user:", error);
     }
   } catch (error) {
     console.error("Error checking current user:", error);
@@ -172,23 +171,25 @@ async function initializeForm() {
   const form = document.querySelector("form");
   if (!form) return; // Если формы нет, прекращаем выполнение
 
-  const buildingSelect = document.getElementById("buildingSelect");
-  const roomSelection = document.getElementById("roomSelection");
-  const roomSelect = document.getElementById("roomSelect");
-  const teacherSelection = document.getElementById("teacherSelection");
-  const staffTypeRadios = document.getElementsByName("staffType");
+  const userBuildingSelect = document.getElementById("userBuildingSelect");
+  const userRoomSelect = document.getElementById("userRoomSelect");
+  const userStaffSelect = document.getElementById("userStaffSelect");
+  //const staffTypeRadios = document.getElementsByName("staffType");
   const staffSelectContainer = document.getElementById("staffSelectContainer");
-  const staffSelect = document.getElementById("staffSelect");
+  //const staffSelect = document.getElementById("staffSelect");
   const requestForm = document.getElementById("requestForm");
 
+  console.log("userBuildingSelect: " + userBuildingSelect);
+  console.log("userRoomSelect: " + userRoomSelect);
+  console.log("userStaffSelect: " + userStaffSelect);
+  console.log("staffSelectContainer: " + staffSelectContainer);
+  console.log("requestForm: " + requestForm);
   // Проверяем наличие необходимых элементов
   if (
-    !buildingSelect ||
-    !roomSelection ||
-    !roomSelect ||
-    !teacherSelection ||
+    !userBuildingSelect ||
+    !userRoomSelect ||
+    !userStaffSelect ||
     !staffSelectContainer ||
-    !staffSelect ||
     !requestForm
   ) {
     console.log("Some form elements are missing");
@@ -198,6 +199,13 @@ async function initializeForm() {
   let selectedPriority = null;
   console.log("selectedBuilding: ");
   // Обработчик выбора здания
+  let userLocation = await getUserLocation();
+
+  userBuildingSelect.value = userLocation.building;
+  userRoomSelect.value = userLocation.room;
+  userStaffSelect.value = userLocation.staffType;
+
+  /*
   buildingSelect.addEventListener("change", function () {
     const selectedBuilding = this.value;
     console.log("selectedBuilding: " + selectedBuilding);
@@ -255,7 +263,7 @@ async function initializeForm() {
       requestForm.style.display = "none";
     }
   });
-
+*/
   // Функция проверки авторизации пользователя
   async function checkUserAuthorization(selectedStaff) {
     try {
@@ -297,9 +305,9 @@ async function initializeForm() {
         return;
       }
 
-      const building = buildingSelect.value;
-      const room = roomSelect.value;
-      const staff = staffSelect.value;
+      const building = userBuildingSelect.value;
+      const room = userRoomSelect.value;
+      const staff = userStaffSelect.value;
       const details = document.getElementById("requestDetails").value;
 
       if (!details.trim()) {
@@ -482,6 +490,7 @@ async function populateStaffSelect(room, staffType) {
   }
 }
 
+/*
 // Обновим обработчик для кнопки выхода
 document
   .getElementById("logoutButton")
@@ -493,7 +502,7 @@ document
       console.error("Error logging out:", error);
     }
   });
-
+*/
 // Обновим функцию отправки запроса
 async function submitRequest(formData) {
   try {
@@ -512,4 +521,34 @@ function formatDateFromTimestamp(timestamp) {
 
   // Форматируем дату в нужный формат
   return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+async function getUserLocation() {
+    try {
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser || !currentUser.email) {
+            throw new Error('User not logged in');
+        }
+
+        const formData = new FormData();
+        formData.append('action', 'getUserLocation');
+        formData.append('email', currentUser.email);
+
+        const response = await fetch('database.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log('User location:', data.location);
+            return data.location;
+        } else {
+            throw new Error(data.message || 'Failed to get user location');
+        }
+    } catch (error) {
+        console.error('Error getting user location:', error);
+        return null;
+    }
 }
