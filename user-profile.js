@@ -571,19 +571,45 @@ async function addUserPhotoToServer(file) {
   ).email;
   formData.append("email", currentUserEmail);
 
-  return fetch("php/user-profile.php", {
-    method: "POST",
-    body: formData,
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        console.log("Фото успешно загружено");
-      } else {
-        console.error("Ошибка загрузки фото:", data.message);
-      }
-    })
-    .catch((error) => console.error("Ошибка:", error));
+  try {
+    console.log('Начало загрузки файла:', file.name);
+    console.log('Тип файла:', file.type);
+    console.log('Размер файла:', file.size);
+
+    const response = await fetch("php/user-profile.php", {
+      method: "POST",
+      body: formData,
+    });
+    
+    console.log('Статус ответа:', response.status);
+    console.log('Заголовки ответа:', Object.fromEntries(response.headers));
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Ответ сервера:', data);
+    
+    if (data.success) {
+      console.log("Фото успешно загружено");
+      return true;
+    } else {
+      console.error("Ошибка загрузки фото:", data.message);
+      alert("Ошибка при загрузке фото: " + data.message);
+      return false;
+    }
+  } catch (error) {
+    console.error("Подробная информация об ошибке:", {
+      message: error.message,
+      stack: error.stack,
+      fileName: file?.name,
+      fileType: file?.type,
+      fileSize: file?.size
+    });
+    alert("Ошибка при загрузке фото: " + error.message);
+    return false;
+  }
 }
 
 async function getUserPhotoFromServer() {
@@ -623,12 +649,12 @@ async function loadUserPhoto() {
     console.log(userPhotoElement);
     console.log(avatarContainer);
     if (photoFileName !== "user.png") {
-      avatarContainer.style.backgroundImage = `url(users/img/${photoFileName})`;
+      avatarContainer.style.backgroundImage = `url(/MaintenanceP.ua/users/img/${photoFileName})`;
       avatarContainer.style.backgroundSize = "cover";
       avatarContainer.style.backgroundPosition = "center";
       avatarContainer.innerHTML = ``;
     }
-    userPhotoElement.src = `users/img/${photoFileName}`;
+    userPhotoElement.src = `/MaintenanceP.ua/users/img/${photoFileName}`;
   } catch (error) {
     console.error("Ошибка загрузки фото:", error);
   }

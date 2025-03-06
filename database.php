@@ -190,6 +190,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             echo json_encode(['success' => true, 'message' => 'Code verified successfully']);
 
+        } elseif ($action === 'getUserLocation') {
+            $email = $_POST['email'] ?? '';
+            
+            if (empty($email)) {
+                echo json_encode(['success' => false, 'message' => 'Email not provided']);
+                exit;
+            }
+
+            // Получаем данные о локации пользователя
+            $stmt = $conn->prepare("SELECT building, room, staffType FROM users WHERE email = ?");
+            $stmt->bind_param('s', $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $userData = $result->fetch_assoc();
+            
+            if ($userData) {
+                echo json_encode([
+                    'success' => true, 
+                    'location' => [
+                        'building' => $userData['building'],
+                        'room' => $userData['room'],
+                        'staffType' => $userData['staffType']
+                    ]
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'User not found']);
+            }
+
         } else {
             echo json_encode(['success' => false, 'message' => 'Invalid action']);
         }
