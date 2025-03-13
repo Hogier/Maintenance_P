@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'maintenance/portal',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => '5e2be3cae0c7ac591dbc55d47596ae744f7a3c80',
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
+        'reference' => NULL,
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'maintenance/portal' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '5e2be3cae0c7ac591dbc55d47596ae744f7a3c80',
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'reference' => NULL,
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -25,6 +25,15 @@
             'reference' => '2f5c94fe7493efc213f643c23b1b1c249d40f47e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'workerman/workerman' => array(
+            'pretty_version' => 'v4.2.1',
+            'version' => '4.2.1.0',
+            'reference' => 'cafb5a43d93d7d30a16b32a57948581cca993562',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../workerman/workerman',
             'aliases' => array(),
             'dev_requirement' => false,
         ),

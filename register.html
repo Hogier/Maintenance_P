@@ -275,21 +275,21 @@ const roomTeachers = {
     } else {
       roomSelection.style.display = "none";
       teacherSelection.style.display = "none";
-      requestForm.style.display = "none";
+      //requestForm.style.display = "none";
     }
   });
 
   // Обработчик выбора комнаты
   roomSelect.addEventListener("change", function () {
     if (this.value) {
-      teacherSelection.style.display = "block";
-      staffTypeRadios[0].checked = false;
-      staffTypeRadios[1].checked = false;
-      staffSelectContainer.style.display = "none";
-      requestForm.style.display = "none";
+      //teacherSelection.style.display = "block";
+      //staffTypeRadios[0].checked = false;
+      //staffTypeRadios[1].checked = false;
+      //staffSelectContainer.style.display = "none";
+      //requestForm.style.display = "none";
     } else {
-      teacherSelection.style.display = "none";
-      requestForm.style.display = "none";
+      //teacherSelection.style.display = "none";
+      //requestForm.style.display = "none";
     }
   });
       });

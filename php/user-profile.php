@@ -24,6 +24,11 @@ if ($conn->connect_error) {
 // Получение данных из POST-запроса
 $action = $_POST['action'] ?? '';
 
+// В начале файла добавляем:
+require_once __DIR__ . '/../vendor/autoload.php';
+use Workerman\Connection\AsyncTcpConnection;
+use Workerman\Worker;
+
 if ($action === 'addUserPhoto') {
     $email = $_POST['email'] ?? '';
 
@@ -56,7 +61,7 @@ if ($action === 'addUserPhoto') {
         }
 
         // Получаем путь к корневой директории сайта
-        $rootPath = $_SERVER['DOCUMENT_ROOT'] . '/MaintenanceP.ua';
+        $rootPath = $_SERVER['DOCUMENT_ROOT'] . '/Maintenance_P';
         
         // Формируем абсолютные пути
         $targetDir = $rootPath . '/users/img/';
@@ -304,6 +309,37 @@ if ($action === 'addUserPhoto') {
             'success' => false,
             'message' => 'User not found'
         ]);
+    }
+} elseif ($action === 'sendNotification') {
+    try {
+        // Создаем асинхронное подключение к WebSocket-серверу
+        $client = new AsyncTcpConnection('ws://127.0.0.1:2346');
+        
+        // При успешном подключении
+        $client->onConnect = function($connection) {
+            // Отправляем сообщение
+            $connection->send('Hello World!');
+        };
+        
+        // При получении сообщения от сервера
+        $client->onMessage = function($connection, $data) {
+            echo "Получено: $data\n";
+        };
+        
+        // При ошибке
+        $client->onError = function($connection, $code, $msg) {
+            echo "Ошибка: $msg\n";
+        };
+        
+        // При закрытии соединения
+        $client->onClose = function($connection) {
+            echo "Соединение закрыто\n";
+        };
+        
+        // Устанавливаем соединение
+        $client->connect();
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
     }
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid action']);
