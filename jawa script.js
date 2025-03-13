@@ -1,4 +1,4 @@
-const buildingRooms = {
+/*const buildingRooms = {
   westWing: ["Room 101", "Room 102", "Room 103"],
   southWing: ["Room 201", "Room 202", "Room 203"],
   northWing: ["Room 301", "Room 302", "Room 303"],
@@ -130,7 +130,7 @@ const roomTeachers = {
     ],
   },
 };
-
+*/
 // В начале файла добавим функцию для проверки текущего пользователя
 async function checkCurrentUser() {
   try {
@@ -198,9 +198,34 @@ async function initializeForm() {
 
   let selectedPriority = null;
   console.log("selectedBuilding: ");
-  // Обработчик выбора здания
+  // Функция для анимации загрузки
+  function startLoadingAnimation(element) {
+    let dots = "";
+    const maxDots = 5;
+    const interval = setInterval(() => {
+      dots += ".";
+      if (dots.length > maxDots) {
+        dots = "";
+      }
+      element.value = `${dots}`;
+    }, 250);
+    return interval;
+  }
+
+  // Запускаем анимацию загрузки
+  const buildingLoadingInterval = startLoadingAnimation(userBuildingSelect);
+  const roomLoadingInterval = startLoadingAnimation(userRoomSelect);
+  const staffLoadingInterval = startLoadingAnimation(userStaffSelect);
+
+  // Получаем местоположение пользователя
   let userLocation = await getUserLocation();
 
+  // Останавливаем анимацию загрузки
+  clearInterval(buildingLoadingInterval);
+  clearInterval(roomLoadingInterval);
+  clearInterval(staffLoadingInterval);
+
+  // Устанавливаем полученные значения
   userBuildingSelect.value = userLocation.building;
   userRoomSelect.value = userLocation.room;
   userStaffSelect.value = userLocation.staffType;
@@ -307,7 +332,7 @@ async function initializeForm() {
 
       const building = userBuildingSelect.value;
       const room = userRoomSelect.value;
-      const staff = userStaffSelect.value;
+      const staff = JSON.parse(localStorage.getItem("currentUser")).fullName;
       const details = document.getElementById("requestDetails").value;
 
       if (!details.trim()) {

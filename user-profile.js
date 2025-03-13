@@ -18,6 +18,85 @@ const buildingRooms = {
   Administration: ["Office 1", "Office 2", "Office 3"],
 };
 
+
+
+
+
+
+// Создаем WebSocket соединение
+const ws = new WebSocket('ws://localhost:2346');
+
+// При открытии соединения
+ws.onopen = function() {
+    console.log('Подключено к WebSocket серверу');
+};
+
+// При получении сообщения
+ws.onmessage = function(e) {
+    try {
+        const response = JSON.parse(e.data);
+        console.log('Получен ответ:', response);
+        
+        if (response.type === 'tasks') {
+            // Обработка полученных задач
+            const tasks = response.data;
+            console.log('Получены задачи:', tasks);
+            // Здесь можно вызвать функцию для отображения задач
+            displayUserTasks(tasks);
+        } else if (response.type === 'error') {
+            console.error('Ошибка сервера:', response.message);
+        }
+    } catch (error) {
+        console.error('Ошибка парсинга JSON:', error);
+        console.log('Полученные данные:', e.data);
+    }
+};
+
+// При ошибке
+ws.onerror = function(e) {
+    console.error('WebSocket ошибка: ' + e.message);
+};
+
+// При закрытии соединения
+ws.onclose = function() {
+    console.log('Соединение закрыто');
+};
+
+
+
+
+
+
+// Отправка запроса на получение задач
+function requestTasks(staff) {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            action: 'getUserTasks',
+            staff: staff
+        }));
+    } else {
+        console.error('WebSocket не подключен');
+    }
+}
+
+// Вызов функции при загрузке страницы
+const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+if (currentUser) {
+    requestTasks(currentUser.fullName);
+}
+
+setTimeout(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+        const message = {
+            action: 'getUserTasks',
+            staff: 'Linda Wilson'
+        };
+        console.log('Отправка запроса:', message);
+        ws.send(JSON.stringify(message));
+    }
+}, 1000);
+
+
 document.addEventListener("DOMContentLoaded", async function () {
   // Проверяем авторизацию
   const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -647,14 +726,23 @@ async function loadUserPhoto() {
     console.log("loadUserPhoto!");
     console.log(photoFileName);
     console.log(userPhotoElement);
-    console.log(avatarContainer);
+    console.log("photoFileName: " + photoFileName);
+
     if (photoFileName !== "user.png") {
-      avatarContainer.style.backgroundImage = `url(/MaintenanceP.ua/users/img/${photoFileName})`;
+      avatarContainer.style.backgroundImage = `url("/Maintenance_P/users/img/${photoFileName}")`;
       avatarContainer.style.backgroundSize = "cover";
       avatarContainer.style.backgroundPosition = "center";
       avatarContainer.innerHTML = ``;
     }
-    userPhotoElement.src = `/MaintenanceP.ua/users/img/${photoFileName}`;
+    userPhotoElement.src = `/Maintenance_P/users/img/${photoFileName}`;
+    console.log(avatarContainer);
+
+    // Добавляем проверку и выводим значение backgroundImage
+    if (avatarContainer) {
+      console.log("Background Image URL:", avatarContainer.style);
+    } else {
+      console.error("avatarContainer не найден");
+    }
   } catch (error) {
     console.error("Ошибка загрузки фото:", error);
   }
@@ -764,35 +852,35 @@ async function displayEvents() {
 
     events.forEach((event) => {
       const listItem = document.createElement("li");
-      listItem.classList.add("event-list-item");
+      listItem.classList.add("profile-event-list-item");
 
       // Форматируем данные мероприятия
       const eventDetails = `
-              <div class="event-list-header">
-                <div class="event-list-header-left">
-                  <span class="event-list-name">${event.name}</span>
+              <div class="profile-event-list-header">
+                <div class="profile-event-list-header-left">
+                  <span class="profile-event-list-name">${event.name}</span>
                 </div>
-                <div class="event-list-header-right">
-                  <span class="event-list-location">${event.location}</span>
-                </div>
-              </div>
-              <div class="event-list-dates">
-                <div class="event-list-date">
-                  <span class="event-list-start-date">${event.startDate}</span>
-                  <span class="event-list-start-time">${event.startTime}</span>
-                </div>
-                <div class="event-list-date">
-                  <span class="event-list-end-date">${event.endDate}</span>
-                  <span class="event-list-end-time">${event.endTime}</span>
+                <div class="profile-event-list-header-right">
+                  <span class="profile-event-list-location">${event.location}</span>
                 </div>
               </div>
-              <div class="event-contact">
+              <div class="profile-event-list-dates">
+                <div class="profile-event-list-date">
+                  <span class="profile-event-list-start-date">${event.startDate}</span>
+                  <span class="profile-event-list-start-time">${event.startTime}</span>
+                </div>
+                <div class="profile-event-list-date">
+                  <span class="profile-event-list-end-date">${event.endDate}</span>
+                  <span class="profile-event-list-end-time">${event.endTime}</span>
+                </div>
+              </div>
+              <div class="profile-event-contact">
                 <p>Contact: ${event.contact} (${event.email}, ${event.phone})</p>
               </div>
-              <div class="event-status">
+              <div class="profile-event-status">
                 <p>Status: ${event.status}</p>
               </div>
-              <div class="event-details">
+              <div class="profile-event-details">
                 <p>Alcuin Contact: ${event.alcuinContact}</p>
                 <p>Attendees: ${event.attendees}</p>
                 <p>Created By: ${event.createdBy} at ${event.createdAt}</p>
@@ -804,7 +892,7 @@ async function displayEvents() {
 
       // Добавляем обработчик клика для разворачивания деталей мероприятия
       listItem.addEventListener("click", function () {
-        const details = this.querySelector(".event-details");
+        const details = this.querySelector(".profile-event-details");
         if (details.style.maxHeight) {
           details.style.maxHeight = null;
         } else {

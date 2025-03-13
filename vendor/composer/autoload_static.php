@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInit01de0c06f30ca4f96ca22f3980c62f10
 {
     public static $prefixLengthsPsr4 = array (
+        'W' => 
+        array (
+            'Workerman\\' => 10,
+        ),
         'P' => 
         array (
             'PHPMailer\\PHPMailer\\' => 20,
@@ -14,6 +18,10 @@ class ComposerStaticInit01de0c06f30ca4f96ca22f3980c62f10
     );
 
     public static $prefixDirsPsr4 = array (
+        'Workerman\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/workerman/workerman',
+        ),
         'PHPMailer\\PHPMailer\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
@@ -29,6 +37,41 @@ class ComposerStaticInit01de0c06f30ca4f96ca22f3980c62f10
         'PHPMailer\\PHPMailer\\PHPMailer' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/PHPMailer.php',
         'PHPMailer\\PHPMailer\\POP3' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/POP3.php',
         'PHPMailer\\PHPMailer\\SMTP' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/SMTP.php',
+        'Workerman\\Autoloader' => __DIR__ . '/..' . '/workerman/workerman/Autoloader.php',
+        'Workerman\\Connection\\AsyncTcpConnection' => __DIR__ . '/..' . '/workerman/workerman/Connection/AsyncTcpConnection.php',
+        'Workerman\\Connection\\AsyncUdpConnection' => __DIR__ . '/..' . '/workerman/workerman/Connection/AsyncUdpConnection.php',
+        'Workerman\\Connection\\ConnectionInterface' => __DIR__ . '/..' . '/workerman/workerman/Connection/ConnectionInterface.php',
+        'Workerman\\Connection\\TcpConnection' => __DIR__ . '/..' . '/workerman/workerman/Connection/TcpConnection.php',
+        'Workerman\\Connection\\UdpConnection' => __DIR__ . '/..' . '/workerman/workerman/Connection/UdpConnection.php',
+        'Workerman\\Events\\Ev' => __DIR__ . '/..' . '/workerman/workerman/Events/Ev.php',
+        'Workerman\\Events\\Event' => __DIR__ . '/..' . '/workerman/workerman/Events/Event.php',
+        'Workerman\\Events\\EventInterface' => __DIR__ . '/..' . '/workerman/workerman/Events/EventInterface.php',
+        'Workerman\\Events\\Libevent' => __DIR__ . '/..' . '/workerman/workerman/Events/Libevent.php',
+        'Workerman\\Events\\React\\Base' => __DIR__ . '/..' . '/workerman/workerman/Events/React/Base.php',
+        'Workerman\\Events\\React\\ExtEventLoop' => __DIR__ . '/..' . '/workerman/workerman/Events/React/ExtEventLoop.php',
+        'Workerman\\Events\\React\\ExtLibEventLoop' => __DIR__ . '/..' . '/workerman/workerman/Events/React/ExtLibEventLoop.php',
+        'Workerman\\Events\\React\\StreamSelectLoop' => __DIR__ . '/..' . '/workerman/workerman/Events/React/StreamSelectLoop.php',
+        'Workerman\\Events\\Select' => __DIR__ . '/..' . '/workerman/workerman/Events/Select.php',
+        'Workerman\\Events\\Swoole' => __DIR__ . '/..' . '/workerman/workerman/Events/Swoole.php',
+        'Workerman\\Events\\Uv' => __DIR__ . '/..' . '/workerman/workerman/Events/Uv.php',
+        'Workerman\\Lib\\Timer' => __DIR__ . '/..' . '/workerman/workerman/Lib/Timer.php',
+        'Workerman\\Protocols\\Frame' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Frame.php',
+        'Workerman\\Protocols\\Http' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http.php',
+        'Workerman\\Protocols\\Http\\Chunk' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/Chunk.php',
+        'Workerman\\Protocols\\Http\\Request' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/Request.php',
+        'Workerman\\Protocols\\Http\\Response' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/Response.php',
+        'Workerman\\Protocols\\Http\\ServerSentEvents' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/ServerSentEvents.php',
+        'Workerman\\Protocols\\Http\\Session' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/Session.php',
+        'Workerman\\Protocols\\Http\\Session\\FileSessionHandler' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/Session/FileSessionHandler.php',
+        'Workerman\\Protocols\\Http\\Session\\RedisClusterSessionHandler' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/Session/RedisClusterSessionHandler.php',
+        'Workerman\\Protocols\\Http\\Session\\RedisSessionHandler' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/Session/RedisSessionHandler.php',
+        'Workerman\\Protocols\\Http\\Session\\SessionHandlerInterface' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Http/Session/SessionHandlerInterface.php',
+        'Workerman\\Protocols\\ProtocolInterface' => __DIR__ . '/..' . '/workerman/workerman/Protocols/ProtocolInterface.php',
+        'Workerman\\Protocols\\Text' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Text.php',
+        'Workerman\\Protocols\\Websocket' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Websocket.php',
+        'Workerman\\Protocols\\Ws' => __DIR__ . '/..' . '/workerman/workerman/Protocols/Ws.php',
+        'Workerman\\Timer' => __DIR__ . '/..' . '/workerman/workerman/Timer.php',
+        'Workerman\\Worker' => __DIR__ . '/..' . '/workerman/workerman/Worker.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

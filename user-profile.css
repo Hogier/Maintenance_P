@@ -548,7 +548,7 @@ font-size: 12px;
 }
 */
 
-.event-list-item {
+.profile-event-list-item {
   margin: 0 0 10px 0;
   padding: 15px;
   background: #d2ecd3;
@@ -559,11 +559,11 @@ font-size: 12px;
   cursor: pointer;
 }
 
-.event-list-item:hover {
+.profile-event-list-item:hover {
   transform: translateY(-3px);
 }
 
-.event-list-header {
+.profile-event-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -573,56 +573,56 @@ font-size: 12px;
   background: #f8fcf8;
 }
 
-.event-list-name {
+.profile-event-list-name {
   font-size: 1.2em;
   font-weight: bold;
   color: #131e13;
 }
 
-.event-list-location {
+.profile-event-list-location {
   font-size: 1em;
   color: #131e13;
 }
 
-.event-list-dates {
+.profile-event-list-dates {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
 }
 
-.event-list-date {
+.profile-event-list-date {
   font-size: 1.1em;
   padding: 6px 15px;
   background: #fff;
   border-radius: 20px;
 }
 
-.event-list-start-date,
-.event-list-end-date {
+.profile-event-list-start-date,
+.profile-event-list-end-date {
   font-size: 1em;
   font-weight: bold;
   color: #242d24;
 }
 
-.event-list-start-time,
-.event-list-end-time {
+.profile-event-list-start-time,
+.profile-event-list-end-time {
   font-size: 0.9em;
   color: #999;
 }
 
-.event-contact {
+.profile-event-contact {
   font-size: 0.9em;
   color: #333;
   margin-bottom: 10px;
 }
 
-.event-status {
+.profile-event-status {
   font-size: 0.9em;
   color: #333;
   margin-bottom: 10px;
 }
 
-.event-details {
+.profile-event-details {
   font-size: 0.9em;
   color: #333;
   max-height: 0;
@@ -886,3 +886,4 @@ button.order img {
 .settings-save-btn:hover {
   background-color: #1976d2;
 }
+
