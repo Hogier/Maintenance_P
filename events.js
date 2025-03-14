@@ -178,6 +178,16 @@ function updateCalendar() {
     dayElement.className = "calendar-day";
     dayElement.textContent = day;
 
+    // Проверяем, является ли этот день текущим
+    const today = new Date();
+    if (
+      day === today.getDate() &&
+      currentDate.getMonth() === today.getMonth() &&
+      currentDate.getFullYear() === today.getFullYear()
+    ) {
+      dayElement.classList.add("current-day");
+    }
+
     // Проверяем наличие событий в этот день
     const currentDateStr = `${currentDate.getFullYear()}-${(
       currentDate.getMonth() + 1
@@ -552,8 +562,11 @@ function createEquipmentItem(label, value) {
 // Обновляем функцию форматирования даты
 function formatDate(dateString) {
   if (!dateString) return "";
-  const date = new Date(dateString);
+  // Добавляем 'T12:00:00' к дате, чтобы избежать проблем с часовыми поясами
+  const date = new Date(dateString + "T12:00:00");
+  // Используем часовой пояс Далласа для форматирования
   return date.toLocaleDateString("en-US", {
+    timeZone: "America/Chicago",
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -608,9 +621,9 @@ function createImageGallery(images) {
       <div class="event-images">
         ${flatImageUrls
           .map((image) => {
-            // Используем полные пути к изображениям
-            const miniPath = `/maintenance_P/uploads/mini/${image}`;
-            const fullPath = `/maintenance_P/uploads/${image}`;
+            // Используем относительные пути к изображениям
+            const miniPath = `uploads/mini/${image}`;
+            const fullPath = `uploads/${image}`;
 
             console.log("Processing image:", {
               original: image,
@@ -1038,11 +1051,11 @@ async function addComment(e, eventId) {
 
   // Получаем текущую дату в часовом поясе Далласа
   const now = new Date();
-  // Конвертируем в часовой пояс Далласа
   const dallasTime = new Date(
     now.toLocaleString("en-US", { timeZone: "America/Chicago" })
   );
 
+  // Форматируем дату в MySQL формат
   const formattedDate =
     dallasTime.getFullYear() +
     "-" +
@@ -1100,10 +1113,23 @@ async function addComment(e, eventId) {
 function createCommentElement(comment) {
   const div = document.createElement("div");
   div.className = "comment-item";
+
+  // Форматируем дату для отображения
+  const commentDate = new Date(comment.date);
+  const formattedDate = commentDate.toLocaleString("en-US", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
   div.innerHTML = `
     <div class="comment-header">
       <span class="comment-author">${comment.author}</span>
-      <span class="comment-date">${formatDate(comment.date)}</span>
+      <span class="comment-date">${formattedDate}</span>
     </div>
     <div class="comment-text">${comment.text}</div>
   `;
@@ -1195,76 +1221,242 @@ function printEvent(eventId) {
   if (!event) return;
 
   // Создаем содержимое для печати
-  const printContent = `
+  const mainContent = `
         <div class="print-content">
-            <h2>${event.name}</h2>
-            <div class="event-details">
-                <p><strong>Date:</strong> ${formatDate(event.startDate)}</p>
-                <p><strong>Time:</strong> ${event.startTime}</p>
-                <p><strong>Location:</strong> ${event.location}</p>
-                <p><strong>Contact:</strong> ${event.contact}</p>
-                <p><strong>Email:</strong> ${event.email}</p>
-                <p><strong>Phone:</strong> ${event.phone}</p>
-                
-                <h3>Setup Details</h3>
-                <p><strong>Setup Date:</strong> ${formatDate(
-                  event.setupDate
-                )}</p>
-                <p><strong>Setup Time:</strong> ${event.setupTime}</p>
-                
-                <h3>Equipment Needed</h3>
-                <ul>
-                    ${
-                      event.tables_needed === "yes"
-                        ? `
-                        <li>Tables:
+            <div class="print-header">
+                <h1>${event.name}</h1>
+                <div class="print-status ${event.status || "pending"}">${
+    event.status ? event.status.toUpperCase() : "PENDING"
+  }</div>
+            </div>
+
+            <div class="print-grid">
+                <div class="print-section">
+                    <h2>Basic Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <i class="fas fa-calendar"></i>
+                            <strong>Date:</strong> ${formatDate(
+                              event.startDate
+                            )}
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-clock"></i>
+                            <strong>Time:</strong> ${event.startTime} - ${
+    event.endTime
+  }
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <strong>Location:</strong> ${event.location}
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-users"></i>
+                            <strong>Attendees:</strong> ${event.attendees}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="print-section">
+                    <h2>Contact Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <i class="fas fa-user"></i>
+                            <strong>Contact:</strong> ${event.contact}
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <strong>Email:</strong> ${event.email}
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <strong>Phone:</strong> ${event.phone}
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-user-tie"></i>
+                            <strong>Alcuin Contact:</strong> ${
+                              event.alcuinContact
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="print-section">
+                    <h2>Setup Details</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <i class="fas fa-calendar-check"></i>
+                            <strong>Setup Date:</strong> ${formatDate(
+                              event.setupDate
+                            )}
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-clock"></i>
+                            <strong>Setup Time:</strong> ${event.setupTime}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="print-section equipment-section">
+                    <h2>Equipment and Furniture</h2>
+                    <div class="equipment-grid">
+                        ${
+                          event.tables_needed === "yes"
+                            ? `
+                            <div class="equipment-group">
+                                <h3>Tables</h3>
+                                <ul>
+                                    ${
+                                      event.tables6ft === "yes"
+                                        ? `<li>6ft Tables: ${event.tables6ftCount}</li>`
+                                        : ""
+                                    }
+                                    ${
+                                      event.tables8ft === "yes"
+                                        ? `<li>8ft Tables: ${event.tables8ftCount}</li>`
+                                        : ""
+                                    }
+                                    ${
+                                      event.tablesRound === "yes"
+                                        ? `<li>Round Tables: ${event.tablesRoundCount}</li>`
+                                        : ""
+                                    }
+                                    ${
+                                      event.tablecloth_color
+                                        ? `<li>Tablecloth Color: ${event.tablecloth_color}</li>`
+                                        : ""
+                                    }
+                                </ul>
+                            </div>
+                        `
+                            : ""
+                        }
+                        
+                        ${
+                          event.chairs_needed === "yes"
+                            ? `
+                            <div class="equipment-group">
+                                <h3>Chairs</h3>
+                                <div class="chairs-info">Quantity: ${event.chairs_count}</div>
+                            </div>
+                        `
+                            : ""
+                        }
+
+                        <div class="equipment-group">
+                            <h3>Technical Equipment</h3>
                             <ul>
                                 ${
-                                  event.tables6ftCount > 0
-                                    ? `<li>6ft Tables: ${event.tables6ftCount}</li>`
+                                  event.podium === "yes"
+                                    ? "<li>Podium</li>"
                                     : ""
                                 }
                                 ${
-                                  event.tables8ftCount > 0
-                                    ? `<li>8ft Tables: ${event.tables8ftCount}</li>`
+                                  event.monitors === "yes"
+                                    ? "<li>Monitors</li>"
                                     : ""
                                 }
                                 ${
-                                  event.tablesRoundCount > 0
-                                    ? `<li>Round Tables: ${event.tablesRoundCount}</li>`
+                                  event.laptop === "yes"
+                                    ? "<li>Laptop</li>"
+                                    : ""
+                                }
+                                ${event.ipad === "yes" ? "<li>iPad</li>" : ""}
+                                ${
+                                  event.microphones === "yes"
+                                    ? "<li>Microphones</li>"
+                                    : ""
+                                }
+                                ${
+                                  event.speaker === "yes"
+                                    ? "<li>Speakers</li>"
                                     : ""
                                 }
                             </ul>
-                        </li>
-                    `
-                        : ""
-                    }
-                    ${
-                      event.chairs_needed === "yes"
-                        ? `<li>Chairs: ${event.chairs_count}</li>`
-                        : ""
-                    }
-                    ${event.podium === "yes" ? "<li>Podium</li>" : ""}
-                    ${event.monitors === "yes" ? "<li>Monitors</li>" : ""}
-                    ${event.laptop === "yes" ? "<li>Laptop</li>" : ""}
-                    ${event.microphones === "yes" ? "<li>Microphones</li>" : ""}
-                </ul>
-                
-                <h3>Additional Information</h3>
-                <p><strong>AV Assistance:</strong> ${event.avAssistance}</p>
-                <p><strong>Security Needed:</strong> ${event.security}</p>
-                <p><strong>Building Access:</strong> ${event.buildingAccess}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="print-section requirements-section">
+                    <h2>Additional Requirements</h2>
+                    <div class="requirements-grid">
+                        <div class="requirement-item ${
+                          event.avAssistance === "yes"
+                            ? "required"
+                            : "not-required"
+                        }">
+                            <i class="fas fa-tv"></i>
+                            <span>AV Support</span>
+                        </div>
+                        <div class="requirement-item ${
+                          event.security === "yes" ? "required" : "not-required"
+                        }">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Security</span>
+                        </div>
+                        <div class="requirement-item ${
+                          event.buildingAccess ? "required" : "not-required"
+                        }">
+                            <i class="fas fa-key"></i>
+                            <span>Building Access</span>
+                        </div>
+                    </div>
+                </div>
+
                 ${
                   event.otherConsiderations
                     ? `
-                    <h3>Other Considerations</h3>
-                    <p>${event.otherConsiderations}</p>
+                    <div class="print-section notes-section">
+                        <h2>Notes</h2>
+                        <p>${event.otherConsiderations}</p>
+                    </div>
                 `
                     : ""
                 }
             </div>
+
+            <div class="print-footer">
+                <p>Created by: ${event.createdBy || "System"}</p>
+                <p>Event ID: ${event.id}</p>
+            </div>
         </div>
     `;
+
+  // Создаем страницы с изображениями
+  let imagePages = "";
+  if (event.setupImages && event.setupImages !== "[]") {
+    try {
+      const imageUrls = JSON.parse(event.setupImages);
+      const flatImageUrls = imageUrls
+        .flat()
+        .filter((url) => url && typeof url === "string");
+
+      imagePages = flatImageUrls
+        .map((image, index) => {
+          const fullPath = `uploads/${image}`;
+          return `
+                    <div class="print-page image-page">
+                        <div class="image-page-header">
+                            <h2>${event.name} - Setup Image ${index + 1}</h2>
+                        </div>
+                        <div class="print-image-container">
+                            <img src="${fullPath}" alt="Event setup image ${
+            index + 1
+          }">
+                        </div>
+                        <div class="image-page-footer">
+                            <p>Page ${index + 2} of ${
+            flatImageUrls.length + 1
+          }</p>
+                        </div>
+                    </div>
+                `;
+        })
+        .join("");
+    } catch (e) {
+      console.error("Error creating image pages:", e);
+    }
+  }
 
   // Создаем временное окно для печати
   const printWindow = window.open("", "_blank");
@@ -1272,26 +1464,286 @@ function printEvent(eventId) {
         <html>
             <head>
                 <title>Print Event - ${event.name}</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
                 <style>
-                    body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
-                    h2 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
-                    h3 { color: #4CAF50; margin-top: 20px; }
-                    .event-details { margin-top: 20px; }
-                    ul { margin: 10px 0; padding-left: 20px; }
-                    li { margin: 5px 0; }
                     @media print {
-                        body { padding: 0; }
-                        button { display: none; }
+                        @page {
+                            margin: 1cm;
+                            size: A4;
+                        }
+                    }
+                    
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.4;
+                        margin: 0;
+                        padding: 20px;
+                        color: #333;
+                        font-size: 15px;
+                    }
+
+                    .print-content {
+                        max-width: 210mm;
+                        margin: 0 auto;
+                    }
+
+                    .print-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        padding-bottom: 10px;
+                        border-bottom: 2px solid #4CAF50;
+                    }
+
+                    .print-header h1 {
+                        margin: 0;
+                        color: #2C3E50;
+                        font-size: 28px;
+                    }
+
+                    .print-status {
+                        padding: 5px 10px;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        font-size: 15px;
+                    }
+
+                    .print-status.pending { background: #FFF3CD; color: #856404; }
+                    .print-status.completed { background: #D4EDDA; color: #155724; }
+                    .print-status.cancelled { background: #F8D7DA; color: #721C24; }
+
+                    .print-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 15px;
+                        margin-bottom: 20px;
+                    }
+
+                    .print-section {
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 4px;
+                        break-inside: avoid;
+                    }
+
+                    .print-section h2 {
+                        margin: 0 0 10px 0;
+                        font-size: 20px;
+                        color: #2C3E50;
+                        border-bottom: 1px solid #dee2e6;
+                        padding-bottom: 5px;
+                    }
+
+                    .info-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        gap: 10px;
+                    }
+
+                    .info-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 15px;
+                    }
+
+                    .info-item i {
+                        width: 16px;
+                        color: #4CAF50;
+                    }
+
+                    .equipment-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                        gap: 10px;
+                    }
+
+                    .equipment-group h3 {
+                        font-size: 17px;
+                        margin: 0 0 8px 0;
+                        color: #2C3E50;
+                    }
+
+                    .equipment-group ul {
+                        margin: 0;
+                        padding-left: 20px;
+                        font-size: 15px;
+                        list-style-type: none;
+                    }
+
+                    .equipment-group li {
+                        margin-bottom: 5px;
+                        display: flex;
+                        align-items: center;
+                    }
+
+                    .equipment-group li::before {
+                        content: "•";
+                        color: #4CAF50;
+                        font-weight: bold;
+                        margin-right: 8px;
+                    }
+
+                    .chairs-info {
+                        margin: 0;
+                        padding-left: 20px;
+                        font-size: 15px;
+                        position: relative;
+                    }
+
+                    .chairs-info::before {
+                        content: "•";
+                        color: #4CAF50;
+                        font-weight: bold;
+                        position: absolute;
+                        left: 0;
+                    }
+
+                    .requirement-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 8px;
+                        border-radius: 4px;
+                        font-size: 15px;
+                    }
+
+                    .notes-section p {
+                        margin: 0;
+                        font-size: 15px;
+                        white-space: pre-wrap;
+                    }
+
+                    .print-footer {
+                        margin-top: 20px;
+                        padding-top: 10px;
+                        border-top: 1px solid #dee2e6;
+                        font-size: 14px;
+                        color: #6c757d;
+                        display: flex;
+                        justify-content: space-between;
+                    }
+
+                    @media print {
+                        .no-print {
+                            display: none;
+                        }
+                        
+                        body {
+                            padding: 0;
+                        }
+                    }
+
+                    /* Стили для страниц с изображениями */
+                    .print-page {
+                        page-break-before: always;
+                        height: 100vh;
+                        display: flex;
+                        flex-direction: column;
+                        padding: 20px;
+                        box-sizing: border-box;
+                    }
+
+                    .image-page-header {
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+
+                    .image-page-header h2 {
+                        color: #2C3E50;
+                        font-size: 24px;
+                        margin: 0;
+                    }
+
+                    .print-image-container {
+                        flex: 1;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin: 20px 0;
+                    }
+
+                    .print-image-container img {
+                        max-width: 100%;
+                        max-height: calc(100vh - 200px);
+                        object-fit: contain;
+                        border: 1px solid #dee2e6;
+                        border-radius: 4px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+
+                    .image-page-footer {
+                        text-align: center;
+                        color: #6c757d;
+                        font-size: 14px;
+                        margin-top: 20px;
+                    }
+
+                    @media print {
+                        .print-page {
+                            height: 100vh;
+                            page-break-before: always;
+                            page-break-after: always;
+                        }
+
+                        .print-image-container img {
+                            max-height: calc(100vh - 200px);
+                        }
                     }
                 </style>
             </head>
             <body>
-                ${printContent}
-                <button onclick="window.print()" style="margin-top: 20px; padding: 10px 20px;">Print</button>
+                ${mainContent}
+                ${imagePages}
+                <button onclick="window.print()" class="no-print" style="
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    padding: 10px 20px;
+                    background: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                    font-size: 15px;
+                ">Print</button>
             </body>
         </html>
     `);
   printWindow.document.close();
+}
+
+// Добавляем новую функцию для создания галереи изображений для печати
+function createPrintImageGallery(images) {
+  if (!images || images === "[]") return "";
+
+  try {
+    const imageUrls = JSON.parse(images);
+    const flatImageUrls = imageUrls
+      .flat()
+      .filter((url) => url && typeof url === "string");
+
+    if (flatImageUrls.length === 0) return "";
+
+    return flatImageUrls
+      .map((image, index) => {
+        const fullPath = `uploads/${image}`;
+        return `
+                <div class="print-image-item">
+                    <img src="${fullPath}" alt="Event setup image ${index + 1}">
+                    <div class="print-image-caption">Setup Image ${
+                      index + 1
+                    }</div>
+                </div>
+            `;
+      })
+      .join("");
+  } catch (e) {
+    console.error("Error creating print image gallery:", e);
+    return "";
+  }
 }
 
 // Обновляем функцию обновления статуса
