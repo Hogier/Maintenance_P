@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Access Code Verification</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+      }
+
+      .code-input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        justify-content: center;
+      }
+
+      .code-input {
+        width: 80px;
+        height: 50px;
+        text-align: center;
+        font-size: 24px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        outline: none;
+        text-transform: uppercase;
+      }
+
+      .code-input:focus {
+        border-color: #007bff;
+      }
+
+      .email-input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        outline: none;
+      }
+
+      .email-input:focus {
+        border-color: #007bff;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-bottom: 10px;
+      }
+
+      .btn:hover {
+        background-color: #0056b3;
+      }
+
+      .btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background-color: #6c757d;
+      }
+
+      .btn-secondary:hover {
+        background-color: #5a6268;
+      }
+
+      .message {
+        text-align: center;
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .back-link {
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9em;
+      }
+
+      .back-link:hover {
+       color: #2196f3;
+      }
+
+      .back-link-container {
+        width: 100%;
+        text-align: center;
+        margin-top: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Enter Access Code</h1>
+
+      <div id="verify-code-section">
+        <p style="text-align: center; margin-bottom: 15px">
+          Access Code (Format: XXXX-XXXX-XXXX)
+        </p>
+        <div class="code-input-group">
+          <input
+            type="text"
+            class="code-input"
+            maxlength="4"
+            placeholder="XXXX"
+          />
+          <input
+            type="text"
+            class="code-input"
+            maxlength="4"
+            placeholder="XXXX"
+          />
+          <input
+            type="text"
+            class="code-input"
+            maxlength="4"
+            placeholder="XXXX"
+          />
+        </div>
+        <button id="verify-btn" class="btn">Verify Code</button>
+        <div class="back-link-container">
+          <a href="main.html" class="back-link">Back to Main Menu</a>
+        </div>
+      </div>
+
+      <div id="message" class="message" style="display: none"></div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const verifyBtn = document.getElementById("verify-btn");
+        const codeInputs = document.querySelectorAll(".code-input");
+        const messageDiv = document.getElementById("message");
+
+        // Handle code input formatting
+        codeInputs.forEach((input, index) => {
+          input.addEventListener("input", (e) => {
+            e.target.value = e.target.value.toUpperCase();
+            if (e.target.value.length === 4 && index < codeInputs.length - 1) {
+              codeInputs[index + 1].focus();
+            }
+          });
+
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && !e.target.value && index > 0) {
+              codeInputs[index - 1].focus();
+            }
+          });
+        });
+
+        // Verify code
+        verifyBtn.addEventListener("click", async () => {
+          const code = Array.from(codeInputs)
+            .map((input) => input.value)
+            .join("-");
+
+          if (!code.match(/^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/)) {
+            showMessage("Please enter a valid code", false);
+            return;
+          }
+
+          try {
+            const response = await fetch("/Maintenance_P/api/verify_code.php", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ code }),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+              // Set registration access flag
+              sessionStorage.setItem("registrationAccess", "true");
+              window.location.replace("/Maintenance_P/register.html");
+              return;
+            }
+            showMessage(data.message || "Error verifying code", data.success);
+          } catch (error) {
+            showMessage("Failed to verify code. Please try again.", false);
+          }
+        });
+
+        function showMessage(message, isSuccess) {
+          messageDiv.textContent = message;
+          messageDiv.className = `message ${isSuccess ? "success" : "error"}`;
+          messageDiv.style.display = "block";
+        }
+      });
+    </script>
+  </body>
+</html>

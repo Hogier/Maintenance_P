@@ -1,0 +1,190 @@
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - === Starting code verification ===
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - POST data: Array
+(
+    [action] => verifyAccessCode
+    [code] => 9H67-QXRK-F1Y4
+)
+
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - Received code: 9H67-QXRK-F1Y4
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - Original code: 9H67-QXRK-F1Y4
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - Clean code: 9H67QXRKF1Y4
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - Formatted code: 9H67-QXRK-F1Y4
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - Formatted code for DB query: 9H67-QXRK-F1Y4
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - All codes in database:
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - Array
+(
+    [id] => 3
+    [code] => 9H67-QXRK-F1Y4
+    [status] => used
+    [created_at] => 2025-03-02 11:24:41
+    [used_at] => 2025-03-02 11:45:44
+    [expires_at] => 2025-04-01 11:24:41
+)
+
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - SQL Query params: 9H67-QXRK-F1Y4
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - Code exists but is invalid: Array
+(
+    [id] => 3
+    [code] => 9H67-QXRK-F1Y4
+    [status] => used
+    [created_at] => 2025-03-02 11:24:41
+    [used_at] => 2025-03-02 11:45:44
+    [expires_at] => 2025-04-01 11:24:41
+)
+
+[02-Mar-2025 11:45:44 America/Chicago] 2025-03-02 11:45:44 - Error: Invalid or expired code: This code has already been used
+[2025-03-02 11:52:41 America/Chicago] === Starting code verification ===
+[2025-03-02 11:52:41 America/Chicago] POST data: Array
+(
+    [action] => verifyAccessCode
+    [code] => 9H67-QXRK-F1Y4
+)
+
+[02-Mar-2025 11:52:41 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli::beginTransaction() in /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/verify_code.php:137
+Stack trace:
+#0 {main}
+  thrown in /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/verify_code.php on line 137
+[2025-03-02 11:56:36 America/Chicago] === Начало проверки кода ===
+[2025-03-02 11:56:36 America/Chicago] POST данные: Array
+(
+    [action] => verifyAccessCode
+    [code] => 9H67-QXRK-F1Y4
+)
+
+[2025-03-02 11:56:36 America/Chicago] Получен код: 9H67-QXRK-F1Y4
+[2025-03-02 11:56:36 America/Chicago] Оригинальный код: 9H67-QXRK-F1Y4
+[2025-03-02 11:56:36 America/Chicago] Очищенный код: 9H67QXRKF1Y4
+[2025-03-02 11:56:36 America/Chicago] Отформатированный код: 9H67-QXRK-F1Y4
+[2025-03-02 11:56:36 America/Chicago] Текущее время сервера: 2025-03-02 11:56:36
+[2025-03-02 11:56:36 America/Chicago] Результат запроса к БД: Array
+(
+    [id] => 3
+    [code] => 9H67-QXRK-F1Y4
+    [status] => used
+    [created_at] => 2025-03-02 11:24:41
+    [used_at] => 2025-03-02 11:56:36
+    [expires_at] => 2025-04-01 11:24:41
+)
+
+[2025-03-02 11:56:36 America/Chicago] Ошибка: Недействительный или просроченный код: Этот код уже был использован
+[2025-03-02 11:58:56 America/Chicago] === Начало проверки кода ===
+[2025-03-02 11:58:56 America/Chicago] POST данные: Array
+(
+    [action] => verifyAccessCode
+    [code] => 9H67-QXRK-F1Y4
+)
+
+[2025-03-02 11:58:56 America/Chicago] Получен код: 9H67-QXRK-F1Y4
+[2025-03-02 11:58:56 America/Chicago] Оригинальный код: 9H67-QXRK-F1Y4
+[2025-03-02 11:58:56 America/Chicago] Очищенный код: 9H67QXRKF1Y4
+[2025-03-02 11:58:56 America/Chicago] Отформатированный код: 9H67-QXRK-F1Y4
+[2025-03-02 11:58:56 America/Chicago] Текущее время сервера: 2025-03-02 11:58:56
+[2025-03-02 11:58:56 America/Chicago] Результат запроса к БД: Array
+(
+    [id] => 3
+    [code] => 9H67-QXRK-F1Y4
+    [status] => used
+    [created_at] => 2025-03-02 11:24:41
+    [used_at] => 2025-03-02 11:58:56
+    [expires_at] => 2025-04-01 11:24:41
+)
+
+[2025-03-02 11:58:56 America/Chicago] Ошибка: Недействительный или просроченный код: Этот код уже был использован
+[2025-03-02 12:02:58 America/Chicago] === Starting code verification ===
+[2025-03-02 12:02:58 America/Chicago] POST data: Array
+(
+    [action] => verifyAccessCode
+    [code] => 9H67-QXRK-F1Y4
+)
+
+[2025-03-02 12:02:58 America/Chicago] Received code: 9H67-QXRK-F1Y4
+[2025-03-02 12:02:58 America/Chicago] Original code: 9H67-QXRK-F1Y4
+[2025-03-02 12:02:58 America/Chicago] Clean code: 9H67QXRKF1Y4
+[2025-03-02 12:02:58 America/Chicago] Formatted code: 9H67-QXRK-F1Y4
+[2025-03-02 12:02:58 America/Chicago] Current server time: 2025-03-02 12:02:58
+[2025-03-02 12:02:58 America/Chicago] Database query result: Array
+(
+    [id] => 3
+    [code] => 9H67-QXRK-F1Y4
+    [status] => used
+    [created_at] => 2025-03-02 11:24:41
+    [used_at] => 2025-03-02 12:02:58
+    [expires_at] => 2025-04-01 11:24:41
+)
+
+[2025-03-02 12:02:58 America/Chicago] Error: Invalid or expired code: This code has already been used
+[2025-03-02 12:10:51 America/Chicago] === Starting code verification ===
+[2025-03-02 12:10:51 America/Chicago] POST data: Array
+(
+    [action] => verifyAccessCode
+    [code] => 9H67-QXRK-F1Y4
+)
+
+[2025-03-02 12:10:51 America/Chicago] Received code: 9H67-QXRK-F1Y4
+[2025-03-02 12:10:51 America/Chicago] Original code: 9H67-QXRK-F1Y4
+[2025-03-02 12:10:51 America/Chicago] Clean code: 9H67QXRKF1Y4
+[2025-03-02 12:10:51 America/Chicago] Formatted code: 9H67-QXRK-F1Y4
+[2025-03-02 12:10:51 America/Chicago] Current server time: 2025-03-02 12:10:51
+[2025-03-02 12:10:51 America/Chicago] Initial check result: Array
+(
+    [id] => 3
+    [code] => 9H67-QXRK-F1Y4
+    [status] => used
+    [created_at] => 2025-03-02 11:24:41
+    [used_at] => 2025-03-02 12:10:51
+    [expires_at] => 2025-04-01 11:24:41
+)
+
+[2025-03-02 12:10:51 America/Chicago] Locked query result: Array
+(
+    [id] => 3
+    [code] => 9H67-QXRK-F1Y4
+    [status] => used
+    [created_at] => 2025-03-02 11:24:41
+    [used_at] => 2025-03-02 12:10:51
+    [expires_at] => 2025-04-01 11:24:41
+)
+
+[2025-03-02 12:10:51 America/Chicago] Status check - Is Active: No
+[2025-03-02 12:10:51 America/Chicago] Status check - Is Expired: No
+[2025-03-02 12:10:51 America/Chicago] Error: Code is not active (status: used)
+[2025-03-02 12:14:59 America/Chicago] === Starting code verification ===
+[2025-03-02 12:14:59 America/Chicago] POST data: Array
+(
+    [action] => verifyAccessCode
+    [code] => 9H67-QXRK-F1Y4
+)
+
+[2025-03-02 12:14:59 America/Chicago] Starting transaction
+[2025-03-02 12:14:59 America/Chicago] Received code: 9H67-QXRK-F1Y4
+[2025-03-02 12:14:59 America/Chicago] Original code: 9H67-QXRK-F1Y4
+[2025-03-02 12:14:59 America/Chicago] Clean code: 9H67QXRKF1Y4
+[2025-03-02 12:14:59 America/Chicago] Formatted code: 9H67-QXRK-F1Y4
+[2025-03-02 12:14:59 America/Chicago] Current server time: 2025-03-02 12:14:59
+[2025-03-02 12:14:59 America/Chicago] Code data from database: 
+[2025-03-02 12:14:59 America/Chicago] Error: Code not found or not active
+[2025-03-02 12:20:34 America/Chicago] === End of script ===
+[2025-03-02 12:22:53 America/Chicago] === End of script ===
+[2025-03-02 12:27:50 America/Chicago] === End of script ===
+[2025-03-02 12:28:12 America/Chicago] === End of script ===
+[2025-03-02 12:28:13 America/Chicago] === End of script ===
+[2025-03-02 12:28:14 America/Chicago] === End of script ===
+[2025-03-02 12:28:14 America/Chicago] === End of script ===
+[2025-03-02 12:28:53 America/Chicago] === End of script ===
+[2025-03-02 12:38:21 America/Chicago] === End of script ===
+[2025-03-02 12:44:35 America/Chicago] === End of script ===
+[2025-03-02 13:32:19 America/Chicago] === Starting code verification ===
+[2025-03-02 13:32:19 America/Chicago] POST data: Array
+(
+    [action] => verifyAccessCode
+    [code] => 3DCN-PX1L-OYDF
+)
+
+[2025-03-02 13:32:19 America/Chicago] Starting transaction
+[2025-03-02 13:32:19 America/Chicago] Received code: 3DCN-PX1L-OYDF
+[2025-03-02 13:32:19 America/Chicago] Original code: 3DCN-PX1L-OYDF
+[2025-03-02 13:32:19 America/Chicago] Clean code: 3DCNPX1LOYDF
+[2025-03-02 13:32:19 America/Chicago] Formatted code: 3DCN-PX1L-OYDF
+[2025-03-02 13:32:19 America/Chicago] Current server time: 2025-03-02 13:32:19
+[2025-03-02 13:32:19 America/Chicago] Code data from database: 
+[2025-03-02 13:32:19 America/Chicago] Error: Code not found or not active

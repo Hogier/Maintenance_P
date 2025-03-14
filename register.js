@@ -4,17 +4,64 @@ document
     e.preventDefault();
 
     try {
-      await db.waitForDB(); // Дожидаемся инициализации базы данных
-
       const fullName = document.getElementById("fullName").value;
       const email = document.getElementById("email").value;
       const department = document.getElementById("department").value;
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
+      const building = document.getElementById("buildingSelect").value;
+      const room = document.getElementById("roomSelect").value;
+      const staffTypeRadio = document.querySelector('input[name="staffType"]:checked');
 
+      // Clear previous error messages
+      const errorElement = document.getElementById("errorMessage");
+      errorElement.textContent = "";
+      errorElement.style.color = "red";
+
+      // Проверка обязательных полей
+      if (!building) {
+        errorElement.textContent = "Fill in the field 'Select Building'";
+        return;
+      }
+
+      if (!room) {
+        errorElement.textContent = "Fill in the field 'Select Room'";
+        return;
+      }
+
+      if (!staffTypeRadio) {
+        errorElement.textContent = "Fill in the field (Staff Type)";
+        return;
+      }
+
+      const staffType = staffTypeRadio.value;
+
+      // Password validation
       if (password !== confirmPassword) {
-        document.getElementById("errorMessage").textContent =
-          "Passwords do not match";
+        errorElement.textContent = "Passwords do not match";
+        return;
+      }
+
+      if (password.length < 6) {
+        errorElement.textContent =
+          "Password must be at least 6 characters long";
+        return;
+      }
+
+      // Show loading message
+      errorElement.textContent = "Processing registration...";
+      errorElement.style.color = "blue";
+
+      // Verify if the teacher name exists in roomTeachers
+      const isValidTeacher = Object.values(roomTeachers).some(
+        (room) =>
+          room.mainTeacher.includes(fullName) ||
+          room.assistant.includes(fullName)
+      );
+
+      if (!isValidTeacher) {
+        errorElement.textContent =
+          "This name is not in the list of authorized teachers";
         return;
       }
 
@@ -24,22 +71,28 @@ document
         department,
         password,
         role: "user",
-        registrationDate: new Date().toISOString(),
+        building,
+        room,
+        staffType,
       };
 
-      // Проверяем существующих пользователей
-      const existingUser = await db.getUser(email);
-      const existingName = await db.getUserByNameFromServer(fullName);
+      // Send registration request
+      const response = await fetch("database.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          action: "addUser",
+          ...user,
+        }),
+      });
 
-      if (existingUser || existingName) {
-        document.getElementById("errorMessage").textContent =
-          "User with this email or name already exists";
-        return;
-      }
+      const result = await response.json();
+      console.log("Registration response:", result);
 
-      const success = await db.addUserToServer(user);
-      if (success) {
-        // Сохраняем информацию о текущем пользователе
+      if (result.success) {
+        // Save current user info
         localStorage.setItem(
           "currentUser",
           JSON.stringify({
@@ -48,17 +101,22 @@ document
             role: user.role,
           })
         );
-        alert(
-          "Registration successful! You can now submit maintenance requests."
-        );
-        window.location.href = "request.html";
+        errorElement.style.color = "green";
+        errorElement.textContent = "Registration successful! Redirecting...";
+
+        setTimeout(() => {
+          window.location.href = "request.html";
+        }, 1500);
       } else {
-        document.getElementById("errorMessage").textContent =
-          "Error during registration. Please try again.";
+        errorElement.style.color = "red";
+        errorElement.textContent =
+          result.message || "Registration failed. Please try again.";
       }
     } catch (error) {
       console.error("Registration error:", error);
-      document.getElementById("errorMessage").textContent =
-        "An error occurred during registration";
+      const errorElement = document.getElementById("errorMessage");
+      errorElement.style.color = "red";
+      errorElement.textContent =
+        "An error occurred during registration. Please try again.";
     }
   });
