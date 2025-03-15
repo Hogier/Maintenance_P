@@ -1,1 +1,1 @@
-{"name":"maintenance/portal","description":"Maintenance Portal","require":{"phpmailer/phpmailer":"^6.9"},"config":{"vendor-dir":"vendor","optimize-autoloader":true}}
+{"name":"maintenance/portal","description":"Maintenance Portal","require":{"phpmailer/phpmailer":"^6.9","workerman/workerman":"^4.2"},"config":{"vendor-dir":"vendor","optimize-autoloader":true}}

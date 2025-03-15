@@ -4,35 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="CSS.css" />
-    <link rel="stylesheet" href="user-profile.css" />
+    <link rel="preload" href="user-profile.css" as="style" onload="this.rel='stylesheet'"/>
     <title>Maintenance Request</title>
   </head>
-  <body>
-    <div class="hat-container">
-      <div class="nav-buttons">
-        <a href="main.html" class="back-button">Back to Main</a>
-      </div>
-      <div class="img-box">
+  <body>      
+    
+    <div class="img-box">
         <img src="Alcuin-School.jpeg" alt="AlcuinHawks" />
-      </div>
-      <div class="header-container">
-        <div class="user-account">
-          <div class="user-info">
-            <div class="avatar-container">
-              <span id="userAvatar">👤</span>
-            </div>
-            <div class="user-details">
-              <span id="userName"></span>
-              <span class="user-department"></span>
-            </div>
+    </div>
+
+    <div class="header-container">
+      <div class="user-profile-account">
+        <div class="user-info">
+          <div class="avatar-container">
+            <span id="userAvatar">👤</span>
           </div>
-          <button id="logoutButton">
-            <span class="logout-icon">↪</span>
-            <span class="logout-text">Logout</span>
-          </button>
+          <div class="user-details">
+            <span id="userName"></span>
+            <span class="user-department"></span>
+          </div>
         </div>
+        <button id="logoutButton">
+          <span class="logout-icon">↪</span>
+          <span class="logout-text">Logout</span>
+        </button>
       </div>
     </div>
+
+    <div class="nav-buttons">
+      <a href="main.html" class="back-button">Back to Main</a>
+    </div>
+
     <div class="opacityScreen">
       <div id="mainScreen">
         <h1 class="mainHeader">Maintenance Request</h1>
@@ -43,39 +45,25 @@
               <br />
               <br />
             </label>
-            <select
-              id="buildingSelect"
-              style="width: 220px; height: 40px; font-size: 18px"
-            >
-              <option value="">Select Building</option>
-              <option value="westWing">West Wing</option>
-              <option value="southWing">South Wing</option>
-              <option value="northWing">North Wing</option>
-              <option value="upperSchool">Upper School</option>
-              <option value="GFB">GFB</option>
-              <option value="WLFA">WLFA</option>
-              <option value="Administration">Administration</option>
-            </select>
+            <input type="text" id="userBuildingSelect" disabled>
 
-            <div id="roomSelection" style="margin-top: 20px; display: none">
+            <div id="roomSelection" style="margin-top: 20px;">
               <label for="roomSelect">
                 <strong>Select room:</strong>
                 <br />
                 <br />
               </label>
-              <select
-                id="roomSelect"
-                style="width: 220px; height: 40px; font-size: 18px"
-              ></select>
+              <input type="text" id="userRoomSelect" disabled>
             </div>
-
-            <div id="teacherSelection" style="margin-top: 20px; display: none">
+<!--
+            <div id="teacherSelection" style="margin-top: 20px; ">
               <div>
                 <label>
                   <strong>Select staff type:</strong>
                   <br />
                   <br />
                 </label>
+                
                 <div class="staff-type-selection">
                   <div class="staff-type-option">
                     <input
@@ -96,21 +84,20 @@
                     <label for="assistantRadio">Teaching Assistant</label>
                   </div>
                 </div>
-              </div>
-              <div id="staffSelectContainer" style="display: none">
+              
+              </div>-->
+
+              <div id="staffSelectContainer">
                 <label for="staffSelect">
                   <strong>Select staff member:</strong>
                   <br />
                   <br />
                 </label>
-                <select
-                  id="staffSelect"
-                  style="width: 220px; height: 40px; font-size: 18px"
-                ></select>
+                <input type="text" id="userStaffSelect" disabled>
               </div>
             </div>
 
-            <div id="requestForm" style="display: none; margin-top: 30px">
+            <div id="requestForm" style="margin-top: 30px">
               <div class="priority-selection">
                 <label>
                   <strong>Priority Level:</strong>
@@ -183,48 +170,167 @@
       </div>
     </div>
 
-    <div class="user-dashboard">
-      <span class="close-button">×</span>
-      <div class="user-profile">
-        <div class="user-photo">
-          <div class="user-photo-container">
-          <img src="#"/>
-          </div>
-          <div class="change-photo" id="changePhotoButton">&#128247;</div>
-        </div>
-        <div class="user-info">
-          <h2 id="dashboardUserName"></h2>
-          <p id="dashboardUserEmail"></p>
-          <!-- Добавьте другие данные о пользователе здесь -->
-        </div>
+<div id="actionContainer" class="action-container">
+  <div id="filterButton" class="filter-button">
+     <img src="images/filter.png" alt="Filter" />
+     <div class="filters-list">
+      <div class="filters-list-item">
+       <label for="filter-date">Date</label>
+       <select id="filter-date">
+         <option value="lastWeek">Last week</option>
+         <option value="lastMonth">Last Month</option>
+         <option value="last3Months">Last 3 Months</option>
+         <option value="lastYear">Last Year</option>
+       </select>
       </div>
-      <div class="user-tasks">
-        <div class="menu-header">
-          <div id="userTasks" class="menu-header-item"><h3>Your requests</h3></div>
-          <div id="events" class="menu-header-item"><h3>Events</h3></div>
-        </div>
-        <div class="info-content">
-          
-        </div>
+      <div class="filters-list-item">
+       <label for="filter-status">Status</label>
+       <select id="filter-status">
+         <option value="All">All</option>
+         <option value="Pending">Pending</option>
+         <option value="In Progress">In Progress</option>
+         <option value="Completed">Completed</option>
+       </select>
       </div>
-     <div class="loading-overlay" id="loadingOverlay"></div>
-     <div class="loading-indicator" id="loadingIndicator"></div> 
-    </div>
-    <div class="overlay" id="overlay"></div>
+      <div class="filters-list-item">
+       <label for="filter-priority">Priority</label>
+       <select id="filter-priority">
+         <option value="All">All</option>
+         <option value="low">Low</option>
+         <option value="medium">Medium</option>
+         <option value="high">High</option>
+         <option value="urgent">Urgent</option>
+       </select>
+      </div>
+      <div class="filters-list-item">         
+       <label for="filter-assigned">Assigned</label>
+       <select id="filter-assigned">
+         <option value="All">All</option>
+         <option value="yes">Yes</option>
+         <option value="no">No</option>
+       </select>
+      </div>
+     </div>
+   </div>
+   <div id="sortButton" class="sort-button">
+      <img src="images/sort.png" alt="Sort" />
+      <div class="sort-all-tools">
+      <button id="orderButton" class="order"><img src="images/order.png" alt="Order Asc" /></button>
 
-    <!-- Модальное окно для загрузки фотографии -->
-    <div class="modal" id="photoModal">
-      <div class="modal-content">
-        <span class="close-modal" id="closeModalButton">×</span>
-        <h2>Upload photo</h2>
-        <div class="drop-area" id="dropArea">
-          <span id="fileName">Drag and drop or click to select a file</span>
-          <input type="file" id="photoInput" accept="image/*" hidden />
+      <div class="sort-list">
+        <div class="sort-list-item">
+         <label for="sort-date">Sort by </label>
+         <select id="sort-date">
+           <option value="Date">Date</option>
+           <option value="Status">Status</option>
+           <option value="Priority">Priority</option>
+           <option value="Assigned">Assigned</option>
+         </select>
         </div>
-        <button id="uploadPhotoButton">Confirm</button>
       </div>
+      </div>
+
+    </div>
+    <div id="searchButton" class="search-button">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search...">
+        <img src="images/search.png" alt="Search" />
+    </div>
+</div>
+
+<div class="main-dashboard">
+  <div class="user-dashboard">
+    <span class="close-button">×</span>
+    <div class="settings-icon">
+      <img id="settingsIcon" src="images/settings.png" alt="Settings" />
     </div>
     
+    <div class="user-profile">
+      <div class="user-photo">
+        <div class="user-photo-container">
+          <img src="#" />
+        </div>
+        <div class="change-photo" id="changePhotoButton">&#128247;</div>
+      </div>
+      <div class="user-info">
+        <h2 id="dashboardUserName"></h2>
+        <p id="dashboardUserEmail"></p>
+        <!-- Добавьте другие данные о пользователе здесь -->
+      </div>
+    </div>
+    <div class="user-tasks">
+      <div class="menu-header">
+        <div id="userTasks" class="menu-header-item">
+          <h3>Your requests</h3>
+        </div>
+        <div id="events" class="menu-header-item"><h3>Events</h3></div>
+      </div>
+      <div class="info-content"></div>
+    </div>
+    <div class="loading-overlay" id="loadingOverlay"></div>
+    <div class="loading-indicator" id="loadingIndicator"></div>
+  </div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- Модальное окно для загрузки фотографии -->
+<div class="modal" id="photoModal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeModalButton">×</span>
+    <h2>Upload photo</h2>
+    <div class="drop-area" id="dropArea">
+      <span id="fileName">Drag and drop or click to select a file</span>
+      <input type="file" id="photoInput" accept="image/*" hidden />
+    </div>
+    <button id="uploadPhotoButton">Confirm</button>
+  </div>
+</div>
+<div class="settings-modal" id="settingsModal">
+  <div class="settings-modal-content">
+    <span class="settings-close">&times;</span>
+    <h2>Profile Settings</h2>
+    <div class="settings-form-group">
+      <label for="settingsEmail">Email:</label>
+      <input type="email" id="settingsEmail" disabled>
+    </div>
+    <div class="settings-form-group">
+      <label for="settingsFullName">Full Name:</label>
+      <input type="text" id="settingsFullName">
+    </div>
+    <div class="settings-form-group">
+      <label for="settingsDepartment">Department:</label>
+      <select id="settingsDepartment">
+        <option value="teaching">Teaching Staff</option>
+        <option value="admin">Administration</option>
+        <option value="support">Support Staff</option>
+        <option value="parents">Parents Club</option>
+      </select>
+    </div>
+    <div class="settings-form-group">
+      <label for="settingsBuilding">Building:</label>
+      <select id="settingsBuilding">
+        <option value="westWing">West Wing</option>
+        <option value="southWing">South Wing</option>
+        <option value="northWing">North Wing</option>
+        <option value="upperSchool">Upper School</option>
+        <option value="GFB">GFB</option>
+        <option value="WLFA">WLFA</option>
+        <option value="Administration">Administration</option>
+      </select>
+    </div>
+    <div class="settings-form-group">
+      <label for="settingsRoom">Room:</label>
+      <select id="settingsRoom"></select>
+    </div>
+    <div class="settings-form-group">
+      <label for="settingsStaffType">Staff Type:</label>
+      <select id="settingsStaffType">
+        <option value="mainTeacher">Main Teacher</option>
+        <option value="assistant">Teaching Assistant</option>
+      </select>
+    </div>
+    <button class="settings-save-btn">Save Changes</button>
+  </div>
+</div>
     <!-- Модальное окно подтверждения -->
     <div id="confirmationModal" class="modal" style="display: none">
       <div class="modal-content">
@@ -248,9 +354,11 @@
     <script src="dateUtils.js"></script>
     <script src="jawa script.js"></script>
     <script src="user-profile.js"></script>
+
+   <!-- <script src="user-profile.js"></script>-->
     <script>
       // Добавим проверку и отображение информации о пользователе
-      document.addEventListener("DOMContentLoaded", function () {
+      /*document.addEventListener("DOMContentLoaded", function () {
         const user = JSON.parse(localStorage.getItem("currentUser"));
         if (user) {
           const userNameElement = document.getElementById("userName");
@@ -259,7 +367,7 @@
           }
           document.querySelector(".user-account").style.display = "flex";
         }
-      });
+      });*/
     </script>
   </body>
 </html>

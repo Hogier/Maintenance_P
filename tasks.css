@@ -974,3 +974,47 @@ h1 {
   line-height: 28px;
   border-radius: 50%;
 }
+
+.alert-tasks {
+  background: #f6c708;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  transition: height 0.5s ease-in-out;
+}
+
+.alert-tasks-list {
+  min-height: 54px;
+  transition: 0.3s ease-in-out;
+}
+
+
+.alert-tasks-list-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.alert-tasks-list-header img {
+  height: 44px;
+  margin: 5px 15px 0px 15px;
+}
+
+.alert-tasks-list-header p {
+  color: white;
+  font-size: 20px;
+  text-shadow: 1px 1px 3px #0000004f;
+}
+
+#displayNotCompletedTasksButton {
+  color: white;
+  font-size: 26px;
+  text-shadow: 1px 1px 3px #0000004f;
+  transition: transform 0.3s ease;
+}

@@ -9,7 +9,7 @@ ini_set('display_errors', 1);
 class Database {
     private $host = 'localhost';
     private $user = 'root';
-    private $password = '';
+    private $password = 'root';
     private $database = 'maintenancedb';
     private $conn;
 
@@ -51,6 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $department = $_POST['department'] ?? '';
             $role = $_POST['role'] ?? '';
             $password = $_POST['password'] ?? '';
+            $building = $_POST['building'] ?? '';
+            $room = $_POST['room'] ?? '';
+            $staffType = $_POST['staffType'] ?? '';
             
             // Check if email or full name already exists
             $checkStmt = $conn->prepare("SELECT email, full_name FROM users WHERE email = ? OR full_name = ?");
@@ -69,13 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // If no duplicates found, proceed with registration
-            if ($email && $fullName && $department && $role && $password) {
+            if ($email && $fullName && $department && $role && $password && $building && $room && $staffType) {
                 // Хэширование пароля
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
                 // Подготовка и выполнение запроса
-                $stmt = $conn->prepare("INSERT INTO users (email, full_name, department, role, password) VALUES (?, ?, ?, ?, ?)");
-                $stmt->bind_param('sssss', $email, $fullName, $department, $role, $passwordHash);
+                $stmt = $conn->prepare("INSERT INTO users (email, full_name, department, role, password, building, room, staffType) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param('ssssssss', $email, $fullName, $department, $role, $passwordHash, $building, $room, $staffType);
                 
                 if ($stmt->execute()) {
                     echo json_encode(['success' => true, 'message' => 'User registered successfully']);
@@ -186,6 +189,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $updateStmt->execute();
             
             echo json_encode(['success' => true, 'message' => 'Code verified successfully']);
+
+        } elseif ($action === 'getUserLocation') {
+            $email = $_POST['email'] ?? '';
+            
+            if (empty($email)) {
+                echo json_encode(['success' => false, 'message' => 'Email not provided']);
+                exit;
+            }
+
+            // Получаем данные о локации пользователя
+            $stmt = $conn->prepare("SELECT building, room, staffType FROM users WHERE email = ?");
+            $stmt->bind_param('s', $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $userData = $result->fetch_assoc();
+            
+            if ($userData) {
+                echo json_encode([
+                    'success' => true, 
+                    'location' => [
+                        'building' => $userData['building'],
+                        'room' => $userData['room'],
+                        'staffType' => $userData['staffType']
+                    ]
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'User not found']);
+            }
 
         } else {
             echo json_encode(['success' => false, 'message' => 'Invalid action']);

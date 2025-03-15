@@ -30,6 +30,72 @@
             </select>
           </div>
           <div class="form-group">
+            <label>
+              Select building:
+              <br />
+              <br />
+            </label>
+            <select
+              id="buildingSelect"
+              style="width: 100%; height: 40px; font-size: 16px"
+              required
+            >
+              <option value="">Select Building</option>
+              <option value="westWing">West Wing</option>
+              <option value="southWing">South Wing</option>
+              <option value="northWing">North Wing</option>
+              <option value="upperSchool">Upper School</option>
+              <option value="GFB">GFB</option>
+              <option value="WLFA">WLFA</option>
+              <option value="Administration">Administration</option>
+            </select>
+
+            <div id="roomSelection" style="margin-top: 20px; display: none">
+              <label for="roomSelect">
+                Select room:
+                <br />
+                <br />
+              </label>
+              <select
+                id="roomSelect"
+                style="width: 100%; height: 40px; font-size: 16px"
+                required
+              ></select>
+            </div>
+
+            <div id="teacherSelection" style="margin-top: 20px;">
+              <div>
+                <label>
+                  Select staff type:
+                  <br />
+                  <br />
+                </label>
+                <div class="staff-type-selection">
+                  <div class="staff-type-option">
+                    <input
+                      type="radio"
+                      id="mainTeacherRadio"
+                      name="staffType"
+                      value="mainTeacher"
+                      required
+                    />
+                    <label for="mainTeacherRadio">Main Teacher</label>
+                  </div>
+                  <div class="staff-type-option">
+                    <input
+                      type="radio"
+                      id="assistantRadio"
+                      name="staffType"
+                      value="assistant"
+                      required
+                    />
+                    <label for="assistantRadio">Teaching Assistant</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
             <label for="password">Password</label>
             <input type="password" id="password" required />
           </div>
@@ -47,16 +113,209 @@
         </div>
       </div>
     </div>
-    <script src="teachers-data.js"></script>
+    <!-- <script src="teachers-data.js"></script> -->
     <script src="database.js"></script>
     <script src="register.js"></script>
     <script>
+
+const buildingRooms = {
+  westWing: ["Room 101", "Room 102", "Room 103"],
+  southWing: ["Room 201", "Room 202", "Room 203"],
+  northWing: ["Room 301", "Room 302", "Room 303"],
+  upperSchool: ["Class 401", "Class 402", "Class 403"],
+  GFB: ["Lab 1", "Lab 2", "Lab 3"],
+  WLFA: ["Studio 1", "Studio 2", "Studio 3"],
+  Administration: ["Office 1", "Office 2", "Office 3"],
+};
+
+// Расширяем данные об учителях для всех комнат (кроме Administration)
+const roomTeachers = {
+  // Upper School
+  "Class 401": {
+    mainTeacher: ["John Smith", "Mary Johnson", "Robert Brown"],
+    assistant: ["Alice White", "David Miller", "Emma Davis"],
+  },
+  "Class 402": {
+    mainTeacher: ["Michael Wilson", "Sarah Lee", "James Anderson"],
+    assistant: ["Laura Martin", "Peter Taylor", "Sophie Clark"],
+  },
+  "Class 403": {
+    mainTeacher: ["William Turner", "Elizabeth Moore", "Thomas Hall"],
+    assistant: ["Oliver Wright", "Grace Lewis", "Harry King"],
+  },
+  // West Wing
+  "Room 101": {
+    mainTeacher: ["Paul Adams", "Linda Wilson", "George Davis"],
+    assistant: ["Kate Brown", "Mark Evans", "Lucy Taylor"],
+  },
+  "Room 102": {
+    mainTeacher: ["Helen White", "Daniel Green", "Rachel Black"],
+    assistant: ["Tom Harris", "Anna Lee", "Jack Thompson"],
+  },
+  "Room 103": {
+    mainTeacher: ["Steve Parker", "Diana Ross", "Kevin Hart"],
+    assistant: ["Mike Collins", "Julia Reed", "Chris Martin"],
+  },
+  // South Wing
+  "Room 201": {
+    mainTeacher: ["Brian Cox", "Maria Garcia", "Andrew Wilson"],
+    assistant: ["Sarah Palmer", "David Chen", "Emma Watson"],
+  },
+  "Room 202": {
+    mainTeacher: ["Frank Miller", "Sofia Rodriguez", "Peter Zhang"],
+    assistant: ["Lisa Cooper", "James Wright", "Nina Patel"],
+  },
+  "Room 203": {
+    mainTeacher: ["Alan Turing", "Marie Curie", "Isaac Newton"],
+    assistant: ["Albert Einstein", "Jane Goodall", "Charles Darwin"],
+  },
+  // North Wing
+  "Room 301": {
+    mainTeacher: ["Leo Davidson", "Sophia Lee", "Marcus Johnson"],
+    assistant: ["Olivia Brown", "Lucas Martinez", "Isabella Kim"],
+  },
+  "Room 302": {
+    mainTeacher: ["Nathan Phillips", "Emily Watson", "Ryan Cooper"],
+    assistant: ["Hannah Baker", "Dylan Murphy", "Victoria Chen"],
+  },
+  "Room 303": {
+    mainTeacher: ["Benjamin Gray", "Ava Wilson", "Mason Thompson"],
+    assistant: ["Ella Davis", "Owen Rodriguez", "Mia Taylor"],
+  },
+  // GFB Labs
+  "Lab 1": {
+    mainTeacher: ["Dr. Richard Feynman", "Dr. Lisa Su", "Dr. James Maxwell"],
+    assistant: ["Ted Cooper", "Rose Martinez", "Alan Shepherd"],
+  },
+  "Lab 2": {
+    mainTeacher: [
+      "Dr. Marie Smith",
+      "Dr. Robert Oppenheimer",
+      "Dr. Niels Bohr",
+    ],
+    assistant: ["Carl Sagan", "Grace Hopper", "Neil Armstrong"],
+  },
+  "Lab 3": {
+    mainTeacher: ["Dr. Stephen Hawking", "Dr. Jane Foster", "Dr. Bruce Banner"],
+    assistant: ["Tony Stark", "Peter Parker", "Reed Richards"],
+  },
+  // WLFA Studios
+  "Studio 1": {
+    mainTeacher: ["Vincent van Gogh", "Frida Kahlo", "Pablo Picasso"],
+    assistant: ["Claude Monet", "Georgia O'Keeffe", "Andy Warhol"],
+  },
+  "Studio 2": {
+    mainTeacher: ["Leonardo da Vinci", "Michelangelo", "Raphael"],
+    assistant: ["Salvador Dali", "Jackson Pollock", "Henri Matisse"],
+  },
+  "Studio 3": {
+    mainTeacher: ["Gustav Klimt", "Wassily Kandinsky", "Edgar Degas"],
+    assistant: ["Paul Klee", "Joan Miro", "Marc Chagall"],
+  },
+  // Administration
+  "Office 1": {
+    mainTeacher: [
+      "Dr. Jennifer Adams - Principal",
+      "Michael Scott - Vice Principal",
+      "Sarah Johnson - Dean",
+    ],
+    assistant: [
+      "Patricia Wilson - Secretary",
+      "Robert Brown - Administrator",
+      "Emily Davis - Coordinator",
+    ],
+  },
+  "Office 2": {
+    mainTeacher: [
+      "David Miller - Financial Director",
+      "Amanda White - HR Manager",
+      "James Thompson - Operations Manager",
+    ],
+    assistant: [
+      "Lisa Chen - Accountant",
+      "Mark Wilson - HR Assistant",
+      "Karen Taylor - Office Manager",
+    ],
+  },
+  "Office 3": {
+    mainTeacher: [
+      "Richard Moore - Facilities Director",
+      "Susan Clark - Student Affairs",
+      "John Davis - IT Director",
+    ],
+    assistant: [
+      "Tom Baker - IT Support",
+      "Mary Johnson - Administrative Assistant",
+      "Paul Green - Facilities Coordinator",
+    ],
+  },
+};
+
       // Check registration access
       document.addEventListener("DOMContentLoaded", function () {
         if (!sessionStorage.getItem("registrationAccess")) {
           window.location.href = "verify_code.html";
         }
+
+        const buildingSelect = document.getElementById("buildingSelect");
+        const roomSelection = document.getElementById("roomSelection");
+        const teacherSelection = document.getElementById("teacherSelection");
+        const roomSelect = document.getElementById("roomSelect");
+        const staffTypeRadios = document.querySelectorAll('input[name="staffType"]');
+        const staffSelectContainer = document.querySelector(".staff-select-container");
+        
+        console.log(buildingSelect);
+
+        buildingSelect.addEventListener("change", function () {
+    const selectedBuilding = this.value;
+    console.log("selectedBuilding: " + selectedBuilding);
+    if (selectedBuilding) {
+      roomSelection.style.display = "block";
+      populateRoomSelect(selectedBuilding);
+    } else {
+      roomSelection.style.display = "none";
+      teacherSelection.style.display = "none";
+      //requestForm.style.display = "none";
+    }
+  });
+
+  // Обработчик выбора комнаты
+  roomSelect.addEventListener("change", function () {
+    if (this.value) {
+      //teacherSelection.style.display = "block";
+      //staffTypeRadios[0].checked = false;
+      //staffTypeRadios[1].checked = false;
+      //staffSelectContainer.style.display = "none";
+      //requestForm.style.display = "none";
+    } else {
+      //teacherSelection.style.display = "none";
+      //requestForm.style.display = "none";
+    }
+  });
       });
+
+      // Функция для заполнения списка комнат
+function populateRoomSelect(building) {
+  const roomSelect = document.getElementById("roomSelect");
+  roomSelect.innerHTML = '<option value="">Select Room</option>';
+
+  const rooms = buildingRooms[building] || [];
+  rooms.forEach((room) => {
+    const option = document.createElement("option");
+    option.value = room;
+    option.textContent = room;
+    roomSelect.appendChild(option);
+  });
+}
+
+function setLocationInfoForServer(building, room, staffType) {
+  const locationInfo = {
+    building: building,
+    room: room,
+    staffType: staffType,
+  };
+}
+
     </script>
   </body>
 </html>

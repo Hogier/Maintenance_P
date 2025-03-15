@@ -1,5 +1,102 @@
 let isFirstLoadEvents = false;
 
+let displayedTasks = [];
+let displayedEvents = [];
+let searchValue = "";
+
+let currentFilter = {data: "lastWeek", status: "All", priority: "All", assignedTo: "All"};
+let currentSort = {sortBy: "Date", sortOrder: "dec"};
+
+// Определение структуры зданий и комнат
+const buildingRooms = {
+  westWing: ["Room 101", "Room 102", "Room 103"],
+  southWing: ["Room 201", "Room 202", "Room 203"],
+  northWing: ["Room 301", "Room 302", "Room 303"],
+  upperSchool: ["Class 401", "Class 402", "Class 403"],
+  GFB: ["Lab 1", "Lab 2", "Lab 3"],
+  WLFA: ["Studio 1", "Studio 2", "Studio 3"],
+  Administration: ["Office 1", "Office 2", "Office 3"],
+};
+
+
+
+
+
+
+// Создаем WebSocket соединение
+const ws = new WebSocket('ws://localhost:2346');
+
+// При открытии соединения
+ws.onopen = function() {
+    console.log('Подключено к WebSocket серверу');
+};
+
+// При получении сообщения
+ws.onmessage = function(e) {
+    try {
+        const response = JSON.parse(e.data);
+        console.log('Получен ответ:', response);
+        
+        if (response.type === 'tasks') {
+            // Обработка полученных задач
+            const tasks = response.data;
+            console.log('Получены задачи:', tasks);
+            // Здесь можно вызвать функцию для отображения задач
+            displayUserTasks(tasks);
+        } else if (response.type === 'error') {
+            console.error('Ошибка сервера:', response.message);
+        }
+    } catch (error) {
+        console.error('Ошибка парсинга JSON:', error);
+        console.log('Полученные данные:', e.data);
+    }
+};
+
+// При ошибке
+ws.onerror = function(e) {
+    console.error('WebSocket ошибка: ' + e.message);
+};
+
+// При закрытии соединения
+ws.onclose = function() {
+    console.log('Соединение закрыто');
+};
+
+
+
+
+
+
+// Отправка запроса на получение задач
+function requestTasks(staff) {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            action: 'getUserTasks',
+            staff: staff
+        }));
+    } else {
+        console.error('WebSocket не подключен');
+    }
+}
+
+// Вызов функции при загрузке страницы
+const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+if (currentUser) {
+    requestTasks(currentUser.fullName);
+}
+
+setTimeout(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+        const message = {
+            action: 'getUserTasks',
+            staff: 'Linda Wilson'
+        };
+        console.log('Отправка запроса:', message);
+        ws.send(JSON.stringify(message));
+    }
+}, 1000);
+
+
 document.addEventListener("DOMContentLoaded", async function () {
   // Проверяем авторизацию
   const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -9,7 +106,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // Если пользователь не авторизован, скрываем элементы профиля
   if (!user && !maintenanceStaff) {
-    document.querySelector(".user-account").style.display = "none";
+    document.querySelector(".user-profile-account").style.display = "none";
     return;
   }
 
@@ -39,20 +136,55 @@ document.addEventListener("DOMContentLoaded", async function () {
   const overlay = document.getElementById("overlay");
   const loadingIndicator = document.getElementById("loadingIndicator");
   const loadingOverlay = document.getElementById("loadingOverlay");
+  const actionContainer = document.getElementById("actionContainer");
+  const filterButton = document.getElementById("filterButton");
+  const sortButton = document.getElementById("sortButton");
+  const searchButton = document.getElementById("searchButton");
+  const actionButtons = [filterButton, sortButton, searchButton];
+  let isOpenButtons = [false, false, false];
 
   headerContainer.addEventListener("click", function () {
     userDashboard.classList.add("active");
+    console.log("userDashboard.offsetWidth", userDashboard.offsetWidth);
+    actionContainer.style.right = `${userDashboard.offsetWidth + 10}px`;
     overlay.style.display = "block";
+    overlay.style.opacity = "1";
+    overlay.style.pointerEvents = "auto";
   });
 
   closeButton.addEventListener("click", function () {
     userDashboard.classList.remove("active");
+    actionContainer.style.right = "-100px";
+    overlay.style.opacity = "0";
+    overlay.style.pointerEvents = "none";
     overlay.style.display = "none";
+    actionButtons.forEach((button, index) => {
+      button.style.height = "50px";
+      button.style.width = "50px";
+      isOpenButtons[index] = false;
+    });
   });
 
-  overlay.addEventListener("click", function () {
+ /* overlay.addEventListener("click", function () {
     userDashboard.classList.remove("active");
+    actionContainer.style.right = "-100px";
+    overlay.style.opacity = "0";
     overlay.style.display = "none";
+    overlay.style.pointerEvents = "none";
+  });*/
+
+  actionButtons.forEach((button, index) => {
+    const img = button.querySelector('img');
+    img.addEventListener("click", () => {
+      isOpenButtons[index] = !isOpenButtons[index];
+      if(index === 0) {
+        button.style.width = isOpenButtons[index] ? "372px" : "50px";
+        button.style.height = isOpenButtons[index] ? "217px" : "50px";
+      }
+      else {
+        button.style.width = isOpenButtons[index] ? "372px" : "50px";
+      }
+    });
   });
 
   changePhotoButton.addEventListener("click", function () {
@@ -99,6 +231,55 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
       document.getElementById("userTasks").style.width = "62%";
       document.getElementById("events").style.width = "33%";
+    }
+  });
+
+//ФИЛЬТРЫ
+
+  document.getElementById("filter-date").addEventListener("change", function () {
+    currentFilter.data = this.value;
+    displayUserTasks();
+  });
+
+  document.getElementById("filter-status").addEventListener("change", function () {
+    currentFilter.status = this.value;
+    displayUserTasks();
+  });
+
+  document.getElementById("filter-priority").addEventListener("change", function () {
+    currentFilter.priority = this.value;
+    displayUserTasks();
+  });
+
+  document.getElementById("filter-assigned").addEventListener("change", function () {
+    currentFilter.assignedTo = this.value;
+    displayUserTasks();
+  });
+
+
+  // Сортировка
+
+  document.getElementById("sort-date").addEventListener("change", function () {
+    console.log("sort chack" + this.value);
+    currentSort.sortBy = this.value;
+    console.log("currentSort.sortBy", currentSort.sortBy);
+    displayUserTasks();
+  });
+  
+  document.getElementById("orderButton").addEventListener("click", function () {
+    currentSort.sortOrder = currentSort.sortOrder === "dec" ? "inc" : "dec";
+    displayUserTasks();
+  });
+
+//Поиск
+
+  const searchInput = document.getElementById("searchInput");
+  searchInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      searchValue = searchInput.value.trim().toUpperCase();
+      if(searchValue != "") {
+        displayUserTasks();
+      }
     }
   });
 
@@ -161,7 +342,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   } else {
     userPhoto.onload = () => adjustImageSize(userPhoto);
   }
+
+
 });
+
+
+
+
 // Функция для отображения информации о пользователе
 function displayUserInfo() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -170,7 +357,7 @@ function displayUserInfo() {
     if (userNameElement) {
       userNameElement.textContent = user.fullName;
     }
-    document.querySelector(".user-account").style.display = "flex";
+    document.querySelector(".user-profile-account").style.display = "flex";
   }
 }
 // Функция для отображения информации о пользователе в личном кабинете
@@ -184,8 +371,7 @@ function displayDashboardUserInfo() {
       userEmailElement.textContent = user.email;
     }
   }
-}
-
+}/*
 // Функция для получения заданий пользователя
 async function getUserTasks() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -195,7 +381,7 @@ async function getUserTasks() {
       formData.append("action", "getUserTasks");
       formData.append("staff", user.fullName);
 
-      const response = await fetch("database.php", {
+      const response = await fetch("php/user-profile.php", {
         method: "POST",
         body: formData,
       });
@@ -217,7 +403,7 @@ async function getUserTasks() {
   }
   return [];
 }
-
+*/
 // Функция для отображения заданий пользователя
 async function displayUserTasks() {
   const infoContent = document.querySelector(".info-content");
@@ -232,16 +418,123 @@ async function displayUserTasks() {
   const infoContentOverlay = document.createElement("div");
   infoContentOverlay.classList.add("info-content-overlay");
   // Если это не первый загрузка задач, показываем вуаль и индикатор загрузки
-  if (isFirstLoadEvents) {
+ 
     infoContent.appendChild(infoContentOverlay);
     loadingIndicator.style.display = "block";
     infoContentOverlay.style.display = "block";
-  }
+  
 
   try {
-    // Получаем задачи
-    const tasks = await getUserTasks();
 
+    let tasks = [];
+    
+    // Получаем задачи
+    switch (currentFilter.data) {
+      case "lastWeek":
+        tasks = await getUserTasksForLastWeek();
+        break;
+      case "lastMonth":
+        tasks = await getUserTasksForLastMonth();
+        break;
+      case "last3Months":
+        tasks = await getUserTasksForLast3Months();
+        break;
+      case "lastYear":
+        tasks = await getUserTasksForLastYear();
+        break;
+    }
+
+    if(searchValue != "") {
+      tasks = tasks.filter(task => task.request_id.includes(searchValue));
+      searchValue = "";
+    }
+
+    console.log("tasks", tasks);
+    console.log("currentFilter", currentFilter);
+
+    if(currentFilter.status !== "All") {
+      console.log("filter status", currentFilter.status);
+      tasks = tasks.filter(task => task.status === currentFilter.status);
+    }
+
+    if(currentFilter.priority !== "All") {
+      console.log("filter priority", currentFilter.priority);
+      tasks = tasks.filter(task => task.priority === currentFilter.priority);
+    }
+
+    if(currentFilter.assignedTo !== "All") {
+      console.log("filter assignedTo", currentFilter.assignedTo);
+      
+      tasks = tasks.filter(task => {
+        let assignedTo = task.assigned_to != null ? "yes" : "no";
+        return assignedTo === currentFilter.assignedTo;
+    });
+    }
+
+  if(currentSort.sortOrder === "dec") {
+
+    if (currentSort.sortBy === "Date") {
+      console.log("sort by date");
+      tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+    else if (currentSort.sortBy === "Priority") {
+      console.log("sort by priority");
+      const priorityOrder = {
+        'low': 1,
+        'medium': 2,
+        'high': 3,
+        'urgent': 4
+      };
+      tasks.sort((a, b) => priorityOrder[a.priority.toLowerCase()] - priorityOrder[b.priority.toLowerCase()]);
+    }
+    else if (currentSort.sortBy === "Status") {
+      console.log("sort by status");
+      tasks.sort((a, b) => a.status.localeCompare(b.status));
+    } else if (currentSort.sortBy === "Assigned") {
+      console.log("sort by assigned");
+      
+      tasks.sort((a, b) => 
+        {
+          let aAssigned = a.assigned_to != null ? "yes" : "no";
+          let bAssigned = b.assigned_to != null ? "yes" : "no";
+          return aAssigned.localeCompare(bAssigned)
+        });
+    }
+  } 
+  
+  else if(currentSort.sortOrder === "inc") {
+
+    if (currentSort.sortBy === "Date") {
+      console.log("sort by date");
+      tasks.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    }
+    else if (currentSort.sortBy === "Priority") {
+      console.log("sort by priority");
+      const priorityOrder = {
+        'low': 1,
+        'medium': 2,
+        'high': 3,
+        'urgent': 4
+      };
+      tasks.sort((a, b) => priorityOrder[b.priority.toLowerCase()] - priorityOrder[a.priority.toLowerCase()]);
+    }
+    else if (currentSort.sortBy === "Status") {
+      console.log("sort by status");
+      tasks.sort((a, b) => b.status.localeCompare(a.status));
+    } else if (currentSort.sortBy === "Assigned") {
+      console.log("sort by assigned");
+      
+      tasks.sort((a, b) => 
+        {
+          let aAssigned = a.assigned_to != null ? "yes" : "no";
+          let bAssigned = b.assigned_to != null ? "yes" : "no";
+          return bAssigned.localeCompare(aAssigned)
+        });
+    }
+  }
+    
+    
+    console.log("filtered tasks", tasks);
     // Очищаем содержимое контейнера
     infoContent.innerHTML = "";
 
@@ -303,7 +596,7 @@ async function displayUserTasks() {
     console.error("Error fetching user tasks:", error);
   } finally {
     // Скрыть индикатор загрузки и вуаль после завершения
-    if (isFirstLoadEvents) {
+
       const infoContentOverlay = document.querySelector(
         ".info-content-overlay"
       );
@@ -311,7 +604,7 @@ async function displayUserTasks() {
         infoContentOverlay.remove();
       }
       loadingIndicator.style.display = "none";
-    }
+    
   }
 }
 
@@ -357,19 +650,45 @@ async function addUserPhotoToServer(file) {
   ).email;
   formData.append("email", currentUserEmail);
 
-  return fetch("database.php", {
-    method: "POST",
-    body: formData,
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        console.log("Фото успешно загружено");
-      } else {
-        console.error("Ошибка загрузки фото:", data.message);
-      }
-    })
-    .catch((error) => console.error("Ошибка:", error));
+  try {
+    console.log('Начало загрузки файла:', file.name);
+    console.log('Тип файла:', file.type);
+    console.log('Размер файла:', file.size);
+
+    const response = await fetch("php/user-profile.php", {
+      method: "POST",
+      body: formData,
+    });
+    
+    console.log('Статус ответа:', response.status);
+    console.log('Заголовки ответа:', Object.fromEntries(response.headers));
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Ответ сервера:', data);
+    
+    if (data.success) {
+      console.log("Фото успешно загружено");
+      return true;
+    } else {
+      console.error("Ошибка загрузки фото:", data.message);
+      alert("Ошибка при загрузке фото: " + data.message);
+      return false;
+    }
+  } catch (error) {
+    console.error("Подробная информация об ошибке:", {
+      message: error.message,
+      stack: error.stack,
+      fileName: file?.name,
+      fileType: file?.type,
+      fileSize: file?.size
+    });
+    alert("Ошибка при загрузке фото: " + error.message);
+    return false;
+  }
 }
 
 async function getUserPhotoFromServer() {
@@ -380,7 +699,7 @@ async function getUserPhotoFromServer() {
   formData.append("action", "getUserPhoto");
   formData.append("email", currentUserEmail);
   console.log(currentUserEmail);
-  return fetch("database.php", {
+  return fetch("php/user-profile.php", {
     method: "POST",
     body: formData,
   })
@@ -407,14 +726,23 @@ async function loadUserPhoto() {
     console.log("loadUserPhoto!");
     console.log(photoFileName);
     console.log(userPhotoElement);
-    console.log(avatarContainer);
+    console.log("photoFileName: " + photoFileName);
+
     if (photoFileName !== "user.png") {
-      avatarContainer.style.backgroundImage = `url(users/img/${photoFileName})`;
+      avatarContainer.style.backgroundImage = `url("/Maintenance_P/users/img/${photoFileName}")`;
       avatarContainer.style.backgroundSize = "cover";
       avatarContainer.style.backgroundPosition = "center";
       avatarContainer.innerHTML = ``;
     }
-    userPhotoElement.src = `users/img/${photoFileName}`;
+    userPhotoElement.src = `/Maintenance_P/users/img/${photoFileName}`;
+    console.log(avatarContainer);
+
+    // Добавляем проверку и выводим значение backgroundImage
+    if (avatarContainer) {
+      console.log("Background Image URL:", avatarContainer.style);
+    } else {
+      console.error("avatarContainer не найден");
+    }
   } catch (error) {
     console.error("Ошибка загрузки фото:", error);
   }
@@ -472,7 +800,7 @@ async function getEvents() {
     formData.append("action", "getEventsByProfile");
     formData.append("date", currentDate);
 
-    const response = await fetch("database.php", {
+    const response = await fetch("php/user-profile.php", {
       method: "POST",
       body: formData,
     });
@@ -524,35 +852,35 @@ async function displayEvents() {
 
     events.forEach((event) => {
       const listItem = document.createElement("li");
-      listItem.classList.add("event-list-item");
+      listItem.classList.add("profile-event-list-item");
 
       // Форматируем данные мероприятия
       const eventDetails = `
-              <div class="event-list-header">
-                <div class="event-list-header-left">
-                  <span class="event-list-name">${event.name}</span>
+              <div class="profile-event-list-header">
+                <div class="profile-event-list-header-left">
+                  <span class="profile-event-list-name">${event.name}</span>
                 </div>
-                <div class="event-list-header-right">
-                  <span class="event-list-location">${event.location}</span>
-                </div>
-              </div>
-              <div class="event-list-dates">
-                <div class="event-list-date">
-                  <span class="event-list-start-date">${event.startDate}</span>
-                  <span class="event-list-start-time">${event.startTime}</span>
-                </div>
-                <div class="event-list-date">
-                  <span class="event-list-end-date">${event.endDate}</span>
-                  <span class="event-list-end-time">${event.endTime}</span>
+                <div class="profile-event-list-header-right">
+                  <span class="profile-event-list-location">${event.location}</span>
                 </div>
               </div>
-              <div class="event-contact">
+              <div class="profile-event-list-dates">
+                <div class="profile-event-list-date">
+                  <span class="profile-event-list-start-date">${event.startDate}</span>
+                  <span class="profile-event-list-start-time">${event.startTime}</span>
+                </div>
+                <div class="profile-event-list-date">
+                  <span class="profile-event-list-end-date">${event.endDate}</span>
+                  <span class="profile-event-list-end-time">${event.endTime}</span>
+                </div>
+              </div>
+              <div class="profile-event-contact">
                 <p>Contact: ${event.contact} (${event.email}, ${event.phone})</p>
               </div>
-              <div class="event-status">
+              <div class="profile-event-status">
                 <p>Status: ${event.status}</p>
               </div>
-              <div class="event-details">
+              <div class="profile-event-details">
                 <p>Alcuin Contact: ${event.alcuinContact}</p>
                 <p>Attendees: ${event.attendees}</p>
                 <p>Created By: ${event.createdBy} at ${event.createdAt}</p>
@@ -564,7 +892,7 @@ async function displayEvents() {
 
       // Добавляем обработчик клика для разворачивания деталей мероприятия
       listItem.addEventListener("click", function () {
-        const details = this.querySelector(".event-details");
+        const details = this.querySelector(".profile-event-details");
         if (details.style.maxHeight) {
           details.style.maxHeight = null;
         } else {
@@ -584,3 +912,234 @@ async function displayEvents() {
     loadingIndicator.style.display = "none";
   }
 }
+
+async function getUserTasksForLastWeek() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (user && user.role !== "maintenance") {
+    try {
+      const formData = new FormData();
+      formData.append("action", "getUserTasksForLastWeek");
+      formData.append("staff", user.fullName);
+
+      const currentDate = new Date().toLocaleDateString("en-CA", {
+        timeZone: "America/Chicago",
+      });
+      formData.append("currentDate", currentDate);
+
+      const response = await fetch("php/user-profile.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        data.tasks.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        displayedTasks = data.tasks;
+        return data.tasks;
+      } else {
+        console.error("Ошибка получения заданий за последнюю неделю:", data.message);
+        return [];
+      }
+    } catch (error) {
+      console.error("Ошибка:", error);
+      return [];
+    }
+  }
+  return [];
+}
+
+async function getUserTasksForLastMonth() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (user && user.role !== "maintenance") {
+    try {
+      const formData = new FormData();
+      formData.append("action", "getUserTasksForLastMonth");
+      formData.append("staff", user.fullName);
+
+      const currentDate = new Date().toLocaleDateString("en-CA", {
+        timeZone: "America/Chicago",
+      });
+      formData.append("currentDate", currentDate);
+
+      const response = await fetch("php/user-profile.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        data.tasks.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        displayedTasks = data.tasks;
+        return data.tasks;
+      } else {
+        console.error("Ошибка получения заданий за последний месяц:", data.message);
+        return [];
+      }
+    } catch (error) {
+      console.error("Ошибка:", error);
+      return [];
+    }
+  }
+  return [];
+}
+
+async function getUserTasksForLast3Months() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (user && user.role !== "maintenance") {
+    try {
+      const formData = new FormData();
+      formData.append("action", "getUserTasksForLast3Months");
+      formData.append("staff", user.fullName);
+
+      const currentDate = new Date().toLocaleDateString("en-CA", {
+        timeZone: "America/Chicago",
+      });
+      formData.append("currentDate", currentDate);
+
+      const response = await fetch("php/user-profile.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        data.tasks.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        displayedTasks = data.tasks;
+        return data.tasks;
+      } else {
+        console.error("Ошибка получения заданий за последние 3 месяца:", data.message);
+        return [];
+      }
+    } catch (error) {
+      console.error("Ошибка:", error);
+      return [];
+    }
+  }
+  return [];
+}
+
+async function getUserTasksForLastYear() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (user && user.role !== "maintenance") {
+    try {
+      const formData = new FormData();
+      formData.append("action", "getUserTasksForLastYear");
+      formData.append("staff", user.fullName);
+
+      const currentDate = new Date().toLocaleDateString("en-CA", {
+        timeZone: "America/Chicago",
+      });
+      formData.append("currentDate", currentDate);
+
+      const response = await fetch("php/user-profile.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        data.tasks.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        displayedTasks = data.tasks;
+        return data.tasks;
+      } else {
+        console.error("Ошибка получения заданий за последний год:", data.message);
+        return [];
+      }
+    } catch (error) {
+      console.error("Ошибка:", error);
+      return [];
+    }
+  }
+  return [];
+}
+
+// Функция для получения информации о пользователе
+async function getUserSettingsInfo(email) {
+    try {
+        const formData = new FormData();
+        formData.append('action', 'getUserSettingsInfo');
+        formData.append('email', email);
+
+        const response = await fetch('php/user-profile.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            return data.userInfo;
+        } else {
+            console.error('Ошибка получения информации:', data.message);
+            return null;
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        return null;
+    }
+}
+
+// Функция для заполнения списка комнат в модальном окне
+function populateSettingsRoomSelect(building) {
+    const roomSelect = document.getElementById('settingsRoom');
+    roomSelect.innerHTML = '';
+    
+    const rooms = buildingRooms[building] || [];
+    rooms.forEach(room => {
+        const option = document.createElement('option');
+        option.value = room;
+        option.textContent = room;
+        roomSelect.appendChild(option);
+    });
+}
+
+// Обработчик для модального окна настроек
+document.addEventListener('DOMContentLoaded', function() {
+    const settingsIcon = document.getElementById('settingsIcon');
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsClose = document.querySelector('.settings-close');
+    const settingsBuilding = document.getElementById('settingsBuilding');
+    
+    // Открытие модального окна
+    settingsIcon.addEventListener('click', async function() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser && currentUser.email) {
+            const userInfo = await getUserSettingsInfo(currentUser.email);
+            if (userInfo) {
+                document.getElementById('settingsEmail').value = userInfo.email;
+                document.getElementById('settingsFullName').value = userInfo.full_name;
+                document.getElementById('settingsDepartment').value = userInfo.department;
+                document.getElementById('settingsBuilding').value = userInfo.building;
+                populateSettingsRoomSelect(userInfo.building);
+                document.getElementById('settingsRoom').value = userInfo.room;
+                document.getElementById('settingsStaffType').value = userInfo.staffType;
+                
+                settingsModal.style.display = 'block';
+            }
+        }
+    });
+    
+    // Закрытие модального окна
+    settingsClose.addEventListener('click', function() {
+        settingsModal.style.display = 'none';
+    });
+    
+    // Закрытие при клике вне модального окна
+    window.addEventListener('click', function(event) {
+        if (event.target === settingsModal) {
+            settingsModal.style.display = 'none';
+        }
+    });
+    
+    // Обновление списка комнат при изменении здания
+    settingsBuilding.addEventListener('change', function() {
+        populateSettingsRoomSelect(this.value);
+    });
+});
