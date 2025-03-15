@@ -162,7 +162,7 @@ try {
     // Параметры подключения к базе данных
     $host = 'localhost';
     $user = 'root';     // Пользователь MySQL
-    $password = '';     // Пустой пароль (стандартно для XAMPP)
+    $password = 'root';     // Пустой пароль (стандартно для XAMPP)
     $database = 'maintenancedb';
 
     // Подключение к базе данных

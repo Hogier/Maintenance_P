@@ -9,11 +9,32 @@ document
       const department = document.getElementById("department").value;
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
+      const building = document.getElementById("buildingSelect").value;
+      const room = document.getElementById("roomSelect").value;
+      const staffTypeRadio = document.querySelector('input[name="staffType"]:checked');
 
       // Clear previous error messages
       const errorElement = document.getElementById("errorMessage");
       errorElement.textContent = "";
       errorElement.style.color = "red";
+
+      // Проверка обязательных полей
+      if (!building) {
+        errorElement.textContent = "Fill in the field 'Select Building'";
+        return;
+      }
+
+      if (!room) {
+        errorElement.textContent = "Fill in the field 'Select Room'";
+        return;
+      }
+
+      if (!staffTypeRadio) {
+        errorElement.textContent = "Fill in the field (Staff Type)";
+        return;
+      }
+
+      const staffType = staffTypeRadio.value;
 
       // Password validation
       if (password !== confirmPassword) {
@@ -50,6 +71,9 @@ document
         department,
         password,
         role: "user",
+        building,
+        room,
+        staffType,
       };
 
       // Send registration request
