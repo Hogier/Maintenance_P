@@ -457,6 +457,35 @@ if ($action === 'addTask') {
         }
         echo json_encode($newTasks); // Возвращаем новые задания
     }
+} elseif ($action === 'getNotCompletedTasksForLastWeek') {
+    $currentDate = $_POST['currentDate'];
+
+    $date = new DateTime($currentDate);
+
+    $date->modify('-7 days');
+
+    $previousDate = $date->format('Y-m-d');
+
+    error_log("previousDate: " . $previousDate);
+
+    global $conn;
+
+    $query = "SELECT * FROM tasks WHERE status != 'Completed' AND date >= ?";
+    $stmt = $conn->prepare($query);
+
+    if (!$stmt) {
+        error_log("Ошибка подготовки запроса: " . $conn->error);
+        echo json_encode(['error' => 'Ошибка подготовки запроса']);
+        exit;   
+    }
+
+    $stmt->bind_param('s', $previousDate);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);  
+
+    echo json_encode(['success' => true, 'data' => $tasks]);
 }
 
 $conn->close();

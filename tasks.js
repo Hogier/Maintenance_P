@@ -11,6 +11,7 @@ if (user && user.fullName) {
   }
 }
 
+
 // Создаем переменную для индикатора обновления
 let updateIndicator;
 
@@ -43,6 +44,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   const todayTasks = await getTasksByDate(today);
   clientTasks = todayTasks;
   await updateTasksList(todayTasks);
+  await displayNotCompletedTasks();
+
+  document.querySelector(".alert-tasks-list-header").addEventListener("click", function() {
+    const alertTasks = document.querySelector(".alert-tasks");
+    const displayNotCompletedTasksButton = document.querySelector("#displayNotCompletedTasksButton");
+    const contentHeight = alertTasks.scrollHeight; // Высота содержимого
+
+    if (alertTasks.style.height === "80px" || alertTasks.style.height === "") {
+      alertTasks.style.height = `${contentHeight}px`; // Устанавливаем высоту содержимого
+      displayNotCompletedTasksButton.style.transform = "rotate(90deg)";
+    } else {
+      alertTasks.style.height = "80px"; // Возвращаем к исходной высоте
+      displayNotCompletedTasksButton.style.transform = "rotate(0deg)";
+    }
+  });
 
   // Добавляем обработчики для кнопок фильтрации
   document.getElementById("todayTasks").addEventListener("click", async (e) => {
@@ -836,8 +852,6 @@ async function addNewTasksToPage(tasks) {
 
 setInterval(async () => {
   const newTasks = await checkNewTasksInServer();
-  console.log("newTasks: ", newTasks);
-  console.log("clientTasks: ", clientTasks);
 
   const currentDateString = currentDate.toLocaleString("en-US", {year: "numeric",month: "2-digit",day: "2-digit",});
   const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
@@ -1002,7 +1016,20 @@ function getPriorityClass(priority) {
   }
 }
 
+async function displayNotCompletedTasks() {
+  const notCompletedTasksList = document.getElementById("notCompletedTasksList");
+  //notCompletedTasksList.innerHTML = "";
+  let serverTasks = await getNotCompletedTasksForLastWeek();
 
+  if(serverTasks.length > 0){
+    serverTasks.forEach(async task => {
+      const taskElement = await createTaskElement(task);
+      notCompletedTasksList.appendChild(taskElement);
+    });
+  } else {
+    //notCompletedTasksList.innerHTML = "<p>No incomplete tasks found for the last week</p>";
+  }
+}
 ////////////////////////////////FETCH ФУНКЦИИ////////////////////////////
 
 
@@ -1270,6 +1297,36 @@ async function checkNewTasksInServer() {
     return [];
   }
 }
+
+async function getNotCompletedTasksForLastWeek() {
+  try {
+    const response = await fetch('task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        action: 'getNotCompletedTasksForLastWeek',
+        currentDate: formatDallasDateForServer(getDallasDate()),
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+    return result.data;
+  } catch (error) { 
+    console.error("Error fetching not completed tasks for last week:", error);
+    return [];
+  }
+}
+
+let notCompletedTasks = (async () => {
+  const tasks = await getNotCompletedTasksForLastWeek();
+  console.log("getNotCompletedTasksForLastWeek: ", tasks);
+  return tasks;
+})();
 
 
 
