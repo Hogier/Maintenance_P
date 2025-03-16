@@ -1,0 +1,100 @@
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #34495e;
+  --accent-color: #3498db;
+  --text-color: #2c3e50;
+  --background-color: #ecf0f1;
+  --sidebar-width: 250px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.portal-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--primary-color);
+  padding: 20px 0;
+}
+
+.nav-menu {
+  list-style: none;
+  margin-top: 10px;
+}
+
+.nav-item {
+  padding: 15px 25px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.nav-item:hover {
+  background-color: var(--secondary-color);
+}
+
+.nav-item.active {
+  background-color: var(--accent-color);
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  position: relative;
+}
+
+.content-section {
+  display: none;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+}
+
+.content-section.active {
+  display: block;
+}
+
+.back-to-main {
+  padding: 15px 25px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 15px 25px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: var(--secondary-color);
+  transform: translateX(-5px);
+}
+
+.back-button i {
+  font-size: 16px;
+}

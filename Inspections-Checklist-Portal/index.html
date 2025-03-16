@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inspections Portal</title>
+
+    <!-- Main styles -->
+    <link rel="stylesheet" href="styles/main.css" />
+
+    <!-- Component styles -->
+    <link rel="stylesheet" href="styles/components/dashboard/dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="styles/components/inspections/inspections.css"
+    />
+    <link rel="stylesheet" href="styles/components/checklist/checklist.css" />
+    <link
+      rel="stylesheet"
+      href="styles/components/construction/construction.css"
+    />
+    <link rel="stylesheet" href="styles/components/supplies/supplies.css" />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="portal-container">
+      <!-- Sidebar Menu -->
+      <nav class="sidebar">
+        <div class="back-to-main">
+          <a href="/Maintenance_P/main.html" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Main Menu</span>
+          </a>
+        </div>
+        <ul class="nav-menu">
+          <li class="nav-item active" data-page="dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </li>
+          <li class="nav-item" data-page="inspections">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Inspections</span>
+          </li>
+          <li class="nav-item" data-page="checklist">
+            <i class="fas fa-tasks"></i>
+            <span>Checklist</span>
+          </li>
+          <li class="nav-item" data-page="construction">
+            <i class="fas fa-hard-hat"></i>
+            <span>Construction</span>
+          </li>
+          <li class="nav-item" data-page="supplies">
+            <i class="fas fa-boxes"></i>
+            <span>Supplies</span>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div id="dashboard-section" class="content-section active"></div>
+        <div id="inspections-section" class="content-section"></div>
+        <div id="checklist-section" class="content-section"></div>
+        <div id="construction-section" class="content-section"></div>
+        <div id="supplies-section" class="content-section"></div>
+      </main>
+    </div>
+
+    <!-- Main Portal Script -->
+    <script type="module" src="scripts/portal.js"></script>
+  </body>
+</html>
