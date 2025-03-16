@@ -1,0 +1,55 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Dashboard Calendar</h1>
+  </div>
+  <div class="calendar-wrapper">
+    <div class="calendar-controls">
+      <button id="prev-month" class="calendar-btn">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <div class="calendar-header">
+        <h2 id="current-month-year"></h2>
+      </div>
+      <button id="next-month" class="calendar-btn">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+    <div class="calendar-grid">
+      <div class="calendar-weekdays" id="weekdays">
+        <div>Sun</div>
+        <div>Mon</div>
+        <div>Tue</div>
+        <div>Wed</div>
+        <div>Thu</div>
+        <div>Fri</div>
+        <div>Sat</div>
+      </div>
+      <div class="calendar-days" id="calendar-days"></div>
+    </div>
+    <div class="calendar-events" id="calendar-events">
+      <!-- Events will be displayed here -->
+    </div>
+  </div>
+
+  <!-- Добавляем модальное окно -->
+  <div id="day-events-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-date-title"></h2>
+        <button class="close-modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-events-list" class="modal-events-list">
+          <!-- События будут добавляться динамически -->
+        </div>
+        <div class="modal-actions">
+          <button id="add-event-btn" class="btn-primary">
+            <i class="fas fa-plus"></i> Add Event
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

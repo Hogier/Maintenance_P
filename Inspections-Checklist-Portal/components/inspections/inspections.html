@@ -1,0 +1,72 @@
+<div class="inspections-container">
+  <div class="inspections-header">
+    <h2>Inspections</h2>
+    <button id="add-inspection" class="btn-primary">
+      <i class="fas fa-plus"></i> New Inspection
+    </button>
+  </div>
+
+  <div class="inspections-filters">
+    <div class="filter-group">
+      <input
+        type="text"
+        id="search-inspection"
+        placeholder="Search inspections..."
+      />
+    </div>
+    <div class="filter-group">
+      <select id="status-filter">
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="inspections-list" id="inspections-list">
+    <!-- Inspections will be loaded here -->
+  </div>
+
+  <!-- Modal for adding/editing inspections -->
+  <div id="inspection-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">New Inspection</h3>
+        <button class="close-modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="inspection-form">
+          <div class="form-group">
+            <label for="inspection-title">Title</label>
+            <input type="text" id="inspection-title" required />
+          </div>
+          <div class="form-group">
+            <label for="inspection-date">Date</label>
+            <input type="date" id="inspection-date" required />
+          </div>
+          <div class="form-group">
+            <label for="inspection-type">Type</label>
+            <select id="inspection-type" required>
+              <option value="routine">Routine</option>
+              <option value="emergency">Emergency</option>
+              <option value="follow-up">Follow-up</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="inspection-description">Description</label>
+            <textarea id="inspection-description" rows="4"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Save</button>
+            <button type="button" class="btn-secondary" id="cancel-inspection">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
