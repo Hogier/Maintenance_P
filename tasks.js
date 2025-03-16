@@ -11,7 +11,6 @@ if (user && user.fullName) {
   }
 }
 
-
 // Создаем переменную для индикатора обновления
 let updateIndicator;
 
@@ -19,7 +18,7 @@ let clientTasks = [];
 
 let currentFilter = "today"; // возможные значения: 'today', 'all', 'custom'
 let currentDate = new Date(getDallasDate());
-let checkDate = currentDate.toISOString().split('T')[0];
+let checkDate = currentDate.toISOString().split("T")[0];
 
 let newCommentsPosition = [];
 
@@ -46,25 +45,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   await updateTasksList(todayTasks);
   await displayNotCompletedTasks();
 
-  document.querySelector(".alert-tasks-list-header").addEventListener("click", function() {
-    const alertTasks = document.querySelector(".alert-tasks");
-    const displayNotCompletedTasksButton = document.querySelector("#displayNotCompletedTasksButton");
-    const contentHeight = alertTasks.scrollHeight; // Высота содержимого
+  document
+    .querySelector(".alert-tasks-list-header")
+    .addEventListener("click", function () {
+      const alertTasks = document.querySelector(".alert-tasks");
+      const displayNotCompletedTasksButton = document.querySelector(
+        "#displayNotCompletedTasksButton"
+      );
+      const contentHeight = alertTasks.scrollHeight; // Высота содержимого
 
-    if (alertTasks.style.height === "80px" || alertTasks.style.height === "") {
-      alertTasks.style.height = `${contentHeight}px`; // Устанавливаем высоту содержимого
-      displayNotCompletedTasksButton.style.transform = "rotate(90deg)";
-    } else {
-      alertTasks.style.height = "80px"; // Возвращаем к исходной высоте
-      displayNotCompletedTasksButton.style.transform = "rotate(0deg)";
-    }
-  });
+      if (
+        alertTasks.style.height === "80px" ||
+        alertTasks.style.height === ""
+      ) {
+        alertTasks.style.height = `${contentHeight}px`; // Устанавливаем высоту содержимого
+        displayNotCompletedTasksButton.style.transform = "rotate(90deg)";
+      } else {
+        alertTasks.style.height = "80px"; // Возвращаем к исходной высоте
+        displayNotCompletedTasksButton.style.transform = "rotate(0deg)";
+      }
+    });
 
   // Добавляем обработчики для кнопок фильтрации
   document.getElementById("todayTasks").addEventListener("click", async (e) => {
     currentFilter = "today";
-    console.log("today: ",today);
-    checkDate = currentDate.toISOString().split('T')[0];
+    console.log("today: ", today);
+    checkDate = currentDate.toISOString().split("T")[0];
 
     document
       .querySelectorAll(".date-filter button")
@@ -92,11 +98,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       currentFilter = "custom";
       //currentDate = new Date(e.target.value);
       // Преобразуем выбранную дату в дату по времени Далласа
-      const selectedDate = luxon.DateTime.fromISO(e.target.value, { zone: 'America/Chicago' });
+      const selectedDate = luxon.DateTime.fromISO(e.target.value, {
+        zone: "America/Chicago",
+      });
       currentDate = new Date(selectedDate.toISO());
 
-      console.log("currentDate: ", currentDate, "e.target.value: ", e.target.value);
-      checkDate = currentDate.toISOString().split('T')[0];
+      console.log(
+        "currentDate: ",
+        currentDate,
+        "e.target.value: ",
+        e.target.value
+      );
+      checkDate = currentDate.toISOString().split("T")[0];
 
       document
         .querySelectorAll(".date-filter button")
@@ -110,7 +123,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("logoutBtn").addEventListener("click", logout);
 });
 
-
 //////////////////////////////////ОСНОВНЫЕ ФУНКЦИИ////////////////////////////
 
 async function getTasks() {
@@ -118,10 +130,10 @@ async function getTasks() {
     const tasks = await db.getAllTasksFromServer();
     tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     clientTasks = tasks;
-    return tasks; 
+    return tasks;
   } catch (error) {
     console.error("Ошибка при получении заданий:", error);
-    return []; 
+    return [];
   }
 }
 
@@ -193,8 +205,8 @@ newTaskNotification.style.display = "none"; // Скрываем по умолч�
 document.body.appendChild(newTaskNotification);
 
 async function createTaskElement(task) {
-  const taskElement = document.createElement('div');
-  taskElement.className = 'task-item';
+  const taskElement = document.createElement("div");
+  taskElement.className = "task-item";
   taskElement.setAttribute("data-task-id", task.request_id);
 
   const timestamp = formatDallasDate(task.timestamp);
@@ -208,7 +220,9 @@ async function createTaskElement(task) {
       <div class="task-details task-details-${task.priority}">${task.details}
       <div class="task-location">
         <div class="task-location-icon">📍</div>
-        <div class="task-location-text">${task.building} - ${task.room} (Staff: ${task.staff})</div>
+        <div class="task-location-text">${task.building} - ${
+    task.room
+  } (Staff: ${task.staff})</div>
       </div>
       </div>
       <div class="task-meta-container">
@@ -232,14 +246,19 @@ async function createTaskElement(task) {
                  </div>
                </div>`
             : `<div class="assigned-to">Assigned to: ${task.assigned_to}</div>`
-
         }
         <div class="task-status">
           Status: 
           <select class="status-select" data-task-id="${task.request_id}">
-            <option value="Pending" ${task.status === "Pending" ? "selected" : ""}>Pending</option>
-            <option value="In Progress" ${task.status === "In Progress" ? "selected" : ""}>In Progress</option>
-            <option value="Completed" ${task.status === "Completed" ? "selected" : ""}>Completed</option>
+            <option value="Pending" ${
+              task.status === "Pending" ? "selected" : ""
+            }>Pending</option>
+            <option value="In Progress" ${
+              task.status === "In Progress" ? "selected" : ""
+            }>In Progress</option>
+            <option value="Completed" ${
+              task.status === "Completed" ? "selected" : ""
+            }>Completed</option>
           </select>
           <div class="status-clock">
             <div class="hour-hand"></div>
@@ -260,26 +279,30 @@ async function createTaskElement(task) {
         <div class="comments-list"></div>
         <div class="comment-input-container">
           <input type="text" class="comment-input" placeholder="Add a comment...">
-          <button class="comment-btn" data-task-id="${task.request_id}">Send</button>
+          <button class="comment-btn" data-task-id="${
+            task.request_id
+          }">Send</button>
         </div>
       </div>
     </div>
   `;
-  
+
   // Устанавливаем начальный цвет для task-status
   const statusSelect = taskElement.querySelector(".status-select");
-  const taskStatusDiv = taskElement.querySelector('.task-status');
+  const taskStatusDiv = taskElement.querySelector(".task-status");
   if (statusSelect.value === "Pending") {
-    taskStatusDiv.classList.add('status-pending');
+    taskStatusDiv.classList.add("status-pending");
   } else if (statusSelect.value === "In Progress") {
-    taskStatusDiv.classList.add('status-in-progress');
+    taskStatusDiv.classList.add("status-in-progress");
   } else if (statusSelect.value === "Completed") {
-    taskStatusDiv.classList.add('status-completed');
+    taskStatusDiv.classList.add("status-completed");
   }
 
   const commentsContainer = taskElement.querySelector(".comments-list");
-  const commentInputContainer = taskElement.querySelector(".comment-input-container");
- 
+  const commentInputContainer = taskElement.querySelector(
+    ".comment-input-container"
+  );
+
   let isFirstLoad = true;
   let openComments = false;
   let commentsUpdateInterval;
@@ -307,19 +330,22 @@ async function createTaskElement(task) {
   counterNewCommentNotification.style.display = "none"; // Скрываем по умолчанию
   document.body.appendChild(counterNewCommentNotification);
 
-
   discussionToggle.addEventListener("click", async function () {
     if (!openComments) {
-      const clock = discussionToggle.querySelector('.discussion-toggle-clock');
-      clock.style.opacity = '1';
+      const clock = discussionToggle.querySelector(".discussion-toggle-clock");
+      clock.style.opacity = "1";
 
       await updateComments(task, commentsContainer, isFirstLoad);
-      clock.style.opacity = '0';
+      clock.style.opacity = "0";
 
       commentsUpdateInterval = setInterval(async () => {
         isFirstLoad = false;
-        
-        let deltaComments = await updateComments(task, commentsContainer, isFirstLoad);
+
+        let deltaComments = await updateComments(
+          task,
+          commentsContainer,
+          isFirstLoad
+        );
         let hasNewComments = false;
         if (deltaComments > 0) {
           hasNewComments = true;
@@ -328,43 +354,51 @@ async function createTaskElement(task) {
         }
 
         const commentsRect = commentsContainer.getBoundingClientRect();
-        const isCommentsVisible = commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
+        const isCommentsVisible =
+          commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
 
-        if (!showNewCommentNotification && hasNewComments && !isCommentsVisible) {
+        if (
+          !showNewCommentNotification &&
+          hasNewComments &&
+          !isCommentsVisible
+        ) {
           showNewCommentNotification = true;
           newCommentsPosition.push(commentsRect.top + window.scrollY);
-        } 
+        }
         if (showNewCommentNotification) {
           newCommentNotification.style.display = "block";
         }
 
-        const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
-        if(notifications.length > 1) {
-          console.log("Внутри ИНТЕРВАЛА условие + notifications.length: ", notifications.length);
+        const notifications = document.querySelectorAll(
+          ".new-comment-notification[style='display: block;']"
+        );
+        if (notifications.length > 1) {
+          console.log(
+            "Внутри ИНТЕРВАЛА условие + notifications.length: ",
+            notifications.length
+          );
           counterNewCommentNotification.textContent = notifications.length;
           counterNewCommentNotification.style.display = "block";
-        }
-        else {
-          console.log("Внутри ИНТЕРВАЛА условие - notifications.length: ", notifications.length);
+        } else {
+          console.log(
+            "Внутри ИНТЕРВАЛА условие - notifications.length: ",
+            notifications.length
+          );
           counterNewCommentNotification.style.display = "none";
         }
-
-
-
-
       }, 3500);
-
     } else {
       clearInterval(commentsUpdateInterval);
       newCommentNotification.style.display = "none"; // Скрываем уведомление при закрытии
-
     }
     openComments = !openComments;
     console.log("openComments: ", openComments);
     commentsContainer.classList.toggle("expanded", openComments);
     commentInputContainer.classList.toggle("expanded", openComments);
 
-    discussionToggle.innerHTML = openComments ? "▲" : "💬 Discussion <div class='discussion-toggle-clock'><div class='hour-hand'></div><div class='minute-hand'></div></div>";
+    discussionToggle.innerHTML = openComments
+      ? "▲"
+      : "💬 Discussion <div class='discussion-toggle-clock'><div class='hour-hand'></div><div class='minute-hand'></div></div>";
   });
 
   // Добавляем обработчик события scroll для скрытия уведомления
@@ -374,7 +408,9 @@ async function createTaskElement(task) {
       if (commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight) {
         newCommentNotification.style.display = "none";
 
-        const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
+        const notifications = document.querySelectorAll(
+          ".new-comment-notification[style='display: block;']"
+        );
         console.log("notifications.length: ", notifications.length);
 
         if (notifications.length < 2) {
@@ -385,18 +421,21 @@ async function createTaskElement(task) {
 
         showNewCommentNotification = false;
 
-        newCommentsPosition = newCommentsPosition.filter(position => !(position > window.scrollY && position < window.scrollY + window.innerHeight));
+        newCommentsPosition = newCommentsPosition.filter(
+          (position) =>
+            !(
+              position > window.scrollY &&
+              position < window.scrollY + window.innerHeight
+            )
+        );
         console.log("newCommentsPosition: ", newCommentsPosition);
 
-
-        
         /*const notificationCount = parseInt(counterNewCommentNotification.textContent);
         if (notificationCount > 1) {
           counterNewCommentNotification.textContent = notificationCount - 1;
         } else {
           counterNewCommentNotification.style.display = "none";
         }*/
-
       }
     }
 
@@ -405,47 +444,54 @@ async function createTaskElement(task) {
       month: "2-digit",
       day: "2-digit",
     });
-    const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
-  
-    if(showedPageWithTodayTasks && window.scrollY < 100){
+    const showedPageWithTodayTasks =
+      currentFilter === "today" ||
+      currentFilter === "all" ||
+      (currentFilter === "custom" && currentDateString === getDallasDate());
+
+    if (showedPageWithTodayTasks && window.scrollY < 100) {
       newTaskNotification.style.display = "none";
       counterNewTaskNotification = 0;
     }
   });
 
-  
-newCommentNotification.addEventListener("click", () => {
-  let currentScrollY = window.scrollY;
-  //const commentsRect = commentsContainer.getBoundingClientRect();
-  newCommentsPosition.sort((a, b) => a - b);
-  console.log("newCommentsPosition: ", newCommentsPosition);
-  console.log("window.scrollY: ", window.scrollY);
-  if(window.scrollY < newCommentsPosition[0]) {
-    window.scrollTo({top: newCommentsPosition[0],behavior: "smooth"});
-    newCommentsPosition.shift();
-  }
-  else if(window.scrollY > newCommentsPosition[newCommentsPosition.length - 1]) {
-    window.scrollTo({top: newCommentsPosition[newCommentsPosition.length - 1],behavior: "smooth"});
-    newCommentsPosition.pop();
-  }
-  else {
-    const index = newCommentsPosition.findIndex(position => position > window.scrollY);
-    window.scrollTo({top: newCommentsPosition[index],behavior: "smooth"});
-    newCommentsPosition.splice(index, 1);
-  }
-
+  newCommentNotification.addEventListener("click", () => {
+    let currentScrollY = window.scrollY;
+    //const commentsRect = commentsContainer.getBoundingClientRect();
+    newCommentsPosition.sort((a, b) => a - b);
+    console.log("newCommentsPosition: ", newCommentsPosition);
+    console.log("window.scrollY: ", window.scrollY);
+    if (window.scrollY < newCommentsPosition[0]) {
+      window.scrollTo({ top: newCommentsPosition[0], behavior: "smooth" });
+      newCommentsPosition.shift();
+    } else if (
+      window.scrollY > newCommentsPosition[newCommentsPosition.length - 1]
+    ) {
+      window.scrollTo({
+        top: newCommentsPosition[newCommentsPosition.length - 1],
+        behavior: "smooth",
+      });
+      newCommentsPosition.pop();
+    } else {
+      const index = newCommentsPosition.findIndex(
+        (position) => position > window.scrollY
+      );
+      window.scrollTo({ top: newCommentsPosition[index], behavior: "smooth" });
+      newCommentsPosition.splice(index, 1);
+    }
 
     //commentsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
 
     // Обновление отображения счетчика
-    const notifications = document.querySelectorAll(".new-comment-notification[style='display: block;']");
+    const notifications = document.querySelectorAll(
+      ".new-comment-notification[style='display: block;']"
+    );
     if (notifications.length < 2) {
       counterNewCommentNotification.style.display = "none";
     } else {
       counterNewCommentNotification.textContent = notifications.length;
     }
-});
-
+  });
 
   // Добавляем обработчики событий
   const assignBtn = taskElement.querySelector(".assign-btn");
@@ -457,7 +503,7 @@ newCommentNotification.addEventListener("click", () => {
       const user = JSON.parse(localStorage.getItem("currentUser"));
       if (user && user.role === "maintenance") {
         let clock = this.querySelector(".clock");
-        
+
         // Если часы не найдены, создаем их заново
         if (!clock) {
           clock = document.createElement("div");
@@ -473,8 +519,8 @@ newCommentNotification.addEventListener("click", () => {
 
         try {
           await db.assignTaskInServer(taskId, user.fullName);
-          assignBtn.style.top = '-40px';
-          assignedToYouBtn.style.top = '-40px';
+          assignBtn.style.top = "-40px";
+          assignedToYouBtn.style.top = "-40px";
 
           if (!this.parentElement.parentElement.querySelector(".refuse-btn")) {
             const refuseBtn = document.createElement("button");
@@ -508,8 +554,8 @@ newCommentNotification.addEventListener("click", () => {
             refuseBtn.addEventListener("click", async () => {
               refuseClock.classList.add("visible");
               if (await refuseTaskInServer(taskId)) {
-                assignBtn.style.top = '0px';
-                assignedToYouBtn.style.top = '0px';
+                assignBtn.style.top = "0px";
+                assignedToYouBtn.style.top = "0px";
                 clearInterval(timerInterval);
                 refuseBtn.remove();
                 refuseClock.remove();
@@ -517,10 +563,9 @@ newCommentNotification.addEventListener("click", () => {
                 this.appendChild(clock);
               }
             });
-            
-            this.parentElement.insertAdjacentElement('afterend', refuseBtn);
-            refuseBtn.insertAdjacentElement('afterend', refuseClock);
 
+            this.parentElement.insertAdjacentElement("afterend", refuseBtn);
+            refuseBtn.insertAdjacentElement("afterend", refuseClock);
           }
         } catch (error) {
           console.error("Error assigning task:", error);
@@ -550,10 +595,11 @@ newCommentNotification.addEventListener("click", () => {
 
           // Очищаем поле ввода после успешного добавления
           commentInput.value = "";
-
         } catch (error) {
           console.error("Error adding comment:", error);
-          alert("Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз.");
+          alert(
+            "Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз."
+          );
         }
       }
     });
@@ -564,7 +610,7 @@ newCommentNotification.addEventListener("click", () => {
     commentInput.addEventListener("keydown", async function (event) {
       if (event.key === "Enter") {
         event.preventDefault(); // Предотвращаем добавление новой строки
-        const taskId = this.closest('.task-item').dataset.taskId;
+        const taskId = this.closest(".task-item").dataset.taskId;
         const commentText = this.value.trim();
 
         if (commentText) {
@@ -579,10 +625,11 @@ newCommentNotification.addEventListener("click", () => {
 
             // Очищаем поле ввода после успешного добавления
             this.value = "";
-
           } catch (error) {
             console.error("Error adding comment:", error);
-            alert("Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз.");
+            alert(
+              "Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз."
+            );
           }
         }
       }
@@ -594,15 +641,19 @@ newCommentNotification.addEventListener("click", () => {
       const taskId = this.dataset.taskId;
 
       // Удаляем все классы статуса
-      taskStatusDiv.classList.remove('status-pending', 'status-in-progress', 'status-completed');
+      taskStatusDiv.classList.remove(
+        "status-pending",
+        "status-in-progress",
+        "status-completed"
+      );
 
       // Добавляем соответствующий класс в зависимости от выбранного значения
       if (this.value === "Pending") {
-        taskStatusDiv.classList.add('status-pending');
+        taskStatusDiv.classList.add("status-pending");
       } else if (this.value === "In Progress") {
-        taskStatusDiv.classList.add('status-in-progress');
+        taskStatusDiv.classList.add("status-in-progress");
       } else if (this.value === "Completed") {
-        taskStatusDiv.classList.add('status-completed');
+        taskStatusDiv.classList.add("status-completed");
       }
 
       await changeTaskStatusOnServer(taskId, this.value);
@@ -641,9 +692,12 @@ async function createMediaSection(task) {
 
   for (const fileName of mediaArray) {
     let mediaFile;
-    const isImage = fileName.endsWith('.jpg') || fileName.endsWith('.png') || fileName.endsWith('.jpeg');
-    const isVideo = fileName.endsWith('.mp4') || fileName.endsWith('.avi');
-    const isAudio = fileName.endsWith('.mp3') || fileName.endsWith('.wav');
+    const isImage =
+      fileName.endsWith(".jpg") ||
+      fileName.endsWith(".png") ||
+      fileName.endsWith(".jpeg");
+    const isVideo = fileName.endsWith(".mp4") || fileName.endsWith(".avi");
+    const isAudio = fileName.endsWith(".mp3") || fileName.endsWith(".wav");
 
     if (isImage) {
       mediaFile = await getMiniMediaFileFromServer(fileName);
@@ -654,7 +708,10 @@ async function createMediaSection(task) {
     if (mediaFile) {
       if (isImage) {
         mediaHtml += `
-          <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url.replace('uploads/mini/mini_', 'uploads/')}', 'image')">
+          <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url.replace(
+            "uploads/mini/mini_",
+            "uploads/"
+          )}', 'image')">
             <img src="${mediaFile.url}" alt="${mediaFile.name}">
             <span class="media-name">${mediaFile.name}</span>
           </div>
@@ -686,17 +743,17 @@ async function createMediaSection(task) {
 }
 
 function playNewMessageSound() {
-  const audio = new Audio('sound/newMessage.mp3');
+  const audio = new Audio("sound/newMessage.mp3");
   audio.volume = 0.45;
-  audio.play().catch(error => {
+  audio.play().catch((error) => {
     console.error("Ошибка при воспроизведении аудио:", error);
   });
 }
 
 function playNewTaskSound() {
-  const audio = new Audio('sound/newTask.mp3');
+  const audio = new Audio("sound/newTask.mp3");
   audio.volume = 0.6;
-  audio.play().catch(error => {
+  audio.play().catch((error) => {
     console.error("Ошибка при воспроизведении аудио:", error);
   });
 }
@@ -706,34 +763,54 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
   try {
     const serverComments = await db.fetchComments(task.request_id);
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    const allComments = [...serverComments, ...(localComments[task.request_id] || [])];
+    const allComments = [
+      ...serverComments,
+      ...(localComments[task.request_id] || []),
+    ];
 
     let deltaComments = 0;
 
-    const isScrolledToBottom = Math.abs(commentsContainer.scrollHeight - commentsContainer.scrollTop - commentsContainer.clientHeight) < 1;
+    const isScrolledToBottom =
+      Math.abs(
+        commentsContainer.scrollHeight -
+          commentsContainer.scrollTop -
+          commentsContainer.clientHeight
+      ) < 1;
 
-    const newCommentsHtml = allComments.map(comment => {
-      const isLocal = localComments[task.request_id]?.some(localComment => localComment.timestamp === comment.timestamp);
-      const statusClass = isLocal ? 'status-local' : 'status-server';
+    const newCommentsHtml = allComments
+      .map((comment) => {
+        const isLocal = localComments[task.request_id]?.some(
+          (localComment) => localComment.timestamp === comment.timestamp
+        );
+        const statusClass = isLocal ? "status-local" : "status-server";
 
-      return `
+        return `
         <div class="comment">
           <div class="comment-header">
             <span class="comment-author">
               <i class="fas fa-user"></i> ${comment.staffName}
               ${comment.staffName === task.assigned_to ? " (Assigned)" : ""}
             </span>
-            <span class="comment-time" data-timestamp="${comment.timestamp}">${formatDate(comment.timestamp)} <span class="${statusClass}">${isLocal ? '&#128337;' : '&#10003;'}</span></span>
+            <span class="comment-time" data-timestamp="${
+              comment.timestamp
+            }">${formatDate(comment.timestamp)} <span class="${statusClass}">${
+          isLocal ? "&#128337;" : "&#10003;"
+        }</span></span>
           </div>
           <div class="comment-text">${comment.text}</div>
-          ${comment.staffName === currentUser.fullName ? `
+          ${
+            comment.staffName === currentUser.fullName
+              ? `
             <div class="comment-delete">
             <i class="fas fa-trash" title="delete" onclick="deleteComment('${task.request_id}', '${comment.timestamp}')"></i>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
         </div>
       `;
-    }).join("");
+      })
+      .join("");
 
     if (newCommentsHtml) {
       deltaComments = allComments.length - commentsContainer.children.length;
@@ -742,13 +819,14 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
       if (deltaComments > 0 && !isFirstLoad) {
         playNewMessageSound(); // Воспроизведение звука при новом сообщении
 
-        const newCommentElements = commentsContainer.querySelectorAll('.comment');
+        const newCommentElements =
+          commentsContainer.querySelectorAll(".comment");
         const lastComment = newCommentElements[newCommentElements.length - 1]; // Получаем последний комментарий
-        lastComment.classList.add('new'); // Добавляем класс для анимации
+        lastComment.classList.add("new"); // Добавляем класс для анимации
 
         // Убираем класс через 0.3 секунды, чтобы анимация сработала
         setTimeout(() => {
-          lastComment.classList.remove('new');
+          lastComment.classList.remove("new");
         }, 450);
       }
     }
@@ -775,18 +853,22 @@ async function handleAddComment(taskId, commentText, userFullName) {
   localComments[taskId].push(newComment);
 
   // Отображаем новый комментарий сразу
-  const commentsContainer = document.querySelector(`.task-item[data-task-id="${taskId}"] .comments-list`);
+  const commentsContainer = document.querySelector(
+    `.task-item[data-task-id="${taskId}"] .comments-list`
+  );
   const newCommentElement = document.createElement("div");
   newCommentElement.className = "comment";
   newCommentElement.style.opacity = 0;
-  newCommentElement.style.transition = 'opacity 350ms';
+  newCommentElement.style.transition = "opacity 350ms";
   console.log("Создание мгновенного комментария");
   newCommentElement.innerHTML = `
     <div class="comment-header">
       <span class="comment-author">
         <i class="fas fa-user"></i> ${userFullName}
       </span>
-      <span class="comment-time" data-timestamp="${timestamp}">${formatDate(new Date())} <span class="status-local">&#128337;</span></span>
+      <span class="comment-time" data-timestamp="${timestamp}">${formatDate(
+    new Date()
+  )} <span class="status-local">&#128337;</span></span>
     </div>
     <div class="comment-text">${commentText}</div>
   `;
@@ -804,12 +886,16 @@ async function handleAddComment(taskId, commentText, userFullName) {
     const success = await db.addComment(taskId, commentText, userFullName);
     if (success) {
       // Удаляем комментарий из локального состояния после успешной отправки
-      localComments[taskId] = localComments[taskId].filter(comment => comment.timestamp !== timestamp);
+      localComments[taskId] = localComments[taskId].filter(
+        (comment) => comment.timestamp !== timestamp
+      );
 
       // Обновляем символ статуса на ✓
-      const statusSpan = newCommentElement.querySelector('.comment-time .status-local');
-      statusSpan.innerHTML = '&#10003;';
-      statusSpan.className = 'status-server';
+      const statusSpan = newCommentElement.querySelector(
+        ".comment-time .status-local"
+      );
+      statusSpan.innerHTML = "&#10003;";
+      statusSpan.className = "status-server";
 
       // Добавляем иконку удаления
       const deleteIcon = document.createElement("div");
@@ -838,8 +924,8 @@ async function handleAddComment(taskId, commentText, userFullName) {
   }
 }
 
-
 async function addNewTasksToPage(tasks) {
+  if (!Array.isArray(tasks)) return;
   const tasksListElement = document.getElementById("tasksList");
   for (const task of tasks) {
     const taskElement = await createTaskElement(task);
@@ -849,13 +935,19 @@ async function addNewTasksToPage(tasks) {
 
 // Добавляем элемент для уведомления о новых задачах
 
-
 setInterval(async () => {
   const newTasks = await checkNewTasksInServer();
 
-  const currentDateString = currentDate.toLocaleString("en-US", {year: "numeric",month: "2-digit",day: "2-digit",});
-  const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
-  
+  const currentDateString = currentDate.toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const showedPageWithTodayTasks =
+    currentFilter === "today" ||
+    currentFilter === "all" ||
+    (currentFilter === "custom" && currentDateString === getDallasDate());
+
   if (newTasks && showedPageWithTodayTasks) {
     await addNewTasksToPage(newTasks);
     clientTasks = [...newTasks, ...clientTasks];
@@ -864,47 +956,50 @@ setInterval(async () => {
 
   if (newTasks && newTasks.length > 0) {
     counterNewTaskNotification = newTasks.length;
-    alertIcon.textContent = counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
+    alertIcon.textContent =
+      counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
     newTaskNotification.style.display = "block";
     playNewTaskSound();
   }
-
 }, 7000);
 
 // Добавляем обработчик клика для скрытия уведомления
 newTaskNotification.addEventListener("click", async () => {
-
-  
   const currentDateString = currentDate.toLocaleString("en-US", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
-  const showedPageWithTodayTasks = (currentFilter === "today" || currentFilter === "all" || (currentFilter === "custom" && currentDateString === getDallasDate()));
+  const showedPageWithTodayTasks =
+    currentFilter === "today" ||
+    currentFilter === "all" ||
+    (currentFilter === "custom" && currentDateString === getDallasDate());
 
-  if(!showedPageWithTodayTasks){
+  if (!showedPageWithTodayTasks) {
     const todays = new Date(getDallasDate());
     currentFilter = "today";
-    checkDate = currentDate.toISOString().split('T')[0];
+    checkDate = currentDate.toISOString().split("T")[0];
     document
       .querySelectorAll(".date-filter button")
       .forEach((btn) => btn.classList.remove("active"));
-      document.getElementById("todayTasks").classList.add("active");
+    document.getElementById("todayTasks").classList.add("active");
 
     const todayTasks = await getTasksByDate(todays);
     clientTasks = todayTasks;
     await updateTasksList(todayTasks);
     counterNewCommentNotification.style.display = "none";
-    document.querySelectorAll(".new-comment-notification[style='display: block;']").forEach(notification => {notification.style.display = "none";});
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
+    document
+      .querySelectorAll(".new-comment-notification[style='display: block;']")
+      .forEach((notification) => {
+        notification.style.display = "none";
+      });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } else {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
   newTaskNotification.style.display = "none";
   counterNewTaskNotification = 0;
 });
-
 
 //Глобальные функции
 
@@ -923,25 +1018,29 @@ window.showMediaFullscreen = function (src, type) {
   document.body.appendChild(fullscreen);
 };
 
-window.deleteComment = async function(requestId, timestamp) {
+window.deleteComment = async function (requestId, timestamp) {
   if (confirm("Вы уверены, что хотите удалить этот комментарий?")) {
     try {
       // Найдите соответствующий элемент комментария
-      const commentElement = document.querySelector(`.task-item[data-task-id="${requestId}"] .comment-time[data-timestamp="${timestamp}"]`).closest('.comment');
-      
+      const commentElement = document
+        .querySelector(
+          `.task-item[data-task-id="${requestId}"] .comment-time[data-timestamp="${timestamp}"]`
+        )
+        .closest(".comment");
+
       if (commentElement) {
         // Заменяем значок мусорки на значок часов
-        const deleteIcon = commentElement.querySelector('.comment-delete i');
-        deleteIcon.classList.remove('fa-trash');
-        deleteIcon.classList.add('fa-clock');
+        const deleteIcon = commentElement.querySelector(".comment-delete i");
+        deleteIcon.classList.remove("fa-trash");
+        deleteIcon.classList.add("fa-clock");
 
         const success = await db.deleteCommentFromServer(requestId, timestamp);
         if (success) {
           commentElement.remove(); // Удаляем элемент комментария из DOM
         } else {
           // Восстанавливаем значок мусорки, если удаление не удалось
-          deleteIcon.classList.remove('fa-clock');
-          deleteIcon.classList.add('fa-trash');
+          deleteIcon.classList.remove("fa-clock");
+          deleteIcon.classList.add("fa-trash");
           alert("Ошибка при удалении комментария.");
         }
       } else {
@@ -1017,12 +1116,14 @@ function getPriorityClass(priority) {
 }
 
 async function displayNotCompletedTasks() {
-  const notCompletedTasksList = document.getElementById("notCompletedTasksList");
+  const notCompletedTasksList = document.getElementById(
+    "notCompletedTasksList"
+  );
   //notCompletedTasksList.innerHTML = "";
   let serverTasks = await getNotCompletedTasksForLastWeek();
 
-  if(serverTasks.length > 0){
-    serverTasks.forEach(async task => {
+  if (serverTasks.length > 0) {
+    serverTasks.forEach(async (task) => {
       const taskElement = await createTaskElement(task);
       notCompletedTasksList.appendChild(taskElement);
     });
@@ -1032,9 +1133,8 @@ async function displayNotCompletedTasks() {
 }
 ////////////////////////////////FETCH ФУНКЦИИ////////////////////////////
 
-
 async function getMediaFileFromServer(fileName) {
-  console.log("getMediaFileFromServer: ",fileName);
+  console.log("getMediaFileFromServer: ", fileName);
   try {
     if (!fileName) {
       console.log("No file name provided");
@@ -1062,7 +1162,7 @@ async function getMediaFileFromServer(fileName) {
       console.log("Server returned error:", result.message);
       return null;
     }
-console.log("resultMedia: ",{
+    console.log("resultMedia: ", {
       type: result.type || "unknown",
       url: result.url || "",
       name: fileName,
@@ -1079,7 +1179,7 @@ console.log("resultMedia: ",{
 }
 
 async function getMiniMediaFileFromServer(fileName) {
-  console.log("getMiniMediaFileFromServer: ",fileName);
+  console.log("getMiniMediaFileFromServer: ", fileName);
   try {
     if (!fileName) {
       console.log("No file name provided");
@@ -1107,7 +1207,7 @@ async function getMiniMediaFileFromServer(fileName) {
       console.log("Server returned error:", result.message);
       return null;
     }
-console.log("resultMedia: ",{
+    console.log("resultMedia: ", {
       type: result.type || "unknown",
       url: result.url || "",
       name: fileName,
@@ -1125,13 +1225,13 @@ console.log("resultMedia: ",{
 
 async function refuseTaskInServer(taskId) {
   try {
-    const response = await fetch('task.php', {
-      method: 'POST',
+    const response = await fetch("task.php", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        action: 'refuseTask',
+        action: "refuseTask",
         requestId: taskId,
       }),
     });
@@ -1191,14 +1291,14 @@ setTimeout(AJAXUpdateTask, 20000);
 
 async function getTasksByDate(date) {
   try {
-    const response = await fetch('task.php', {
-      method: 'POST',
+    const response = await fetch("task.php", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        action: 'getTasksByDate',
-        date: date.toISOString().split('T')[0],
+        action: "getTasksByDate",
+        date: date.toISOString().split("T")[0],
       }),
     });
 
@@ -1207,7 +1307,15 @@ async function getTasksByDate(date) {
       throw new Error(result.message);
     }
     result.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    if(getDallasDate() === date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })) clientTasks = result.data;
+    if (
+      getDallasDate() ===
+      date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+    )
+      clientTasks = result.data;
     return result.data;
   } catch (error) {
     console.error("Error fetching tasks by date:", error);
@@ -1216,25 +1324,27 @@ async function getTasksByDate(date) {
 }
 
 async function changeTaskStatusOnServer(requestId, newStatus) {
-  const statusClock = document.querySelector(`.status-select[data-task-id="${requestId}"]`).nextElementSibling;
-  const statusCheck = statusClock.querySelector('.status-check');
-  const hourHand = statusClock.querySelector('.hour-hand');
-  const minuteHand = statusClock.querySelector('.minute-hand');
+  const statusClock = document.querySelector(
+    `.status-select[data-task-id="${requestId}"]`
+  ).nextElementSibling;
+  const statusCheck = statusClock.querySelector(".status-check");
+  const hourHand = statusClock.querySelector(".hour-hand");
+  const minuteHand = statusClock.querySelector(".minute-hand");
 
   // Показываем часики
-  statusClock.style.border = '2px solid rgba(255, 255, 255, 1)';
-  statusClock.style.opacity = '1';
-  hourHand.style.opacity = '1';
-  minuteHand.style.opacity = '1';
+  statusClock.style.border = "2px solid rgba(255, 255, 255, 1)";
+  statusClock.style.opacity = "1";
+  hourHand.style.opacity = "1";
+  minuteHand.style.opacity = "1";
 
   try {
-    const response = await fetch('task.php', {
-      method: 'POST',
+    const response = await fetch("task.php", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        action: 'updateTaskStatus',
+        action: "updateTaskStatus",
         requestId: requestId,
         newStatus: newStatus,
       }),
@@ -1244,53 +1354,56 @@ async function changeTaskStatusOnServer(requestId, newStatus) {
     if (!result.success) {
       throw new Error(result.message);
     }
-    console.log('Task status updated successfully');
+    console.log("Task status updated successfully");
 
     // Скрываем часики
-    hourHand.style.opacity = '0';
-    minuteHand.style.opacity = '0';
-    statusClock.style.border = '2px solid rgba(255, 255, 255, 0)';
+    hourHand.style.opacity = "0";
+    minuteHand.style.opacity = "0";
+    statusClock.style.border = "2px solid rgba(255, 255, 255, 0)";
     // Показать галочку после исчезновения часиков с задержкой
     setTimeout(() => {
-      statusCheck.style.opacity = '1';
- // Плавное появление галочки
+      statusCheck.style.opacity = "1";
+      // Плавное появление галочки
     }, 500); // Задержка перед появлением галочки
     setTimeout(() => {
-      statusCheck.style.opacity = '0';
-      statusClock.style.opacity = '0'; // Плавное исчезновение галочки
-
+      statusCheck.style.opacity = "0";
+      statusClock.style.opacity = "0"; // Плавное исчезновение галочки
     }, 2500); // Время отображения галочки
   } catch (error) {
-    console.error('Error updating task status:', error);
+    console.error("Error updating task status:", error);
   } finally {
-
   }
 }
 
 async function checkNewTasksInServer() {
   try {
-    const lastTaskDate = clientTasks.length > 0 ? clientTasks[0].timestamp : null;
-    console.log("formatDallasDateForServer(getDallasDate()) ", formatDallasDateForServer(getDallasDate()));
-    const response = await fetch('task.php', {
-      method: 'POST',
+    const lastTaskDate =
+      clientTasks.length > 0 ? clientTasks[0].timestamp : null;
+    console.log(
+      "formatDallasDateForServer(getDallasDate()) ",
+      formatDallasDateForServer(getDallasDate())
+    );
+    const response = await fetch("task.php", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        action: 'checkNewTasksI',
-        lastTaskDate: lastTaskDate || formatDallasDateForServer(getDallasDate()),
+        action: "checkNewTasksI",
+        lastTaskDate:
+          lastTaskDate || formatDallasDateForServer(getDallasDate()),
       }),
     });
 
     const text = await response.text();
     try {
-      if(text === 'false') return false; 
+      if (text === "false") return false;
       const result = JSON.parse(text);
       // Удаляем проверку на result.success, так как сервер возвращает массив
       return result; // Предполагается, что сервер возвращает массив новых заданий
     } catch (jsonError) {
       console.error("Ошибка при парсинге JSON:", jsonError, "Ответ:", text);
-   return false;
+      return false;
     }
   } catch (error) {
     console.error("Ошибка при проверке новых заданий:", error);
@@ -1300,13 +1413,13 @@ async function checkNewTasksInServer() {
 
 async function getNotCompletedTasksForLastWeek() {
   try {
-    const response = await fetch('task.php', {
-      method: 'POST',
+    const response = await fetch("task.php", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        action: 'getNotCompletedTasksForLastWeek',
+        action: "getNotCompletedTasksForLastWeek",
         currentDate: formatDallasDateForServer(getDallasDate()),
       }),
     });
@@ -1316,7 +1429,7 @@ async function getNotCompletedTasksForLastWeek() {
       throw new Error(result.message);
     }
     return result.data;
-  } catch (error) { 
+  } catch (error) {
     console.error("Error fetching not completed tasks for last week:", error);
     return [];
   }
@@ -1327,6 +1440,3 @@ let notCompletedTasks = (async () => {
   console.log("getNotCompletedTasksForLastWeek: ", tasks);
   return tasks;
 })();
-
-
-

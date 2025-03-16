@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'maintenance/portal',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => NULL,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '0aa2d49be0dcb80c6003f6629473ea401cab5847',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'maintenance/portal' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => NULL,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '0aa2d49be0dcb80c6003f6629473ea401cab5847',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

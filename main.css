@@ -140,6 +140,19 @@ header h1 {
   background-color: #388e3c;
 }
 
+.Inspections-Portal {
+  background-color: #f8f9fa;
+  border: 2px solid #2196f3;
+}
+
+.Inspections-Portal-Btn {
+  background-color: #9c27b0;
+}
+
+.Inspections-Portal-Btn:hover {
+  background-color: #7b1fa2;
+}
+
 .user-account {
   display: none; /* Скрыто по умолчанию */
   align-items: center;
