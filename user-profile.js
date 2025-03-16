@@ -4,8 +4,13 @@ let displayedTasks = [];
 let displayedEvents = [];
 let searchValue = "";
 
-let currentFilter = {data: "lastWeek", status: "All", priority: "All", assignedTo: "All"};
-let currentSort = {sortBy: "Date", sortOrder: "dec"};
+let currentFilter = {
+  data: "lastWeek",
+  status: "All",
+  priority: "All",
+  assignedTo: "All",
+};
+let currentSort = { sortBy: "Date", sortOrder: "dec" };
 
 // Определение структуры зданий и комнат
 const buildingRooms = {
@@ -18,84 +23,75 @@ const buildingRooms = {
   Administration: ["Office 1", "Office 2", "Office 3"],
 };
 
-
-
-
-
-
 // Создаем WebSocket соединение
-const ws = new WebSocket('ws://localhost:2346');
+const ws = new WebSocket("ws://localhost:2346");
 
 // При открытии соединения
-ws.onopen = function() {
-    console.log('Подключено к WebSocket серверу');
+ws.onopen = function () {
+  console.log("Подключено к WebSocket серверу");
 };
 
 // При получении сообщения
-ws.onmessage = function(e) {
-    try {
-        const response = JSON.parse(e.data);
-        console.log('Получен ответ:', response);
-        
-        if (response.type === 'tasks') {
-            // Обработка полученных задач
-            const tasks = response.data;
-            console.log('Получены задачи:', tasks);
-            // Здесь можно вызвать функцию для отображения задач
-            displayUserTasks(tasks);
-        } else if (response.type === 'error') {
-            console.error('Ошибка сервера:', response.message);
-        }
-    } catch (error) {
-        console.error('Ошибка парсинга JSON:', error);
-        console.log('Полученные данные:', e.data);
+ws.onmessage = function (e) {
+  try {
+    const response = JSON.parse(e.data);
+    console.log("Получен ответ:", response);
+
+    if (response.type === "tasks") {
+      // Обработка полученных задач
+      const tasks = response.data;
+      console.log("Получены задачи:", tasks);
+      // Здесь можно вызвать функцию для отображения задач
+      displayUserTasks(tasks);
+    } else if (response.type === "error") {
+      console.error("Ошибка сервера:", response.message);
     }
+  } catch (error) {
+    console.error("Ошибка парсинга JSON:", error);
+    console.log("Полученные данные:", e.data);
+  }
 };
 
 // При ошибке
-ws.onerror = function(e) {
-    console.error('WebSocket ошибка: ' + e.message);
+ws.onerror = function (e) {
+  console.error("WebSocket ошибка: " + e.message);
 };
 
 // При закрытии соединения
-ws.onclose = function() {
-    console.log('Соединение закрыто');
+ws.onclose = function () {
+  console.log("Соединение закрыто");
 };
-
-
-
-
-
 
 // Отправка запроса на получение задач
 function requestTasks(staff) {
-    if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-            action: 'getUserTasks',
-            staff: staff
-        }));
-    } else {
-        console.error('WebSocket не подключен');
-    }
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(
+      JSON.stringify({
+        action: "getUserTasks",
+        staff: staff,
+      })
+    );
+  } else {
+    console.error("WebSocket не подключен");
+  }
 }
 
 // Вызов функции при загрузке страницы
-const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 if (currentUser) {
-    requestTasks(currentUser.fullName);
+  requestTasks(currentUser.fullName);
 }
 
 setTimeout(() => {
-    if (ws.readyState === WebSocket.OPEN) {
-        const message = {
-            action: 'getUserTasks',
-            staff: 'Linda Wilson'
-        };
-        console.log('Отправка запроса:', message);
-        ws.send(JSON.stringify(message));
-    }
+  if (ws.readyState === WebSocket.OPEN) {
+    const message = {
+      action: "getUserTasks",
+      staff: "Linda Wilson",
+    };
+    console.log("Отправка запроса:", message);
+    ws.send(JSON.stringify(message));
+  }
 }, 1000);
-
 
 document.addEventListener("DOMContentLoaded", async function () {
   // Проверяем авторизацию
@@ -165,7 +161,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   });
 
- /* overlay.addEventListener("click", function () {
+  /* overlay.addEventListener("click", function () {
     userDashboard.classList.remove("active");
     actionContainer.style.right = "-100px";
     overlay.style.opacity = "0";
@@ -174,14 +170,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   });*/
 
   actionButtons.forEach((button, index) => {
-    const img = button.querySelector('img');
+    const img = button.querySelector("img");
     img.addEventListener("click", () => {
       isOpenButtons[index] = !isOpenButtons[index];
-      if(index === 0) {
+      if (index === 0) {
         button.style.width = isOpenButtons[index] ? "372px" : "50px";
         button.style.height = isOpenButtons[index] ? "217px" : "50px";
-      }
-      else {
+      } else {
         button.style.width = isOpenButtons[index] ? "372px" : "50px";
       }
     });
@@ -234,28 +229,35 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   });
 
-//ФИЛЬТРЫ
+  //ФИЛЬТРЫ
 
-  document.getElementById("filter-date").addEventListener("change", function () {
-    currentFilter.data = this.value;
-    displayUserTasks();
-  });
+  document
+    .getElementById("filter-date")
+    .addEventListener("change", function () {
+      currentFilter.data = this.value;
+      displayUserTasks();
+    });
 
-  document.getElementById("filter-status").addEventListener("change", function () {
-    currentFilter.status = this.value;
-    displayUserTasks();
-  });
+  document
+    .getElementById("filter-status")
+    .addEventListener("change", function () {
+      currentFilter.status = this.value;
+      displayUserTasks();
+    });
 
-  document.getElementById("filter-priority").addEventListener("change", function () {
-    currentFilter.priority = this.value;
-    displayUserTasks();
-  });
+  document
+    .getElementById("filter-priority")
+    .addEventListener("change", function () {
+      currentFilter.priority = this.value;
+      displayUserTasks();
+    });
 
-  document.getElementById("filter-assigned").addEventListener("change", function () {
-    currentFilter.assignedTo = this.value;
-    displayUserTasks();
-  });
-
+  document
+    .getElementById("filter-assigned")
+    .addEventListener("change", function () {
+      currentFilter.assignedTo = this.value;
+      displayUserTasks();
+    });
 
   // Сортировка
 
@@ -265,19 +267,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.log("currentSort.sortBy", currentSort.sortBy);
     displayUserTasks();
   });
-  
+
   document.getElementById("orderButton").addEventListener("click", function () {
     currentSort.sortOrder = currentSort.sortOrder === "dec" ? "inc" : "dec";
     displayUserTasks();
   });
 
-//Поиск
+  //Поиск
 
   const searchInput = document.getElementById("searchInput");
   searchInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
       searchValue = searchInput.value.trim().toUpperCase();
-      if(searchValue != "") {
+      if (searchValue != "") {
         displayUserTasks();
       }
     }
@@ -342,12 +344,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   } else {
     userPhoto.onload = () => adjustImageSize(userPhoto);
   }
-
-
 });
-
-
-
 
 // Функция для отображения информации о пользователе
 function displayUserInfo() {
@@ -371,7 +368,7 @@ function displayDashboardUserInfo() {
       userEmailElement.textContent = user.email;
     }
   }
-}/*
+} /*
 // Функция для получения заданий пользователя
 async function getUserTasks() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -418,16 +415,14 @@ async function displayUserTasks() {
   const infoContentOverlay = document.createElement("div");
   infoContentOverlay.classList.add("info-content-overlay");
   // Если это не первый загрузка задач, показываем вуаль и индикатор загрузки
- 
-    infoContent.appendChild(infoContentOverlay);
-    loadingIndicator.style.display = "block";
-    infoContentOverlay.style.display = "block";
-  
+
+  infoContent.appendChild(infoContentOverlay);
+  loadingIndicator.style.display = "block";
+  infoContentOverlay.style.display = "block";
 
   try {
-
     let tasks = [];
-    
+
     // Получаем задачи
     switch (currentFilter.data) {
       case "lastWeek":
@@ -444,96 +439,93 @@ async function displayUserTasks() {
         break;
     }
 
-    if(searchValue != "") {
-      tasks = tasks.filter(task => task.request_id.includes(searchValue));
+    if (searchValue != "") {
+      tasks = tasks.filter((task) => task.request_id.includes(searchValue));
       searchValue = "";
     }
 
     console.log("tasks", tasks);
     console.log("currentFilter", currentFilter);
 
-    if(currentFilter.status !== "All") {
+    if (currentFilter.status !== "All") {
       console.log("filter status", currentFilter.status);
-      tasks = tasks.filter(task => task.status === currentFilter.status);
+      tasks = tasks.filter((task) => task.status === currentFilter.status);
     }
 
-    if(currentFilter.priority !== "All") {
+    if (currentFilter.priority !== "All") {
       console.log("filter priority", currentFilter.priority);
-      tasks = tasks.filter(task => task.priority === currentFilter.priority);
+      tasks = tasks.filter((task) => task.priority === currentFilter.priority);
     }
 
-    if(currentFilter.assignedTo !== "All") {
+    if (currentFilter.assignedTo !== "All") {
       console.log("filter assignedTo", currentFilter.assignedTo);
-      
-      tasks = tasks.filter(task => {
+
+      tasks = tasks.filter((task) => {
         let assignedTo = task.assigned_to != null ? "yes" : "no";
         return assignedTo === currentFilter.assignedTo;
-    });
+      });
     }
 
-  if(currentSort.sortOrder === "dec") {
+    if (currentSort.sortOrder === "dec") {
+      if (currentSort.sortBy === "Date") {
+        console.log("sort by date");
+        tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      } else if (currentSort.sortBy === "Priority") {
+        console.log("sort by priority");
+        const priorityOrder = {
+          low: 1,
+          medium: 2,
+          high: 3,
+          urgent: 4,
+        };
+        tasks.sort(
+          (a, b) =>
+            priorityOrder[a.priority.toLowerCase()] -
+            priorityOrder[b.priority.toLowerCase()]
+        );
+      } else if (currentSort.sortBy === "Status") {
+        console.log("sort by status");
+        tasks.sort((a, b) => a.status.localeCompare(b.status));
+      } else if (currentSort.sortBy === "Assigned") {
+        console.log("sort by assigned");
 
-    if (currentSort.sortBy === "Date") {
-      console.log("sort by date");
-      tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    }
-    else if (currentSort.sortBy === "Priority") {
-      console.log("sort by priority");
-      const priorityOrder = {
-        'low': 1,
-        'medium': 2,
-        'high': 3,
-        'urgent': 4
-      };
-      tasks.sort((a, b) => priorityOrder[a.priority.toLowerCase()] - priorityOrder[b.priority.toLowerCase()]);
-    }
-    else if (currentSort.sortBy === "Status") {
-      console.log("sort by status");
-      tasks.sort((a, b) => a.status.localeCompare(b.status));
-    } else if (currentSort.sortBy === "Assigned") {
-      console.log("sort by assigned");
-      
-      tasks.sort((a, b) => 
-        {
+        tasks.sort((a, b) => {
           let aAssigned = a.assigned_to != null ? "yes" : "no";
           let bAssigned = b.assigned_to != null ? "yes" : "no";
-          return aAssigned.localeCompare(bAssigned)
+          return aAssigned.localeCompare(bAssigned);
         });
-    }
-  } 
-  
-  else if(currentSort.sortOrder === "inc") {
+      }
+    } else if (currentSort.sortOrder === "inc") {
+      if (currentSort.sortBy === "Date") {
+        console.log("sort by date");
+        tasks.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      } else if (currentSort.sortBy === "Priority") {
+        console.log("sort by priority");
+        const priorityOrder = {
+          low: 1,
+          medium: 2,
+          high: 3,
+          urgent: 4,
+        };
+        tasks.sort(
+          (a, b) =>
+            priorityOrder[b.priority.toLowerCase()] -
+            priorityOrder[a.priority.toLowerCase()]
+        );
+      } else if (currentSort.sortBy === "Status") {
+        console.log("sort by status");
+        tasks.sort((a, b) => b.status.localeCompare(a.status));
+      } else if (currentSort.sortBy === "Assigned") {
+        console.log("sort by assigned");
 
-    if (currentSort.sortBy === "Date") {
-      console.log("sort by date");
-      tasks.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    }
-    else if (currentSort.sortBy === "Priority") {
-      console.log("sort by priority");
-      const priorityOrder = {
-        'low': 1,
-        'medium': 2,
-        'high': 3,
-        'urgent': 4
-      };
-      tasks.sort((a, b) => priorityOrder[b.priority.toLowerCase()] - priorityOrder[a.priority.toLowerCase()]);
-    }
-    else if (currentSort.sortBy === "Status") {
-      console.log("sort by status");
-      tasks.sort((a, b) => b.status.localeCompare(a.status));
-    } else if (currentSort.sortBy === "Assigned") {
-      console.log("sort by assigned");
-      
-      tasks.sort((a, b) => 
-        {
+        tasks.sort((a, b) => {
           let aAssigned = a.assigned_to != null ? "yes" : "no";
           let bAssigned = b.assigned_to != null ? "yes" : "no";
-          return bAssigned.localeCompare(aAssigned)
+          return bAssigned.localeCompare(aAssigned);
         });
+      }
     }
-  }
-    
-    
+
     console.log("filtered tasks", tasks);
     // Очищаем содержимое контейнера
     infoContent.innerHTML = "";
@@ -597,14 +589,11 @@ async function displayUserTasks() {
   } finally {
     // Скрыть индикатор загрузки и вуаль после завершения
 
-      const infoContentOverlay = document.querySelector(
-        ".info-content-overlay"
-      );
-      if (infoContentOverlay) {
-        infoContentOverlay.remove();
-      }
-      loadingIndicator.style.display = "none";
-    
+    const infoContentOverlay = document.querySelector(".info-content-overlay");
+    if (infoContentOverlay) {
+      infoContentOverlay.remove();
+    }
+    loadingIndicator.style.display = "none";
   }
 }
 
@@ -651,25 +640,25 @@ async function addUserPhotoToServer(file) {
   formData.append("email", currentUserEmail);
 
   try {
-    console.log('Начало загрузки файла:', file.name);
-    console.log('Тип файла:', file.type);
-    console.log('Размер файла:', file.size);
+    console.log("Начало загрузки файла:", file.name);
+    console.log("Тип файла:", file.type);
+    console.log("Размер файла:", file.size);
 
     const response = await fetch("php/user-profile.php", {
       method: "POST",
       body: formData,
     });
-    
-    console.log('Статус ответа:', response.status);
-    console.log('Заголовки ответа:', Object.fromEntries(response.headers));
-    
+
+    console.log("Статус ответа:", response.status);
+    console.log("Заголовки ответа:", Object.fromEntries(response.headers));
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    console.log('Ответ сервера:', data);
-    
+    console.log("Ответ сервера:", data);
+
     if (data.success) {
       console.log("Фото успешно загружено");
       return true;
@@ -684,7 +673,7 @@ async function addUserPhotoToServer(file) {
       stack: error.stack,
       fileName: file?.name,
       fileType: file?.type,
-      fileSize: file?.size
+      fileSize: file?.size,
     });
     alert("Ошибка при загрузке фото: " + error.message);
     return false;
@@ -939,7 +928,10 @@ async function getUserTasksForLastWeek() {
         displayedTasks = data.tasks;
         return data.tasks;
       } else {
-        console.error("Ошибка получения заданий за последнюю неделю:", data.message);
+        console.error(
+          "Ошибка получения заданий за последнюю неделю:",
+          data.message
+        );
         return [];
       }
     } catch (error) {
@@ -976,7 +968,10 @@ async function getUserTasksForLastMonth() {
         displayedTasks = data.tasks;
         return data.tasks;
       } else {
-        console.error("Ошибка получения заданий за последний месяц:", data.message);
+        console.error(
+          "Ошибка получения заданий за последний месяц:",
+          data.message
+        );
         return [];
       }
     } catch (error) {
@@ -1013,7 +1008,10 @@ async function getUserTasksForLast3Months() {
         displayedTasks = data.tasks;
         return data.tasks;
       } else {
-        console.error("Ошибка получения заданий за последние 3 месяца:", data.message);
+        console.error(
+          "Ошибка получения заданий за последние 3 месяца:",
+          data.message
+        );
         return [];
       }
     } catch (error) {
@@ -1050,7 +1048,10 @@ async function getUserTasksForLastYear() {
         displayedTasks = data.tasks;
         return data.tasks;
       } else {
-        console.error("Ошибка получения заданий за последний год:", data.message);
+        console.error(
+          "Ошибка получения заданий за последний год:",
+          data.message
+        );
         return [];
       }
     } catch (error) {
@@ -1063,83 +1064,84 @@ async function getUserTasksForLastYear() {
 
 // Функция для получения информации о пользователе
 async function getUserSettingsInfo(email) {
-    try {
-        const formData = new FormData();
-        formData.append('action', 'getUserSettingsInfo');
-        formData.append('email', email);
+  try {
+    const formData = new FormData();
+    formData.append("action", "getUserSettingsInfo");
+    formData.append("email", email);
 
-        const response = await fetch('php/user-profile.php', {
-            method: 'POST',
-            body: formData
-        });
+    const response = await fetch("php/user-profile.php", {
+      method: "POST",
+      body: formData,
+    });
 
-        const data = await response.json();
-        if (data.success) {
-            return data.userInfo;
-        } else {
-            console.error('Ошибка получения информации:', data.message);
-            return null;
-        }
-    } catch (error) {
-        console.error('Ошибка:', error);
-        return null;
+    const data = await response.json();
+    if (data.success) {
+      return data.userInfo;
+    } else {
+      console.error("Ошибка получения информации:", data.message);
+      return null;
     }
+  } catch (error) {
+    console.error("Ошибка:", error);
+    return null;
+  }
 }
 
 // Функция для заполнения списка комнат в модальном окне
 function populateSettingsRoomSelect(building) {
-    const roomSelect = document.getElementById('settingsRoom');
-    roomSelect.innerHTML = '';
-    
-    const rooms = buildingRooms[building] || [];
-    rooms.forEach(room => {
-        const option = document.createElement('option');
-        option.value = room;
-        option.textContent = room;
-        roomSelect.appendChild(option);
-    });
+  const roomSelect = document.getElementById("settingsRoom");
+  roomSelect.innerHTML = "";
+
+  const rooms = buildingRooms[building] || [];
+  rooms.forEach((room) => {
+    const option = document.createElement("option");
+    option.value = room;
+    option.textContent = room;
+    roomSelect.appendChild(option);
+  });
 }
 
 // Обработчик для модального окна настроек
-document.addEventListener('DOMContentLoaded', function() {
-    const settingsIcon = document.getElementById('settingsIcon');
-    const settingsModal = document.getElementById('settingsModal');
-    const settingsClose = document.querySelector('.settings-close');
-    const settingsBuilding = document.getElementById('settingsBuilding');
-    
-    // Открытие модального окна
-    settingsIcon.addEventListener('click', async function() {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (currentUser && currentUser.email) {
-            const userInfo = await getUserSettingsInfo(currentUser.email);
-            if (userInfo) {
-                document.getElementById('settingsEmail').value = userInfo.email;
-                document.getElementById('settingsFullName').value = userInfo.full_name;
-                document.getElementById('settingsDepartment').value = userInfo.department;
-                document.getElementById('settingsBuilding').value = userInfo.building;
-                populateSettingsRoomSelect(userInfo.building);
-                document.getElementById('settingsRoom').value = userInfo.room;
-                document.getElementById('settingsStaffType').value = userInfo.staffType;
-                
-                settingsModal.style.display = 'block';
-            }
-        }
-    });
-    
-    // Закрытие модального окна
-    settingsClose.addEventListener('click', function() {
-        settingsModal.style.display = 'none';
-    });
-    
-    // Закрытие при клике вне модального окна
-    window.addEventListener('click', function(event) {
-        if (event.target === settingsModal) {
-            settingsModal.style.display = 'none';
-        }
-    });
-    
-    // Обновление списка комнат при изменении здания
-    settingsBuilding.addEventListener('change', function() {
-        populateSettingsRoomSelect(this.value);
-    });
+document.addEventListener("DOMContentLoaded", function () {
+  const settingsIcon = document.getElementById("settingsIcon");
+  const settingsModal = document.getElementById("settingsModal");
+  const settingsClose = document.querySelector(".settings-close");
+  const settingsBuilding = document.getElementById("settingsBuilding");
+
+  // Открытие модального окна
+  settingsIcon.addEventListener("click", async function () {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (currentUser && currentUser.email) {
+      const userInfo = await getUserSettingsInfo(currentUser.email);
+      if (userInfo) {
+        document.getElementById("settingsEmail").value = userInfo.email;
+        document.getElementById("settingsFullName").value = userInfo.full_name;
+        document.getElementById("settingsDepartment").value =
+          userInfo.department;
+        document.getElementById("settingsBuilding").value = userInfo.building;
+        populateSettingsRoomSelect(userInfo.building);
+        document.getElementById("settingsRoom").value = userInfo.room;
+        document.getElementById("settingsStaffType").value = userInfo.staffType;
+
+        settingsModal.style.display = "block";
+      }
+    }
+  });
+
+  // Закрытие модального окна
+  settingsClose.addEventListener("click", function () {
+    settingsModal.style.display = "none";
+  });
+
+  // Закрытие при клике вне модального окна
+  window.addEventListener("click", function (event) {
+    if (event.target === settingsModal) {
+      settingsModal.style.display = "none";
+    }
+  });
+
+  // Обновление списка комнат при изменении здания
+  settingsBuilding.addEventListener("change", function () {
+    populateSettingsRoomSelect(this.value);
+  });
 });

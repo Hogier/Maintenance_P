@@ -4,7 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>School Events Portal</title>
-    <link rel="preload" href="user-profile.css" as="style" onload="this.rel='stylesheet'"/>
+    <link
+      rel="preload"
+      href="user-profile.css"
+      as="style"
+      onload="this.rel='stylesheet'"
+    />
     <link rel="stylesheet" href="events.css" />
     <link
       rel="stylesheet"
@@ -12,7 +17,6 @@
     />
   </head>
   <body>
-
     <!-- <div class="header-container">
       <div class="user-account">
         <div class="user-info">
@@ -507,78 +511,84 @@
 
     <div id="actionContainer" class="action-container">
       <div id="filterButton" class="filter-button">
-         <img src="images/filter.png" alt="Filter" />
-         <div class="filters-list">
+        <img src="images/filter.png" alt="Filter" />
+        <div class="filters-list">
           <div class="filters-list-item">
-           <label for="filter-date">Date</label>
-           <select id="filter-date">
-             <option value="lastWeek">Last week</option>
-             <option value="lastMonth">Last Month</option>
-             <option value="last3Months">Last 3 Months</option>
-             <option value="lastYear">Last Year</option>
-           </select>
-          </div>
-          <div class="filters-list-item">
-           <label for="filter-status">Status</label>
-           <select id="filter-status">
-             <option value="All">All</option>
-             <option value="Pending">Pending</option>
-             <option value="In Progress">In Progress</option>
-             <option value="Completed">Completed</option>
-           </select>
+            <label for="filter-date">Date</label>
+            <select id="filter-date">
+              <option value="lastWeek">Last week</option>
+              <option value="lastMonth">Last Month</option>
+              <option value="last3Months">Last 3 Months</option>
+              <option value="lastYear">Last Year</option>
+            </select>
           </div>
           <div class="filters-list-item">
-           <label for="filter-priority">Priority</label>
-           <select id="filter-priority">
-             <option value="All">All</option>
-             <option value="low">Low</option>
-             <option value="medium">Medium</option>
-             <option value="high">High</option>
-             <option value="urgent">Urgent</option>
-           </select>
+            <label for="filter-status">Status</label>
+            <select id="filter-status">
+              <option value="All">All</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
           </div>
-          <div class="filters-list-item">         
-           <label for="filter-assigned">Assigned</label>
-           <select id="filter-assigned">
-             <option value="All">All</option>
-             <option value="yes">Yes</option>
-             <option value="no">No</option>
-           </select>
+          <div class="filters-list-item">
+            <label for="filter-priority">Priority</label>
+            <select id="filter-priority">
+              <option value="All">All</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
           </div>
-         </div>
-       </div>
-       <div id="sortButton" class="sort-button">
-          <img src="images/sort.png" alt="Sort" />
-          <div class="sort-all-tools">
-          <button id="orderButton" class="order"><img src="images/order.png" alt="Order Asc" /></button>
-    
+          <div class="filters-list-item">
+            <label for="filter-assigned">Assigned</label>
+            <select id="filter-assigned">
+              <option value="All">All</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="sortButton" class="sort-button">
+        <img src="images/sort.png" alt="Sort" />
+        <div class="sort-all-tools">
+          <button id="orderButton" class="order">
+            <img src="images/order.png" alt="Order Asc" />
+          </button>
+
           <div class="sort-list">
             <div class="sort-list-item">
-             <label for="sort-date">Sort by </label>
-             <select id="sort-date">
-               <option value="Date">Date</option>
-               <option value="Status">Status</option>
-               <option value="Priority">Priority</option>
-               <option value="Assigned">Assigned</option>
-             </select>
+              <label for="sort-date">Sort by </label>
+              <select id="sort-date">
+                <option value="Date">Date</option>
+                <option value="Status">Status</option>
+                <option value="Priority">Priority</option>
+                <option value="Assigned">Assigned</option>
+              </select>
             </div>
           </div>
-          </div>
-    
         </div>
-        <div id="searchButton" class="search-button">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search...">
-            <img src="images/search.png" alt="Search" />
-        </div>
+      </div>
+      <div id="searchButton" class="search-button">
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="Search..."
+        />
+        <img src="images/search.png" alt="Search" />
+      </div>
     </div>
-    
+
     <div class="main-dashboard">
       <div class="user-dashboard">
         <span class="close-button">×</span>
         <div class="settings-icon">
-          <img id="settingsIcon" src="images/settings.png" alt="Settings" />
+          <img id="settingsIcon" src="images/00settings.png" alt="Settings" />
         </div>
-        
+
         <div class="user-profile">
           <div class="user-photo">
             <div class="user-photo-container">
@@ -606,7 +616,7 @@
       </div>
     </div>
     <div class="overlay" id="overlay"></div>
-    
+
     <!-- Модальное окно для загрузки фотографии -->
     <div class="modal" id="photoModal">
       <div class="modal-content">
@@ -625,11 +635,11 @@
         <h2>Profile Settings</h2>
         <div class="settings-form-group">
           <label for="settingsEmail">Email:</label>
-          <input type="email" id="settingsEmail" disabled>
+          <input type="email" id="settingsEmail" disabled />
         </div>
         <div class="settings-form-group">
           <label for="settingsFullName">Full Name:</label>
-          <input type="text" id="settingsFullName">
+          <input type="text" id="settingsFullName" />
         </div>
         <div class="settings-form-group">
           <label for="settingsDepartment">Department:</label>

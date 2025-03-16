@@ -14,7 +14,7 @@ $ws_worker->onWorkerStart = function($worker) {
     global $conn;
     $host = 'localhost';
     $user = 'root';
-    $password = 'root';
+    $password = '';
     $database = 'maintenancedb';
     
     $conn = new mysqli($host, $user, $password, $database);

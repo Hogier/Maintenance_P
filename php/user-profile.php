@@ -1,16 +1,20 @@
 <?php
 // В начале файла добавим настройку временной зоны
 date_default_timezone_set('America/Chicago');
+
+// Отключаем отображение ошибок в браузере
+error_reporting(0);
+ini_set('display_errors', 0);
+
+// Устанавливаем заголовки для JSON-ответа
+header('Content-Type: application/json');
 header("Cache-Control: max-age=604800, public");
 header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
-// Включаем отображение ошибок для отладки
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 // Параметры подключения к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = 'root';
+$password = '';
 $database = 'maintenancedb';
 
 // Подключение к базе данных
@@ -23,11 +27,6 @@ if ($conn->connect_error) {
 
 // Получение данных из POST-запроса
 $action = $_POST['action'] ?? '';
-
-// В начале файла добавляем:
-require_once __DIR__ . '/../vendor/autoload.php';
-use Workerman\Connection\AsyncTcpConnection;
-use Workerman\Worker;
 
 if ($action === 'addUserPhoto') {
     $email = $_POST['email'] ?? '';
@@ -230,14 +229,29 @@ if ($action === 'addUserPhoto') {
     $currentDate = $_POST['currentDate'] ?? '';
 
     if ($staff && $currentDate) {
-        $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 1 WEEK)");
-        $stmt->bind_param('ss', $staff, $currentDate);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        try {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND timestamp >= DATE_SUB(?, INTERVAL 1 WEEK)");
+            if (!$stmt) {
+                throw new Exception("Prepare failed: " . $conn->error);
+            }
+            
+            $stmt->bind_param('ss', $staff, $currentDate);
+            if (!$stmt->execute()) {
+                throw new Exception("Execute failed: " . $stmt->error);
+            }
+            
+            $result = $stmt->get_result();
+            $tasks = $result->fetch_all(MYSQLI_ASSOC);
 
-        $tasks = $result->fetch_all(MYSQLI_ASSOC);
-
-        echo json_encode(['success' => true, 'tasks' => $tasks]);
+            echo json_encode(['success' => true, 'tasks' => $tasks]);
+        } catch (Exception $e) {
+            error_log("Error in getUserTasksForLastWeek: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        } finally {
+            if (isset($stmt)) {
+                $stmt->close();
+            }
+        }
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid staff name or date']);
     }
@@ -311,36 +325,7 @@ if ($action === 'addUserPhoto') {
         ]);
     }
 } elseif ($action === 'sendNotification') {
-    try {
-        // Создаем асинхронное подключение к WebSocket-серверу
-        $client = new AsyncTcpConnection('ws://127.0.0.1:2346');
-        
-        // При успешном подключении
-        $client->onConnect = function($connection) {
-            // Отправляем сообщение
-            $connection->send('Hello World!');
-        };
-        
-        // При получении сообщения от сервера
-        $client->onMessage = function($connection, $data) {
-            echo "Получено: $data\n";
-        };
-        
-        // При ошибке
-        $client->onError = function($connection, $code, $msg) {
-            echo "Ошибка: $msg\n";
-        };
-        
-        // При закрытии соединения
-        $client->onClose = function($connection) {
-            echo "Соединение закрыто\n";
-        };
-        
-        // Устанавливаем соединение
-        $client->connect();
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
-    }
+    echo json_encode(['success' => false, 'message' => 'WebSocket notifications are not supported in this context']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid action']);
 }

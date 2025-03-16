@@ -5,10 +5,14 @@ header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
 
 // Папка для сохранения загруженных файлов
 $uploadDir = "uploads/";
+$miniDir = "uploads/mini/";
 
-// Проверяем существование директории и создаем её при необходимости
+// Проверяем существование директорий и создаем их при необходимости
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
+}
+if (!file_exists($miniDir)) {
+    mkdir($miniDir, 0777, true);
 }
 
 // Проверяем права доступа
@@ -19,6 +23,13 @@ if (!is_writable($uploadDir)) {
     ]);
     exit;
 }
+if (!is_writable($miniDir)) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Mini directory is not writable'
+    ]);
+    exit;
+}
 
 // Разрешенные типы файлов
 $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp3'];
@@ -26,7 +37,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = 'root';  // Пустой пароль для XAMPP
+$password = '';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -74,10 +85,6 @@ if ($action === 'addTask') {
                         compressImage($filePath, $filePath, 70);
 
                         // Создание уменьшенной версии
-                        $miniDir = $uploadDir . 'mini/';
-                        if (!file_exists($miniDir)) {
-                            mkdir($miniDir, 0777, true);
-                        }
                         $miniFileName = 'mini_' . $fileName;
                         $miniFilePath = $miniDir . $miniFileName;
 
