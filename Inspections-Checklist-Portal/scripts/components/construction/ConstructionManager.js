@@ -520,68 +520,289 @@ export default class ConstructionManager {
         );
         return `
       <div class="project-card" data-id="${project.id}">
-        <div class="project-header">
+        <div class="card-header">
           <h3>${project.name}</h3>
-          <span class="project-status status-${project.status}">${
-          project.status
-        }</span>
-        </div>
-        <div class="project-details">
-          <div class="info-item">
-            <i class="fas fa-location-dot"></i>
-            <span>${project.location}</span>
+          <div class="status-badge">
+            <select class="status-select" data-project-id="${project.id}">
+              ${
+                type === "future"
+                  ? `
+                <option value="planned" ${
+                  project.status === "planned" ? "selected" : ""
+                }>Planned</option>
+                <option value="move-to-current" ${
+                  project.status === "move-to-current" ? "selected" : ""
+                }>Move to Current Projects</option>
+              `
+                  : `
+                <option value="in-progress" ${
+                  project.status === "in-progress" ? "selected" : ""
+                }>In Progress</option>
+                <option value="completed" ${
+                  project.status === "completed" ? "selected" : ""
+                }>Completed</option>
+                <option value="on-hold" ${
+                  project.status === "on-hold" ? "selected" : ""
+                }>On Hold</option>
+              `
+              }
+            </select>
           </div>
-          <div class="info-item">
-            <i class="fas fa-calendar"></i>
-            <span>${new Date(
-              project.startDate
-            ).toLocaleDateString()} - ${new Date(
+        </div>
+        
+        <div class="card-body">
+          <div class="project-details">
+            <div class="detail-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>${project.location}</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-calendar"></i>
+              <span>${new Date(
+                project.startDate
+              ).toLocaleDateString()} - ${new Date(
           project.endDate
         ).toLocaleDateString()}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-building"></i>
-            <span>${
-              contractor ? contractor.companyName : "Unknown Contractor"
-            }</span>
-          </div>
-          ${
-            contractor && contractor.contactPerson
-              ? `
-            <div class="info-item">
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-dollar-sign"></i>
+              <span>${
+                project.estimatedCost
+                  ? `$${project.estimatedCost.toLocaleString()}`
+                  : "Not specified"
+              }</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-building"></i>
+              <span>${
+                contractor ? contractor.companyName : "Unknown Contractor"
+              }</span>
+            </div>
+            ${
+              contractor && contractor.contactPerson
+                ? `
+            <div class="detail-item">
               <i class="fas fa-user"></i>
               <span>${contractor.contactPerson.name} (${contractor.contactPerson.position})</span>
             </div>
-          `
-              : ""
-          }
-          ${
-            type === "future" && project.budget
-              ? `
-            <div class="info-item">
-              <i class="fas fa-money-bill"></i>
-              <span>$${project.budget.toLocaleString()}</span>
+            `
+                : ""
+            }
+          </div>
+
+          <div class="documents-section">
+            ${
+              project.calculations && project.calculations.length > 0
+                ? `
+            <div class="file-type">
+              <i class="fas fa-file-alt"></i>
+              <span>Project Calculations</span>
             </div>
-          `
-              : ""
-          }
+            <div class="calculations-preview">
+              ${this.renderFilePreviews(project.calculations, "calculation")}
+            </div>
+            `
+                : ""
+            }
+            
+            ${
+              project.photos && project.photos.length > 0
+                ? `
+            <div class="file-type">
+              <i class="fas fa-images"></i>
+              <span>Project Photos</span>
+            </div>
+            <div class="photos-preview">
+              ${this.renderFilePreviews(project.photos, "photo")}
+            </div>
+            `
+                : ""
+            }
+          </div>
         </div>
-        <div class="project-actions">
-          <button class="btn-action edit" onclick="event.stopPropagation(); this.editProject(${
-            project.id
-          }, '${type}')">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-action delete" onclick="event.stopPropagation(); this.deleteProject(${
-            project.id
-          }, '${type}')">
-            <i class="fas fa-trash"></i>
-          </button>
+
+        <div class="card-footer">
+          <div class="card-actions">
+            <button class="btn-icon edit-project" title="Edit Project">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon delete-project" title="Delete Project">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
         </div>
       </div>
     `;
       })
       .join("");
+
+    // Add event listeners for file previews and status changes
+    this.bindProjectCardEvents();
+  }
+
+  renderFilePreviews(files, type) {
+    return files
+      .map((file, index) => {
+        const isImage = file.type.startsWith("image/");
+        const fileIcon = this.getFileIcon(file.type);
+        const previewUrl = isImage ? URL.createObjectURL(file) : null;
+
+        return `
+        <div class="file-preview-item" data-file-index="${index}" data-file-type="${type}">
+          ${
+            isImage
+              ? `
+            <img src="${previewUrl}" alt="${file.name}">
+          `
+              : `
+            <div class="file-type-icon">
+              <i class="${fileIcon}"></i>
+            </div>
+          `
+          }
+          <div class="file-name">${file.name}</div>
+        </div>
+      `;
+      })
+      .join("");
+  }
+
+  getFileIcon(fileType) {
+    if (fileType.startsWith("image/")) return "fas fa-image";
+    if (fileType.includes("pdf")) return "fas fa-file-pdf";
+    if (fileType.includes("word")) return "fas fa-file-word";
+    if (fileType.includes("excel") || fileType.includes("spreadsheet"))
+      return "fas fa-file-excel";
+    return "fas fa-file";
+  }
+
+  bindProjectCardEvents() {
+    // Status change handler
+    this.container.querySelectorAll(".status-select").forEach((select) => {
+      select.addEventListener("change", (e) => {
+        const projectId = parseInt(e.target.dataset.projectId);
+        const newStatus = e.target.value;
+        const projectCard = e.target.closest(".project-card");
+        const projectsList = projectCard.closest(".projects-grid");
+        const projectType =
+          projectsList.id === "current-projects-list" ? "current" : "future";
+        this.updateProjectStatus(projectId, newStatus, projectType);
+      });
+    });
+
+    // Edit project handler
+    this.container.querySelectorAll(".edit-project").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const projectCard = button.closest(".project-card");
+        const projectId = parseInt(projectCard.dataset.id);
+
+        // Определяем тип проекта на основе родительского контейнера
+        const projectsList = projectCard.closest(".projects-grid");
+        const projectType =
+          projectsList.id === "current-projects-list" ? "current" : "future";
+        const project = this.getProjectById(projectId, projectType);
+
+        if (project) {
+          this.showProjectModal(projectType, project);
+        }
+      });
+    });
+
+    // Delete project handler
+    this.container.querySelectorAll(".delete-project").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const projectCard = button.closest(".project-card");
+        const projectId = parseInt(projectCard.dataset.id);
+
+        // Определяем тип проекта на основе родительского контейнера
+        const projectsList = projectCard.closest(".projects-grid");
+        const projectType =
+          projectsList.id === "current-projects-list" ? "current" : "future";
+        const project = this.getProjectById(projectId, projectType);
+
+        if (project) {
+          this.deleteProject(projectId, projectType);
+        }
+      });
+    });
+
+    // File preview handlers
+    this.container.querySelectorAll(".file-preview-item").forEach((item) => {
+      item.addEventListener("click", (e) => {
+        const fileIndex = parseInt(e.currentTarget.dataset.fileIndex);
+        const fileType = e.currentTarget.dataset.fileType;
+        const projectCard = e.currentTarget.closest(".project-card");
+        const projectId = parseInt(projectCard.dataset.id);
+        const project = this.getProjectById(projectId);
+
+        if (
+          project &&
+          project[fileType + "s"] &&
+          project[fileType + "s"][fileIndex]
+        ) {
+          const file = project[fileType + "s"][fileIndex];
+          this.showFilePreview(file);
+        }
+      });
+    });
+
+    // Close preview modal
+    const closePreviewBtn = this.container.querySelector(".close-preview");
+    if (closePreviewBtn) {
+      closePreviewBtn.addEventListener("click", () => this.closeFilePreview());
+    }
+  }
+
+  showFilePreview(file) {
+    const modal = this.container.querySelector(".preview-modal");
+    const previewContent = modal.querySelector(".preview-content img");
+
+    if (file.type.startsWith("image/")) {
+      previewContent.src = URL.createObjectURL(file);
+      modal.classList.add("active");
+    } else {
+      // For non-image files, you might want to show a different preview or download option
+      window.open(URL.createObjectURL(file), "_blank");
+    }
+  }
+
+  closeFilePreview() {
+    const modal = this.container.querySelector(".preview-modal");
+    const previewContent = modal.querySelector(".preview-content img");
+
+    if (previewContent.src) {
+      URL.revokeObjectURL(previewContent.src);
+    }
+
+    modal.classList.remove("active");
+  }
+
+  getProjectById(id, type) {
+    const projects =
+      type === "current" ? this.currentProjects : this.futureProjects;
+    return projects.find((p) => p.id === id);
+  }
+
+  updateProjectStatus(projectId, newStatus, type) {
+    const project = this.getProjectById(projectId, type);
+    if (!project) return;
+
+    if (type === "future" && newStatus === "move-to-current") {
+      // Перемещаем проект из future в current
+      this.futureProjects = this.futureProjects.filter(
+        (p) => p.id !== projectId
+      );
+      project.status = "in-progress"; // Устанавливаем начальный статус для текущего проекта
+      this.currentProjects.push(project);
+      this.renderProjects("future");
+      this.renderProjects("current");
+    } else {
+      // Обновляем статус в текущем разделе
+      project.status = newStatus;
+      this.renderProjects(type);
+    }
   }
 
   // Модальные окна
@@ -638,9 +859,9 @@ export default class ConstructionManager {
       form.elements.startDate.value = project.startDate;
       form.elements.endDate.value = project.endDate;
       form.elements.contractorId.value = project.contractorId;
-      form.elements.status.value = project.status;
-      if (type === "future") {
-        form.elements.budget.value = project.budget;
+      form.elements.estimatedCost.value = project.estimatedCost || "";
+      if (type === "future" && form.elements.budget) {
+        form.elements.budget.value = project.budget || "";
       }
       form.dataset.projectId = project.id;
 
@@ -649,9 +870,13 @@ export default class ConstructionManager {
       if (project.contactPersonId) {
         form.elements.contactPersonId.value = project.contactPersonId;
       }
+
+      // Отображаем существующие файлы
+      this.displayExistingFiles(project);
     } else {
       form.reset();
       delete form.dataset.projectId;
+      this.clearFilePreviews();
     }
 
     // Добавляем обработчик изменения подрядчика
@@ -659,150 +884,169 @@ export default class ConstructionManager {
       this.updateContactPersonSelect(e.target.value);
     });
 
+    // Добавляем обработчики для загрузки файлов
+    this.setupFileUploadHandlers();
+
     modal.classList.add("active");
   }
 
-  // Метод для заполнения списка подрядчиков
-  populateContractorSelect(select) {
-    // Очищаем текущий список
-    select.innerHTML = `
-        <option value="">Select Contractor</option>
-        ${this.contractors
-          .map(
-            (contractor) => `
-            <option value="${contractor.id}">
-                ${contractor.companyName} (${contractor.businessType})
-            </option>
-        `
-          )
-          .join("")}
-    `;
-  }
+  displayExistingFiles(project) {
+    const mediaPreview = this.container.querySelector("#media-preview");
+    const photosPreview = this.container.querySelector("#photos-preview");
 
-  // Метод для обновления списка контактных лиц при выборе подрядчика
-  updateContactPersonSelect(contractorId) {
-    const form = this.container.querySelector("#project-form");
-    const contactPersonSelect = form.elements.contactPersonId;
-
-    if (!contractorId) {
-      contactPersonSelect.innerHTML =
-        '<option value="">Select Contact Person</option>';
-      contactPersonSelect.disabled = true;
-      return;
-    }
-
-    const contractor = this.contractors.find(
-      (c) => c.id === parseInt(contractorId)
-    );
-    if (contractor && contractor.contactPerson) {
-      contactPersonSelect.innerHTML = `
-            <option value="${contractor.id}">
-                ${contractor.contactPerson.name} (${contractor.contactPerson.position})
-            </option>
-        `;
-      contactPersonSelect.disabled = false;
-    }
-  }
-
-  // Вспомогательные методы
-  generateRatingStars(rating) {
-    return Array(5)
-      .fill(0)
-      .map(
-        (_, index) => `
-      <i class="fa${index < rating ? "s" : "r"} fa-star"></i>
-    `
-      )
-      .join("");
-  }
-
-  getContractorName(id) {
-    const contractor = this.contractors.find((c) => c.id === id);
-    return contractor ? contractor.companyName : "Unknown";
-  }
-
-  getContactPersonName(id) {
-    for (const contractor of this.contractors) {
-      const employee = contractor.employees.find((e) => e.id === id);
-      if (employee) return employee.fullName;
-    }
-    return "Unknown";
-  }
-
-  updateContactPersons(contractorId) {
-    const select = this.container.querySelector(
-      'select[name="contactPersonId"]'
-    );
-    const contractor = this.contractors.find(
-      (c) => c.id === parseInt(contractorId)
-    );
-
-    if (contractor && select) {
-      select.innerHTML = contractor.employees
+    // Отображаем существующие медиа файлы
+    if (project.calculations && project.calculations.length > 0) {
+      mediaPreview.innerHTML = project.calculations
         .map(
-          (employee) => `
-        <option value="${employee.id}">${employee.fullName}</option>
+          (file, index) => `
+        <div class="file-preview-item" data-file-index="${index}">
+          <div class="file-type-icon">
+            <i class="${this.getFileIcon(file.type)}"></i>
+          </div>
+          <div class="file-name">${file.name}</div>
+          <button class="remove-file" data-file-index="${index}">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
       `
         )
         .join("");
+    } else {
+      mediaPreview.innerHTML = "";
+    }
+
+    // Отображаем существующие фотографии
+    if (project.photos && project.photos.length > 0) {
+      photosPreview.innerHTML = project.photos
+        .map(
+          (file, index) => `
+        <div class="file-preview-item" data-file-index="${index}">
+          <img src="${URL.createObjectURL(file)}" alt="${file.name}">
+          <div class="file-name">${file.name}</div>
+          <button class="remove-file" data-file-index="${index}">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `
+        )
+        .join("");
+    } else {
+      photosPreview.innerHTML = "";
     }
   }
 
-  closeModals() {
-    this.container.querySelectorAll(".modal").forEach((modal) => {
-      modal.classList.remove("active");
-    });
-  }
+  setupFileUploadHandlers() {
+    const mediaInput = this.container.querySelector(
+      'input[name="calculations"]'
+    );
+    const photosInput = this.container.querySelector('input[name="photos"]');
+    const mediaPreview = this.container.querySelector("#media-preview");
+    const photosPreview = this.container.querySelector("#photos-preview");
 
-  // Обработчики событий форм
-  handleContractorSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const contractorData = {
-      companyName: form.elements.companyName.value,
-      businessType: form.elements.businessType.value,
-      location: form.elements.location.value,
-      email: form.elements.email.value,
-      phone: form.elements.phone.value,
-      rating: parseInt(form.elements.rating.value),
-      contactPerson: {
-        name: form.elements.contactName.value,
-        position: form.elements.position.value,
-        phone: form.elements.contactPhone.value,
-        email: form.elements.contactEmail.value,
-      },
-      employees: [],
+    // Обработчик для медиа файлов
+    if (mediaInput) {
+      mediaInput.addEventListener("change", (e) => {
+        const files = Array.from(e.target.files);
+        files.forEach((file) => {
+          const preview = document.createElement("div");
+          preview.className = "file-preview-item";
+          preview.innerHTML = `
+            <div class="file-type-icon">
+              <i class="${this.getFileIcon(file.type)}"></i>
+            </div>
+            <div class="file-name">${file.name}</div>
+            <button class="remove-file">
+              <i class="fas fa-times"></i>
+            </button>
+          `;
+          mediaPreview.appendChild(preview);
+        });
+      });
+    }
+
+    // Обработчик для фотографий
+    if (photosInput) {
+      photosInput.addEventListener("change", (e) => {
+        const files = Array.from(e.target.files);
+        files.forEach((file) => {
+          const preview = document.createElement("div");
+          preview.className = "file-preview-item";
+          preview.innerHTML = `
+            <img src="${URL.createObjectURL(file)}" alt="${file.name}">
+            <div class="file-name">${file.name}</div>
+            <button class="remove-file">
+              <i class="fas fa-times"></i>
+            </button>
+          `;
+          photosPreview.appendChild(preview);
+        });
+      });
+    }
+
+    // Обработчики удаления файлов
+    const removeFile = (e) => {
+      if (e.target.closest(".remove-file")) {
+        const previewItem = e.target.closest(".file-preview-item");
+        previewItem.remove();
+      }
     };
 
-    if (form.dataset.contractorId) {
-      this.updateContractor(
-        parseInt(form.dataset.contractorId),
-        contractorData
-      );
-    } else {
-      this.createContractor(contractorData);
-    }
+    mediaPreview.addEventListener("click", removeFile);
+    photosPreview.addEventListener("click", removeFile);
+  }
 
-    this.closeModals();
+  clearFilePreviews() {
+    const mediaPreview = this.container.querySelector("#media-preview");
+    const photosPreview = this.container.querySelector("#photos-preview");
+    if (mediaPreview) mediaPreview.innerHTML = "";
+    if (photosPreview) photosPreview.innerHTML = "";
   }
 
   handleProjectSubmit(e) {
     e.preventDefault();
     const form = e.target;
+
+    // Проверяем наличие всех необходимых полей
+    const requiredFields = [
+      "projectName",
+      "location",
+      "startDate",
+      "endDate",
+      "contractorId",
+      "estimatedCost",
+    ];
+    for (const field of requiredFields) {
+      if (!form.elements[field]) {
+        console.error(`Missing required field: ${field}`);
+        return;
+      }
+    }
+
     const projectData = {
       name: form.elements.projectName.value,
       location: form.elements.location.value,
       startDate: form.elements.startDate.value,
       endDate: form.elements.endDate.value,
       contractorId: parseInt(form.elements.contractorId.value),
-      contactPersonId: parseInt(form.elements.contactPersonId.value),
-      status: form.elements.status.value,
+      contactPersonId: form.elements.contactPersonId
+        ? parseInt(form.elements.contactPersonId.value)
+        : null,
+      estimatedCost: parseFloat(form.elements.estimatedCost.value) || 0,
+      status:
+        form.elements.projectType.value === "future"
+          ? "planned"
+          : "in-progress",
+      calculations: form.elements.calculations
+        ? Array.from(form.elements.calculations.files)
+        : [],
+      photos: form.elements.photos
+        ? Array.from(form.elements.photos.files)
+        : [],
     };
 
     const projectType = form.elements.projectType.value;
-    if (projectType === "future") {
+    if (projectType === "future" && form.elements.budget) {
       projectData.budget = parseFloat(form.elements.budget.value) || 0;
-      projectData.files = Array.from(form.elements.files.files);
     }
 
     if (form.dataset.projectId) {
@@ -1052,5 +1296,129 @@ export default class ConstructionManager {
 
     // Перерендериваем список
     this.renderContractors();
+  }
+
+  // Метод для заполнения списка подрядчиков
+  populateContractorSelect(select) {
+    // Очищаем текущий список
+    select.innerHTML = `
+        <option value="">Select Contractor</option>
+        ${this.contractors
+          .map(
+            (contractor) => `
+            <option value="${contractor.id}">
+                ${contractor.companyName} (${contractor.businessType})
+            </option>
+        `
+          )
+          .join("")}
+    `;
+  }
+
+  // Метод для обновления списка контактных лиц при выборе подрядчика
+  updateContactPersonSelect(contractorId) {
+    const form = this.container.querySelector("#project-form");
+    const contactPersonSelect = form.elements.contactPersonId;
+
+    if (!contractorId) {
+      contactPersonSelect.innerHTML =
+        '<option value="">Select Contact Person</option>';
+      contactPersonSelect.disabled = true;
+      return;
+    }
+
+    const contractor = this.contractors.find(
+      (c) => c.id === parseInt(contractorId)
+    );
+    if (contractor && contractor.contactPerson) {
+      contactPersonSelect.innerHTML = `
+            <option value="${contractor.id}">
+                ${contractor.contactPerson.name} (${contractor.contactPerson.position})
+            </option>
+        `;
+      contactPersonSelect.disabled = false;
+    }
+  }
+
+  // Вспомогательные методы
+  generateRatingStars(rating) {
+    return Array(5)
+      .fill(0)
+      .map(
+        (_, index) => `
+      <i class="fa${index < rating ? "s" : "r"} fa-star"></i>
+    `
+      )
+      .join("");
+  }
+
+  getContractorName(id) {
+    const contractor = this.contractors.find((c) => c.id === id);
+    return contractor ? contractor.companyName : "Unknown";
+  }
+
+  getContactPersonName(id) {
+    for (const contractor of this.contractors) {
+      const employee = contractor.employees.find((e) => e.id === id);
+      if (employee) return employee.fullName;
+    }
+    return "Unknown";
+  }
+
+  updateContactPersons(contractorId) {
+    const select = this.container.querySelector(
+      'select[name="contactPersonId"]'
+    );
+    const contractor = this.contractors.find(
+      (c) => c.id === parseInt(contractorId)
+    );
+
+    if (contractor && select) {
+      select.innerHTML = contractor.employees
+        .map(
+          (employee) => `
+        <option value="${employee.id}">${employee.fullName}</option>
+      `
+        )
+        .join("");
+    }
+  }
+
+  closeModals() {
+    this.container.querySelectorAll(".modal").forEach((modal) => {
+      modal.classList.remove("active");
+    });
+  }
+
+  // Обработчики событий форм
+  handleContractorSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const contractorData = {
+      companyName: form.elements.companyName.value,
+      businessType: form.elements.businessType.value,
+      location: form.elements.location.value,
+      email: form.elements.email.value,
+      phone: form.elements.phone.value,
+      rating: parseInt(form.elements.rating.value),
+      contactPerson: {
+        name: form.elements.contactName.value,
+        position: form.elements.position.value,
+        phone: form.elements.contactPhone.value,
+        email: form.elements.contactEmail.value,
+      },
+      employees: [],
+    };
+
+    if (form.dataset.contractorId) {
+      this.updateContractor(
+        parseInt(form.dataset.contractorId),
+        contractorData
+      );
+    } else {
+      this.createContractor(contractorData);
+    }
+
+    this.closeModals();
   }
 }
