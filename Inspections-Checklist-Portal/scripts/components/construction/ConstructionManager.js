@@ -200,6 +200,28 @@ export default class ConstructionManager {
       .querySelectorAll(".construction-section")
       .forEach((s) => s.classList.remove("active"));
 
+    // Hide all filter groups
+    this.container.querySelectorAll(".filter-group").forEach((group) => {
+      group.style.display = "none";
+    });
+
+    // Show filters for the active tab
+    switch (tab) {
+      case "contractors":
+        this.container.querySelector("#contractors-filters").style.display =
+          "flex";
+        break;
+      case "current-projects":
+        this.container.querySelector(
+          "#current-projects-filters"
+        ).style.display = "flex";
+        break;
+      case "future-projects":
+        this.container.querySelector("#future-projects-filters").style.display =
+          "flex";
+        break;
+    }
+
     this.container.querySelector(`[data-tab="${tab}"]`).classList.add("active");
     this.container.querySelector(`#${tab}-section`).classList.add("active");
 
@@ -1439,6 +1461,14 @@ export default class ConstructionManager {
   }
 
   setupSearchFilters() {
+    // Contractors filters
+    const contractorSearch = this.container.querySelector("#contractor-search");
+    const businessTypeFilter = this.container.querySelector(
+      "#business-type-filter"
+    );
+    const ratingFilter = this.container.querySelector("#rating-filter");
+    const resetFilters = this.container.querySelector("#reset-filters");
+
     // Current Projects filters
     const currentProjectSearch = this.container.querySelector(
       "#current-project-search"
@@ -1448,6 +1478,12 @@ export default class ConstructionManager {
     );
     const currentDateFilter = this.container.querySelector(
       "#current-date-filter"
+    );
+    const currentTimeRange = this.container.querySelector(
+      "#current-time-range"
+    );
+    const resetCurrentFilters = this.container.querySelector(
+      "#reset-current-filters"
     );
 
     // Future Projects filters
@@ -1460,6 +1496,30 @@ export default class ConstructionManager {
     const futureDateFilter = this.container.querySelector(
       "#future-date-filter"
     );
+    const futureTimeRange = this.container.querySelector("#future-time-range");
+    const resetFutureFilters = this.container.querySelector(
+      "#reset-future-filters"
+    );
+
+    // Add event listeners for contractors filters
+    if (contractorSearch) {
+      contractorSearch.addEventListener("input", () =>
+        this.filterContractors()
+      );
+    }
+    if (businessTypeFilter) {
+      businessTypeFilter.addEventListener("change", () =>
+        this.filterContractors()
+      );
+    }
+    if (ratingFilter) {
+      ratingFilter.addEventListener("change", () => this.filterContractors());
+    }
+    if (resetFilters) {
+      resetFilters.addEventListener("click", () =>
+        this.resetContractorFilters()
+      );
+    }
 
     // Add event listeners for current projects filters
     if (currentProjectSearch) {
@@ -1475,6 +1535,16 @@ export default class ConstructionManager {
     if (currentDateFilter) {
       currentDateFilter.addEventListener("change", () =>
         this.filterProjects("current")
+      );
+    }
+    if (currentTimeRange) {
+      currentTimeRange.addEventListener("change", () =>
+        this.filterProjects("current")
+      );
+    }
+    if (resetCurrentFilters) {
+      resetCurrentFilters.addEventListener("click", () =>
+        this.resetProjectFilters("current")
       );
     }
 
@@ -1494,19 +1564,74 @@ export default class ConstructionManager {
         this.filterProjects("future")
       );
     }
+    if (futureTimeRange) {
+      futureTimeRange.addEventListener("change", () =>
+        this.filterProjects("future")
+      );
+    }
+    if (resetFutureFilters) {
+      resetFutureFilters.addEventListener("click", () =>
+        this.resetProjectFilters("future")
+      );
+    }
   }
 
   filterProjects(type) {
-    const projectSearch = document
-      .getElementById(`${type}-project-search`)
-      .value.toLowerCase();
-    const locationSearch = document
-      .getElementById(`${type}-location-search`)
-      .value.toLowerCase();
-    const dateFilter = document.getElementById(`${type}-date-filter`).value;
+    const projectSearch =
+      document.getElementById(`${type}-project-search`)?.value.toLowerCase() ||
+      "";
+    const locationSearch =
+      document.getElementById(`${type}-location-search`)?.value.toLowerCase() ||
+      "";
+    const dateFilter =
+      document.getElementById(`${type}-date-filter`)?.value || "";
+    const timeRange =
+      document.getElementById(`${type}-time-range`)?.value || "all";
 
     const projects =
       type === "current" ? this.currentProjects : this.futureProjects;
+
+    const now = new Date();
+    const getDateRange = (range, type) => {
+      const date = new Date();
+      if (type === "current") {
+        // For current projects, look back in time
+        switch (range) {
+          case "week":
+            date.setDate(date.getDate() - 7);
+            return { start: date, end: now };
+          case "month":
+            date.setMonth(date.getMonth() - 1);
+            return { start: date, end: now };
+          case "year":
+            date.setFullYear(date.getFullYear() - 1);
+            return { start: date, end: now };
+          default:
+            return null;
+        }
+      } else {
+        // For future projects, look forward in time
+        switch (range) {
+          case "week":
+            date.setDate(date.getDate() + 7);
+            return { start: now, end: date };
+          case "month":
+            date.setMonth(date.getMonth() + 1);
+            return { start: now, end: date };
+          case "halfyear":
+            date.setMonth(date.getMonth() + 6);
+            return { start: now, end: date };
+          case "year":
+            date.setFullYear(date.getFullYear() + 1);
+            return { start: now, end: date };
+          default:
+            return null;
+        }
+      }
+    };
+
+    const dateRange = getDateRange(timeRange, type);
+
     const filteredProjects = projects.filter((project) => {
       const matchesProjectName = project.name
         .toLowerCase()
@@ -1514,12 +1639,39 @@ export default class ConstructionManager {
       const matchesLocation = project.location
         .toLowerCase()
         .includes(locationSearch);
-      const matchesDate = !dateFilter || project.date === dateFilter;
+      const matchesDate = !dateFilter || project.startDate === dateFilter;
 
-      return matchesProjectName && matchesLocation && matchesDate;
+      let matchesTimeRange = true;
+      if (dateRange) {
+        const projectDate = new Date(project.startDate);
+        matchesTimeRange =
+          projectDate >= dateRange.start && projectDate <= dateRange.end;
+      }
+
+      return (
+        matchesProjectName && matchesLocation && matchesDate && matchesTimeRange
+      );
     });
 
     this.renderProjects(type, filteredProjects);
+  }
+
+  resetProjectFilters(type) {
+    const projectSearch = this.container.querySelector(
+      `#${type}-project-search`
+    );
+    const locationSearch = this.container.querySelector(
+      `#${type}-location-search`
+    );
+    const dateFilter = this.container.querySelector(`#${type}-date-filter`);
+    const timeRange = this.container.querySelector(`#${type}-time-range`);
+
+    if (projectSearch) projectSearch.value = "";
+    if (locationSearch) locationSearch.value = "";
+    if (dateFilter) dateFilter.value = "";
+    if (timeRange) timeRange.value = "all";
+
+    this.filterProjects(type);
   }
 
   getStatusOptions(type, project) {
@@ -1545,5 +1697,13 @@ export default class ConstructionManager {
             }>On Hold</option>
         `;
     }
+  }
+
+  filterContractors() {
+    // Implementation of filterContractors method
+  }
+
+  resetContractorFilters() {
+    // Implementation of resetContractorFilters method
   }
 }

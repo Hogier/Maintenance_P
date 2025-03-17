@@ -1,6 +1,8 @@
 .construction-container {
   padding: 20px;
   height: 100%;
+  position: relative;
+  padding-top: 80px; /* Add padding to account for fixed header */
 }
 
 .construction-header {
@@ -9,10 +11,20 @@
 
 .construction-nav {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
   padding: 0 20px;
   margin-bottom: 20px;
   border-bottom: 1px solid #e1e1e1;
+  position: fixed;
+  top: 0;
+  left: 250px; /* Width of the sidebar */
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  z-index: 100;
+  height: 60px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .nav-tab {
@@ -51,15 +63,36 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
+  padding-top: 5px;
+  position: sticky;
+  top: 60px;
+  z-index: 90;
+  border-bottom: 1px solid #e1e1e1;
+  padding-bottom: 12px;
 }
 
 .section-header h2 {
   margin: 0;
   color: #2c3e50;
   font-size: 1.5rem;
+}
+
+/* Add responsive styles for section header */
+@media (max-width: 768px) {
+  .section-header {
+    padding-top: 3px;
+    top: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-header {
+    padding-top: 3px;
+    top: 120px;
+  }
 }
 
 /* Contractor Card Styles */
@@ -984,17 +1017,16 @@ select option:hover {
 
 /* Стили для панели поиска и фильтров */
 .search-filters-panel {
-  background: white;
+  background: #fff;
   border-radius: 8px;
   padding: 20px;
-  margin: 20px 0;
+  margin-bottom: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e1e1e1;
 }
 
 .search-box {
+  margin-bottom: 15px;
   position: relative;
-  margin-bottom: 20px;
 }
 
 .search-box i {
@@ -1002,70 +1034,90 @@ select option:hover {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #95a5a6;
+  color: #666;
 }
 
 .search-box input {
   width: 100%;
-  padding: 12px 12px 12px 35px;
-  border: 1px solid #e1e1e1;
+  padding: 10px 10px 10px 35px;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 14px;
   transition: all 0.3s ease;
 }
 
 .search-box input:focus {
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
   outline: none;
 }
 
 .filters {
   display: flex;
   gap: 15px;
-  align-items: flex-end;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .filter-group {
-  flex: 1;
-  min-width: 200px;
-}
-
-.filter-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: #7f8c8d;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.filter-group select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #e1e1e1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
   border-radius: 6px;
-  background: white;
-  cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.95rem;
-}
-
-.filter-group select:hover {
-  border-color: #bdc3c7;
-}
-
-.filter-group select:focus {
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-  outline: none;
-}
-
-#reset-filters {
-  height: 41px;
-  padding: 0 20px;
   white-space: nowrap;
-  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.time-range-select {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.time-range-select:hover {
+  background-color: #e0e0e0;
+}
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.btn-secondary i {
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .search-filters-panel {
+    padding: 15px;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* Анимация для фильтрованных элементов */
@@ -1197,4 +1249,138 @@ select option:hover {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+/* Add styles for filter groups in fixed header */
+.nav-filters {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 0;
+  max-width: 60%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3498db #f8f9fa;
+}
+
+.nav-filters::-webkit-scrollbar {
+  height: 4px;
+}
+
+.nav-filters::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 2px;
+}
+
+.nav-filters::-webkit-scrollbar-thumb {
+  background: #3498db;
+  border-radius: 2px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Responsive styles for header and filters */
+@media (max-width: 1024px) {
+  .construction-nav {
+    left: 250px; /* Keep the same left offset as desktop */
+    flex-direction: column;
+    height: auto;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.98); /* Slightly more opaque background */
+  }
+
+  .nav-tabs {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  .nav-filters {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 150px;
+    justify-content: center;
+  }
+
+  .construction-container {
+    padding-top: 120px;
+    padding-left: 250px; /* Add left padding to match sidebar width */
+  }
+}
+
+@media (max-width: 768px) {
+  .construction-nav {
+    left: 250px; /* Keep the same left offset */
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.98);
+  }
+
+  .nav-tabs {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .nav-tab {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+
+  .nav-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .filter-group {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .construction-container {
+    padding-top: 180px;
+    padding-left: 250px; /* Keep left padding */
+  }
+}
+
+@media (max-width: 480px) {
+  .construction-nav {
+    left: 250px; /* Keep the same left offset */
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.98);
+  }
+
+  .nav-tab {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .filter-group {
+    padding: 6px 10px;
+  }
+
+  .filter-group input,
+  .filter-group select {
+    font-size: 0.85rem;
+  }
+
+  .construction-container {
+    padding-top: 200px;
+    padding-left: 250px; /* Keep left padding */
+  }
 }

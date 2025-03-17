@@ -294,3 +294,230 @@
   color: #7f8c8d;
   padding: 20px;
 }
+
+/* Responsive styles for calendar */
+@media (max-width: 1024px) {
+  .calendar-wrapper {
+    max-width: 100%;
+  }
+
+  .calendar-controls {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .calendar-btn {
+    padding: 8px 12px;
+  }
+
+  .calendar-header h2 {
+    font-size: 18px;
+  }
+
+  .calendar-weekdays div {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .calendar-day {
+    min-height: 100px;
+    padding: 8px;
+  }
+
+  .day-number {
+    font-size: 14px;
+  }
+
+  .event-item {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .event-time {
+    font-size: 12px;
+  }
+
+  .event-type {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-grid {
+    border-radius: 4px;
+  }
+
+  .calendar-weekdays div {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .calendar-day {
+    min-height: 80px;
+    padding: 6px;
+  }
+
+  .day-number {
+    font-size: 12px;
+  }
+
+  .event-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .calendar-events {
+    margin-top: 15px;
+    padding: 15px;
+  }
+
+  .event-item {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .event-time {
+    font-size: 11px;
+  }
+
+  .event-type {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+
+  /* Modal adjustments */
+  .modal-content {
+    width: 95%;
+    margin: 10px auto;
+    padding: 15px;
+  }
+
+  .modal-header {
+    padding: 15px;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .modal-event-item {
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+
+  .modal-event-time {
+    min-width: 70px;
+    font-size: 12px;
+  }
+
+  .modal-event-title {
+    font-size: 14px;
+  }
+
+  .modal-event-description {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-controls {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .calendar-btn {
+    width: 100%;
+    max-width: 200px;
+    margin: 5px 0;
+  }
+
+  .calendar-header h2 {
+    font-size: 16px;
+    margin: 10px 0;
+  }
+
+  .calendar-weekdays div {
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  .calendar-day {
+    min-height: 60px;
+    padding: 4px;
+  }
+
+  .day-number {
+    font-size: 11px;
+  }
+
+  .event-dot {
+    width: 4px;
+    height: 4px;
+  }
+
+  .calendar-events {
+    margin-top: 10px;
+    padding: 10px;
+  }
+
+  .event-item {
+    padding: 4px;
+    font-size: 11px;
+  }
+
+  .event-time {
+    font-size: 10px;
+  }
+
+  .event-type {
+    font-size: 9px;
+    padding: 1px 3px;
+  }
+
+  /* Modal adjustments for very small screens */
+  .modal-content {
+    margin: 5px auto;
+    padding: 10px;
+  }
+
+  .modal-header {
+    padding: 10px;
+  }
+
+  .modal-header h2 {
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 10px;
+  }
+
+  .modal-event-item {
+    padding: 8px;
+    margin-bottom: 6px;
+  }
+
+  .modal-event-time {
+    min-width: 60px;
+    font-size: 11px;
+  }
+
+  .modal-event-title {
+    font-size: 12px;
+  }
+
+  .modal-event-description {
+    font-size: 11px;
+  }
+
+  .modal-actions button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
