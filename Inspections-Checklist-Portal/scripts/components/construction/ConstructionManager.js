@@ -28,26 +28,50 @@ export default class ConstructionManager {
     });
 
     // Add buttons
-    this.container
-      .querySelector("#add-contractor")
-      .addEventListener("click", () => this.showContractorModal());
-    this.container
-      .querySelector("#add-current-project")
-      .addEventListener("click", () => this.showProjectModal("current"));
-    this.container
-      .querySelector("#add-future-project")
-      .addEventListener("click", () => this.showProjectModal("future"));
+    const addContractorBtn = this.container.querySelector("#add-contractor");
+    const addCurrentProjectBtn = this.container.querySelector(
+      "#add-current-project"
+    );
+    const addFutureProjectBtn = this.container.querySelector(
+      "#add-future-project"
+    );
+
+    if (addContractorBtn) {
+      addContractorBtn.addEventListener("click", () =>
+        this.showContractorModal()
+      );
+    }
+    if (addCurrentProjectBtn) {
+      addCurrentProjectBtn.addEventListener("click", () =>
+        this.showProjectModal("current")
+      );
+    }
+    if (addFutureProjectBtn) {
+      addFutureProjectBtn.addEventListener("click", () =>
+        this.showProjectModal("future")
+      );
+    }
 
     // Form submissions
-    this.container
-      .querySelector("#contractor-form")
-      .addEventListener("submit", (e) => this.handleContractorSubmit(e));
-    this.container
-      .querySelector("#employee-form")
-      .addEventListener("submit", (e) => this.handleEmployeeSubmit(e));
-    this.container
-      .querySelector("#project-form")
-      .addEventListener("submit", (e) => this.handleProjectSubmit(e));
+    const contractorForm = this.container.querySelector("#contractor-form");
+    const employeeForm = this.container.querySelector("#employee-form");
+    const projectForm = this.container.querySelector("#project-form");
+
+    if (contractorForm) {
+      contractorForm.addEventListener("submit", (e) =>
+        this.handleContractorSubmit(e)
+      );
+    }
+    if (employeeForm) {
+      employeeForm.addEventListener("submit", (e) =>
+        this.handleEmployeeSubmit(e)
+      );
+    }
+    if (projectForm) {
+      projectForm.addEventListener("submit", (e) =>
+        this.handleProjectSubmit(e)
+      );
+    }
 
     // Rating system
     this.initializeRatingSystem();
@@ -507,9 +531,10 @@ export default class ConstructionManager {
     ];
   }
 
-  renderProjects(type) {
+  renderProjects(type, projectsToRender = null) {
     const projects =
-      type === "current" ? this.currentProjects : this.futureProjects;
+      projectsToRender ||
+      (type === "current" ? this.currentProjects : this.futureProjects);
     const container = this.container.querySelector(`#${type}-projects-list`);
     if (!container) return;
 
@@ -519,125 +544,111 @@ export default class ConstructionManager {
           (c) => c.id === project.contractorId
         );
         return `
-      <div class="project-card" data-id="${project.id}">
-        <div class="card-header">
-          <h3>${project.name}</h3>
-          <div class="status-badge">
-            <select class="status-select" data-project-id="${project.id}">
-              ${
-                type === "future"
-                  ? `
-                <option value="planned" ${
-                  project.status === "planned" ? "selected" : ""
-                }>Planned</option>
-                <option value="move-to-current" ${
-                  project.status === "move-to-current" ? "selected" : ""
-                }>Move to Current Projects</option>
-              `
-                  : `
-                <option value="in-progress" ${
-                  project.status === "in-progress" ? "selected" : ""
-                }>In Progress</option>
-                <option value="completed" ${
-                  project.status === "completed" ? "selected" : ""
-                }>Completed</option>
-                <option value="on-hold" ${
-                  project.status === "on-hold" ? "selected" : ""
-                }>On Hold</option>
-              `
-              }
-            </select>
-          </div>
-        </div>
-        
-        <div class="card-body">
-          <div class="project-details">
-            <div class="detail-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>${project.location}</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-calendar"></i>
-              <span>${new Date(
-                project.startDate
-              ).toLocaleDateString()} - ${new Date(
+            <div class="project-card" data-id="${project.id}">
+                <div class="card-header">
+                    <h3>${project.name}</h3>
+                    <div class="status-badge">
+                        <select class="status-select ${
+                          project.status
+                        }" data-project-id="${project.id}">
+                            ${this.getStatusOptions(type, project)}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="project-details">
+                        <div class="detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${project.location}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>${new Date(
+                              project.startDate
+                            ).toLocaleDateString()} - ${new Date(
           project.endDate
         ).toLocaleDateString()}</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-dollar-sign"></i>
-              <span>${
-                project.estimatedCost
-                  ? `$${project.estimatedCost.toLocaleString()}`
-                  : "Not specified"
-              }</span>
-            </div>
-            <div class="detail-item">
-              <i class="fas fa-building"></i>
-              <span>${
-                contractor ? contractor.companyName : "Unknown Contractor"
-              }</span>
-            </div>
-            ${
-              contractor && contractor.contactPerson
-                ? `
-            <div class="detail-item">
-              <i class="fas fa-user"></i>
-              <span>${contractor.contactPerson.name} (${contractor.contactPerson.position})</span>
-            </div>
-            `
-                : ""
-            }
-          </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span>${
+                              project.estimatedCost
+                                ? `$${project.estimatedCost.toLocaleString()}`
+                                : "Not specified"
+                            }</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-building"></i>
+                            <span>${
+                              contractor
+                                ? contractor.companyName
+                                : "Unknown Contractor"
+                            }</span>
+                        </div>
+                        ${
+                          contractor && contractor.contactPerson
+                            ? `
+                        <div class="detail-item">
+                            <i class="fas fa-user"></i>
+                            <span>${contractor.contactPerson.name} (${contractor.contactPerson.position})</span>
+                        </div>
+                        `
+                            : ""
+                        }
+                    </div>
 
-          <div class="documents-section">
-            ${
-              project.calculations && project.calculations.length > 0
-                ? `
-            <div class="file-type">
-              <i class="fas fa-file-alt"></i>
-              <span>Project Calculations</span>
-            </div>
-            <div class="calculations-preview">
-              ${this.renderFilePreviews(project.calculations, "calculation")}
-            </div>
-            `
-                : ""
-            }
-            
-            ${
-              project.photos && project.photos.length > 0
-                ? `
-            <div class="file-type">
-              <i class="fas fa-images"></i>
-              <span>Project Photos</span>
-            </div>
-            <div class="photos-preview">
-              ${this.renderFilePreviews(project.photos, "photo")}
-            </div>
-            `
-                : ""
-            }
-          </div>
-        </div>
+                    <div class="documents-section">
+                        ${
+                          project.calculations &&
+                          project.calculations.length > 0
+                            ? `
+                        <div class="file-type">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Project Calculations</span>
+                        </div>
+                        <div class="calculations-preview">
+                            ${this.renderFilePreviews(
+                              project.calculations,
+                              "calculation"
+                            )}
+                        </div>
+                        `
+                            : ""
+                        }
+                        
+                        ${
+                          project.photos && project.photos.length > 0
+                            ? `
+                        <div class="file-type">
+                            <i class="fas fa-images"></i>
+                            <span>Project Photos</span>
+                        </div>
+                        <div class="photos-preview">
+                            ${this.renderFilePreviews(project.photos, "photo")}
+                        </div>
+                        `
+                            : ""
+                        }
+                    </div>
+                </div>
 
-        <div class="card-footer">
-          <div class="card-actions">
-            <button class="btn-icon edit-project" title="Edit Project">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn-icon delete-project" title="Delete Project">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
+                <div class="card-footer">
+                    <div class="card-actions">
+                        <button class="btn-icon edit-project" title="Edit Project">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete-project" title="Delete Project">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
       })
       .join("");
 
-    // Add event listeners for file previews and status changes
-    this.bindProjectCardEvents();
+    this.bindProjectCardEvents(type);
   }
 
   renderFilePreviews(files, type) {
@@ -676,7 +687,7 @@ export default class ConstructionManager {
     return "fas fa-file";
   }
 
-  bindProjectCardEvents() {
+  bindProjectCardEvents(type) {
     // Status change handler
     this.container.querySelectorAll(".status-select").forEach((select) => {
       select.addEventListener("change", (e) => {
@@ -686,7 +697,12 @@ export default class ConstructionManager {
         const projectsList = projectCard.closest(".projects-grid");
         const projectType =
           projectsList.id === "current-projects-list" ? "current" : "future";
-        this.updateProjectStatus(projectId, newStatus, projectType);
+
+        // Получаем проект из соответствующего массива
+        const project = this.getProjectById(projectId, projectType);
+        if (project) {
+          this.updateProjectStatus(projectId, newStatus, projectType);
+        }
       });
     });
 
@@ -1420,5 +1436,114 @@ export default class ConstructionManager {
     }
 
     this.closeModals();
+  }
+
+  setupSearchFilters() {
+    // Current Projects filters
+    const currentProjectSearch = this.container.querySelector(
+      "#current-project-search"
+    );
+    const currentLocationSearch = this.container.querySelector(
+      "#current-location-search"
+    );
+    const currentDateFilter = this.container.querySelector(
+      "#current-date-filter"
+    );
+
+    // Future Projects filters
+    const futureProjectSearch = this.container.querySelector(
+      "#future-project-search"
+    );
+    const futureLocationSearch = this.container.querySelector(
+      "#future-location-search"
+    );
+    const futureDateFilter = this.container.querySelector(
+      "#future-date-filter"
+    );
+
+    // Add event listeners for current projects filters
+    if (currentProjectSearch) {
+      currentProjectSearch.addEventListener("input", () =>
+        this.filterProjects("current")
+      );
+    }
+    if (currentLocationSearch) {
+      currentLocationSearch.addEventListener("input", () =>
+        this.filterProjects("current")
+      );
+    }
+    if (currentDateFilter) {
+      currentDateFilter.addEventListener("change", () =>
+        this.filterProjects("current")
+      );
+    }
+
+    // Add event listeners for future projects filters
+    if (futureProjectSearch) {
+      futureProjectSearch.addEventListener("input", () =>
+        this.filterProjects("future")
+      );
+    }
+    if (futureLocationSearch) {
+      futureLocationSearch.addEventListener("input", () =>
+        this.filterProjects("future")
+      );
+    }
+    if (futureDateFilter) {
+      futureDateFilter.addEventListener("change", () =>
+        this.filterProjects("future")
+      );
+    }
+  }
+
+  filterProjects(type) {
+    const projectSearch = document
+      .getElementById(`${type}-project-search`)
+      .value.toLowerCase();
+    const locationSearch = document
+      .getElementById(`${type}-location-search`)
+      .value.toLowerCase();
+    const dateFilter = document.getElementById(`${type}-date-filter`).value;
+
+    const projects =
+      type === "current" ? this.currentProjects : this.futureProjects;
+    const filteredProjects = projects.filter((project) => {
+      const matchesProjectName = project.name
+        .toLowerCase()
+        .includes(projectSearch);
+      const matchesLocation = project.location
+        .toLowerCase()
+        .includes(locationSearch);
+      const matchesDate = !dateFilter || project.date === dateFilter;
+
+      return matchesProjectName && matchesLocation && matchesDate;
+    });
+
+    this.renderProjects(type, filteredProjects);
+  }
+
+  getStatusOptions(type, project) {
+    if (type === "future") {
+      return `
+            <option value="planned" ${
+              project.status === "planned" ? "selected" : ""
+            }>Planned</option>
+            <option value="move-to-current" ${
+              project.status === "move-to-current" ? "selected" : ""
+            }>Move to Current Projects</option>
+        `;
+    } else {
+      return `
+            <option value="in-progress" ${
+              project.status === "in-progress" ? "selected" : ""
+            }>In Progress</option>
+            <option value="completed" ${
+              project.status === "completed" ? "selected" : ""
+            }>Completed</option>
+            <option value="on-hold" ${
+              project.status === "on-hold" ? "selected" : ""
+            }>On Hold</option>
+        `;
+    }
   }
 }
