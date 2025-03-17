@@ -51,7 +51,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .section-header h2 {
@@ -310,72 +312,56 @@
 /* Status Badge Styles */
 .status-badge {
   position: relative;
+  min-width: 150px;
+  text-align: right;
+  margin-top: 0;
 }
 
 .status-select {
   padding: 8px 16px;
-  padding-left: 32px;
   border-radius: 20px;
   border: none;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
-  min-width: 120px;
-  position: relative;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 16px;
+  width: 100%;
+  text-align: center;
 }
 
-.status-select::before {
-  content: "";
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.status-select[value="planned"] {
+/* Status colors */
+.status-select.planned {
   background-color: #e3f2fd;
   color: #1976d2;
 }
 
-.status-select[value="planned"]::before {
-  background-color: #1976d2;
-}
-
-.status-select[value="in-progress"] {
+.status-select.in-progress {
   background-color: #fff3e0;
   color: #f57c00;
 }
 
-.status-select[value="in-progress"]::before {
-  background-color: #f57c00;
-}
-
-.status-select[value="completed"] {
+.status-select.completed {
   background-color: #e8f5e9;
   color: #388e3c;
 }
 
-.status-select[value="completed"]::before {
-  background-color: #388e3c;
+.status-select.on-hold {
+  background-color: #ffebee;
+  color: #d32f2f;
 }
 
-.status-select[value="on-hold"] {
-  background-color: #fce4ec;
-  color: #c2185b;
+.status-select.move-to-current {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
 }
 
-.status-select[value="on-hold"]::before {
-  background-color: #c2185b;
+.status-select:hover {
+  opacity: 0.9;
+}
+
+.status-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Улучшенные стили для рейтинга в карточке */
@@ -414,13 +400,16 @@
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   padding: 24px;
-  margin-bottom: 24px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
   border: 1px solid #e0e0e0;
   width: 100%;
   max-width: 800px;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-self: start;
 }
 
 .project-card:hover {
@@ -452,6 +441,8 @@
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid #eee;
+  position: relative;
+  gap: 20px;
 }
 
 .card-header h3 {
@@ -459,10 +450,14 @@
   font-size: 1.4rem;
   color: #333;
   font-weight: 600;
+  flex: 1;
 }
 
 .status-badge {
   position: relative;
+  min-width: 150px;
+  text-align: right;
+  margin-top: 0;
 }
 
 .status-select {
@@ -473,27 +468,43 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
-  min-width: 120px;
+  width: 100%;
+  text-align: center;
 }
 
-.status-select[value="planned"] {
-  background: #e3f2fd;
+/* Status colors */
+.status-select.planned {
+  background-color: #e3f2fd;
   color: #1976d2;
 }
 
-.status-select[value="in-progress"] {
-  background: #fff3e0;
+.status-select.in-progress {
+  background-color: #fff3e0;
   color: #f57c00;
 }
 
-.status-select[value="completed"] {
-  background: #e8f5e9;
+.status-select.completed {
+  background-color: #e8f5e9;
   color: #388e3c;
 }
 
-.status-select[value="on-hold"] {
-  background: #fce4ec;
-  color: #c2185b;
+.status-select.on-hold {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.status-select.move-to-current {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.status-select:hover {
+  opacity: 0.9;
+}
+
+.status-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 .card-body {
@@ -737,6 +748,28 @@
     width: 100px;
     height: 100px;
   }
+
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-group {
+    flex-direction: column;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .date-input {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -744,6 +777,11 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .status-badge {
+    width: 100%;
+    text-align: left;
   }
 
   .status-select {
@@ -763,6 +801,7 @@
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 24px;
   padding: 20px;
+  align-items: start;
 }
 
 /* Modal Styles */
@@ -1117,4 +1156,45 @@ select option:hover {
 
 .remove-file i {
   font-size: 0.75rem;
+}
+
+.search-filters {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-group {
+  display: flex;
+  gap: 12px;
+}
+
+.search-input {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.date-input {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
 }

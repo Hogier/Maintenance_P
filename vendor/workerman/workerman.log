@@ -3,3 +3,5 @@
 2025-03-16 20:43:36 pid:91924 Workerman[websocket_server.php] already running
 2025-03-16 20:49:37 pid:92469 Workerman[websocket_server.php] start in DEBUG mode
 2025-03-16 20:49:37 pid:92469 Workerman[websocket_server.php] already running
+2025-03-17 00:41:28 pid:91519 Workerman[websocket_server.php] stopping ...
+2025-03-17 00:41:28 pid:91519 Workerman[websocket_server.php] has been stopped
