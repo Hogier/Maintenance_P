@@ -1,3 +1,5 @@
+import MobileNav from "./mobileNav.js";
+
 class PortalManager {
   constructor() {
     this.currentPage = "dashboard";
@@ -67,3 +69,6 @@ class PortalManager {
 document.addEventListener("DOMContentLoaded", () => {
   window.portalManager = new PortalManager();
 });
+
+// Initialize mobile navigation
+const mobileNav = new MobileNav();
