@@ -17,7 +17,7 @@ export default class ConstructionManager {
   init() {
     this.bindEvents();
     this.loadData();
-    // Добавляем вывод в консоль для отладки
+    this.setupSearchFilters();
     console.log("ConstructionManager initialized");
   }
 
@@ -1577,101 +1577,137 @@ export default class ConstructionManager {
   }
 
   filterProjects(type) {
-    const projectSearch =
-      document.getElementById(`${type}-project-search`)?.value.toLowerCase() ||
-      "";
-    const locationSearch =
-      document.getElementById(`${type}-location-search`)?.value.toLowerCase() ||
-      "";
-    const dateFilter =
-      document.getElementById(`${type}-date-filter`)?.value || "";
-    const timeRange =
-      document.getElementById(`${type}-time-range`)?.value || "all";
+    try {
+      const projectSearch =
+        document
+          .getElementById(`${type}-project-search`)
+          ?.value?.toLowerCase() || "";
+      const locationSearch =
+        document
+          .getElementById(`${type}-location-search`)
+          ?.value?.toLowerCase() || "";
+      const dateFilter =
+        document.getElementById(`${type}-date-filter`)?.value || "";
+      const timeRange =
+        document.getElementById(`${type}-time-range`)?.value || "all";
 
-    const projects =
-      type === "current" ? this.currentProjects : this.futureProjects;
+      console.log("Filter values:", {
+        projectSearch,
+        locationSearch,
+        dateFilter,
+        timeRange,
+      });
 
-    const now = new Date();
-    const getDateRange = (range, type) => {
-      const date = new Date();
-      if (type === "current") {
-        // For current projects, look back in time
-        switch (range) {
-          case "week":
-            date.setDate(date.getDate() - 7);
-            return { start: date, end: now };
-          case "month":
-            date.setMonth(date.getMonth() - 1);
-            return { start: date, end: now };
-          case "year":
-            date.setFullYear(date.getFullYear() - 1);
-            return { start: date, end: now };
-          default:
-            return null;
+      const projects =
+        type === "current" ? this.currentProjects : this.futureProjects;
+      console.log("Projects before filtering:", projects);
+
+      const now = new Date();
+      const getDateRange = (range, type) => {
+        const date = new Date();
+        if (type === "current") {
+          switch (range) {
+            case "week":
+              date.setDate(date.getDate() - 7);
+              return { start: date, end: now };
+            case "month":
+              date.setMonth(date.getMonth() - 1);
+              return { start: date, end: now };
+            case "year":
+              date.setFullYear(date.getFullYear() - 1);
+              return { start: date, end: now };
+            default:
+              return null;
+          }
+        } else {
+          switch (range) {
+            case "week":
+              date.setDate(date.getDate() + 7);
+              return { start: now, end: date };
+            case "month":
+              date.setMonth(date.getMonth() + 1);
+              return { start: now, end: date };
+            case "halfyear":
+              date.setMonth(date.getMonth() + 6);
+              return { start: now, end: date };
+            case "year":
+              date.setFullYear(date.getFullYear() + 1);
+              return { start: now, end: date };
+            default:
+              return null;
+          }
         }
-      } else {
-        // For future projects, look forward in time
-        switch (range) {
-          case "week":
-            date.setDate(date.getDate() + 7);
-            return { start: now, end: date };
-          case "month":
-            date.setMonth(date.getMonth() + 1);
-            return { start: now, end: date };
-          case "halfyear":
-            date.setMonth(date.getMonth() + 6);
-            return { start: now, end: date };
-          case "year":
-            date.setFullYear(date.getFullYear() + 1);
-            return { start: now, end: date };
-          default:
-            return null;
+      };
+
+      const dateRange = getDateRange(timeRange, type);
+      console.log("Date range:", dateRange);
+
+      const filteredProjects = projects.filter((project) => {
+        const matchesProjectName =
+          !projectSearch || project.name.toLowerCase().includes(projectSearch);
+        const matchesLocation =
+          !locationSearch ||
+          project.location.toLowerCase().includes(locationSearch);
+        const matchesDate = !dateFilter || project.startDate === dateFilter;
+
+        let matchesTimeRange = true;
+        if (dateRange) {
+          const projectDate = new Date(project.startDate);
+          matchesTimeRange =
+            projectDate >= dateRange.start && projectDate <= dateRange.end;
         }
-      }
-    };
 
-    const dateRange = getDateRange(timeRange, type);
+        console.log("Project filtering:", {
+          project: project.name,
+          matchesProjectName,
+          matchesLocation,
+          matchesDate,
+          matchesTimeRange,
+        });
 
-    const filteredProjects = projects.filter((project) => {
-      const matchesProjectName = project.name
-        .toLowerCase()
-        .includes(projectSearch);
-      const matchesLocation = project.location
-        .toLowerCase()
-        .includes(locationSearch);
-      const matchesDate = !dateFilter || project.startDate === dateFilter;
+        return (
+          matchesProjectName &&
+          matchesLocation &&
+          matchesDate &&
+          matchesTimeRange
+        );
+      });
 
-      let matchesTimeRange = true;
-      if (dateRange) {
-        const projectDate = new Date(project.startDate);
-        matchesTimeRange =
-          projectDate >= dateRange.start && projectDate <= dateRange.end;
-      }
-
-      return (
-        matchesProjectName && matchesLocation && matchesDate && matchesTimeRange
-      );
-    });
-
-    this.renderProjects(type, filteredProjects);
+      console.log("Filtered projects:", filteredProjects);
+      this.renderProjects(type, filteredProjects);
+    } catch (error) {
+      console.error("Error filtering projects:", error);
+      this.renderProjects(type);
+    }
   }
 
   resetProjectFilters(type) {
-    const projectSearch = this.container.querySelector(
-      `#${type}-project-search`
-    );
-    const locationSearch = this.container.querySelector(
-      `#${type}-location-search`
-    );
-    const dateFilter = this.container.querySelector(`#${type}-date-filter`);
-    const timeRange = this.container.querySelector(`#${type}-time-range`);
+    try {
+      console.log("Resetting filters for:", type);
 
-    if (projectSearch) projectSearch.value = "";
-    if (locationSearch) locationSearch.value = "";
-    if (dateFilter) dateFilter.value = "";
-    if (timeRange) timeRange.value = "all";
+      const filters = [
+        `${type}-project-search`,
+        `${type}-location-search`,
+        `${type}-date-filter`,
+        `${type}-time-range`,
+      ];
 
-    this.filterProjects(type);
+      filters.forEach((filterId) => {
+        const element = document.getElementById(filterId);
+        if (element) {
+          if (element.type === "select-one") {
+            element.value = "all";
+          } else {
+            element.value = "";
+          }
+          console.log(`Reset filter ${filterId}`);
+        }
+      });
+
+      this.renderProjects(type);
+    } catch (error) {
+      console.error("Error resetting project filters:", error);
+    }
   }
 
   getStatusOptions(type, project) {
