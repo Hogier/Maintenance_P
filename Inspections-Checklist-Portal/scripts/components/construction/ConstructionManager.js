@@ -363,6 +363,32 @@ export default class ConstructionManager {
 
     // Добавляем обработчики событий после рендеринга
     this.bindEmployeeEvents();
+
+    // Add event handlers for contractor edit and delete buttons
+    this.container
+      .querySelectorAll(".contractor-actions .btn-action.edit")
+      .forEach((button) => {
+        button.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const contractorId = parseInt(button.dataset.contractorId);
+          const contractor = this.contractors.find(
+            (c) => c.id === contractorId
+          );
+          if (contractor) {
+            this.showContractorModal(contractor);
+          }
+        });
+      });
+
+    this.container
+      .querySelectorAll(".contractor-actions .btn-action.delete")
+      .forEach((button) => {
+        button.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const contractorId = parseInt(button.dataset.contractorId);
+          this.deleteContractor(contractorId);
+        });
+      });
   }
 
   renderEmployeesList(employees) {
