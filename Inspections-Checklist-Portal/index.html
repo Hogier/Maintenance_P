@@ -53,6 +53,7 @@
           <li class="nav-item" data-page="inspections">
             <i class="fas fa-clipboard-check"></i>
             <span>Inspections</span>
+            <i class="fas fa-chevron-right submenu-arrow"></i>
           </li>
           <li class="nav-item" data-page="checklist">
             <i class="fas fa-tasks"></i>
@@ -67,6 +68,35 @@
             <span>Supplies</span>
           </li>
         </ul>
+
+        <!-- Inspections Submenu -->
+        <div class="submenu" id="inspections-submenu">
+          <div class="submenu-header">
+            <button class="back-button">
+              <i class="fas fa-arrow-left"></i>
+              <span>Back</span>
+            </button>
+            <span>Inspections</span>
+          </div>
+          <ul class="submenu-items">
+            <li class="submenu-item" data-tab="safety">
+              <i class="fas fa-shield-alt"></i>
+              <span>Safety Inspections</span>
+            </li>
+            <li class="submenu-item" data-tab="maintenance">
+              <i class="fas fa-tools"></i>
+              <span>Maintenance Inspections</span>
+            </li>
+            <li class="submenu-item" data-tab="environmental">
+              <i class="fas fa-leaf"></i>
+              <span>Environmental Inspections</span>
+            </li>
+            <li class="submenu-item" data-tab="fire">
+              <i class="fas fa-fire-extinguisher"></i>
+              <span>Fire Safety Inspections</span>
+            </li>
+          </ul>
+        </div>
       </nav>
 
       <!-- Main Content -->

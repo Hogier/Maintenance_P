@@ -27,7 +27,7 @@ body {
 .sidebar {
   width: var(--sidebar-width);
   background-color: var(--primary-color);
-  padding: 20px 0;
+  padding: 0;
   position: fixed;
   top: 0;
   left: 0;
@@ -57,6 +57,184 @@ body {
 .mobile-menu-button i {
   font-size: 1.5rem;
   transition: transform 0.3s ease;
+}
+
+/* Navigation Menu */
+.nav-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  padding: 15px 25px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+  position: relative;
+}
+
+.nav-item:hover {
+  background-color: var(--secondary-color);
+}
+
+.nav-item.active {
+  background-color: var(--accent-color);
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.nav-item.active .submenu-arrow {
+  transform: rotate(90deg);
+}
+
+/* Submenu */
+.submenu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-color);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 1001;
+}
+
+.submenu.active {
+  transform: translateX(0);
+}
+
+.submenu-header {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.submenu-header .back-button {
+  width: auto;
+  min-width: 100px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  color: white;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submenu-header .back-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.submenu-header .back-button i {
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.submenu-header span {
+  flex: 1;
+  color: white;
+  font-size: 16px;
+  padding-right: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.submenu-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.submenu-item {
+  padding: 15px 25px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.submenu-item:hover {
+  background-color: var(--secondary-color);
+}
+
+.submenu-item.active {
+  background-color: var(--accent-color);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  position: relative;
+  margin-left: var(--sidebar-width);
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.content-section {
+  display: none;
+  position: relative;
+  height: 100%;
+}
+
+.content-section.active {
+  display: block;
+}
+
+/* Back Button */
+.back-to-main {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0;
+  padding: 0;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  padding: 0 25px;
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: var(--secondary-color);
+  transform: translateX(-5px);
+}
+
+.back-button i {
+  font-size: 16px;
 }
 
 /* Responsive styles */
@@ -122,73 +300,4 @@ body {
   .back-button {
     padding: 12px 20px;
   }
-}
-
-.nav-menu {
-  list-style: none;
-  margin-top: 10px;
-}
-
-.nav-item {
-  padding: 15px 25px;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 5px;
-}
-
-.nav-item:hover {
-  background-color: var(--secondary-color);
-}
-
-.nav-item.active {
-  background-color: var(--accent-color);
-}
-
-.main-content {
-  flex: 1;
-  padding: 20px;
-  position: relative;
-  margin-left: var(--sidebar-width);
-  height: 100vh;
-  overflow-y: auto;
-}
-
-.content-section {
-  display: none;
-  position: relative;
-  height: 100%;
-}
-
-.content-section.active {
-  display: block;
-}
-
-.back-to-main {
-  padding: 15px 25px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 20px;
-}
-
-.back-button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: white;
-  text-decoration: none;
-  font-size: 14px;
-  padding: 15px 25px;
-  width: 100%;
-  transition: all 0.3s ease;
-}
-
-.back-button:hover {
-  background-color: var(--secondary-color);
-  transform: translateX(-5px);
-}
-
-.back-button i {
-  font-size: 16px;
 }

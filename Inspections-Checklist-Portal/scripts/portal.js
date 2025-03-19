@@ -12,15 +12,52 @@ class PortalManager {
   }
 
   bindEvents() {
+    // Main navigation items
     document.querySelectorAll(".nav-item").forEach((item) => {
       item.addEventListener("click", () => {
         const page = item.getAttribute("data-page");
-        this.changePage(page);
+        if (page === "inspections") {
+          // First switch to dashboard
+          this.changePage("dashboard");
+          // Then open the submenu
+          setTimeout(() => this.toggleSubmenu(), 100);
+        } else {
+          this.changePage(page);
+        }
       });
     });
+
+    // Submenu items
+    document.querySelectorAll(".submenu-item").forEach((item) => {
+      item.addEventListener("click", () => {
+        const tab = item.getAttribute("data-tab");
+        this.changePage("inspections", tab);
+      });
+    });
+
+    // Back button in submenu
+    const submenuBackButton = document.querySelector(
+      "#inspections-submenu .back-button"
+    );
+    if (submenuBackButton) {
+      submenuBackButton.addEventListener("click", () => {
+        this.toggleSubmenu();
+        this.changePage("dashboard");
+      });
+    }
   }
 
-  async changePage(page) {
+  toggleSubmenu() {
+    const submenu = document.getElementById("inspections-submenu");
+    const inspectionsItem = document.querySelector('[data-page="inspections"]');
+
+    if (submenu && inspectionsItem) {
+      submenu.classList.toggle("active");
+      inspectionsItem.classList.toggle("active");
+    }
+  }
+
+  async changePage(page, tab = null) {
     // Update active menu item
     document.querySelectorAll(".nav-item").forEach((item) => {
       item.classList.remove("active");
@@ -41,7 +78,29 @@ class PortalManager {
       section.setAttribute("data-loaded", "true");
     }
 
+    // If it's an inspection tab, update the active tab
+    if (page === "inspections" && tab) {
+      const inspectionsManager = section.querySelector(
+        ".inspections-container"
+      )?.__manager;
+      if (inspectionsManager) {
+        inspectionsManager.switchTab(tab);
+      }
+    }
+
     this.currentPage = page;
+
+    // Close submenu if it's open
+    if (page !== "inspections") {
+      const submenu = document.getElementById("inspections-submenu");
+      const inspectionsItem = document.querySelector(
+        '[data-page="inspections"]'
+      );
+      if (submenu && inspectionsItem) {
+        submenu.classList.remove("active");
+        inspectionsItem.classList.remove("active");
+      }
+    }
   }
 
   async loadComponent(page, section) {
@@ -52,7 +111,9 @@ class PortalManager {
 
       const module = await import(`./components/${page}/${page}Manager.js`);
       if (module.default) {
-        new module.default(section);
+        const manager = new module.default(section);
+        // Store the manager instance on the container element for later access
+        section.querySelector(`.${page}-container`).__manager = manager;
       }
     } catch (error) {
       console.error(`Error loading ${page} component:`, error);
@@ -65,10 +126,8 @@ class PortalManager {
   }
 }
 
-// Initialize portal when page loads
-document.addEventListener("DOMContentLoaded", () => {
-  window.portalManager = new PortalManager();
-});
+// Initialize portal manager
+const portalManager = new PortalManager();
 
 // Initialize mobile navigation
 const mobileNav = new MobileNav();
