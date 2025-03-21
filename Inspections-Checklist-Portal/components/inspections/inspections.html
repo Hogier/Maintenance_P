@@ -1,34 +1,58 @@
 <div class="inspections-container">
+  <!-- Header with filters and add button -->
   <div class="inspections-header">
-    <h2>Inspections</h2>
-    <button id="add-inspection" class="btn-primary">
-      <i class="fas fa-plus"></i> New Inspection
-    </button>
-  </div>
-
-  <div class="inspections-filters">
-    <div class="filter-group">
-      <input
-        type="text"
-        id="search-inspection"
-        placeholder="Search inspections..."
-      />
+    <div class="header-content">
+      <h2 id="section-title">Safety Inspections</h2>
+      <div class="header-actions">
+        <div class="filter-group" id="active-filters">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="active-search"
+            placeholder="Search inspections..."
+          />
+          <select id="active-status-filter">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+          <input type="date" id="active-date-filter" class="date-input" />
+          <button id="reset-active-filters" class="btn-reset">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
+        <button class="btn-primary" id="add-inspection">
+          <i class="fas fa-plus"></i> New Inspection
+        </button>
+      </div>
     </div>
-    <div class="filter-group">
-      <select id="status-filter">
-        <option value="all">All Status</option>
-        <option value="pending">Pending</option>
-        <option value="in-progress">In Progress</option>
-        <option value="completed">Completed</option>
-      </select>
+  </div>
+
+  <!-- Content Sections -->
+  <div class="inspections-content">
+    <!-- Safety Inspections Section -->
+    <div class="inspections-section active" id="safety-section">
+      <div class="inspections-grid" id="safety-inspections-list"></div>
+    </div>
+
+    <!-- Maintenance Inspections Section -->
+    <div class="inspections-section" id="maintenance-section">
+      <div class="inspections-grid" id="maintenance-inspections-list"></div>
+    </div>
+
+    <!-- Environmental Inspections Section -->
+    <div class="inspections-section" id="environmental-section">
+      <div class="inspections-grid" id="environmental-inspections-list"></div>
+    </div>
+
+    <!-- Fire Safety Section -->
+    <div class="inspections-section" id="fire-section">
+      <div class="inspections-grid" id="fire-inspections-list"></div>
     </div>
   </div>
 
-  <div class="inspections-list" id="inspections-list">
-    <!-- Inspections will be loaded here -->
-  </div>
-
-  <!-- Modal for adding/editing inspections -->
+  <!-- Inspection Modal -->
   <div id="inspection-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
