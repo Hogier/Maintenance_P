@@ -329,18 +329,26 @@ font-size: 12px;
 }
 */
 .task-item {
+  position: relative;
+  z-index: 1100;
   margin: 0 0 10px 0;
   padding: 15px;
   background: #e6edf2;
   border-radius: 8px;
   box-shadow: inset 0px 0px 9px 1px rgb(22 97 156 / 8%);
-  transition: transform 0.3s ease;
-  overflow: hidden;
+  transition: transform 0.3s ease, margin-bottom 0.3s ease;
+  /*overflow: hidden;*/
   cursor: pointer;
 }
 
 .task-item:hover {
   transform: translateY(-3px);
+  z-index: 1100;
+
+}
+
+.task-item.expanded-margin {
+  margin-bottom: 40px; /* Увеличенный отступ */
 }
 
 .task-header {
@@ -374,15 +382,111 @@ font-size: 12px;
 
 .task-status {
   margin-bottom: 5px;
+  display: flex;
+  align-items:flex-start;
 }
 
-.status-container {
+.task-status-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #171717;
+  margin-right: 10px;
+  line-height: 34px;
+}
+
+.status-container, .status-container-maintenance {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: inline-block;
-  padding: 2px 8px;
+  padding: 4px 15px;
+  background-color: transparent;
   border-radius: 12px;
   border: 1px solid #2196f3;
   margin-left: 5px;
+  height: 34px;
+  width: 120px;
+  line-height: 26px;
+  text-align: center;
+
 }
+  
+.status-container-maintenance {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+
+
+.status-container-maintenance.pending:hover, .pending-active {
+  background-color: #ff5445fc;
+  color: #fff;
+}
+.status-container-maintenance.in-progress:hover, .in-progress-active {
+  background-color: #e1d400;
+  color: #fff;
+}
+
+.status-container-maintenance.completed:hover, .completed-active {
+  background-color: #12bb1a;
+  color: #fff;
+}
+
+
+.status-edit {
+  visibility: hidden;
+  transform: scale(0); /* Начальное значение для анимации */
+  transition: transform 0.2s ease, opacity 0.2s ease, top 0.3s ease;
+  opacity: 0; /* Начальная прозрачность */
+  position: absolute;
+  cursor: pointer;
+  transition: 0.3s ease;
+  text-align: center;
+  padding: 4px 15px;
+  border-radius: 12px;
+  margin-left: 5px;
+  height: 34px;
+  width: 120px;
+  line-height: 26px;
+  z-index: 1201;
+}
+
+.status-edit.show {
+  visibility: visible;
+  display: block; /* Отображаем элемент */
+  transform: scale(1); /* Конечное значение для анимации */
+  opacity: 1; /* Конечная прозрачность */
+}
+
+.status-edit.pending {  
+  background-color: #ff5445fc;
+  color: #fff;
+}
+
+.status-edit.in-progress {
+  background-color: #e1d400;
+  color: #fff;
+}
+
+.status-edit.completed {
+  background-color: #12bb1a;
+  color: #fff;
+}
+
+.status-edit.first {
+  top: 40px;
+}
+
+.status-edit.second {
+  top: 80px;
+  transition-delay: 0.12s;
+}
+
+.status-container-wrapper {
+  position: relative;
+  z-index: 1200;
+}
+
 
 .task-assigned {
   margin-bottom: 10px;
@@ -887,3 +991,72 @@ button.order img {
   background-color: #1976d2;
 }
 
+.status-container-maintenance:not(.pending-active):not(.in-progress-active):not(.completed-active) ~ .task-item {
+  margin-bottom: 10px; /* Уменьшаем отступ */
+}
+
+.profile-status-clock {
+  position: relative;
+  left: 135px;
+  top: 8px;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid rgb(150, 167, 180) ;
+  opacity: 0;
+  transition: opacity 0.3s ease, border 0.3s ease;
+}
+
+.profile-hour-hand, .profile-minute-hand {
+  position: absolute;
+  background-color: rgb(150, 167, 180);
+  transform-origin: bottom center;
+  bottom: 50%;
+  left: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-hour-hand {
+  width: 1px;
+  height: 4px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  animation: rotateHourHand 20s linear infinite; 
+}
+
+.profile-minute-hand {
+  width: 1px;
+  height: 6px;
+  transform: translate(-50%, -50%) rotate(90deg);
+  animation: rotateMinuteHand 4s linear infinite;
+}
+
+.profile-status-check {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  color: rgb(150, 167, 180);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+
+@keyframes rotateHourHand {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+@keyframes rotateMinuteHand {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}

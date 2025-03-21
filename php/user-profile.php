@@ -14,7 +14,7 @@ header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
 // Параметры подключения к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 // Подключение к базе данных
@@ -29,11 +29,25 @@ if ($conn->connect_error) {
 $action = $_POST['action'] ?? '';
 
 if ($action === 'addUserPhoto') {
-    $email = $_POST['email'] ?? '';
+    $role = $_POST['role'] ?? '';
+    if ($role === 'user') {
+        $email = $_POST['email'] ?? '';
+    } else if ($role === 'maintenance') {
+        $username = $_POST['username'] ?? '';
+    }
+
+    // Логирование входных данных
+    error_log("Action: $action, Role: $role, Email: $email, Username: $username");
 
     if (isset($_FILES['userPhoto'])) {
         $file = $_FILES['userPhoto'];
         
+        // Логирование информации о файле
+        error_log("File Name: " . $file['name']);
+        error_log("File Type: " . $file['type']);
+        error_log("File Size: " . $file['size']);
+        error_log("File Error: " . $file['error']);
+
         // Проверка ошибок загрузки
         if ($file['error'] !== UPLOAD_ERR_OK) {
             $uploadErrors = array(
@@ -63,8 +77,13 @@ if ($action === 'addUserPhoto') {
         $rootPath = $_SERVER['DOCUMENT_ROOT'] . '/Maintenance_P';
         
         // Формируем абсолютные пути
-        $targetDir = $rootPath . '/users/img/';
-        $miniDir = $rootPath . '/users/mini/';
+        if ($role === 'user') {
+            $targetDir = $rootPath . '/users/img/';
+            $miniDir = $rootPath . '/users/mini/';
+        } else if ($role === 'maintenance') {
+            $targetDir = $rootPath . '/maintenance_staff/img/';
+            $miniDir = $rootPath . '/maintenance_staff/mini/';
+        }
         $targetFile = $targetDir . $fileName;
         $miniFile = $miniDir . 'mini_' . $fileName;
 
@@ -150,14 +169,22 @@ if ($action === 'addUserPhoto') {
             imagedestroy($miniImage);
 
             // Обновление информации в базе данных
-            $stmt = $conn->prepare("UPDATE users SET photo = ? WHERE email = ?");
-            $stmt->bind_param('ss', $fileName, $email);
+            if ($role === 'user') {
+                $stmt = $conn->prepare("UPDATE users SET photo = ? WHERE email = ?");
+                $stmt->bind_param('ss', $fileName, $email);
+            } else if ($role === 'maintenance') {
+                $stmt = $conn->prepare("UPDATE maintenance_staff SET photo = ? WHERE username = ?");
+                $stmt->bind_param('ss', $fileName, $username);
+            }
             if (!$stmt->execute()) {
                 throw new Exception('Ошибка обновления базы данных: ' . $stmt->error);
             }
             $stmt->close();
 
-            echo json_encode(['success' => true, 'message' => 'Фото успешно добавлено']);
+            // Пример логирования JSON-ответа перед отправкой
+            $response = ['success' => true, 'message' => 'Фото успешно добавлено'];
+            error_log("Response JSON: " . json_encode($response));
+            echo json_encode($response);
 
         } catch (Exception $e) {
             // Удаляем файлы в случае ошибки
@@ -166,14 +193,27 @@ if ($action === 'addUserPhoto') {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     } else {
-        echo json_encode(['success' => false, 'message' => 'Файл не получен']);
+        $response = ['success' => false, 'message' => 'Файл не получен'];
+        error_log("Response JSON: " . json_encode($response));
+        echo json_encode($response);
     }
-} elseif ($action === 'getUserPhoto') {
-    $email = $_POST['email'] ?? '';
+} 
+elseif ($action === 'getUserPhoto') {
+    $role = $_POST['role'] ?? '';
+    if ($role === 'user') {
+        $email = $_POST['email'] ?? '';
+    } else if ($role === 'maintenance') {
+        $username = $_POST['username'] ?? '';
+    }
 
-    if ($email) {
-        $stmt = $conn->prepare("SELECT photo FROM users WHERE email = ?");
-        $stmt->bind_param('s', $email);
+    if ($email || $username) {
+        if ($role === 'user') {
+            $stmt = $conn->prepare("SELECT photo FROM users WHERE email = ?");
+            $stmt->bind_param('s', $email);
+        } else if ($role === 'maintenance') {
+            $stmt = $conn->prepare("SELECT photo FROM maintenance_staff WHERE username = ?");
+            $stmt->bind_param('s', $username);
+        }
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -224,13 +264,22 @@ if ($action === 'addUserPhoto') {
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid date']);
     }
-} elseif ($action === 'getUserTasksForLastWeek') {
+} 
+
+/////// ФУНКЦИИ получения заданий для роли "USER" //////
+
+elseif ($action === 'getUserTasksForLastWeek') {
     $staff = $_POST['staff'] ?? '';
+    $role = $_POST['role'] ?? '';
     $currentDate = $_POST['currentDate'] ?? '';
 
-    if ($staff && $currentDate) {
+    if ($staff && $currentDate && $role) {
         try {
-            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND timestamp >= DATE_SUB(?, INTERVAL 1 WEEK)");
+            if ($role === 'user') {
+                $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND timestamp >= DATE_SUB(?, INTERVAL 1 WEEK)");
+            } else if ($role === 'maintenance') {
+                $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE assigned_to = ? AND timestamp >= DATE_SUB(?, INTERVAL 1 WEEK)");
+            }
             if (!$stmt) {
                 throw new Exception("Prepare failed: " . $conn->error);
             }
@@ -257,10 +306,15 @@ if ($action === 'addUserPhoto') {
     }
 } elseif ($action === 'getUserTasksForLastMonth') {
     $staff = $_POST['staff'] ?? '';
+    $role = $_POST['role'] ?? '';
     $currentDate = $_POST['currentDate'] ?? '';
 
-    if ($staff && $currentDate) {
-        $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 1 MONTH)");
+    if ($staff && $currentDate && $role) {
+        if ($role === 'user') {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 1 MONTH)");
+        } else if ($role === 'maintenance') {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE assigned_to = ? AND date >= DATE_SUB(?, INTERVAL 1 MONTH)");
+        }
         $stmt->bind_param('ss', $staff, $currentDate);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -273,10 +327,15 @@ if ($action === 'addUserPhoto') {
     }
 } elseif ($action === 'getUserTasksForLast3Months') {
     $staff = $_POST['staff'] ?? '';
+    $role = $_POST['role'] ?? '';
     $currentDate = $_POST['currentDate'] ?? '';
 
-    if ($staff && $currentDate) {
-        $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 3 MONTH)");
+    if ($staff && $currentDate && $role) {
+        if ($role === 'user') {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 3 MONTH)");
+        } else if ($role === 'maintenance') {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE assigned_to = ? AND date >= DATE_SUB(?, INTERVAL 3 MONTH)");
+        }
         $stmt->bind_param('ss', $staff, $currentDate);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -289,10 +348,15 @@ if ($action === 'addUserPhoto') {
     }
 } elseif ($action === 'getUserTasksForLastYear') {
     $staff = $_POST['staff'] ?? '';
+    $role = $_POST['role'] ?? '';
     $currentDate = $_POST['currentDate'] ?? '';
 
-    if ($staff && $currentDate) {
-        $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 1 YEAR)");
+    if ($staff && $currentDate && $role) {
+        if ($role === 'user') {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 1 YEAR)");
+        } else if ($role === 'maintenance') {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE assigned_to = ? AND date >= DATE_SUB(?, INTERVAL 1 YEAR)");
+        }
         $stmt->bind_param('ss', $staff, $currentDate);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -324,10 +388,32 @@ if ($action === 'addUserPhoto') {
             'message' => 'User not found'
         ]);
     }
+}
+elseif ($action === 'getMaintenanceSettingsInfo') {
+    $username = $_POST['username'];
+    
+    $query = "SELECT id, username, name FROM users WHERE username = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $maintenanceInfo = $result->fetch_assoc();
+        echo json_encode([
+            'success' => true,
+            'maintenanceInfo' => $maintenanceInfo
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Maintenance not found'
+        ]);
+    }
 } elseif ($action === 'sendNotification') {
     echo json_encode(['success' => false, 'message' => 'WebSocket notifications are not supported in this context']);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Invalid action']);
+    //echo json_encode(['success' => false, 'message' => 'Invalid action']);
 }
 
 // Закрытие соединения

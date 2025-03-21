@@ -69,7 +69,9 @@ h1 {
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 10px;
+  max-height: 2000px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: max-height 0.6s ease;
   animation: fadeIn 0.3s ease-in-out;
 }
 
@@ -961,6 +963,12 @@ h1 {
   transition: opacity 0.3s ease;
 }
 
+/*БАНЕР С НЕВЫПОЛНЕННЫМИ ЗАДАЧАМИ*/
+
+.alert-tasks-container {
+  position: relative;
+}
+
 .alert-icon {
   position: absolute;
   top: 0px;
@@ -976,15 +984,33 @@ h1 {
 }
 
 .alert-tasks {
+  position: relative;
   background: #f6c708;
-  height: 80px;
+  height: 0px;
   overflow: hidden;
   border-radius: 10px;
-  padding: 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
-  transition: height 0.5s ease-in-out;
+  padding: 0px;
+  /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
+  margin-bottom: 0px;
+  opacity: 0;
+  z-index: 1000;
+  transition: height 0.5s ease, margin 0.5s ease, padding 0.5s ease;
 }
+
+.alert-tasks.no-tasks {
+  height: 0px;
+  opacity: 0;
+  margin-bottom: 0px;
+  padding: 0px;
+}
+
+.alert-tasks.exist-tasks {
+  height: 80px;
+  padding: 12px;
+  opacity: 1;
+  margin-bottom: 30px;
+}
+
 
 .alert-tasks-list {
   min-height: 54px;
@@ -1017,4 +1043,51 @@ h1 {
   font-size: 26px;
   text-shadow: 1px 1px 3px #0000004f;
   transition: transform 0.3s ease;
+}
+
+#closeAlertTasks {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  /*display: none;*/
+  opacity: 0;
+  color: white;
+  font-size: 26px;
+  text-shadow: 1px 1px 3px #0000004f;
+  background-color: #f5f5f5;
+  border-radius: 50% 0 50% 50%;
+  padding: 4px;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  line-height: 47px;
+  z-index: 1001;
+  cursor: pointer;
+  transform: scale(0);
+  transition: transform 0.2s ease;
+}
+
+#closeAlertTasks:hover {
+  transform: scale(1.1);
+}
+
+#closeAlertTasks.no-tasks {
+  /*display: none;*/
+  opacity: 0;
+  transform: scale(0);
+}
+
+#closeAlertTasks.exist-tasks {
+  /*display: block;*/
+  opacity: 1;
+  transform: scale(1);
+}
+
+.collapse {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.6s linear, opacity 0.5s linear;
+  /*cubic-bezier(0,1.33,.61,.79)*/
+
 }
