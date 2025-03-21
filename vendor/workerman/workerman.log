@@ -3,3 +3,21 @@
 2025-03-16 20:43:36 pid:91924 Workerman[websocket_server.php] already running
 2025-03-16 20:49:37 pid:92469 Workerman[websocket_server.php] start in DEBUG mode
 2025-03-16 20:49:37 pid:92469 Workerman[websocket_server.php] already running
+2025-03-19 01:41:49 pid:1 Error: Call to a member function bind_param() on bool in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\websocket_server.php:45
+Stack trace:
+#0 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Connection\TcpConnection.php(653): {closure}()
+#1 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Events\Select.php(311): Workerman\Connection\TcpConnection->baseRead()
+#2 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(1569): Workerman\Events\Select->loop()
+#3 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(1486): Workerman\Worker::forkWorkersForWindows()
+#4 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(561): Workerman\Worker::forkWorkers()
+#5 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\websocket_server.php(80): Workerman\Worker::runAll()
+#6 {main}
+2025-03-19 01:41:59 pid:1 Error: Call to a member function bind_param() on bool in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\websocket_server.php:45
+Stack trace:
+#0 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Connection\TcpConnection.php(653): {closure}()
+#1 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Events\Select.php(311): Workerman\Connection\TcpConnection->baseRead()
+#2 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(1569): Workerman\Events\Select->loop()
+#3 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(1486): Workerman\Worker::forkWorkersForWindows()
+#4 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(561): Workerman\Worker::forkWorkers()
+#5 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\websocket_server.php(80): Workerman\Worker::runAll()
+#6 {main}
