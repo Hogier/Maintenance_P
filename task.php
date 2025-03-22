@@ -37,7 +37,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';  // Пустой пароль для XAMPP
+$password = 'root';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -477,7 +477,8 @@ if ($action === 'addTask') {
 
     global $conn;
 
-    $query = "SELECT * FROM tasks WHERE status != 'Completed' AND date >= ?";
+    // Изменяем запрос, чтобы исключить задания за сегодняшний день
+    $query = "SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?";
     $stmt = $conn->prepare($query);
 
     if (!$stmt) {
@@ -486,7 +487,7 @@ if ($action === 'addTask') {
         exit;   
     }
 
-    $stmt->bind_param('s', $previousDate);
+    $stmt->bind_param('ss', $previousDate, $currentDate);
     $stmt->execute();
 
     $result = $stmt->get_result();

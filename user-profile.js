@@ -10,6 +10,7 @@ let currentFilter = {
   priority: "All",
   assignedTo: "All",
 };
+
 let currentSort = { sortBy: "Date", sortOrder: "dec" };
 
 // Определение структуры зданий и комнат
@@ -26,57 +27,61 @@ const buildingRooms = {
 // Создаем WebSocket соединение
 const ws = new WebSocket("ws://localhost:2346");
 
-// При открытии соединения
-ws.onopen = function () {
-  console.log("Подключено к WebSocket серверу");
-};
+window.onload = function () {
+  // При открытии соединения
+  ws.onopen = function () {
+    console.log("Подключено к WebSocket серверу");
 
-// При получении сообщения
-ws.onmessage = function (e) {
-  try {
-    const response = JSON.parse(e.data);
-    console.log("Получен ответ:", response);
-
-    if (response.type === "tasks") {
-      // Обработка полученных задач
-      const tasks = response.data;
-      console.log("Получены задачи:", tasks);
-      // Здесь можно вызвать функцию для отображения задач
-      displayUserTasks(tasks);
-    } else if (response.type === "error") {
-      console.error("Ошибка сервера:", response.message);
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (currentUser) {
+      requestTasks(currentUser.fullName);
     }
-  } catch (error) {
-    console.error("Ошибка парсинга JSON:", error);
-    console.log("Полученные данные:", e.data);
-  }
-};
 
-// При ошибке
-ws.onerror = function (e) {
-  console.error("WebSocket ошибка: " + e.message);
-};
+    setTimeout(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        const message = {
+          action: "getUserTasks",
+          staff: "Linda Wilson",
+        };
+        console.log("Отправка запроса:", message);
+        ws.send(JSON.stringify(message));
+      }
+    }, 1000);
+  };
 
-// При закрытии соединения
-ws.onclose = function () {
-  console.log("Соединение закрыто");
-};
+  // При получении сообщения
+  ws.onmessage = function (e) {
+    try {
+      const response = JSON.parse(e.data);
+      console.log("Получен ответ:", response);
 
-// Отправка запроса на получение задач
-function requestTasks(staff) {
-  if (ws.readyState === WebSocket.OPEN) {
-    ws.send(
-      JSON.stringify({
-        action: "getUserTasks",
-        staff: staff,
-      })
-    );
-  } else {
-    console.error("WebSocket не подключен");
-  }
-}
+      if (response.type === "tasks") {
+        // Обработка полученных задач
+        const tasks = response.data;
+        console.log("Получены задачи:", tasks);
+        // Здесь можно вызвать функцию для отображения задач
+        displayUserTasks(tasks);
+      } else if (response.type === "error") {
+        console.error("Ошибка сервера:", response.message);
+      }
+    } catch (error) {
+      console.error("Ошибка парсинга JSON:", error);
+      console.log("Полученные данные:", e.data);
+    }
+  };
 
-// Вызов функции при загрузке страницы
+  // При ошибке
+  ws.onerror = function (e) {
+    console.error("WebSocket ошибка: " + e.message);
+  };
+
+  // При закрытии соединения
+  ws.onclose = function () {
+    console.log("Соединение закрыто");
+  };
+
+  /*
+  // Вызов функции при загрузке страницы
 const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 if (currentUser) {
   requestTasks(currentUser.fullName);
@@ -91,16 +96,30 @@ setTimeout(() => {
     console.log("Отправка запроса:", message);
     ws.send(JSON.stringify(message));
   }
-}, 1000);
+}, 1000);*/
+}
+// Отправка запроса на получение задач
+function requestTasks(staff) {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(
+      JSON.stringify({
+        action: "getUserTasks",
+        staff: staff,
+      })
+    );
+  } else {
+    console.error("WebSocket не подключен");
+  }
+}
+
+
 
 document.addEventListener("DOMContentLoaded", async function () {
-  // Проверяем авторизацию
   const user = JSON.parse(localStorage.getItem("currentUser"));
   const maintenanceStaff = JSON.parse(
     localStorage.getItem("maintenanceStaffAuth")
   );
 
-  // Если пользователь не авторизован, скрываем элементы профиля
   if (!user && !maintenanceStaff) {
     document.querySelector(".user-profile-account").style.display = "none";
     return;
@@ -138,6 +157,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   const searchButton = document.getElementById("searchButton");
   const actionButtons = [filterButton, sortButton, searchButton];
   let isOpenButtons = [false, false, false];
+  const TasksListHeader = document.getElementById("TasksListHeader");
+
+  const titleForTasksList = JSON.parse(localStorage.getItem("currentUser")).role === "user" ? "Your requests" : "Your tasks";
+  TasksListHeader.textContent = titleForTasksList;
 
   headerContainer.addEventListener("click", function () {
     userDashboard.classList.add("active");
@@ -160,14 +183,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       isOpenButtons[index] = false;
     });
   });
-
-  /* overlay.addEventListener("click", function () {
-    userDashboard.classList.remove("active");
-    actionContainer.style.right = "-100px";
-    overlay.style.opacity = "0";
-    overlay.style.display = "none";
-    overlay.style.pointerEvents = "none";
-  });*/
 
   actionButtons.forEach((button, index) => {
     const img = button.querySelector("img");
@@ -344,6 +359,33 @@ document.addEventListener("DOMContentLoaded", async function () {
   } else {
     userPhoto.onload = () => adjustImageSize(userPhoto);
   }
+
+  document.addEventListener('click', function (event) {
+    // Проверяем, был ли клик вне .status-container-wrapper
+    const isClickInside = event.target.closest('.status-container-wrapper');
+    if (!isClickInside) {
+      // Удаляем класс .show у всех .status-edit
+      document.querySelectorAll('.status-edit.show').forEach(edit => {
+        edit.classList.remove('show');
+      });
+      
+      document.querySelectorAll('.task-item').forEach(taskItem => {
+        if (taskItem) {
+          taskItem.classList.remove('expanded-margin');
+        }
+      });
+
+      // Удаляем класс -active у всех span
+      document.querySelectorAll('.task-status .status-container-wrapper span').forEach(span => {
+        const activeClass = span.className.split(' ').find(cls => cls.endsWith('-active'));
+        if (activeClass) {
+          span.classList.remove(activeClass);
+        }
+      });
+    }
+  });
+
+
 });
 
 // Функция для отображения информации о пользователе
@@ -368,43 +410,13 @@ function displayDashboardUserInfo() {
       userEmailElement.textContent = user.email;
     }
   }
-} /*
-// Функция для получения заданий пользователя
-async function getUserTasks() {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user && user.role !== "maintenance") {
-    try {
-      const formData = new FormData();
-      formData.append("action", "getUserTasks");
-      formData.append("staff", user.fullName);
-
-      const response = await fetch("php/user-profile.php", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        data.tasks.sort(
-          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-        );
-        return data.tasks;
-      } else {
-        console.error("Ошибка получения заданий:", data.message);
-        return [];
-      }
-    } catch (error) {
-      console.error("Ошибка:", error);
-      return [];
-    }
-  }
-  return [];
 }
-*/
+
 // Функция для отображения заданий пользователя
 async function displayUserTasks() {
   const infoContent = document.querySelector(".info-content");
   const loadingIndicator = document.querySelector(".loading-indicator");
+  const user = JSON.parse(localStorage.getItem("currentUser"));
 
   if (!infoContent || !loadingIndicator) {
     console.error(
@@ -535,6 +547,7 @@ async function displayUserTasks() {
     tasksList.id = "userTasksList";
     tasksList.classList.add("tasks-list");
 
+
     tasks.forEach((task) => {
       const listItem = document.createElement("li");
       listItem.classList.add("task-item");
@@ -544,21 +557,25 @@ async function displayUserTasks() {
               <div class="task-header">
                 <div class="task-header-left">
                   <span class="priority-indicator" style="background-color: ${getPriorityColor(
-                    task.priority
-                  )};"></span>
+        task.priority
+      )};"></span>
                   <span class="task-id">${task.request_id}</span>
                 </div>
                 <div class="task-header-right">
                   <span class="task-timestamp">${new Date(
-                    task.timestamp
-                  ).toLocaleString()}</span>
+        task.timestamp
+      ).toLocaleString()}</span>
                 </div>
               </div>
               <div class="task-status">
-                Request <span class="status-container" style="border-color: ${getStatusBorderColor(
-                  task.status
-                )};">${task.status}</span>
-              </div>
+                <span class="task-status-text">Request</span> <div class="status-container-wrapper" data-task-id="${task.request_id}"><span class="${user.role === 'maintenance' ? 'status-container-maintenance' : 'status-container'} ${task.status.toLowerCase().replace(/\s+/g, '-')}" style="border-color: ${getStatusBorderColor(task.status)};">${task.status}</span>
+                ${user.role === 'maintenance' ? generateStatusEditMarkup(task.status) : ''}
+                </div>
+                <div class="profile-status-clock">
+                  <div class="profile-hour-hand"></div>
+                  <div class="profile-minute-hand"></div>
+                </div>
+                </div>
               <div class="task-assigned">${getAssignedInfo(task)}</div>
               <div class="task-details-wrapper">
                 <div class="task-details">${task.details}</div>
@@ -567,6 +584,7 @@ async function displayUserTasks() {
 
       listItem.innerHTML = taskDetails;
       tasksList.appendChild(listItem);
+
 
       // Добавляем обработчик клика для разворачивания деталей задачи
       listItem.addEventListener("click", function () {
@@ -580,6 +598,83 @@ async function displayUserTasks() {
           detailsWrapper.style.maxHeight = "0px";
         }
       });
+
+      const spanStatus = listItem.querySelector(".task-status .status-container-wrapper span");
+      spanStatus.addEventListener("click", function (e) {
+        if (user.role === 'maintenance') {
+          e.stopPropagation();
+          this.classList.toggle(`${this.textContent.toLowerCase().replace(/\s+/g, '-')}-active`);
+
+          const taskItem = this.closest('.task-item');
+          if (this.classList.contains('pending-active') || 
+              this.classList.contains('in-progress-active') || 
+              this.classList.contains('completed-active')) {
+            taskItem.classList.add('expanded-margin');
+          } else {
+            taskItem.classList.remove('expanded-margin');
+          }
+        }
+        const statusEdits = this.parentElement.querySelectorAll('.status-edit');
+        statusEdits.forEach(edit => {
+          edit.classList.toggle('show');
+        });
+      });
+
+    const statusContainer = listItem.querySelectorAll('.status-container-wrapper div');
+    changeStatus(statusContainer, spanStatus);
+    function changeStatus(statusContainer, spanStatus) {
+      statusContainer.forEach(wrapper => {
+        console.log(wrapper.closest('.status-container-wrapper').getAttribute('data-task-id'),wrapper.textContent, wrapper.isEventListener);
+        if (!wrapper.isEventListener) {
+          wrapper.isEventListener = true;
+          wrapper.addEventListener('click', async function (e) {
+            e.stopPropagation();
+            const anotherStatusContainer = Array.from(wrapper.closest('.status-container-wrapper').children).filter(child => child !== wrapper);
+          const taskId = listItem.querySelector('.status-container-wrapper').getAttribute('data-task-id');
+          const statusClock = listItem.querySelector('.profile-status-clock');
+          const taskItem = this.closest('.task-item');
+          const statusContainerWrapper = taskItem.querySelector('.status-container-wrapper');
+          await changeTaskStatusInProfile(taskId, wrapper.textContent, statusClock);
+          anotherStatusContainer.forEach(child => {
+            child.classList.remove('show');
+          });
+          setTimeout(() => {
+            wrapper.style.top = '0px';
+            taskItem.classList.remove('expanded-margin');
+            setTimeout(() => {
+              //const spanStatus = taskItem.querySelector('.status-container-wrapper span');
+              const statusText = spanStatus.textContent;
+              const isFirstWrapper = wrapper.classList.contains('first');
+
+              
+              const newDivInStatusContainer = document.createElement('div');
+              newDivInStatusContainer.textContent = statusText;
+              newDivInStatusContainer.classList.add('status-edit', `${statusText.toLowerCase().replace(/\s+/g, '-')}`, isFirstWrapper ? 'first' : 'second');
+              statusContainerWrapper.appendChild(newDivInStatusContainer);
+
+              
+              spanStatus.textContent = wrapper.textContent;
+              spanStatus.style.borderColor = getStatusBorderColor(wrapper.textContent);
+              spanStatus.classList.remove(`${statusText.toLowerCase().replace(/\s+/g, '-')}`);
+              spanStatus.classList.remove(`${statusText.toLowerCase().replace(/\s+/g, '-')}-active`);
+              spanStatus.classList.add(`${wrapper.textContent.toLowerCase().replace(/\s+/g, '-')}`);
+              
+              setTimeout(() => {
+                wrapper.remove();
+                const statusContainer = listItem.querySelectorAll('.status-container-wrapper div');
+                console.log(statusContainer);
+                console.log(spanStatus);
+                changeStatus(statusContainer, spanStatus);
+              }, 300);
+            }, 500);
+          }, 150);
+        });
+      }
+      });
+    }
+
+
+
     });
 
     // Добавляем список задач в контейнер
@@ -621,23 +716,38 @@ function getStatusBorderColor(status) {
 
 function getAssignedInfo(task) {
   return task.assigned_to
-    ? `The task was assigned to ${
-        task.assigned_to
-      } <span style="font-size: 0.8em; color: #666;">at ${new Date(
-        task.assigned_at
-      ).toLocaleString()}</span>`
+    ? `The task was assigned to ${task.assigned_to
+    } <span style="font-size: 0.8em; color: #666;">at ${new Date(
+      task.assigned_at
+    ).toLocaleString()}</span>`
     : "No one has been assigned yet";
 }
 
+function generateStatusEditMarkup(status) {
+  const statuses = ['Pending', 'In Progress', 'Completed'];
+  return statuses
+    .filter(s => s !== status)
+    .map((s, index) => {
+      return `<div class="status-edit ${s.toLowerCase().replace(/\s+/g, '-')} ${index === 0 ? 'first' : 'second'}">${s}</div>`;
+    })
+    .join('');
+}
+
 async function addUserPhotoToServer(file) {
+
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
   const formData = new FormData();
   formData.append("action", "addUserPhoto");
   formData.append("userPhoto", file);
+  formData.append("role", currentUser.role);
 
-  const currentUserEmail = JSON.parse(
-    localStorage.getItem("currentUser")
-  ).email;
-  formData.append("email", currentUserEmail);
+
+  if (currentUser.role === "user") {
+    formData.append("email", currentUser.email);
+  } else if (currentUser.role === "maintenance") {
+    formData.append("username", currentUser.username);
+  }
 
   try {
     console.log("Начало загрузки файла:", file.name);
@@ -681,13 +791,17 @@ async function addUserPhotoToServer(file) {
 }
 
 async function getUserPhotoFromServer() {
-  const currentUserEmail = JSON.parse(
-    localStorage.getItem("currentUser")
-  ).email;
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
   const formData = new FormData();
   formData.append("action", "getUserPhoto");
-  formData.append("email", currentUserEmail);
-  console.log(currentUserEmail);
+  formData.append("role", currentUser.role);
+  if (currentUser.role === "user") {
+    formData.append("email", currentUser.email);
+  } else if (currentUser.role === "maintenance") {
+    formData.append("username", currentUser.username);
+  }
+
   return fetch("php/user-profile.php", {
     method: "POST",
     body: formData,
@@ -707,23 +821,21 @@ async function getUserPhotoFromServer() {
     });
 }
 
+
 async function loadUserPhoto() {
   try {
     const photoFileName = await getUserPhotoFromServer();
     const userPhotoElement = document.querySelector(".user-photo img");
     const avatarContainer = document.querySelector(".avatar-container");
-    console.log("loadUserPhoto!");
-    console.log(photoFileName);
-    console.log(userPhotoElement);
-    console.log("photoFileName: " + photoFileName);
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
     if (photoFileName !== "user.png") {
-      avatarContainer.style.backgroundImage = `url("/Maintenance_P/users/img/${photoFileName}")`;
+      avatarContainer.style.backgroundImage = currentUser.role === "user" ? `url("/Maintenance_P/users/img/${photoFileName}")` : `url("/Maintenance_P/maintenance_staff/img/${photoFileName}")`;
       avatarContainer.style.backgroundSize = "cover";
       avatarContainer.style.backgroundPosition = "center";
       avatarContainer.innerHTML = ``;
     }
-    userPhotoElement.src = `/Maintenance_P/users/img/${photoFileName}`;
+    userPhotoElement.src = currentUser.role === "user" ? `/Maintenance_P/users/img/${photoFileName}` : `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
     console.log(avatarContainer);
 
     // Добавляем проверку и выводим значение backgroundImage
@@ -904,15 +1016,15 @@ async function displayEvents() {
 
 async function getUserTasksForLastWeek() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user && user.role !== "maintenance") {
-    try {
-      const formData = new FormData();
+  const formData = new FormData();
+  const currentDate = new Date().toLocaleDateString("en-CA", {
+    timeZone: "America/Chicago",
+  });
+  try {
+    if (user) {
       formData.append("action", "getUserTasksForLastWeek");
+      formData.append("role", user.role);
       formData.append("staff", user.fullName);
-
-      const currentDate = new Date().toLocaleDateString("en-CA", {
-        timeZone: "America/Chicago",
-      });
       formData.append("currentDate", currentDate);
 
       const response = await fetch("php/user-profile.php", {
@@ -934,20 +1046,22 @@ async function getUserTasksForLastWeek() {
         );
         return [];
       }
-    } catch (error) {
-      console.error("Ошибка:", error);
-      return [];
     }
+  } catch (error) {
+    console.error("Ошибка:", error);
+    return [];
   }
+
   return [];
 }
 
 async function getUserTasksForLastMonth() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user && user.role !== "maintenance") {
+  if (user) {
     try {
       const formData = new FormData();
       formData.append("action", "getUserTasksForLastMonth");
+      formData.append("role", user.role);
       formData.append("staff", user.fullName);
 
       const currentDate = new Date().toLocaleDateString("en-CA", {
@@ -984,10 +1098,11 @@ async function getUserTasksForLastMonth() {
 
 async function getUserTasksForLast3Months() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user && user.role !== "maintenance") {
+  if (user) {
     try {
       const formData = new FormData();
       formData.append("action", "getUserTasksForLast3Months");
+      formData.append("role", user.role);
       formData.append("staff", user.fullName);
 
       const currentDate = new Date().toLocaleDateString("en-CA", {
@@ -1024,10 +1139,11 @@ async function getUserTasksForLast3Months() {
 
 async function getUserTasksForLastYear() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user && user.role !== "maintenance") {
+  if (user) {
     try {
       const formData = new FormData();
       formData.append("action", "getUserTasksForLastYear");
+      formData.append("role", user.role);
       formData.append("staff", user.fullName);
 
       const currentDate = new Date().toLocaleDateString("en-CA", {
@@ -1060,6 +1176,36 @@ async function getUserTasksForLastYear() {
     }
   }
   return [];
+}
+
+
+async function chengeTaskStatusInServer(taskId, newStatus) {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (user) {
+    try {
+      const formData = new FormData();
+      formData.append("action", "updateTaskStatus");
+      formData.append("requestId", taskId);
+      formData.append("newStatus", newStatus);
+
+      const response = await fetch("task.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        return data.message;
+      } else {
+        console.error("Ошибка изменения статуса задания:", data.message);
+        return null;
+      }
+    } catch (error) {
+      console.error("Ошибка:", error);
+      return null;
+    }
+  }
+  return null;
 }
 
 // Функция для получения информации о пользователе
@@ -1145,3 +1291,83 @@ document.addEventListener("DOMContentLoaded", function () {
     populateSettingsRoomSelect(this.value);
   });
 });
+
+////// ФУНКЦИИ ЗАПРОСОВ НА СЕРВЕР ДЛЯ РОЛИ "МАINTENANCE" //////
+
+
+async function getMaintenanceSettingsInfo(username) {
+  try {
+    const formData = new FormData();
+    formData.append("action", "getMaintenanceSettingsInfo");
+    formData.append("username", username);
+
+    const response = await fetch("php/user-profile.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      return data.maintenanceInfo;
+    } else {
+      console.error("Ошибка получения информации:", data.message);
+      return null;
+    }
+  } catch (error) {
+    console.error("Ошибка:", error);
+    return null;
+  }
+}
+
+
+/*
+- Подключить   getMaintenanceSettingsInfo(username) 
+
+
+*/
+
+async function changeTaskStatusInProfile(requestId, newStatus, statusClock) {
+  const hourHand = statusClock.querySelector(".profile-hour-hand");
+  const minuteHand = statusClock.querySelector(".profile-minute-hand");
+
+  console.log(requestId, newStatus);
+
+  // Устанавливаем таймер для показа часов через 2 секунды
+  const clockTimeout = setTimeout(() => {
+    statusClock.style.border = "3px solid rgb(150, 167, 180)";
+    statusClock.style.opacity = "1";
+    hourHand.style.opacity = "1";
+    minuteHand.style.opacity = "1";
+  }, 700);
+
+  try {
+    const response = await fetch("task.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "updateTaskStatus",
+        requestId: requestId,
+        newStatus: newStatus,
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+    console.log("Task status updated successfully");
+
+    // Если асинхронная операция завершилась до истечения 2 секунд, отменяем таймер
+    clearTimeout(clockTimeout);
+
+    // Скрываем часики, если они были показаны
+    hourHand.style.opacity = "0";
+    minuteHand.style.opacity = "0";
+    statusClock.style.opacity = "0";
+    statusClock.style.border = "3px solid rgba(255, 255, 255, 0)";
+  } catch (error) {
+    console.error("Error updating task status:", error);
+  }
+}
