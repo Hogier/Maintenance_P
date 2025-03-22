@@ -20,7 +20,12 @@ class PortalManager {
           // First switch to dashboard
           this.changePage("dashboard");
           // Then open the submenu
-          setTimeout(() => this.toggleSubmenu(), 100);
+          setTimeout(() => this.toggleSubmenu("inspections"), 100);
+        } else if (page === "construction") {
+          // First switch to dashboard
+          this.changePage("dashboard");
+          // Then open the submenu
+          setTimeout(() => this.toggleSubmenu("construction"), 100);
         } else {
           this.changePage(page);
         }
@@ -31,29 +36,30 @@ class PortalManager {
     document.querySelectorAll(".submenu-item").forEach((item) => {
       item.addEventListener("click", () => {
         const tab = item.getAttribute("data-tab");
-        this.changePage("inspections", tab);
+        const submenu = item.closest(".submenu");
+        const page = submenu.id.replace("-submenu", "");
+        this.changePage(page, tab);
       });
     });
 
-    // Back button in submenu
-    const submenuBackButton = document.querySelector(
-      "#inspections-submenu .back-button"
-    );
-    if (submenuBackButton) {
-      submenuBackButton.addEventListener("click", () => {
-        this.toggleSubmenu();
+    // Back buttons in submenus
+    document.querySelectorAll(".submenu .back-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const submenu = button.closest(".submenu");
+        const page = submenu.id.replace("-submenu", "");
+        this.toggleSubmenu(page);
         this.changePage("dashboard");
       });
-    }
+    });
   }
 
-  toggleSubmenu() {
-    const submenu = document.getElementById("inspections-submenu");
-    const inspectionsItem = document.querySelector('[data-page="inspections"]');
+  toggleSubmenu(page) {
+    const submenu = document.getElementById(`${page}-submenu`);
+    const menuItem = document.querySelector(`[data-page="${page}"]`);
 
-    if (submenu && inspectionsItem) {
+    if (submenu && menuItem) {
       submenu.classList.toggle("active");
-      inspectionsItem.classList.toggle("active");
+      menuItem.classList.toggle("active");
     }
   }
 
@@ -78,28 +84,22 @@ class PortalManager {
       section.setAttribute("data-loaded", "true");
     }
 
-    // If it's an inspection tab, update the active tab
-    if (page === "inspections" && tab) {
-      const inspectionsManager = section.querySelector(
-        ".inspections-container"
-      )?.__manager;
-      if (inspectionsManager) {
-        inspectionsManager.switchTab(tab);
+    // Update the active tab for inspections or construction
+    if ((page === "inspections" || page === "construction") && tab) {
+      const manager = section.querySelector(`.${page}-container`)?.__manager;
+      if (manager) {
+        manager.switchTab(tab);
       }
     }
 
     this.currentPage = page;
 
-    // Close submenu if it's open
-    if (page !== "inspections") {
-      const submenu = document.getElementById("inspections-submenu");
-      const inspectionsItem = document.querySelector(
-        '[data-page="inspections"]'
-      );
-      if (submenu && inspectionsItem) {
-        submenu.classList.remove("active");
-        inspectionsItem.classList.remove("active");
-      }
+    // Close submenus if they're open
+    if (page !== "inspections" && page !== "construction") {
+      const submenus = document.querySelectorAll(".submenu");
+      const menuItems = document.querySelectorAll(".nav-item");
+      submenus.forEach((submenu) => submenu.classList.remove("active"));
+      menuItems.forEach((item) => item.classList.remove("active"));
     }
   }
 
@@ -115,6 +115,12 @@ class PortalManager {
         // Store the manager instance on the container element for later access
         section.querySelector(`.${page}-container`).__manager = manager;
       }
+
+      // Initialize components after loading
+      this.initializeComponents();
+
+      // Update active menu item
+      this.updateActiveMenuItem(page);
     } catch (error) {
       console.error(`Error loading ${page} component:`, error);
       section.innerHTML = `<div class="error-message">Error loading ${page} component</div>`;
@@ -123,6 +129,22 @@ class PortalManager {
 
   loadDefaultPage() {
     this.changePage("dashboard");
+  }
+
+  initializeComponents() {
+    // Initialize construction manager if container exists
+    const constructionContainer = document.querySelector(
+      "#construction-container"
+    );
+    if (constructionContainer) {
+      window.constructionManager = new ConstructionManager(
+        constructionContainer
+      );
+    }
+  }
+
+  updateActiveMenuItem(page) {
+    // Implementation of updateActiveMenuItem method
   }
 }
 
