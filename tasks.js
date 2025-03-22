@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         alertTasks.style.height === "80px" ||
         alertTasks.style.height === ""
       ) {
-        alertTasks.style.height = `${contentHeight}px`; // Устанавливаем высоту содержимого
+        alertTasks.style.height = "auto"; // Устанавливаем высоту содержимого
         displayNotCompletedTasksButton.style.transform = "rotate(90deg)";
       } else {
         alertTasks.style.height = "80px"; // Возвращаем к исходной высоте
@@ -654,9 +654,23 @@ async function createTaskElement(task) {
         taskStatusDiv.classList.add("status-in-progress");
       } else if (this.value === "Completed") {
         taskStatusDiv.classList.add("status-completed");
+
+        // Проверяем, находится ли задание в блоке notCompletedTasksList
       }
 
       await changeTaskStatusOnServer(taskId, this.value);
+      const taskElement = this.closest(".task-item");
+      const parentList = taskElement.closest("#notCompletedTasksList");
+      if (parentList && this.value === "Completed") {
+        
+        setTimeout(() => {
+          //askElement.classList.add("collapse");
+          setTimeout(() => {
+            updateAlertTasksListHeight(taskElement);
+            //taskElement.remove();
+          }, 800); 
+        }, 1000); 
+      }
     });
   }
 
@@ -1119,6 +1133,9 @@ async function displayNotCompletedTasks() {
   const notCompletedTasksList = document.getElementById(
     "notCompletedTasksList"
   );
+  const closeAlertTasks = document.getElementById("closeAlertTasks");
+  const alertContainer = document.querySelector(".alert-tasks");
+
   //notCompletedTasksList.innerHTML = "";
   let serverTasks = await getNotCompletedTasksForLastWeek();
 
@@ -1127,9 +1144,39 @@ async function displayNotCompletedTasks() {
       const taskElement = await createTaskElement(task);
       notCompletedTasksList.appendChild(taskElement);
     });
+    alertContainer.classList.add("exist-tasks");
+    setTimeout(() => {
+      closeAlertTasks.classList.add("exist-tasks");
+    }, 600);
   } else {
     //notCompletedTasksList.innerHTML = "<p>No incomplete tasks found for the last week</p>";
+    alertContainer.classList.add("no-tasks");
+    closeAlertTasks.classList.add("no-tasks");
   }
+
+  closeAlertTasks.addEventListener("click", () => {
+    alertContainer.classList.remove("exist-tasks");
+    closeAlertTasks.classList.remove("exist-tasks");
+    alertContainer.classList.add("no-tasks");
+    closeAlertTasks.classList.add("no-tasks");
+    const alertTasks = document.querySelector(".alert-tasks");
+
+    setTimeout(() => {
+      alertContainer.style.height = "0";
+      closeAlertTasks.classList.remove("exist-tasks");
+      closeAlertTasks.classList.add("no-tasks");
+      setTimeout(() => {
+        alertTasks.style.margin = "0";
+        setTimeout(() => {
+          alertTasks.style.padding = "0";
+          setTimeout(() => {
+            alertTasks.remove();
+            closeAlertTasks.remove();
+          }, 650);
+        }, 200);
+      }, 200);
+    }, 200);
+  });
 }
 ////////////////////////////////FETCH ФУНКЦИИ////////////////////////////
 
@@ -1440,3 +1487,39 @@ let notCompletedTasks = (async () => {
   console.log("getNotCompletedTasksForLastWeek: ", tasks);
   return tasks;
 })();
+
+function updateAlertTasksListHeight(taskElement) {
+  const alertTasksList = document.getElementById("notCompletedTasksList");
+  const alertTasks = document.querySelector(".alert-tasks");
+  const closeAlertTasks = document.getElementById("closeAlertTasks");
+  //alertTasks.style.transition = "height 0.15s ease-in-out, opacity 0.5s ease-in-out";
+  console.log("alertTasksList.querySelectorAll('.task-item').length: ", alertTasksList.querySelectorAll(".task-item").length);
+  if (alertTasksList.querySelectorAll(".task-item").length === 1) {
+    alertTasks.style.height = alertTasks.scrollHeight + "px";
+    //taskElement.classList.add("collapse");
+   setTimeout(() => {
+      alertTasks.style.height = "0";
+      closeAlertTasks.classList.remove("exist-tasks");
+      closeAlertTasks.classList.add("no-tasks");
+      setTimeout(() => {
+        alertTasks.style.margin = "0";
+        setTimeout(() => {
+          alertTasks.style.padding = "0";
+          setTimeout(() => {
+            alertTasks.remove();
+            closeAlertTasks.remove();
+          }, 550);
+        }, 150);
+      }, 150);
+    }, 150);
+  } else {
+    taskElement.classList.add("collapse");
+    setTimeout(() => {
+      taskElement.remove();
+
+    }, 650);
+
+  }
+  //alertTasks.style.transition = "height 0.5s ease-in-out, opacity 0.5s ease-in-out";
+
+}
