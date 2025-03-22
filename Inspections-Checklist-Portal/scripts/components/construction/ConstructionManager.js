@@ -285,6 +285,13 @@ export default class ConstructionManager {
     } else if (sectionId === "future-projects-section") {
       this.renderProjects("future");
     }
+
+    // Update statistics for the active section
+    if (sectionId === "current-projects-section") {
+      this.updateProjectStatistics("current");
+    } else if (sectionId === "future-projects-section") {
+      this.updateProjectStatistics("future");
+    }
   }
 
   async loadData() {
@@ -296,6 +303,10 @@ export default class ConstructionManager {
       await this.loadCurrentProjects();
       await this.loadFutureProjects();
       this.renderActiveSection();
+
+      // Update statistics for both sections after loading data
+      this.updateProjectStatistics("current");
+      this.updateProjectStatistics("future");
     } catch (error) {
       console.error("Error loading data:", error);
     }
@@ -367,6 +378,13 @@ export default class ConstructionManager {
 
     this.activeTab = tab;
     this.renderActiveSection();
+
+    // Update project statistics when switching to project tabs
+    if (tab === "current-projects") {
+      this.updateProjectStatistics("current");
+    } else if (tab === "future-projects") {
+      this.updateProjectStatistics("future");
+    }
   }
 
   renderActiveSection() {
@@ -736,6 +754,9 @@ export default class ConstructionManager {
           <p>No projects found</p>
         </div>
       `;
+
+      // Update statistics even if no projects are found
+      this.updateProjectStatistics(type);
       return;
     }
 
@@ -780,7 +801,10 @@ export default class ConstructionManager {
       container.appendChild(card);
     });
 
-    // После рендеринга карточек, привязываем события к ним
+    // After rendering all projects, update the statistics
+    this.updateProjectStatistics(type);
+
+    // Bind events to project cards
     this.bindProjectCardEvents(type);
 
     // Привязываем события к предпросмотрам файлов для всех открытых проектов
@@ -799,7 +823,8 @@ export default class ConstructionManager {
       "in-progress",
       "completed",
       "on-hold",
-      "move-to-current"
+      "move-to-current",
+      "delayed"
     );
 
     // Добавляем новый класс статуса
@@ -836,6 +861,11 @@ export default class ConstructionManager {
         bg: "#f3e5f5",
         color: "#7b1fa2",
         border: "#ce93d8",
+      },
+      delayed: {
+        bg: "#ffebee",
+        color: "#d32f2f",
+        border: "#ef9a9a",
       },
     };
 
@@ -1197,10 +1227,32 @@ export default class ConstructionManager {
       this.futureProjects = this.futureProjects.filter(
         (p) => p.id !== projectId
       );
-      project.status = "in-progress"; // Устанавливаем начальный статус для текущего проекта
+
+      // Устанавливаем начальный статус для текущего проекта
+      project.status = "in-progress";
+
+      // Копируем значение Budget из будущего проекта в Actual Cost текущего проекта
+      if (project.budget) {
+        console.log(
+          `Moving project: Budget value ${project.budget} transferred to Actual Cost`
+        );
+        project.actualCost = project.budget;
+      } else {
+        console.log(`Moving project: No budget value found to transfer`);
+      }
+
+      // Устанавливаем начальный прогресс
+      if (!project.progress) {
+        project.progress = 0;
+      }
+
       this.currentProjects.push(project);
+
+      // Update both sections' stats when moving a project between sections
       this.renderProjects("future");
       this.renderProjects("current");
+      this.updateProjectStatistics("future");
+      this.updateProjectStatistics("current");
     } else {
       // Обновляем статус в текущем разделе
       project.status = newStatus;
@@ -1214,6 +1266,7 @@ export default class ConstructionManager {
       }
 
       this.renderProjects(type);
+      this.updateProjectStatistics(type);
     }
   }
 
@@ -1713,6 +1766,7 @@ export default class ConstructionManager {
     }
 
     this.renderProjects(type);
+    this.updateProjectStatistics(type);
   }
 
   updateProject(id, data, type) {
@@ -1732,6 +1786,7 @@ export default class ConstructionManager {
       };
 
       this.renderProjects(type);
+      this.updateProjectStatistics(type);
     }
   }
 
@@ -1743,6 +1798,7 @@ export default class ConstructionManager {
         this.futureProjects = this.futureProjects.filter((p) => p.id !== id);
       }
       this.renderProjects(type);
+      this.updateProjectStatistics(type);
     }
   }
 
@@ -2209,72 +2265,118 @@ export default class ConstructionManager {
   }
 
   filterProjects(type) {
-    const projectSearch =
-      this.container
-        .querySelector(`#${type}-project-search`)
-        ?.value?.toLowerCase() || "";
-    const locationSearch =
-      this.container
-        .querySelector(`#${type}-location-search`)
-        ?.value?.toLowerCase() || "";
+    // Get filter elements based on type
+    const searchInput = this.container.querySelector(`#${type}-project-search`);
+    const locationInput = this.container.querySelector(
+      `#${type}-location-search`
+    );
+    const dateFilter = this.container.querySelector(`#${type}-date-filter`);
+
+    // Get the status or priority filter depending on type
     const statusFilter =
-      this.container.querySelector(`#${type}-status-filter`)?.value || "all";
-    const dateFilter =
-      this.container.querySelector(`#${type}-date-filter`)?.value || "all";
+      type === "current"
+        ? this.container.querySelector("#current-status-filter")
+        : this.container.querySelector("#future-status-filter");
 
-    // Update filters object
-    this.filters[type === "current" ? "currentProjects" : "futureProjects"] = {
-      search: projectSearch,
-      location: locationSearch,
-      status: statusFilter,
-      date: dateFilter,
-    };
+    const priorityFilter =
+      type === "future"
+        ? this.container.querySelector("#future-priority-filter")
+        : null;
 
+    // Get filter values
+    const searchValue = searchInput ? searchInput.value.toLowerCase() : "";
+    const locationValue = locationInput
+      ? locationInput.value.toLowerCase()
+      : "";
+    const dateValue = dateFilter ? dateFilter.value : "all";
+    const statusValue = statusFilter ? statusFilter.value : "all";
+    const priorityValue = priorityFilter ? priorityFilter.value : "all";
+
+    // Determine which projects array to filter
     const projects =
       type === "current" ? this.currentProjects : this.futureProjects;
+
+    if (!projects) return;
+
+    // Apply filters
     const filteredProjects = projects.filter((project) => {
-      const matchesSearch = project.name.toLowerCase().includes(projectSearch);
-      const matchesLocation = project.location
+      // Search filter
+      const nameMatch = project.name.toLowerCase().includes(searchValue);
+
+      // Location filter
+      const locationMatch = project.location
         .toLowerCase()
-        .includes(locationSearch);
-      const matchesStatus =
-        statusFilter === "all" || project.status === statusFilter;
+        .includes(locationValue);
 
-      let matchesDate = true;
-      if (dateFilter !== "all") {
-        const projectDate = new Date(project.startDate);
-        const now = new Date();
+      // Status filter
+      const statusMatch =
+        statusValue === "all" || project.status === statusValue;
 
-        switch (dateFilter) {
-          case "week":
-            matchesDate =
-              type === "current"
-                ? now - projectDate <= 7 * 24 * 60 * 60 * 1000
-                : projectDate - now <= 7 * 24 * 60 * 60 * 1000;
-            break;
-          case "month":
-            matchesDate =
-              type === "current"
-                ? now - projectDate <= 30 * 24 * 60 * 60 * 1000
-                : projectDate - now <= 30 * 24 * 60 * 60 * 1000;
-            break;
-          case "year":
-            matchesDate =
-              type === "current"
-                ? now - projectDate <= 365 * 24 * 60 * 60 * 1000
-                : projectDate - now <= 365 * 24 * 60 * 60 * 1000;
-            break;
-          case "halfyear":
-            matchesDate =
-              type === "future" &&
-              projectDate - now <= 180 * 24 * 60 * 60 * 1000;
-            break;
+      // Priority filter (only for future projects)
+      const priorityMatch =
+        type !== "future" ||
+        priorityValue === "all" ||
+        project.priority === priorityValue;
+
+      // Date filter
+      let dateMatch = true;
+      if (dateValue !== "all") {
+        const today = new Date();
+        const projectStartDate = new Date(project.startDate);
+        const projectEndDate = new Date(project.endDate);
+
+        if (type === "current") {
+          // Current projects date filtering
+          switch (dateValue) {
+            case "week":
+              const lastWeek = new Date(today);
+              lastWeek.setDate(today.getDate() - 7);
+              dateMatch = projectStartDate >= lastWeek;
+              break;
+            case "month":
+              const lastMonth = new Date(today);
+              lastMonth.setMonth(today.getMonth() - 1);
+              dateMatch = projectStartDate >= lastMonth;
+              break;
+            case "year":
+              const lastYear = new Date(today);
+              lastYear.setFullYear(today.getFullYear() - 1);
+              dateMatch = projectStartDate >= lastYear;
+              break;
+          }
+        } else {
+          // Future projects date filtering
+          switch (dateValue) {
+            case "week":
+              const nextWeek = new Date(today);
+              nextWeek.setDate(today.getDate() + 7);
+              dateMatch = projectStartDate <= nextWeek;
+              break;
+            case "month":
+              const nextMonth = new Date(today);
+              nextMonth.setMonth(today.getMonth() + 1);
+              dateMatch = projectStartDate <= nextMonth;
+              break;
+            case "halfyear":
+              const nextHalfYear = new Date(today);
+              nextHalfYear.setMonth(today.getMonth() + 6);
+              dateMatch = projectStartDate <= nextHalfYear;
+              break;
+            case "year":
+              const nextYear = new Date(today);
+              nextYear.setFullYear(today.getFullYear() + 1);
+              dateMatch = projectStartDate <= nextYear;
+              break;
+          }
         }
       }
 
-      return matchesSearch && matchesLocation && matchesStatus && matchesDate;
+      return (
+        nameMatch && locationMatch && statusMatch && priorityMatch && dateMatch
+      );
     });
 
+    // Render filtered projects
     this.renderProjects(type, filteredProjects);
   }
 
@@ -2520,4 +2622,86 @@ export default class ConstructionManager {
       }
     }
   }
+
+  // Add new method to update project statistics
+  updateProjectStatistics(type) {
+    if (type === "current") {
+      this.updateCurrentProjectStatistics();
+    } else if (type === "future") {
+      this.updateFutureProjectStatistics();
+    }
+  }
+
+  // Method to update current project statistics
+  updateCurrentProjectStatistics() {
+    // Get all stats elements
+    const totalElement = this.container.querySelector(
+      "#current-projects-total"
+    );
+    const completedElement = this.container.querySelector(
+      "#current-projects-completed"
+    );
+    const inProgressElement = this.container.querySelector(
+      "#current-projects-in-progress"
+    );
+    const onHoldElement = this.container.querySelector(
+      "#current-projects-on-hold"
+    );
+
+    // Calculate stats
+    const total = this.currentProjects.length;
+    const completed = this.currentProjects.filter(
+      (p) => p.status === "completed"
+    ).length;
+    const inProgress = this.currentProjects.filter(
+      (p) => p.status === "in-progress"
+    ).length;
+    const onHold = this.currentProjects.filter(
+      (p) => p.status === "on-hold"
+    ).length;
+
+    // Update DOM
+    if (totalElement) totalElement.textContent = total;
+    if (completedElement) completedElement.textContent = completed;
+    if (inProgressElement) inProgressElement.textContent = inProgress;
+    if (onHoldElement) onHoldElement.textContent = onHold;
+  }
+
+  // Method to update future project statistics
+  updateFutureProjectStatistics() {
+    // Get all stats elements
+    const totalElement = this.container.querySelector("#future-projects-total");
+    const highElement = this.container.querySelector("#future-projects-high");
+    const mediumElement = this.container.querySelector(
+      "#future-projects-medium"
+    );
+    const lowElement = this.container.querySelector("#future-projects-low");
+    const delayedElement = this.container.querySelector(
+      "#future-projects-delayed"
+    );
+
+    // Calculate stats
+    const total = this.futureProjects.length;
+    const highPriority = this.futureProjects.filter(
+      (p) => p.priority === "high"
+    ).length;
+    const mediumPriority = this.futureProjects.filter(
+      (p) => p.priority === "medium"
+    ).length;
+    const lowPriority = this.futureProjects.filter(
+      (p) => p.priority === "low"
+    ).length;
+    const delayed = this.futureProjects.filter(
+      (p) => p.status === "delayed"
+    ).length;
+
+    // Update DOM
+    if (totalElement) totalElement.textContent = total;
+    if (highElement) highElement.textContent = highPriority;
+    if (mediumElement) mediumElement.textContent = mediumPriority;
+    if (lowElement) lowElement.textContent = lowPriority;
+    if (delayedElement) delayedElement.textContent = delayed;
+  }
+
+  // ... rest of the existing methods ...
 }

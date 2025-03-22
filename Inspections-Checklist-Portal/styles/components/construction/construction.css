@@ -2,7 +2,7 @@
   height: 100%;
   position: relative;
   padding-top: 60px;
-  padding: 60px 20px 20px 0;
+  padding: 60px 20px 70px 0;
   margin: 0;
   width: 100%;
 }
@@ -120,6 +120,7 @@
 .construction-content {
   padding: 0;
   width: 100%;
+  margin-bottom: 60px;
 }
 
 .construction-section {
@@ -593,6 +594,27 @@
 
   .project-details {
     padding-top: 12px;
+  }
+
+  .projects-stats-footer {
+    left: 0;
+  }
+
+  .stats-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stat-item {
+    margin-bottom: 5px;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .stat-label {
+    margin-right: 10px;
+    margin-bottom: 0;
   }
 }
 
@@ -1931,4 +1953,102 @@ select option:hover {
 .remove-file:hover {
   background: #f44336;
   color: white;
+}
+
+/* Project Statistics Footer */
+.projects-stats-footer {
+  position: fixed;
+  bottom: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  background-color: #ffffff;
+  border-top: 1px solid var(--border-color);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+  padding: 10px 20px;
+  z-index: 50;
+  display: none;
+  transition: transform 0.3s ease;
+  transform: translateY(100%);
+}
+
+.construction-section.active .projects-stats-footer {
+  display: block;
+  transform: translateY(0);
+}
+
+.stats-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 15px;
+  min-width: 100px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 3px;
+}
+
+.stat-value {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #343a40;
+}
+
+/* Status-specific colors */
+.stat-completed {
+  color: #28a745;
+}
+
+.stat-in-progress {
+  color: #fd7e14;
+}
+
+.stat-on-hold {
+  color: #dc3545;
+}
+
+/* Priority colors */
+.stat-high {
+  color: #dc3545;
+}
+
+.stat-medium {
+  color: #fd7e14;
+}
+
+.stat-low {
+  color: #20c997;
+}
+
+/* Add padding to the bottom of the projects grid to prevent content from being hidden under the footer */
+#current-projects-list,
+#future-projects-list {
+  padding-bottom: 70px;
+}
+
+.stat-value.stat-high {
+  color: #f44336;
+}
+
+.stat-value.stat-medium {
+  color: #ff9800;
+}
+
+.stat-value.stat-low {
+  color: #4caf50;
+}
+
+.stat-value.stat-delayed {
+  color: #f44336;
 }

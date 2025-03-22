@@ -77,6 +77,12 @@
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
+          <select id="future-status-filter">
+            <option value="all">All Statuses</option>
+            <option value="planned">Planned</option>
+            <option value="delayed">Delayed</option>
+            <option value="move-to-current">Move to Current</option>
+          </select>
           <select id="future-date-filter">
             <option value="all">All Dates</option>
             <option value="week">Next Week</option>
@@ -112,13 +118,79 @@
     </div>
 
     <!-- Current Projects Section -->
-    <div class="construction-section" id="current-projects-section">
+    <div id="current-projects-section" class="construction-section">
+      <!-- Current Projects Header and Content -->
       <div class="projects-grid" id="current-projects-list"></div>
+
+      <!-- Current Projects Footer with Statistics -->
+      <div class="projects-stats-footer" id="current-projects-stats">
+        <div class="stats-container">
+          <div class="stat-item">
+            <span class="stat-label">Total Projects:</span>
+            <span class="stat-value" id="current-projects-total">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Completed:</span>
+            <span
+              class="stat-value stat-completed"
+              id="current-projects-completed"
+              >0</span
+            >
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">In Progress:</span>
+            <span
+              class="stat-value stat-in-progress"
+              id="current-projects-in-progress"
+              >0</span
+            >
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">On Hold:</span>
+            <span class="stat-value stat-on-hold" id="current-projects-on-hold"
+              >0</span
+            >
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Future Projects Section -->
-    <div class="construction-section" id="future-projects-section">
+    <div id="future-projects-section" class="construction-section">
+      <!-- Future Projects Header and Content -->
       <div class="projects-grid" id="future-projects-list"></div>
+
+      <!-- Future Projects Footer with Statistics -->
+      <div class="projects-stats-footer" id="future-projects-stats">
+        <div class="stats-container">
+          <div class="stat-item">
+            <span class="stat-label">Total Planned:</span>
+            <span class="stat-value" id="future-projects-total">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">High Priority:</span>
+            <span class="stat-value stat-high" id="future-projects-high"
+              >0</span
+            >
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Medium Priority:</span>
+            <span class="stat-value stat-medium" id="future-projects-medium"
+              >0</span
+            >
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Low Priority:</span>
+            <span class="stat-value stat-low" id="future-projects-low">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Delayed:</span>
+            <span class="stat-value stat-delayed" id="future-projects-delayed"
+              >0</span
+            >
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -795,7 +867,8 @@
           <h3 class="project-name"></h3>
           <select class="status-select">
             <option value="planned">Planned</option>
-            <option value="move-to-current">Move to Current Projects</option>
+            <option value="delayed">Delayed</option>
+            <option value="move-to-current">Move to Current</option>
           </select>
         </div>
         <button class="btn-toggle-details">
