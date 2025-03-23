@@ -29,20 +29,181 @@ export default class ConstructionManager {
   }
 
   init() {
-    // Initialize navigation
-    this.initNavigation();
+    // Добавляем стили для перенесенных проектов
+    this.addMigratedProjectStyles();
 
-    // Initialize event listeners
-    this.initEventListeners();
+    // Load data first
+    this.loadData().then(() => {
+      // Initialize the UI
+      this.initNavigation();
+      this.initEventListeners();
 
-    // Initialize datepickers for forms
-    this.initDatepickers();
+      // Initialize datepickers
+      this.initDatepickers();
 
-    // Load initial data
-    this.loadData();
+      // Отображаем подрядчиков
+      this.renderActiveSection();
+    });
+  }
 
-    // Call section specific initialization based on the current active section
-    this.onSectionChange();
+  // Добавляем стили для перенесенных проектов
+  addMigratedProjectStyles() {
+    const styleElement = document.createElement("style");
+    styleElement.textContent = `
+      .migrated-project-info {
+        margin-bottom: 20px;
+        padding: 12px;
+        background-color: #e1f5fe;
+        border-left: 4px solid #03a9f4;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+      }
+      
+      .migrated-project-info i {
+        color: #03a9f4;
+        font-size: 18px;
+        margin-right: 10px;
+      }
+      
+      .migrated-project-info span {
+        font-size: 14px;
+        color: #01579b;
+      }
+      
+      .info-message {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+        padding: 12px 15px;
+        background-color: #e1f5fe;
+        border-radius: 4px;
+        border-left: 4px solid #03a9f4;
+        color: #01579b;
+        font-size: 14px;
+      }
+      
+      .info-message i {
+        color: #03a9f4;
+        font-size: 16px;
+        margin-right: 10px;
+      }
+      
+      .migrated-files {
+        position: relative;
+        border-left: 4px solid #03a9f4;
+        padding-left: 15px;
+        margin-bottom: 25px;
+      }
+      
+      .migrated-fields {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        border-left: 4px solid #03a9f4;
+      }
+      
+      .migrated-fields h3 {
+        color: #01579b;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 16px;
+      }
+      
+      .migrated-fields .form-group {
+        margin-bottom: 15px;
+      }
+      
+      .migrated-fields label {
+        color: #01579b;
+        font-weight: 500;
+      }
+      
+      .migrated-files:before {
+        content: "From Future Project";
+        position: absolute;
+        top: -20px;
+        left: 0;
+        font-size: 12px;
+        color: #03a9f4;
+      }
+      
+      #current-project-modal .planning-info {
+        border-left: 4px solid #03a9f4;
+        padding-left: 15px;
+      }
+      
+      .migrated-badge {
+        display: inline-block;
+        font-size: 12px;
+        background-color: #03a9f4;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      
+      .migrated-section {
+        border-left: 4px solid #03a9f4;
+        padding-left: 15px;
+        margin-bottom: 25px;
+      }
+      
+      .file-preview-item {
+        position: relative;
+        display: inline-block;
+        width: 100px;
+        height: 120px;
+        margin: 5px;
+        vertical-align: top;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        text-align: center;
+        background-color: #f9f9f9;
+        overflow: hidden;
+      }
+      
+      .file-preview-item img {
+        max-width: 100%;
+        max-height: 60px;
+        object-fit: contain;
+        margin-bottom: 5px;
+      }
+      
+      .file-type-icon {
+        font-size: 30px;
+        color: #757575;
+        margin: 10px 0;
+      }
+      
+      .file-name {
+        font-size: 12px;
+        color: #333;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+      }
+      
+      .remove-file {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: rgba(255, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        line-height: 18px;
+        text-align: center;
+        cursor: pointer;
+      }
+    `;
+    document.head.appendChild(styleElement);
   }
 
   // Метод инициализации календарей для полей даты
@@ -776,7 +937,6 @@ export default class ConstructionManager {
       card.querySelector(".project-name").textContent = project.name;
       const statusSelect = card.querySelector(".status-select");
       statusSelect.value = project.status;
-      statusSelect.dataset.projectId = project.id;
 
       // Обновляем классы статуса
       this.updateStatusClasses(statusSelect, project.status);
@@ -901,20 +1061,190 @@ export default class ConstructionManager {
       : "Not updated";
     card.querySelector(".last-update").textContent = lastUpdateFormatted;
 
-    // Set file previews
-    if (project.photos && project.photos.length > 0) {
-      card.querySelector(".photos-preview").innerHTML = this.renderFilePreviews(
-        project.photos,
-        "photo"
-      );
+    // Определяем, является ли проект перенесенным из Future в Current
+    const isMigratedProject =
+      project.description ||
+      project.objectives ||
+      project.risks ||
+      project.priority ||
+      (project.specifications && project.specifications.length > 0) ||
+      (project.budgetDocs && project.budgetDocs.length > 0);
+
+    const detailsSection = card.querySelector(".project-details");
+
+    // Make Project Documents header collapsible
+    const documentsSection = detailsSection.querySelector(
+      ".details-section:last-child"
+    );
+    const docHeader = documentsSection.querySelector("h4");
+
+    // Make header collapsible
+    docHeader.classList.add("collapsible-header");
+    const documentsGrid = documentsSection.querySelector(".documents-grid");
+    documentsGrid.classList.add("collapsible-content");
+
+    // Add click event to toggle
+    docHeader.addEventListener("click", (e) => {
+      e.preventDefault();
+      docHeader.classList.toggle("collapsed");
+      documentsGrid.classList.toggle("collapsed");
+    });
+
+    // Добавляем информацию о планировании, если она есть (для перемещенных из Future Projects)
+    if (isMigratedProject && !detailsSection.querySelector(".planning-info")) {
+      // Создаем раздел Project Planning
+      const planningSection = document.createElement("div");
+      planningSection.className = "details-section migrated-section";
+      planningSection.innerHTML = `
+        <h4>Project Planning <span class="migrated-badge">Migrated</span></h4>
+        <div class="planning-info">
+          <div class="info-group">
+            <h5>Description</h5>
+            <p class="description">${
+              project.description || "No description available"
+            }</p>
+          </div>
+          <div class="info-group">
+            <h5>Key Objectives</h5>
+            <p class="objectives">${
+              project.objectives || "No objectives defined"
+            }</p>
+          </div>
+          <div class="info-group">
+            <h5>Risk Assessment</h5>
+            <p class="risks">${project.risks || "No risks identified"}</p>
+          </div>
+        </div>
+      `;
+
+      // Добавляем раздел перед Project Documents
+      if (documentsSection) {
+        detailsSection.insertBefore(planningSection, documentsSection);
+      } else {
+        detailsSection.appendChild(planningSection);
+      }
     }
-    if (project.documents && project.documents.length > 0) {
-      card.querySelector(".documents-preview").innerHTML =
-        this.renderFilePreviews(project.documents, "document");
-    }
-    if (project.reports && project.reports.length > 0) {
-      card.querySelector(".reports-preview").innerHTML =
-        this.renderFilePreviews(project.reports, "report");
+
+    // Reorganize documents grid - group migrated files at the top
+    if (
+      isMigratedProject &&
+      ((project.specifications && project.specifications.length > 0) ||
+        (project.budgetDocs && project.budgetDocs.length > 0))
+    ) {
+      // Clear existing content
+      const oldGrid = documentsGrid.innerHTML;
+      documentsGrid.innerHTML = "";
+
+      // Create migrated files group
+      const migratedFilesGroup = document.createElement("div");
+      migratedFilesGroup.className = "migrated-files-group";
+      documentsGrid.appendChild(migratedFilesGroup);
+
+      // Add specifications if they exist
+      if (project.specifications && project.specifications.length > 0) {
+        const specificationsGroup = document.createElement("div");
+        specificationsGroup.className = "documents-group migrated-files";
+        specificationsGroup.innerHTML = `
+          <h5>Specifications</h5>
+          <div class="specifications-preview file-preview-container">
+            ${this.renderFilePreviews(project.specifications, "specification")}
+          </div>
+        `;
+        migratedFilesGroup.appendChild(specificationsGroup);
+      }
+
+      // Add budget documents if they exist
+      if (project.budgetDocs && project.budgetDocs.length > 0) {
+        const budgetDocsGroup = document.createElement("div");
+        budgetDocsGroup.className = "documents-group migrated-files";
+        budgetDocsGroup.innerHTML = `
+          <h5>Budget Documents</h5>
+          <div class="budget-docs-preview file-preview-container">
+            ${this.renderFilePreviews(project.budgetDocs, "budgetDoc")}
+          </div>
+        `;
+        migratedFilesGroup.appendChild(budgetDocsGroup);
+      }
+
+      // Create current files group
+      const currentFilesGroup = document.createElement("div");
+      currentFilesGroup.className = "current-files-group";
+      documentsGrid.appendChild(currentFilesGroup);
+
+      // Add current files (Photos, Documents, Reports)
+      if (project.photos && project.photos.length > 0) {
+        const photosGroup = document.createElement("div");
+        photosGroup.className = "documents-group";
+        photosGroup.innerHTML = `
+          <h5>Photos</h5>
+          <div class="photos-preview file-preview-container">
+            ${this.renderFilePreviews(project.photos, "photo")}
+          </div>
+        `;
+        currentFilesGroup.appendChild(photosGroup);
+      } else {
+        const photosGroup = document.createElement("div");
+        photosGroup.className = "documents-group";
+        photosGroup.innerHTML = `
+          <h5>Photos</h5>
+          <div class="photos-preview file-preview-container"></div>
+        `;
+        currentFilesGroup.appendChild(photosGroup);
+      }
+
+      if (project.documents && project.documents.length > 0) {
+        const documentsGroup = document.createElement("div");
+        documentsGroup.className = "documents-group";
+        documentsGroup.innerHTML = `
+          <h5>Documents</h5>
+          <div class="documents-preview file-preview-container">
+            ${this.renderFilePreviews(project.documents, "document")}
+          </div>
+        `;
+        currentFilesGroup.appendChild(documentsGroup);
+      } else {
+        const documentsGroup = document.createElement("div");
+        documentsGroup.className = "documents-group";
+        documentsGroup.innerHTML = `
+          <h5>Documents</h5>
+          <div class="documents-preview file-preview-container"></div>
+        `;
+        currentFilesGroup.appendChild(documentsGroup);
+      }
+
+      if (project.reports && project.reports.length > 0) {
+        const reportsGroup = document.createElement("div");
+        reportsGroup.className = "documents-group";
+        reportsGroup.innerHTML = `
+          <h5>Reports</h5>
+          <div class="reports-preview file-preview-container">
+            ${this.renderFilePreviews(project.reports, "report")}
+          </div>
+        `;
+        currentFilesGroup.appendChild(reportsGroup);
+      } else {
+        const reportsGroup = document.createElement("div");
+        reportsGroup.className = "documents-group";
+        reportsGroup.innerHTML = `
+          <h5>Reports</h5>
+          <div class="reports-preview file-preview-container"></div>
+        `;
+        currentFilesGroup.appendChild(reportsGroup);
+      }
+    } else {
+      // Just set file previews without reorganization
+      if (project.photos && project.photos.length > 0) {
+        card.querySelector(".photos-preview").innerHTML =
+          this.renderFilePreviews(project.photos, "photo");
+      }
+      if (project.documents && project.documents.length > 0) {
+        card.querySelector(".documents-preview").innerHTML =
+          this.renderFilePreviews(project.documents, "document");
+      }
+      if (project.reports && project.reports.length > 0) {
+        card.querySelector(".reports-preview").innerHTML =
+          this.renderFilePreviews(project.reports, "report");
+      }
     }
   }
 
@@ -942,6 +1272,25 @@ export default class ConstructionManager {
     card.querySelector(".risks").textContent =
       project.risks || "No risks identified";
 
+    // Make Project Documents header collapsible
+    const detailsSection = card.querySelector(".project-details");
+    const documentsSection = detailsSection.querySelector(
+      ".details-section:last-child"
+    );
+    const docHeader = documentsSection.querySelector("h4");
+
+    // Make header collapsible
+    docHeader.classList.add("collapsible-header");
+    const documentsGrid = documentsSection.querySelector(".documents-grid");
+    documentsGrid.classList.add("collapsible-content");
+
+    // Add click event to toggle
+    docHeader.addEventListener("click", (e) => {
+      e.preventDefault();
+      docHeader.classList.toggle("collapsed");
+      documentsGrid.classList.toggle("collapsed");
+    });
+
     // Set file previews
     if (project.documents && project.documents.length > 0) {
       card.querySelector(".documents-preview").innerHTML =
@@ -951,28 +1300,46 @@ export default class ConstructionManager {
       card.querySelector(".specifications-preview").innerHTML =
         this.renderFilePreviews(project.specifications, "specification");
     }
-    if (project.budgetDocs && project.budgetDocs.length > 0) {
-      card.querySelector(".budget-docs-preview").innerHTML =
-        this.renderFilePreviews(project.budgetDocs, "budgetDoc");
-    }
   }
 
   renderFilePreviews(files, type) {
     return files
       .map((file, index) => {
+        if (!file) return ""; // Пропускаем undefined или null объекты
+
+        // Убедимся, что имя файла определено и корректно отображается
+        const fileName =
+          file.name && file.name.trim() !== ""
+            ? file.name
+            : file.originalName && file.originalName.trim() !== ""
+            ? file.originalName
+            : `${type.charAt(0).toUpperCase() + type.slice(1)} ${index + 1}`;
+
         const isImage =
           file.type?.startsWith("image/") ||
           (file.name && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i));
         const fileIcon = this.getFileIcon(
           file.type || "application/octet-stream"
         );
-        const previewUrl =
-          isImage && file.src
-            ? file.src
-            : isImage && URL.createObjectURL
-            ? URL.createObjectURL(file)
-            : null;
-        const fileName = file.name || `File ${index + 1}`;
+
+        let previewUrl = null;
+
+        // Проверяем, имеет ли файл src (для сохраненных изображений)
+        if (isImage && file.src) {
+          previewUrl = file.src;
+        }
+        // Проверяем, является ли файл объектом File или Blob для createObjectURL
+        else if (
+          isImage &&
+          (file instanceof Blob || file instanceof File) &&
+          URL.createObjectURL
+        ) {
+          try {
+            previewUrl = URL.createObjectURL(file);
+          } catch (error) {
+            console.error("Error creating object URL:", error);
+          }
+        }
 
         return `
         <div class="file-preview-item" 
@@ -1008,63 +1375,99 @@ export default class ConstructionManager {
   }
 
   addFilePreview(file, container, type) {
-    if (!container) return;
+    // Проверяем, существует ли файл
+    if (!file) return;
 
+    // Получаем имя файла, используя свойства originalName или name
+    const fileName =
+      file.originalName && file.originalName.trim() !== ""
+        ? file.originalName
+        : file.name && file.name.trim() !== ""
+        ? file.name
+        : `${type.charAt(0).toUpperCase() + type.slice(1)} File`;
+
+    // Создаем элемент для превью файла
     const previewItem = document.createElement("div");
     previewItem.className = "file-preview-item";
     previewItem.dataset.fileType = type;
-    previewItem.dataset.fileName = file.name;
-
-    // Сохраняем тип файла для определения способа открытия
+    previewItem.dataset.fileName = fileName;
     previewItem.dataset.mimeType = file.type || "application/octet-stream";
 
-    if (file.type.startsWith("image/")) {
+    // Проверяем, является ли файл изображением
+    const isImage =
+      file.type?.startsWith("image/") ||
+      (fileName && fileName.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+
+    // Если это изображение, создаем превью
+    if (isImage) {
       const img = document.createElement("img");
-      const imgUrl = URL.createObjectURL(file);
-      img.src = imgUrl;
-      img.alt = file.name;
-      // Сохраняем URL изображения для освобождения ресурсов позже
-      previewItem.dataset.imgUrl = imgUrl;
-      previewItem.appendChild(img);
+      try {
+        // Используем существующий URL или создаем новый
+        if (file.src) {
+          img.src = file.src;
+        } else if (file instanceof Blob || file instanceof File) {
+          const imgUrl = URL.createObjectURL(file);
+          img.src = imgUrl;
+          previewItem.dataset.imgUrl = imgUrl; // Сохраняем URL для последующего освобождения
+        }
+        previewItem.appendChild(img);
+      } catch (error) {
+        console.error("Ошибка создания превью изображения:", error);
+        // Если не удалось создать превью, используем иконку
+        const iconDiv = document.createElement("div");
+        iconDiv.className = "file-type-icon";
+        iconDiv.innerHTML = `<i class="fas fa-image"></i>`;
+        previewItem.appendChild(iconDiv);
+      }
     } else {
-      const icon = document.createElement("div");
-      icon.className = "file-type-icon";
-      icon.innerHTML = `<i class="${this.getFileIcon(file.type)}"></i>`;
-      previewItem.appendChild(icon);
+      // Для не-изображений показываем иконку типа файла
+      const iconDiv = document.createElement("div");
+      iconDiv.className = "file-type-icon";
+      const fileIcon = this.getFileIcon(
+        file.type || "application/octet-stream"
+      );
+      iconDiv.innerHTML = `<i class="${fileIcon}"></i>`;
+      previewItem.appendChild(iconDiv);
     }
 
-    const fileName = document.createElement("div");
-    fileName.className = "file-name";
-    fileName.textContent = file.name;
-    previewItem.appendChild(fileName);
+    // Добавляем имя файла
+    const nameElement = document.createElement("div");
+    nameElement.className = "file-name";
+    nameElement.textContent = fileName;
+    previewItem.appendChild(nameElement);
 
-    // Добавляем кнопку удаления
-    const removeBtn = document.createElement("button");
-    removeBtn.className = "remove-file";
-    removeBtn.innerHTML = "×";
-    removeBtn.title = "Remove file";
-    removeBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // Предотвращаем всплытие клика
-      // Если есть URL изображения, освобождаем его
-      if (previewItem.dataset.imgUrl) {
-        URL.revokeObjectURL(previewItem.dataset.imgUrl);
-      }
-      container.removeChild(previewItem);
-    });
-    previewItem.appendChild(removeBtn);
+    // Добавляем скрытое поле для хранения оригинального имени, если оно есть
+    if (file.originalName && file.originalName !== fileName) {
+      previewItem.dataset.originalFileName = file.originalName;
+    }
 
+    // Кнопку удаления добавим отдельно через bindFilePreviewEvents
+    // чтобы избежать дублирования обработчиков
+
+    // Добавляем превью в контейнер
     container.appendChild(previewItem);
+
+    // Привязываем события к новому превью
+    this.bindFilePreviewEvents(container);
   }
 
   bindProjectCardEvents(type) {
     // Status change handler
-    const statusSelects = document.querySelectorAll(".status-select");
+    const statusSelects = document.querySelectorAll(`.status-select`);
     statusSelects.forEach((select) => {
       select.addEventListener("change", (e) => {
         e.stopPropagation();
-        const projectId = parseInt(select.dataset.projectId);
+        // Получаем ID проекта из ближайшей карточки
+        const projectCard = e.target.closest(".project-card");
+        const projectId = parseInt(projectCard.dataset.id);
         const newStatus = e.target.value;
-        this.updateProjectStatus(projectId, newStatus, type);
+
+        // Определяем тип проекта на основе родительского контейнера
+        const projectsList = projectCard.closest(".projects-grid");
+        const projectType =
+          projectsList.id === "current-projects-list" ? "current" : "future";
+
+        this.updateProjectStatus(projectId, newStatus, projectType);
       });
     });
 
@@ -1134,9 +1537,59 @@ export default class ConstructionManager {
     const filePreviewItems = container.querySelectorAll(".file-preview-item");
 
     filePreviewItems.forEach((previewItem) => {
-      // Клонируем элемент, чтобы удалить предыдущие обработчики
+      // Проверяем, есть ли уже кнопка удаления
+      let removeBtn = previewItem.querySelector(".remove-file");
+
+      // Если кнопка удаления уже существует, удаляем ее перед добавлением новой
+      if (removeBtn) {
+        removeBtn.remove();
+      }
+
+      // Добавляем новую кнопку удаления
+      removeBtn = document.createElement("button");
+      removeBtn.className = "remove-file";
+      removeBtn.innerHTML = "×";
+      removeBtn.title = "Remove file";
+      removeBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Предотвращаем всплытие клика
+
+        // Если есть URL изображения, освобождаем его
+        const img = previewItem.querySelector("img");
+        if (img && img.src.startsWith("blob:")) {
+          URL.revokeObjectURL(img.src);
+        }
+
+        // Удаляем элемент из DOM
+        if (previewItem.parentNode) {
+          previewItem.parentNode.removeChild(previewItem);
+        }
+      });
+
+      // Добавляем кнопку к элементу превью
+      previewItem.appendChild(removeBtn);
+
+      // Удаляем существующий обработчик клика и добавляем новый
       const newPreviewItem = previewItem.cloneNode(true);
       previewItem.parentNode.replaceChild(newPreviewItem, previewItem);
+
+      // Восстанавливаем кнопку удаления, так как она была потеряна при клонировании
+      const newRemoveBtn = newPreviewItem.querySelector(".remove-file");
+      if (newRemoveBtn) {
+        newRemoveBtn.addEventListener("click", (e) => {
+          e.stopPropagation(); // Предотвращаем всплытие клика
+
+          // Если есть URL изображения, освобождаем его
+          const img = newPreviewItem.querySelector("img");
+          if (img && img.src.startsWith("blob:")) {
+            URL.revokeObjectURL(img.src);
+          }
+
+          // Удаляем элемент из DOM
+          if (newPreviewItem.parentNode) {
+            newPreviewItem.parentNode.removeChild(newPreviewItem);
+          }
+        });
+      }
 
       // Добавляем обработчик клика
       newPreviewItem.addEventListener("click", () => {
@@ -1218,35 +1671,102 @@ export default class ConstructionManager {
     return projects.find((p) => p.id === id) || null;
   }
 
+  // Метод для синхронизации удаленных файлов в перенесенном проекте
+  syncDeletedFiles(sourceProject, targetProject) {
+    if (!sourceProject || !targetProject) return targetProject;
+
+    // Синхронизируем Specifications
+    if (sourceProject.specifications && targetProject.specifications) {
+      const sourceFileMap = {};
+      sourceProject.specifications.forEach((file) => {
+        const key = `${file.name}-${file.type}`;
+        sourceFileMap[key] = true;
+      });
+
+      targetProject.specifications = targetProject.specifications.filter(
+        (file) => {
+          const key = `${file.name}-${file.type}`;
+          return sourceFileMap[key];
+        }
+      );
+    }
+
+    // Синхронизируем Documents - копируем документы из исходного проекта в целевой
+    if (sourceProject.documents && targetProject.documents) {
+      const sourceFileMap = {};
+      sourceProject.documents.forEach((file) => {
+        const key = `${file.name}-${file.type}`;
+        sourceFileMap[key] = true;
+      });
+
+      // Проверяем только существующие документы из Future Projects
+      const existingDocs = targetProject.documents.filter((file) => {
+        const key = `${file.name}-${file.type}`;
+        return sourceFileMap[key];
+      });
+
+      // Объединяем существующие документы с документами из source
+      targetProject.documents = [
+        ...existingDocs,
+        ...sourceProject.documents.filter((file) => {
+          // Добавляем только те документы, которых еще нет в targetProject
+          return !existingDocs.some(
+            (existingFile) =>
+              existingFile.name === file.name && existingFile.type === file.type
+          );
+        }),
+      ];
+    }
+
+    return targetProject;
+  }
+
   updateProjectStatus(projectId, newStatus, type) {
     const project = this.getProjectById(parseInt(projectId), type);
     if (!project) return;
 
     if (type === "future" && newStatus === "move-to-current") {
-      // Перемещаем проект из future в current
+      // Создаем копию исходного проекта для последующей синхронизации файлов
+      const originalProject = JSON.parse(JSON.stringify(project));
+
+      // Сохраняем копию проекта, а не ссылку на объект
+      let projectCopy = JSON.parse(JSON.stringify(project));
+
+      // Удаляем проект из Future Projects
       this.futureProjects = this.futureProjects.filter(
         (p) => p.id !== projectId
       );
 
       // Устанавливаем начальный статус для текущего проекта
-      project.status = "in-progress";
+      projectCopy.status = "in-progress";
 
       // Копируем значение Budget из будущего проекта в Actual Cost текущего проекта
-      if (project.budget) {
+      if (projectCopy.budget) {
         console.log(
-          `Moving project: Budget value ${project.budget} transferred to Actual Cost`
+          `Moving project: Budget value ${projectCopy.budget} transferred to Actual Cost`
         );
-        project.actualCost = project.budget;
+        projectCopy.actualCost = projectCopy.budget;
       } else {
         console.log(`Moving project: No budget value found to transfer`);
+        projectCopy.actualCost = 0;
       }
 
       // Устанавливаем начальный прогресс
-      if (!project.progress) {
-        project.progress = 0;
+      if (!projectCopy.progress) {
+        projectCopy.progress = 0;
       }
 
-      this.currentProjects.push(project);
+      // Создаем новые поля, необходимые для Current Projects, если они отсутствуют
+      projectCopy.lastUpdate = new Date().toISOString();
+      if (!projectCopy.photos) projectCopy.photos = [];
+      if (!projectCopy.documents) projectCopy.documents = []; // Сохраняем существующие документы
+      if (!projectCopy.reports) projectCopy.reports = [];
+
+      // Синхронизируем удаленные файлы
+      projectCopy = this.syncDeletedFiles(originalProject, projectCopy);
+
+      // Добавляем проект в Current Projects
+      this.currentProjects.push(projectCopy);
 
       // Update both sections' stats when moving a project between sections
       this.renderProjects("future");
@@ -1301,19 +1821,52 @@ export default class ConstructionManager {
   }
 
   showProjectModal(type, project = null) {
+    // Определяем, какое модальное окно нужно показать
     const modal = this.container.querySelector(
       `#${type === "current" ? "current" : "future"}-project-modal`
     );
     const form = modal.querySelector("form");
     const titleElement = modal.querySelector("h3");
 
-    // Обновляем заголовок модального окна в зависимости от действия
-    titleElement.textContent = project
-      ? `Edit ${type === "current" ? "Current" : "Future"} Project`
-      : `Add ${type === "current" ? "Current" : "Future"} Project`;
+    // Сначала очищаем форму от предыдущих данных
+    form.reset();
 
-    // Устанавливаем тип проекта и ID, если редактируем существующий проект
+    // Удаляем все существующие info-message и migrated-fields элементы
+    const existingInfoMessages = form.querySelectorAll(".info-message");
+    existingInfoMessages.forEach((msg) => msg.remove());
+
+    const existingMigratedFields = form.querySelectorAll(".migrated-fields");
+    existingMigratedFields.forEach((field) => field.remove());
+
+    // Обновляем заголовок модального окна в зависимости от действия
+    if (titleElement) {
+      titleElement.textContent = project
+        ? `Edit ${type === "current" ? "Current" : "Future"} Project`
+        : `Add ${type === "current" ? "Current" : "Future"} Project`;
+    }
+
+    // Проверяем, является ли проект перенесенным из Future в Current
+    const isMigratedProject =
+      type === "current" &&
+      project &&
+      (project.specifications ||
+        project.budgetDocs ||
+        project.description ||
+        project.objectives ||
+        project.risks ||
+        project.priority);
+
+    // Очищаем предыдущие предпросмотры файлов
+    this.clearFilePreviews(type);
+
+    // Настраиваем обработчики загрузки файлов
+    this.setupFileUploadHandlers(type);
+
+    // Указываем тип проекта
     form.elements.projectType.value = type;
+
+    // Заполняем список подрядчиков
+    this.populateContractorSelect(form.elements.contractorId);
 
     // Добавляем обработчик выбора типа бизнеса для обновления списка подрядчиков
     const businessTypeSelect = form.elements.businessType;
@@ -1324,23 +1877,20 @@ export default class ConstructionManager {
       );
     };
 
-    // Заполняем список подрядчиков
-    this.populateContractorSelect(form.elements.contractorId);
-
     // Добавляем обработчик выбора подрядчика для обновления списка контактных лиц
     const contractorSelect = form.elements.contractorId;
     contractorSelect.onchange = () => {
       this.updateContactPersonSelect(contractorSelect.value);
     };
 
+    // Если редактируем существующий проект
     if (project) {
+      // Устанавливаем id проекта для формы
       form.dataset.projectId = project.id;
 
-      // Заполняем форму данными проекта
-      form.elements.projectName.value = project.name;
-      form.elements.location.value = project.location;
-
-      // Форматируем даты из YYYY-MM-DD в MM-DD-YY
+      // Заполняем форму данными проекта, общие для обоих типов
+      form.elements.projectName.value = project.name || "";
+      form.elements.location.value = project.location || "";
       form.elements.startDate.value = this.formatDateForDisplay(
         project.startDate
       );
@@ -1363,17 +1913,86 @@ export default class ConstructionManager {
         this.updateContactPersonSelect(project.contractorId);
       }
 
-      // Поля, специфичные для текущих проектов
+      if (project.contactPersonId) {
+        form.elements.contactPersonId.value = project.contactPersonId;
+      }
+
+      // Обрабатываем специфичные для типа проекта поля
       if (type === "current") {
         form.elements.progress.value = project.progress || 0;
         form.elements.actualCost.value = project.actualCost || "";
-        form.elements.status.value = project.status || "in-progress";
-        form.elements.lastUpdate.value = project.lastUpdate
-          ? this.formatDateForDisplay(project.lastUpdate)
-          : "";
-      }
-      // Поля, специфичные для будущих проектов
-      else {
+        form.elements.status.value = project.status || "not_started";
+        form.elements.lastUpdate.value = this.formatDateForDisplay(
+          project.lastUpdate
+        );
+
+        // Для перенесенных проектов показываем дополнительную информацию
+        if (isMigratedProject) {
+          // Создаем единое информационное сообщение с иконкой
+          const infoMessage = document.createElement("div");
+          infoMessage.className = "info-message";
+          infoMessage.innerHTML =
+            '<i class="fas fa-info-circle"></i> This project was moved from Future Projects.';
+
+          // Находим место для вставки сообщения
+          const actionButtons = form.querySelector(".action-buttons");
+          if (actionButtons) {
+            actionButtons.insertAdjacentElement("beforebegin", infoMessage);
+          } else {
+            // Если не найдена секция с кнопками, добавляем в конец формы
+            form.appendChild(infoMessage);
+          }
+
+          // Создаем дополнительные поля для данных из Future Projects
+          const currentProjectSection =
+            form.querySelector(".project-main-info");
+          if (currentProjectSection) {
+            // Создаем раздел для планирования проекта
+            const planningSection = document.createElement("div");
+            planningSection.className = "form-section migrated-fields";
+            planningSection.innerHTML = `
+                <h3>Project Planning</h3>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3" readonly>${
+                      project.description || ""
+                    }</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="objectives">Key Objectives</label>
+                    <textarea id="objectives" name="objectives" rows="3" readonly>${
+                      project.objectives || ""
+                    }</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="risks">Risk Assessment</label>
+                    <textarea id="risks" name="risks" rows="3" readonly>${
+                      project.risks || ""
+                    }</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority Level</label>
+                    <select id="priority" name="priority" disabled>
+                        <option value="low" ${
+                          project.priority === "low" ? "selected" : ""
+                        }>Low</option>
+                        <option value="medium" ${
+                          project.priority === "medium" ? "selected" : ""
+                        }>Medium</option>
+                        <option value="high" ${
+                          project.priority === "high" ? "selected" : ""
+                        }>High</option>
+                    </select>
+                </div>
+            `;
+            currentProjectSection.insertAdjacentElement(
+              "afterend",
+              planningSection
+            );
+          }
+        }
+      } else {
+        // Future project
         form.elements.budget.value = project.budget || "";
         form.elements.priority.value = project.priority || "medium";
         form.elements.description.value = project.description || "";
@@ -1381,29 +2000,26 @@ export default class ConstructionManager {
         form.elements.risks.value = project.risks || "";
       }
 
-      // Обновляем список контактных лиц после выбора подрядчика
-      if (project.contactPersonId) {
-        form.elements.contactPersonId.value = project.contactPersonId;
-      }
+      // Проверяем и приводим структуру файлов к правильному формату
+      project = this.ensureFileStructures(project, type);
 
-      // Отображаем существующие файлы
+      // Отображаем существующие файлы проекта
       this.displayExistingFiles(project, type);
     } else {
-      // Сбрасываем форму, если создаем новый проект
-      form.reset();
+      // Для нового проекта
       form.dataset.projectId = "";
-      form.elements.projectType.value = type;
-      this.clearFilePreviews(type);
 
       // Обновляем список контактных лиц на пустой
       const contactPersonSelect = form.elements.contactPersonId;
       contactPersonSelect.innerHTML =
         '<option value="">Select Contact Person</option>';
       contactPersonSelect.disabled = true;
-    }
 
-    // Настраиваем обработчики файлов
-    this.setupFileUploadHandlers(type);
+      // Устанавливаем текущую дату для поля lastUpdate
+      if (type === "current") {
+        form.elements.lastUpdate.value = this.formatDateForDisplay(new Date());
+      }
+    }
 
     // Инициализируем календари для формы
     this.initFormDatepickers(form);
@@ -1412,6 +2028,12 @@ export default class ConstructionManager {
   }
 
   displayExistingFiles(project, type) {
+    // Если проект отсутствует или не имеет структуры файлов, нечего отображать
+    if (!project) return;
+
+    // Предварительно проверяем и корректируем структуру файлов проекта
+    project = this.ensureFileStructures(project, type);
+
     const previewContainers = {
       current: {
         photos: this.container.querySelector("#current-photos-preview"),
@@ -1423,7 +2045,6 @@ export default class ConstructionManager {
         specifications: this.container.querySelector(
           "#future-specifications-preview"
         ),
-        budgetDocs: this.container.querySelector("#future-budget-preview"),
       },
     };
 
@@ -1432,61 +2053,185 @@ export default class ConstructionManager {
       if (container) container.innerHTML = "";
     });
 
-    // Проверяем наличие проекта и его файлов перед отображением
-    if (!project) return;
+    // Определяем, является ли проект перенесенным из Future в Current
+    const isMigratedProject =
+      type === "current" &&
+      (project.specifications ||
+        project.budgetDocs ||
+        project.description ||
+        project.objectives ||
+        project.risks ||
+        project.priority);
 
     // Отображаем файлы в соответствующие контейнеры
     if (type === "current") {
-      if (project.photos && project.photos.length > 0) {
-        project.photos.forEach((photo) => {
-          this.addFilePreview(photo, previewContainers[type].photos, "photo");
-        });
+      // Отображаем файлы фотографий
+      if (
+        project.photos &&
+        Array.isArray(project.photos) &&
+        project.photos.length > 0
+      ) {
+        const photoContainer = previewContainers[type].photos;
+        if (photoContainer) {
+          project.photos.forEach((photo) => {
+            if (photo) {
+              this.addFilePreview(photo, photoContainer, "photo");
+            }
+          });
+        }
       }
-      if (project.documents && project.documents.length > 0) {
-        project.documents.forEach((doc) => {
-          this.addFilePreview(
-            doc,
-            previewContainers[type].documents,
-            "document"
-          );
-        });
+
+      // Отображаем документы
+      if (
+        project.documents &&
+        Array.isArray(project.documents) &&
+        project.documents.length > 0
+      ) {
+        const docsContainer = previewContainers[type].documents;
+        if (docsContainer) {
+          project.documents.forEach((doc) => {
+            if (doc) {
+              this.addFilePreview(doc, docsContainer, "document");
+            }
+          });
+        }
       }
-      if (project.reports && project.reports.length > 0) {
-        project.reports.forEach((report) => {
-          this.addFilePreview(
-            report,
-            previewContainers[type].reports,
-            "report"
-          );
-        });
+
+      // Отображаем отчеты
+      if (
+        project.reports &&
+        Array.isArray(project.reports) &&
+        project.reports.length > 0
+      ) {
+        const reportsContainer = previewContainers[type].reports;
+        if (reportsContainer) {
+          project.reports.forEach((report) => {
+            if (report) {
+              this.addFilePreview(report, reportsContainer, "report");
+            }
+          });
+        }
+      }
+
+      // Для перенесенных проектов: отображаем дополнительные файлы из Future Projects
+      if (isMigratedProject) {
+        // Создаем контейнеры для specifications и budgetDocs, если они не существуют
+        const specificationsContainer = document.querySelector(
+          "#current-specifications-preview"
+        );
+        const budgetDocsContainer = document.querySelector(
+          "#current-budget-preview"
+        );
+
+        // Добавляем спецификации, если они есть
+        if (
+          project.specifications &&
+          Array.isArray(project.specifications) &&
+          project.specifications.length > 0
+        ) {
+          const documentsSection =
+            previewContainers[type].documents?.closest(".form-section");
+          if (documentsSection) {
+            if (!specificationsContainer) {
+              // Создаем группу для спецификаций
+              const specGroup = document.createElement("div");
+              specGroup.className = "form-group migrated-files";
+              specGroup.innerHTML = `
+                <label>Specifications (from Future Project)</label>
+                <div id="current-specifications-preview" class="file-preview-container"></div>
+              `;
+              documentsSection.appendChild(specGroup);
+            }
+
+            // Добавляем файлы в превью
+            const targetContainer =
+              specificationsContainer ||
+              document.querySelector("#current-specifications-preview");
+            if (targetContainer) {
+              // Очищаем контейнер перед добавлением файлов
+              targetContainer.innerHTML = "";
+
+              project.specifications.forEach((spec) => {
+                if (spec) {
+                  this.addFilePreview(spec, targetContainer, "specification");
+                }
+              });
+            }
+          }
+        }
+
+        // Добавляем бюджетные документы, если они есть
+        if (
+          project.budgetDocs &&
+          Array.isArray(project.budgetDocs) &&
+          project.budgetDocs.length > 0
+        ) {
+          const documentsSection =
+            previewContainers[type].documents?.closest(".form-section");
+          if (documentsSection) {
+            if (!budgetDocsContainer) {
+              // Создаем группу для бюджетных документов
+              const budgetGroup = document.createElement("div");
+              budgetGroup.className = "form-group migrated-files";
+              budgetGroup.innerHTML = `
+                <label>Budget Documents (from Future Project)</label>
+                <div id="current-budget-preview" class="file-preview-container"></div>
+              `;
+              documentsSection.appendChild(budgetGroup);
+            }
+
+            // Добавляем файлы в превью
+            const targetContainer =
+              budgetDocsContainer ||
+              document.querySelector("#current-budget-preview");
+            if (targetContainer) {
+              // Очищаем контейнер перед добавлением файлов
+              targetContainer.innerHTML = "";
+
+              project.budgetDocs.forEach((doc) => {
+                if (doc) {
+                  this.addFilePreview(doc, targetContainer, "budgetDoc");
+                }
+              });
+            }
+          }
+        }
       }
     } else if (type === "future") {
-      if (project.documents && project.documents.length > 0) {
-        project.documents.forEach((doc) => {
-          this.addFilePreview(
-            doc,
-            previewContainers[type].documents,
-            "document"
-          );
-        });
+      // Отображаем документы
+      if (
+        project.documents &&
+        Array.isArray(project.documents) &&
+        project.documents.length > 0
+      ) {
+        const docsContainer = previewContainers[type].documents;
+        if (docsContainer) {
+          project.documents.forEach((doc) => {
+            if (doc) {
+              this.addFilePreview(doc, docsContainer, "document");
+            }
+          });
+        }
       }
-      if (project.specifications && project.specifications.length > 0) {
-        project.specifications.forEach((spec) => {
-          this.addFilePreview(
-            spec,
-            previewContainers[type].specifications,
-            "specification"
-          );
-        });
-      }
-      if (project.budgetDocs && project.budgetDocs.length > 0) {
-        project.budgetDocs.forEach((doc) => {
-          this.addFilePreview(
-            doc,
-            previewContainers[type].budgetDocs,
-            "budgetDoc"
-          );
-        });
+
+      // Отображаем спецификации
+      if (
+        project.specifications &&
+        Array.isArray(project.specifications) &&
+        project.specifications.length > 0
+      ) {
+        const specificationsContainer = previewContainers[type].specifications;
+        if (specificationsContainer) {
+          project.specifications.forEach((spec) => {
+            if (spec) {
+              this.addFilePreview(
+                spec,
+                specificationsContainer,
+                "specification"
+              );
+            }
+          });
+        }
       }
     }
 
@@ -1496,6 +2241,18 @@ export default class ConstructionManager {
         this.bindFilePreviewEvents(container);
       }
     });
+
+    // Также обрабатываем динамически созданные контейнеры для перенесенных проектов
+    if (isMigratedProject) {
+      const migratedContainers = document.querySelectorAll(
+        ".migrated-files .file-preview-container"
+      );
+      migratedContainers.forEach((container) => {
+        if (container) {
+          this.bindFilePreviewEvents(container);
+        }
+      });
+    }
   }
 
   clearFilePreviews(type) {
@@ -1510,7 +2267,6 @@ export default class ConstructionManager {
         specifications: this.container.querySelector(
           "#future-specifications-preview"
         ),
-        budgetDocs: this.container.querySelector("#future-budget-preview"),
       },
     };
 
@@ -1529,7 +2285,6 @@ export default class ConstructionManager {
       future: {
         documents: this.container.querySelector("#future-documents"),
         specifications: this.container.querySelector("#future-specifications"),
-        budgetDocs: this.container.querySelector("#future-budget"),
       },
     };
 
@@ -1545,19 +2300,20 @@ export default class ConstructionManager {
             `#${type}-${key}-preview`
           );
           if (previewContainer) {
-            // Очищаем контейнер перед добавлением новых файлов
-            previewContainer.innerHTML = "";
+            // Проверка выбраны ли файлы
+            if (e.target.files && e.target.files.length > 0) {
+              // Обрабатываем каждый выбранный файл
+              Array.from(e.target.files).forEach((file) => {
+                this.addFilePreview(
+                  file,
+                  previewContainer,
+                  key === "photos" ? "photo" : "document"
+                );
+              });
 
-            Array.from(e.target.files).forEach((file) => {
-              this.addFilePreview(
-                file,
-                previewContainer,
-                key === "photos" ? "photo" : "document"
-              );
-            });
-
-            // Привязываем обработчики событий к новым файловым превью
-            this.bindFilePreviewEvents(previewContainer);
+              // Сбрасываем input, чтобы можно было выбрать те же файлы повторно
+              e.target.value = "";
+            }
           }
         });
       }
@@ -1608,99 +2364,151 @@ export default class ConstructionManager {
 
   handleProjectSubmit(e) {
     e.preventDefault();
-
     const form = e.target;
+    const projectId = form.dataset.projectId
+      ? parseInt(form.dataset.projectId)
+      : null;
     const projectType = form.elements.projectType.value;
-    const projectId = form.dataset.projectId;
 
-    // Собираем основные данные проекта
+    // Получаем существующий проект для сравнения файлов, если редактируем
+    const existingProject = projectId
+      ? this.getProjectById(projectId, projectType)
+      : null;
+
+    // Базовые данные проекта
     const projectData = {
       name: form.elements.projectName.value,
       location: form.elements.location.value,
       startDate: this.formatDateForStorage(form.elements.startDate.value),
       endDate: this.formatDateForStorage(form.elements.endDate.value),
+      contractorId: parseInt(form.elements.contractorId.value) || null,
+      contactPersonId: parseInt(form.elements.contactPersonId.value) || null,
       businessType: form.elements.businessType.value,
-      contractorId: form.elements.contractorId.value,
-      contactPersonId: form.elements.contactPersonId.value,
     };
 
-    // Собираем файлы в зависимости от типа проекта
+    // Определяем, является ли проект перенесенным из Future в Current
+    const isMigratedProject =
+      projectType === "current" &&
+      (form.elements.description ||
+        form.elements.objectives ||
+        form.elements.risks ||
+        form.elements.priority ||
+        document.querySelector("#current-specifications-preview"));
+
+    // Добавляем данные в зависимости от типа проекта
     if (projectType === "current") {
-      // Current project specific fields
-      projectData.progress = parseInt(form.elements.progress.value, 10);
-      projectData.actualCost = parseFloat(form.elements.actualCost.value);
+      projectData.progress = parseInt(form.elements.progress.value) || 0;
+      projectData.actualCost = parseFloat(form.elements.actualCost.value) || 0;
       projectData.status = form.elements.status.value;
-      projectData.lastUpdate = form.elements.lastUpdate.value;
+      projectData.lastUpdate = this.formatDateForStorage(
+        form.elements.lastUpdate.value
+      );
 
-      // Сбор файлов из input элементов
-      projectData.photos = Array.from(form.elements.photos?.files || []);
-      projectData.documents = Array.from(form.elements.documents?.files || []);
-      projectData.reports = Array.from(form.elements.reports?.files || []);
+      // Добавляем файлы
+      projectData.photos = this.collectFiles(
+        "#current-photos",
+        "#current-photos-preview"
+      );
+      projectData.documents = this.collectFiles(
+        "#current-documents",
+        "#current-documents-preview"
+      );
+      projectData.reports = this.collectFiles(
+        "#current-reports",
+        "#current-reports-preview"
+      );
 
-      // Если редактируем существующий проект, сохраняем ранее загруженные файлы
-      if (projectId) {
-        const existingProject = this.getProjectById(projectId, projectType);
-        if (existingProject) {
-          console.log(
-            `Found existing project: ${JSON.stringify(existingProject)}`
+      // Для перенесенных проектов сохраняем дополнительные поля и файлы из Future Projects
+      if (isMigratedProject) {
+        // Сохраняем поля планирования, если они существуют
+        if (form.elements.description) {
+          projectData.description = form.elements.description.value || "";
+        }
+
+        if (form.elements.objectives) {
+          projectData.objectives = form.elements.objectives.value || "";
+        }
+
+        if (form.elements.risks) {
+          projectData.risks = form.elements.risks.value || "";
+        }
+
+        if (form.elements.priority) {
+          projectData.priority = form.elements.priority.value || "medium";
+        }
+
+        // Собираем файлы спецификаций из контейнера превью
+        const specificationsContainer = document.querySelector(
+          "#current-specifications-preview"
+        );
+        if (specificationsContainer) {
+          const specsFromContainer = this.collectFilesFromContainer(
+            specificationsContainer
           );
-          // Объединяем существующие файлы с новыми
-          if (projectData.photos.length === 0 && existingProject.photos) {
-            projectData.photos = existingProject.photos;
+
+          // Сохраняем файлы - используем только те, которые отображаются в превью
+          if (specsFromContainer.length > 0) {
+            projectData.specifications = specsFromContainer;
+          } else if (existingProject && existingProject.specifications) {
+            // Если контейнер пуст, но у существующего проекта есть спецификации, сохраняем их
+            projectData.specifications = existingProject.specifications;
+          } else {
+            projectData.specifications = [];
           }
-          if (projectData.documents.length === 0 && existingProject.documents) {
-            projectData.documents = existingProject.documents;
-          }
-          if (projectData.reports.length === 0 && existingProject.reports) {
-            projectData.reports = existingProject.reports;
-          }
+        }
+      } else if (projectId && existingProject) {
+        // Если это не перенесенный проект, но редактирование существующего,
+        // сохраняем специфические поля Future Projects, если они существуют
+        if (existingProject.description) {
+          projectData.description = existingProject.description;
+        }
+        if (existingProject.objectives) {
+          projectData.objectives = existingProject.objectives;
+        }
+        if (existingProject.risks) {
+          projectData.risks = existingProject.risks;
+        }
+        if (existingProject.priority) {
+          projectData.priority = existingProject.priority;
+        }
+        if (existingProject.specifications) {
+          projectData.specifications = existingProject.specifications;
         }
       }
     } else {
       // Future project
-      projectData.budget = parseFloat(form.elements.budget.value);
+      projectData.budget = parseFloat(form.elements.budget.value) || 0;
       projectData.priority = form.elements.priority.value;
       projectData.description = form.elements.description.value;
       projectData.objectives = form.elements.objectives.value;
       projectData.risks = form.elements.risks.value;
 
-      // Сбор файлов из input элементов
-      projectData.documents = Array.from(form.elements.documents?.files || []);
-      projectData.specifications = Array.from(
-        form.elements.specifications?.files || []
+      // Собираем файлы из контейнеров превью
+      const documentsContainer = document.querySelector(
+        "#future-documents-preview"
       );
-      projectData.budgetDocs = Array.from(
-        form.elements.budgetDocs?.files || []
-      );
+      if (documentsContainer) {
+        const docsFromContainer =
+          this.collectFilesFromContainer(documentsContainer);
+        projectData.documents = docsFromContainer;
+      } else {
+        projectData.documents = [];
+      }
 
-      // Если редактируем существующий проект, сохраняем ранее загруженные файлы
-      if (projectId) {
-        const existingProject = this.getProjectById(projectId, projectType);
-        if (existingProject) {
-          console.log(
-            `Found existing project: ${JSON.stringify(existingProject)}`
-          );
-          // Объединяем существующие файлы с новыми
-          if (projectData.documents.length === 0 && existingProject.documents) {
-            projectData.documents = existingProject.documents;
-          }
-          if (
-            projectData.specifications.length === 0 &&
-            existingProject.specifications
-          ) {
-            projectData.specifications = existingProject.specifications;
-          }
-          if (
-            projectData.budgetDocs.length === 0 &&
-            existingProject.budgetDocs
-          ) {
-            projectData.budgetDocs = existingProject.budgetDocs;
-          }
-        }
+      const specificationsContainer = document.querySelector(
+        "#future-specifications-preview"
+      );
+      if (specificationsContainer) {
+        const specsFromContainer = this.collectFilesFromContainer(
+          specificationsContainer
+        );
+        projectData.specifications = specsFromContainer;
+      } else {
+        projectData.specifications = [];
       }
     }
 
-    // Сохраняем или обновляем проект
+    // Обновляем существующий проект или создаем новый
     if (projectId) {
       this.updateProject(projectId, projectData, projectType);
     } else {
@@ -1714,112 +2522,59 @@ export default class ConstructionManager {
     modal.classList.remove("active");
   }
 
-  // CRUD операции
-  createContractor(data) {
-    data.id = Date.now();
-    this.contractors.push(data);
-    this.updateBusinessTypeFilter(); // Обновляем список типов бизнеса
-    this.renderContractors();
-  }
+  // Метод для сбора файлов из контейнера предпросмотра
+  collectFilesFromContainer(container) {
+    if (!container) return [];
 
-  updateContractor(id, data) {
-    const index = this.contractors.findIndex((c) => c.id === id);
-    if (index !== -1) {
-      this.contractors[index] = { ...this.contractors[index], ...data };
-      this.renderContractors();
-    }
-  }
+    const fileItems = container.querySelectorAll(".file-preview-item");
+    const files = [];
 
-  deleteContractor(id) {
-    if (confirm("Are you sure you want to delete this contractor?")) {
-      this.contractors = this.contractors.filter((c) => c.id !== id);
-      this.renderContractors();
-    }
-  }
+    fileItems.forEach((item) => {
+      const fileName = item.dataset.fileName;
+      const mimeType = item.dataset.mimeType;
+      const fileType = item.dataset.fileType;
 
-  createProject(data, type) {
-    data.id = Date.now();
-    data.status = type === "current" ? "in-progress" : "planned";
+      // Проверяем наличие элемента img, чтобы определить, является ли это изображением
+      const imgElement = item.querySelector("img");
+      let src = null;
 
-    if (type === "current") {
-      data.progress = data.progress || 0;
-      data.actualCost = data.actualCost || 0;
-      data.lastUpdate = data.lastUpdate || new Date().toISOString();
-      data.photos = data.photos || [];
-      data.documents = data.documents || [];
-      data.reports = data.reports || [];
-    } else {
-      data.budget = data.budget || 0;
-      data.priority = data.priority || "medium";
-      data.description = data.description || "";
-      data.objectives = data.objectives || "";
-      data.risks = data.risks || "";
-      data.documents = data.documents || [];
-      data.specifications = data.specifications || [];
-      data.budgetDocs = data.budgetDocs || [];
-    }
-
-    if (type === "current") {
-      this.currentProjects.push(data);
-    } else {
-      this.futureProjects.push(data);
-    }
-
-    this.renderProjects(type);
-    this.updateProjectStatistics(type);
-  }
-
-  updateProject(id, data, type) {
-    const projects =
-      type === "current" ? this.currentProjects : this.futureProjects;
-    const index = projects.findIndex((p) => p.id === id);
-
-    if (index !== -1) {
-      // Сохраняем старые данные проекта
-      const oldProject = projects[index];
-
-      // Создаем обновленный проект с сохранением ID и данных, которые не пришли в data
-      projects[index] = {
-        ...oldProject,
-        ...data,
-        id: oldProject.id, // Гарантируем, что ID не изменится
-      };
-
-      this.renderProjects(type);
-      this.updateProjectStatistics(type);
-    }
-  }
-
-  deleteProject(id, type) {
-    if (confirm("Are you sure you want to delete this project?")) {
-      if (type === "current") {
-        this.currentProjects = this.currentProjects.filter((p) => p.id !== id);
-      } else {
-        this.futureProjects = this.futureProjects.filter((p) => p.id !== id);
+      if (imgElement && imgElement.src) {
+        src = imgElement.src;
       }
-      this.renderProjects(type);
-      this.updateProjectStatistics(type);
-    }
-  }
 
-  handleRating(starElement) {
-    const rating = parseInt(starElement.dataset.rating);
-    const stars = starElement.parentElement.querySelectorAll("i");
-    const ratingInput = this.container.querySelector('input[name="rating"]');
+      // Получаем имя файла из элемента с классом file-name, если оно доступно
+      const fileNameElement = item.querySelector(".file-name");
+      const displayedName = fileNameElement
+        ? fileNameElement.textContent
+        : null;
 
-    // Обновляем отображение звезд
-    stars.forEach((star, index) => {
-      if (index < rating) {
-        star.className = "fas fa-star";
-      } else {
-        star.className = "far fa-star";
-      }
+      // Создаем объект файла с метаданными
+      files.push({
+        name: fileName || displayedName || "Unknown file",
+        originalName: fileName || displayedName || "Unknown file", // Сохраняем оригинальное имя
+        type: mimeType || "application/octet-stream",
+        fileType: fileType || "unknown",
+        src: src, // Добавляем src для изображений
+        isStoredFile: true, // Отмечаем, что это сохраненный файл, а не свежезагруженный
+      });
     });
 
-    // Обновляем значение в скрытом поле
-    if (ratingInput) {
-      ratingInput.value = rating;
-    }
+    return files;
+  }
+
+  // Метод для сбора файлов из input и сохранения существующих
+  collectFiles(inputSelector, previewSelector) {
+    const inputElement = this.container.querySelector(inputSelector);
+    const previewContainer = this.container.querySelector(previewSelector);
+
+    // Сначала собираем новые файлы из input
+    const newFiles = Array.from(inputElement?.files || []);
+
+    // Затем собираем существующие файлы из превью
+    const existingFiles = this.collectFilesFromContainer(previewContainer);
+
+    // Объединяем новые и существующие файлы
+    return [...newFiles, ...existingFiles];
   }
 
   // Метод для обновления списка типов бизнеса в фильтре
@@ -2079,27 +2834,81 @@ export default class ConstructionManager {
   }
 
   updateContactPersons(contractorId) {
-    const select = this.container.querySelector(
-      'select[name="contactPersonId"]'
-    );
-    const contractor = this.contractors.find(
-      (c) => c.id === parseInt(contractorId)
-    );
+    // Находим форму, в которой обновляем список контактных лиц
+    const currentForm = this.container.querySelector("#current-project-form");
+    const futureForm = this.container.querySelector("#future-project-form");
 
-    if (contractor && select) {
-      select.innerHTML = contractor.employees
-        .map(
-          (employee) => `
-        <option value="${employee.id}">${employee.fullName}</option>
-      `
-        )
-        .join("");
+    const forms = [currentForm, futureForm].filter((form) => form);
+
+    // Альтернативный метод поиска форм для активных модальных окон
+    if (forms.length === 0) {
+      const activeModal = this.container.querySelector(".modal.active");
+      if (activeModal) {
+        const formInModal = activeModal.querySelector("form");
+        if (formInModal) {
+          forms.push(formInModal);
+        }
+      }
     }
+
+    forms.forEach((form) => {
+      const contactPersonSelect = form.elements.contactPersonId;
+      if (!contactPersonSelect) return;
+
+      // Очищаем список и делаем его неактивным, если не выбран подрядчик
+      contactPersonSelect.innerHTML =
+        '<option value="">Select Contact Person</option>';
+
+      if (!contractorId) {
+        contactPersonSelect.disabled = true;
+        return;
+      }
+
+      // Находим выбранного подрядчика
+      const contractor = this.contractors.find((c) => c.id == contractorId);
+      if (!contractor) {
+        contactPersonSelect.disabled = true;
+        return;
+      }
+
+      // Делаем список активным
+      contactPersonSelect.disabled = false;
+
+      // Добавляем основное контактное лицо подрядчика
+      if (contractor.contactPerson) {
+        const option = document.createElement("option");
+        option.value = contractorId; // Используем ID подрядчика для основного контактного лица
+        option.textContent = `${contractor.contactPerson.name} (${contractor.contactPerson.position})`;
+        contactPersonSelect.appendChild(option);
+      }
+
+      // Добавляем сотрудников подрядчика
+      if (contractor.employees && contractor.employees.length > 0) {
+        contractor.employees.forEach((employee) => {
+          const option = document.createElement("option");
+          option.value = employee.id;
+          option.textContent = `${employee.fullName} (${employee.position})`;
+          contactPersonSelect.appendChild(option);
+        });
+      }
+    });
   }
 
   closeModals() {
     this.container.querySelectorAll(".modal").forEach((modal) => {
       modal.classList.remove("active");
+
+      // Очищаем информацию о перенесенных проектах при закрытии модального окна
+      const form = modal.querySelector("form");
+      if (form) {
+        // Удаляем info-message элементы
+        const infoMessages = form.querySelectorAll(".info-message");
+        infoMessages.forEach((msg) => msg.remove());
+
+        // Удаляем migrated-fields секции
+        const migratedFields = form.querySelectorAll(".migrated-fields");
+        migratedFields.forEach((field) => field.remove());
+      }
     });
   }
 
@@ -2703,5 +3512,234 @@ export default class ConstructionManager {
     if (delayedElement) delayedElement.textContent = delayed;
   }
 
+  ensureFileStructures(project, type) {
+    // Список типов файлов для каждого типа проекта
+    const fileTypes = {
+      current: ["photos", "documents", "reports"],
+      future: ["documents", "specifications"],
+    };
+
+    // Проверяем и исправляем структуры файлов
+    fileTypes[type].forEach((fileType) => {
+      if (!project[fileType]) {
+        project[fileType] = [];
+      } else if (Array.isArray(project[fileType])) {
+        // Проверка каждого файла в массиве
+        project[fileType] = project[fileType]
+          .map((file) => {
+            if (!file) return null;
+
+            const newFile = { ...file }; // Создаем копию, чтобы не модифицировать оригинал
+
+            // Если файл не имеет необходимых свойств, создаем заполнитель
+            if (!newFile.type) {
+              // Пытаемся определить тип по имени файла
+              const fileExt = newFile.name
+                ? newFile.name.split(".").pop().toLowerCase()
+                : "";
+              let mimeType = "application/octet-stream";
+
+              if (["jpg", "jpeg", "png", "gif", "webp"].includes(fileExt)) {
+                mimeType = `image/${fileExt === "jpg" ? "jpeg" : fileExt}`;
+              } else if (fileExt === "pdf") {
+                mimeType = "application/pdf";
+              } else if (["doc", "docx"].includes(fileExt)) {
+                mimeType = "application/msword";
+              } else if (["xls", "xlsx"].includes(fileExt)) {
+                mimeType = "application/vnd.ms-excel";
+              }
+
+              newFile.type = mimeType;
+            }
+
+            // Сохраняем оригинальное имя файла, если оно есть
+            if (newFile.name && newFile.name.trim() !== "") {
+              newFile.originalName = newFile.name;
+            }
+
+            // Если нет имени, создаем стандартное
+            if (!newFile.name || newFile.name.trim() === "") {
+              const defaultName = `${
+                fileType.charAt(0).toUpperCase() + fileType.slice(0, -1)
+              } ${Math.floor(Math.random() * 1000)}`;
+              newFile.name = defaultName;
+              newFile.originalName = newFile.originalName || defaultName;
+            }
+
+            // Добавляем флаг, что это сохраненный файл
+            newFile.isStoredFile = true;
+
+            return newFile;
+          })
+          .filter((file) => file !== null); // Удаляем null элементы
+      }
+    });
+
+    // Проверяем наличие дополнительных файлов при перемещении из future в current
+    if (type === "current") {
+      // Для файлов, которые могут быть только в future
+      ["specifications"].forEach((fileType) => {
+        if (project[fileType] && Array.isArray(project[fileType])) {
+          project[fileType] = project[fileType]
+            .map((file) => {
+              if (!file) return null;
+
+              const newFile = { ...file };
+
+              // Сохраняем оригинальное имя файла, если оно есть
+              if (newFile.name && newFile.name.trim() !== "") {
+                newFile.originalName = newFile.originalName || newFile.name;
+              }
+
+              // Проверяем и исправляем тип файла
+              if (!newFile.type) {
+                // Пытаемся определить тип по имени файла
+                const fileExt = newFile.name
+                  ? newFile.name.split(".").pop().toLowerCase()
+                  : "";
+                let mimeType = "application/octet-stream";
+
+                if (["jpg", "jpeg", "png", "gif", "webp"].includes(fileExt)) {
+                  mimeType = `image/${fileExt === "jpg" ? "jpeg" : fileExt}`;
+                } else if (fileExt === "pdf") {
+                  mimeType = "application/pdf";
+                } else if (["doc", "docx"].includes(fileExt)) {
+                  mimeType = "application/msword";
+                } else if (["xls", "xlsx"].includes(fileExt)) {
+                  mimeType = "application/vnd.ms-excel";
+                }
+
+                newFile.type = mimeType;
+              }
+
+              // Проверяем и исправляем имя файла
+              if (!newFile.name || newFile.name.trim() === "") {
+                const defaultName = `${
+                  fileType.charAt(0).toUpperCase() + fileType.slice(0, -1)
+                } ${Math.floor(Math.random() * 1000)}`;
+                newFile.name = defaultName;
+                newFile.originalName = newFile.originalName || defaultName;
+              }
+
+              // Помечаем как сохраненный файл
+              newFile.isStoredFile = true;
+
+              return newFile;
+            })
+            .filter((file) => file !== null);
+        }
+      });
+    }
+
+    return project;
+  }
+
   // ... rest of the existing methods ...
+
+  // CRUD операции
+  createContractor(data) {
+    data.id = Date.now();
+    this.contractors.push(data);
+    this.updateBusinessTypeFilter(); // Обновляем список типов бизнеса
+    this.renderContractors();
+  }
+
+  updateContractor(id, data) {
+    const index = this.contractors.findIndex((c) => c.id === id);
+    if (index !== -1) {
+      this.contractors[index] = { ...this.contractors[index], ...data };
+      this.renderContractors();
+    }
+  }
+
+  deleteContractor(id) {
+    if (confirm("Are you sure you want to delete this contractor?")) {
+      this.contractors = this.contractors.filter((c) => c.id !== id);
+      this.renderContractors();
+    }
+  }
+
+  createProject(data, type) {
+    data.id = Date.now();
+    data.status = type === "current" ? "in-progress" : "planned";
+
+    if (type === "current") {
+      data.progress = data.progress || 0;
+      data.actualCost = data.actualCost || 0;
+      data.lastUpdate = data.lastUpdate || new Date().toISOString();
+      data.photos = data.photos || [];
+      data.documents = data.documents || [];
+      data.reports = data.reports || [];
+    } else {
+      data.budget = data.budget || 0;
+      data.priority = data.priority || "medium";
+      data.description = data.description || "";
+      data.objectives = data.objectives || "";
+      data.risks = data.risks || "";
+      data.documents = data.documents || [];
+      data.specifications = data.specifications || [];
+    }
+
+    if (type === "current") {
+      this.currentProjects.push(data);
+    } else {
+      this.futureProjects.push(data);
+    }
+
+    this.renderProjects(type);
+    this.updateProjectStatistics(type);
+  }
+
+  updateProject(id, data, type) {
+    const projects =
+      type === "current" ? this.currentProjects : this.futureProjects;
+    const index = projects.findIndex((p) => p.id === id);
+
+    if (index !== -1) {
+      // Сохраняем старые данные проекта
+      const oldProject = projects[index];
+
+      // Создаем обновленный проект с сохранением ID и данных, которые не пришли в data
+      projects[index] = {
+        ...oldProject,
+        ...data,
+        id: oldProject.id, // Гарантируем, что ID не изменится
+      };
+
+      this.renderProjects(type);
+      this.updateProjectStatistics(type);
+    }
+  }
+
+  deleteProject(id, type) {
+    if (confirm("Are you sure you want to delete this project?")) {
+      if (type === "current") {
+        this.currentProjects = this.currentProjects.filter((p) => p.id !== id);
+      } else {
+        this.futureProjects = this.futureProjects.filter((p) => p.id !== id);
+      }
+      this.renderProjects(type);
+      this.updateProjectStatistics(type);
+    }
+  }
+
+  handleRating(starElement) {
+    const rating = parseInt(starElement.dataset.rating);
+    const stars = starElement.parentElement.querySelectorAll("i");
+    const ratingInput = this.container.querySelector('input[name="rating"]');
+
+    // Обновляем отображение звезд
+    stars.forEach((star, index) => {
+      if (index < rating) {
+        star.className = "fas fa-star";
+      } else {
+        star.className = "far fa-star";
+      }
+    });
+
+    // Обновляем значение в скрытом поле
+    if (ratingInput) {
+      ratingInput.value = rating;
+    }
+  }
 }

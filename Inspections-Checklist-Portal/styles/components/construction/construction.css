@@ -2052,3 +2052,142 @@ select option:hover {
 .stat-value.stat-delayed {
   color: #f44336;
 }
+
+/* Toggle Section Header Styles */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 30px;
+  transition: all 0.3s ease;
+  color: #2c3e50;
+}
+
+.collapsible-header:hover {
+  color: #3498db;
+}
+
+.collapsible-header::after {
+  content: "\f078";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 0;
+  color: #3498db;
+  font-size: 0.9rem;
+  transition: transform 0.3s ease;
+}
+
+.collapsible-header.collapsed::after {
+  transform: rotate(-90deg);
+}
+
+.collapsible-content {
+  max-height: 1000px;
+  opacity: 1;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.collapsible-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Migrated Files Group */
+.migrated-files-group {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed #03a9f4;
+}
+
+.migrated-files {
+  position: relative;
+  border-left: 4px solid #03a9f4;
+  padding-left: 15px;
+  margin-bottom: 15px;
+}
+
+.migrated-files:before {
+  content: "From Future Project";
+  position: absolute;
+  top: -18px;
+  left: 0;
+  font-size: 11px;
+  color: #03a9f4;
+}
+
+.current-files-group {
+  margin-top: 15px;
+}
+
+/* Enhancing document grid layout */
+.documents-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.documents-group {
+  margin-bottom: 10px;
+}
+
+.documents-group h5 {
+  font-size: 0.9rem;
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Project Planning Section Styles */
+.planning-info {
+  display: grid;
+  gap: 15px;
+  margin: 0 0 20px 0;
+}
+
+.info-group {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  border-left: 3px solid #3498db;
+}
+
+.info-group:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.info-group h5 {
+  color: #2c3e50;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.info-group p {
+  color: #34495e;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.details-section h4 {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3498db;
+  display: inline-block;
+}
