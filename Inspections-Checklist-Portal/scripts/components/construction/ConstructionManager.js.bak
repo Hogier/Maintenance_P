@@ -31,139 +31,38 @@ export default class ConstructionManager {
   init() {
     // Добавляем стили для мигрированных проектов
     if (
-      typeof window.GlobalData !== "undefined" &&
-      window.GlobalData &&
-      window.GlobalData.MigratedProjects &&
-      window.GlobalData.MigratedProjects.length
+      GlobalData &&
+      GlobalData.MigratedProjects &&
+      GlobalData.MigratedProjects.length
     ) {
-      window.GlobalData.MigratedProjects.forEach((projectId) => {
+      GlobalData.MigratedProjects.forEach((projectId) => {
         this.addStyleForMigratedProjects(projectId);
       });
     }
 
-    // Создаем модальное окно для превью, если его нет
+    // Проверяем наличие модального окна для превью
     this.ensurePreviewModalExists();
 
     // Загружаем данные и инициализируем компоненты
     this.loadData().then(() => {
-      // Инициализация всех компонентов
+      // Initialize datepickers after the DOM is loaded
       this.initDatepickers();
+
+      // Initialize navigation
       this.initNavigation();
+
+      // Set up event listeners
       this.initEventListeners();
+
+      // Render the active section
       this.renderActiveSection();
     });
   }
 
-  // Метод для создания модального окна для предпросмотра изображений
   ensurePreviewModalExists() {
     // Проверяем наличие модального окна
     if (!this.container.querySelector(".preview-modal")) {
-      console.log("Creating preview modal window");
-
-      // Добавляем стили для файловых превью, если их нет
-      if (!document.getElementById("file-preview-styles")) {
-        const previewStyles = document.createElement("style");
-        previewStyles.id = "file-preview-styles";
-        previewStyles.innerHTML = `
-          .file-preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-          }
-          
-          .file-preview-item {
-            position: relative;
-            width: 100px;
-            height: 120px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 5px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background-color: #f9f9f9;
-            overflow: hidden;
-          }
-          
-          .file-preview-item:hover {
-            border-color: #0088cc;
-            box-shadow: 0 0 5px rgba(0, 136, 204, 0.5);
-          }
-          
-          .file-preview-item img {
-            max-width: 90%;
-            max-height: 70px;
-            object-fit: contain;
-            margin-bottom: 5px;
-          }
-          
-          .file-type-icon {
-            font-size: 2.5rem;
-            color: #999;
-            margin-bottom: 5px;
-          }
-          
-          .file-name {
-            font-size: 0.8rem;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-          }
-          
-          .remove-file {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            font-size: 14px;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0.7;
-          }
-          
-          .remove-file:hover {
-            opacity: 1;
-          }
-          
-          .preview-modal {
-            z-index: 9999 !important;
-          }
-          
-          .preview-content {
-            position: relative;
-            max-width: 90%;
-            max-height: 90%;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-          }
-          
-          .preview-content img {
-            max-width: 100%;
-            max-height: 80vh;
-            object-fit: contain;
-          }
-        `;
-        document.head.appendChild(previewStyles);
-      }
+      console.log("Creating preview modal window"); // Для отладки
 
       // Создаем модальное окно
       const modal = document.createElement("div");
@@ -304,6 +203,26 @@ export default class ConstructionManager {
     }
 
     console.log(`Added styles for migrated project ${projectId}`);
+  }
+
+  // Метод для создания модального окна для предпросмотра изображений, если оно отсутствует
+          font-weight: bold;
+        }
+        
+        .migrated-header {
+          margin-bottom: 8px;
+          margin-top: 5px;
+        }
+        
+        .migrated-files-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+      `;
+      document.head.appendChild(styleSheet);
+    }
   }
 
   // Метод инициализации календарей для полей даты
@@ -1785,17 +1704,6 @@ export default class ConstructionManager {
             this.showFilePreviewModal(imgElement.src);
           } else {
             console.log("No img element or src found for image preview"); // Для отладки
-
-            // Пробуем получить данные о фото из базы данных или хранилища
-            const fileName = item.dataset.fileName;
-            const projectId = item.closest(".project-card")?.dataset.projectId;
-
-            if (projectId && fileName) {
-              // Формируем путь к файлу на сервере
-              const fileUrl = `components/construction/uploads/${projectId}/${fileName}`;
-              console.log("Trying to load image from server:", fileUrl);
-              this.showFilePreviewModal(fileUrl);
-            }
           }
         } else {
           // Для других типов файлов можно реализовать другую логику (например, скачивание)
@@ -1809,7 +1717,7 @@ export default class ConstructionManager {
     removeButtons.forEach((button) => {
       button.addEventListener("click", (e) => {
         e.stopPropagation();
-        e.preventDefault(); // Добавлено для предотвращения перенаправления
+        e.preventDefault();
 
         // Находим родительский элемент и удаляем его
         const fileItem = button.closest(".file-preview-item");
@@ -1821,23 +1729,6 @@ export default class ConstructionManager {
 
           // Удаляем элемент
           fileItem.remove();
-
-          // Найдем ID проекта и обновим данные проекта, чтобы синхронизировать удаление в карточке и форме редактирования
-          const projectCard = button.closest(".project-card");
-          if (projectCard) {
-            const projectId = parseInt(projectCard.dataset.id);
-            const projectsList = projectCard.closest(".projects-grid");
-            const projectType =
-              projectsList.id === "current-projects-list"
-                ? "current"
-                : "future";
-            const project = this.getProjectById(projectId, projectType);
-
-            if (project) {
-              // Синхронизируем удаленные файлы между карточкой и потенциальной формой редактирования
-              this.syncDeletedPhotos(fileItem, project);
-            }
-          }
         }
       });
     });
@@ -1943,30 +1834,6 @@ export default class ConstructionManager {
   // Метод для синхронизации удаленных файлов в перенесенном проекте
   syncDeletedFiles(sourceProject, targetProject) {
     if (!sourceProject || !targetProject) return targetProject;
-
-    // Синхронизируем Photos
-    if (
-      targetProject.photos &&
-      Array.isArray(targetProject.photos) &&
-      sourceProject.photos &&
-      Array.isArray(sourceProject.photos)
-    ) {
-      // Создаем карту файлов из исходного проекта
-      const sourcePhotoMap = {};
-      sourceProject.photos.forEach((photo) => {
-        if (photo && photo.name) {
-          const key = photo.name || photo.originalName;
-          sourcePhotoMap[key] = true;
-        }
-      });
-
-      // Фильтруем фотографии, оставляя только те, которые есть в исходном проекте
-      targetProject.photos = targetProject.photos.filter((photo) => {
-        if (!photo) return false;
-        const key = photo.name || photo.originalName;
-        return sourcePhotoMap[key];
-      });
-    }
 
     // Синхронизируем Specifications
     if (sourceProject.specifications && targetProject.specifications) {
@@ -2371,31 +2238,6 @@ export default class ConstructionManager {
     // Инициализируем календари для формы
     this.initFormDatepickers(form);
 
-    // Добавляем обработчики для кнопок удаления файлов
-    setTimeout(() => {
-      const allRemoveButtons = modal.querySelectorAll(".remove-file");
-      allRemoveButtons.forEach((button) => {
-        // Клонируем кнопку, чтобы удалить все обработчики событий
-        const clone = button.cloneNode(true);
-        button.parentNode.replaceChild(clone, button);
-
-        // Добавляем новый обработчик с правильной логикой
-        clone.addEventListener("click", (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-
-          // Удаляем превью файла
-          const fileItem = clone.closest(".file-preview-item");
-          if (fileItem) {
-            if (fileItem.dataset.imgUrl) {
-              URL.revokeObjectURL(fileItem.dataset.imgUrl);
-            }
-            fileItem.remove();
-          }
-        });
-      });
-    }, 300);
-
     modal.classList.add("active");
   }
 
@@ -2406,242 +2248,383 @@ export default class ConstructionManager {
     // Предварительно проверяем и корректируем структуру файлов проекта
     project = this.ensureFileStructures(project, type);
 
-    // Определяем контейнеры для превью в зависимости от типа проекта
-    if (type === "current") {
-      // Текущий проект - отображаем фотографии, документы и отчеты
-      const modal = this.container.querySelector("#current-project-modal");
-      if (!modal) return;
+    const previewContainers = {
+      current: {
+        photos: this.container.querySelector("#current-photos-preview"),
+        documents: this.container.querySelector("#current-documents-preview"),
+        reports: this.container.querySelector("#current-reports-preview"),
+      },
+      future: {
+        documents: this.container.querySelector("#future-documents-preview"),
+        specifications: this.container.querySelector(
+          "#future-specifications-preview"
+        ),
+      },
+    };
 
-      // Находим все контейнеры превью
-      const photosContainer = modal.querySelector("#current-photos-preview");
-      const documentsContainer = modal.querySelector(
-        "#current-documents-preview"
-      );
-      const reportsContainer = modal.querySelector("#current-reports-preview");
+    // Очищаем существующие превью
+    Object.values(previewContainers[type]).forEach((container) => {
+      if (container) container.innerHTML = "";
+    });
 
-      // Очищаем контейнеры перед добавлением файлов
-      if (photosContainer) photosContainer.innerHTML = "";
-      if (documentsContainer) documentsContainer.innerHTML = "";
-      if (reportsContainer) reportsContainer.innerHTML = "";
-
-      // Отображаем фотографии
-      if (photosContainer && project.photos && Array.isArray(project.photos)) {
-        project.photos.forEach((photo) => {
-          if (photo) {
-            this.addFilePreview(photo, photosContainer, "photo");
-          }
-        });
-      }
-
-      // Отображаем отчеты
-      if (
-        reportsContainer &&
-        project.reports &&
-        Array.isArray(project.reports)
-      ) {
-        project.reports.forEach((report) => {
-          if (report) {
-            this.addFilePreview(report, reportsContainer, "report");
-          }
-        });
-      }
-
-      // Отображаем документы
-      if (
-        documentsContainer &&
-        project.documents &&
-        Array.isArray(project.documents)
-      ) {
-        // Фильтруем документы, чтобы отображать только те, которые не мигрированы из будущих проектов
-        const nonMigratedDocs = project.documents.filter(
-          (doc) => !doc.migratedFromFuture
-        );
-        nonMigratedDocs.forEach((doc) => {
-          if (doc) {
-            this.addFilePreview(doc, documentsContainer, "document");
-          }
-        });
-      }
-
-      // Проверяем, является ли проект мигрированным из Future Projects
-      const isMigratedProject =
+    // Определяем, является ли проект перенесенным из Future в Current
+    const isMigratedProject =
+      type === "current" &&
+      (project.specifications ||
+        project.budgetDocs ||
         project.migratedFromFuture ||
-        (project.specifications && project.specifications.length) ||
-        (project.documents &&
-          project.documents.some((doc) => doc.migratedFromFuture));
+        project.description ||
+        project.objectives ||
+        project.risks ||
+        project.priority);
 
+    // Отображаем файлы в соответствующие контейнеры
+    if (type === "current") {
+      // For migrated projects, reorganize the display structure
       if (isMigratedProject) {
-        // Создаем или находим контейнер для мигрированных файлов
-        let migratedFilesGroup = modal.querySelector(".migrated-files-group");
+        // Get the Documents section to manipulate
+        let documentsSection = this.container.querySelector(
+          "#current-project-modal .form-section"
+        );
 
-        if (!migratedFilesGroup) {
-          // Если контейнера нет, создаем его
-          const filesSection =
-            modal.querySelector(".form-section:has(#current-photos-preview)") ||
-            modal.querySelector(".form-section:has(.file-preview-container)");
-
-          if (filesSection) {
-            migratedFilesGroup = document.createElement("div");
-            migratedFilesGroup.className = "form-section migrated-files-group";
-            migratedFilesGroup.innerHTML = `
-              <h3>Files from Future Project</h3>
-              <div class="info-message">
-                <i class="fas fa-info-circle"></i> These files were migrated from Future Projects section.
-              </div>
-            `;
-
-            filesSection.after(migratedFilesGroup);
+        // Find the section with the "Project Documents" title if it exists
+        const documentSections = this.container.querySelectorAll(
+          "#current-project-modal .form-section"
+        );
+        for (const section of documentSections) {
+          const titleEl = section.querySelector(".section-title");
+          if (titleEl && titleEl.textContent.includes("Project Documents")) {
+            documentsSection = section;
+            break;
           }
         }
 
-        if (migratedFilesGroup) {
-          // Очищаем контейнер перед добавлением файлов
-          const existingContainers =
-            migratedFilesGroup.querySelectorAll(".form-group");
-          existingContainers.forEach((container) => container.remove());
+        if (documentsSection) {
+          // Remove existing content but save the section title
+          const sectionTitle = documentsSection.querySelector(".section-title");
+          const formActions =
+            documentsSection.parentElement.querySelector(".form-actions");
+          documentsSection.innerHTML = "";
 
-          // Добавляем мигрированные документы
+          if (sectionTitle) {
+            documentsSection.appendChild(sectionTitle);
+          }
+
+          // Логика отображения файлов идентично карточке текущего проекта
+          // Add a collapsible header for migrated files
+          const migratedHeader = document.createElement("div");
+          migratedHeader.className = "section-header";
+          migratedHeader.innerHTML = `
+            <h4 class="toggle-documents">
+              <i class="fas fa-chevron-down"></i> 
+              <span class="from-future-flag">From Future Project</span>
+            </h4>
+          `;
+          documentsSection.appendChild(migratedHeader);
+
+          // Create migrated files group
+          const migratedFilesGroup = document.createElement("div");
+          migratedFilesGroup.className =
+            "migrated-files-group documents-content";
+          documentsSection.appendChild(migratedFilesGroup);
+
+          // Make sure content is fully visible with scrolling if needed
+          migratedFilesGroup.style.overflowY = "visible";
+          migratedFilesGroup.style.maxHeight = "none";
+
+          // Add Planning Documents if they exist (from migrated future project)
           if (
             project.documents &&
-            project.documents.some((doc) => doc.migratedFromFuture)
+            project.documents.length > 0 &&
+            project.migratedFromFuture
           ) {
+            const planningDocsGroup = document.createElement("div");
+            planningDocsGroup.className = "documents-group migrated-files";
+            planningDocsGroup.innerHTML = `
+              <h5>Planning Documents</h5>
+              <div id="current-planning-docs-preview" class="file-preview-container">
+              </div>
+            `;
+            migratedFilesGroup.appendChild(planningDocsGroup);
+
+            const planningContainer = planningDocsGroup.querySelector(
+              "#current-planning-docs-preview"
+            );
+
+            // Filter documents that are marked as migrated
             const migratedDocs = project.documents.filter(
               (doc) => doc.migratedFromFuture
             );
 
             if (migratedDocs.length > 0) {
-              const docsGroup = document.createElement("div");
-              docsGroup.className = "form-group";
-              docsGroup.innerHTML = `
-                <label>Planning Documents</label>
-                <div id="current-planning-docs-preview" class="file-preview-container"></div>
-              `;
-              migratedFilesGroup.appendChild(docsGroup);
-
-              const docsContainer = docsGroup.querySelector(
-                "#current-planning-docs-preview"
-              );
               migratedDocs.forEach((doc) => {
                 if (doc) {
-                  this.addFilePreview(doc, docsContainer, "document");
+                  this.addFilePreview(doc, planningContainer, "document");
                 }
               });
             }
           }
 
-          // Добавляем спецификации
+          // Add specifications if they exist
           if (project.specifications && project.specifications.length > 0) {
-            const specsGroup = document.createElement("div");
-            specsGroup.className = "form-group";
-            specsGroup.innerHTML = `
-              <label>Project Specifications</label>
+            const specGroup = document.createElement("div");
+            specGroup.className = "documents-group migrated-files";
+            specGroup.innerHTML = `
+              <h5>Specifications</h5>
               <div id="current-specifications-preview" class="file-preview-container"></div>
             `;
-            migratedFilesGroup.appendChild(specsGroup);
+            migratedFilesGroup.appendChild(specGroup);
 
-            const specsContainer = specsGroup.querySelector(
+            const specContainer = specGroup.querySelector(
               "#current-specifications-preview"
             );
             project.specifications.forEach((spec) => {
               if (spec) {
-                this.addFilePreview(spec, specsContainer, "specification");
+                this.addFilePreview(spec, specContainer, "specification");
+              }
+            });
+          }
+
+          // Add budget documents if they exist
+          if (project.budgetDocs && project.budgetDocs.length > 0) {
+            const budgetGroup = document.createElement("div");
+            budgetGroup.className = "documents-group migrated-files";
+            budgetGroup.innerHTML = `
+              <h5>Budget Documents</h5>
+              <div id="current-budget-preview" class="file-preview-container"></div>
+            `;
+            migratedFilesGroup.appendChild(budgetGroup);
+
+            const budgetContainer = budgetGroup.querySelector(
+              "#current-budget-preview"
+            );
+            project.budgetDocs.forEach((doc) => {
+              if (doc) {
+                this.addFilePreview(doc, budgetContainer, "budgetDoc");
+              }
+            });
+          }
+
+          // Add a collapsible header for current files
+          const currentHeader = document.createElement("div");
+          currentHeader.className = "section-header";
+          currentHeader.innerHTML = `
+            <h4 class="toggle-documents">
+              <i class="fas fa-chevron-down"></i> 
+              <span class="current-files-title">Current Project Files</span>
+            </h4>
+          `;
+          documentsSection.appendChild(currentHeader);
+
+          // Create current files group
+          const currentFilesGroup = document.createElement("div");
+          currentFilesGroup.className = "current-files-group documents-content";
+          documentsSection.appendChild(currentFilesGroup);
+
+          // Photos
+          const photosGroup = document.createElement("div");
+          photosGroup.className = "form-group";
+          photosGroup.innerHTML = `
+            <label for="current-photos">Project Photos</label>
+            <input
+              type="file"
+              id="current-photos"
+              name="photos"
+              accept="image/*"
+              multiple
+              class="form-control"
+            />
+            <div id="current-photos-preview" class="file-preview-container"></div>
+          `;
+          currentFilesGroup.appendChild(photosGroup);
+
+          // Display photos that aren't migrated
+          if (
+            project.photos &&
+            Array.isArray(project.photos) &&
+            project.photos.length > 0
+          ) {
+            const photoContainer = photosGroup.querySelector(
+              "#current-photos-preview"
+            );
+            project.photos.forEach((photo) => {
+              if (photo) {
+                this.addFilePreview(photo, photoContainer, "photo");
+              }
+            });
+          }
+
+          // Reports
+          const reportsGroup = document.createElement("div");
+          reportsGroup.className = "form-group";
+          reportsGroup.innerHTML = `
+            <label for="current-reports">Progress Reports</label>
+            <input
+              type="file"
+              id="current-reports"
+              name="reports"
+              accept=".pdf,.doc,.docx"
+              multiple
+              class="form-control"
+            />
+            <div id="current-reports-preview" class="file-preview-container"></div>
+          `;
+          currentFilesGroup.appendChild(reportsGroup);
+
+          // Display reports
+          if (
+            project.reports &&
+            Array.isArray(project.reports) &&
+            project.reports.length > 0
+          ) {
+            const reportsContainer = reportsGroup.querySelector(
+              "#current-reports-preview"
+            );
+            project.reports.forEach((report) => {
+              if (report) {
+                this.addFilePreview(report, reportsContainer, "report");
+              }
+            });
+          }
+
+          // Add toggle functionality for each section individually
+          const toggleSections =
+            documentsSection.querySelectorAll(".toggle-documents");
+          toggleSections.forEach((toggle) => {
+            toggle.addEventListener("click", (e) => {
+              const content =
+                toggle.closest(".section-header").nextElementSibling;
+              content.classList.toggle("collapsed");
+              const icon = toggle.querySelector("i");
+              icon.classList.toggle("fa-chevron-down");
+              icon.classList.toggle("fa-chevron-right");
+            });
+          });
+
+          // Restore form actions if they were removed
+          if (
+            formActions &&
+            !documentsSection.parentElement.querySelector(".form-actions")
+          ) {
+            documentsSection.parentElement.appendChild(formActions);
+          }
+
+          // Bind events for all preview containers
+          const allContainers = documentsSection.querySelectorAll(
+            ".file-preview-container"
+          );
+          allContainers.forEach((container) => {
+            this.bindFilePreviewEvents(container);
+          });
+
+          // We've completely rebuilt the section, so return to avoid double-processing
+          return;
+        }
+      } else {
+        // Regular non-migrated project - use the standard display logic
+        // Отображаем файлы фотографий
+        if (
+          project.photos &&
+          Array.isArray(project.photos) &&
+          project.photos.length > 0
+        ) {
+          const photoContainer = previewContainers[type].photos;
+          if (photoContainer) {
+            project.photos.forEach((photo) => {
+              if (photo) {
+                this.addFilePreview(photo, photoContainer, "photo");
+              }
+            });
+          }
+        }
+
+        // Отображаем документы
+        if (
+          project.documents &&
+          Array.isArray(project.documents) &&
+          project.documents.length > 0
+        ) {
+          const docsContainer = previewContainers[type].documents;
+          if (docsContainer) {
+            project.documents.forEach((doc) => {
+              if (doc) {
+                this.addFilePreview(doc, docsContainer, "document");
+              }
+            });
+          }
+        }
+
+        // Отображаем отчеты
+        if (
+          project.reports &&
+          Array.isArray(project.reports) &&
+          project.reports.length > 0
+        ) {
+          const reportsContainer = previewContainers[type].reports;
+          if (reportsContainer) {
+            project.reports.forEach((report) => {
+              if (report) {
+                this.addFilePreview(report, reportsContainer, "report");
               }
             });
           }
         }
       }
-
-      // После добавления всех файлов, настраиваем обработчики для кнопок удаления
-      setTimeout(() => {
-        const allRemoveButtons = modal.querySelectorAll(".remove-file");
-        allRemoveButtons.forEach((button) => {
-          // Удаляем существующие обработчики
-          const clone = button.cloneNode(true);
-          button.parentNode.replaceChild(clone, button);
-
-          // Добавляем новый обработчик для модального окна
-          clone.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-
-            // Удаляем превью файла
-            const fileItem = clone.closest(".file-preview-item");
-            if (fileItem) {
-              if (fileItem.dataset.imgUrl) {
-                URL.revokeObjectURL(fileItem.dataset.imgUrl);
-              }
-              fileItem.remove();
-            }
-          });
-        });
-      }, 200);
-    } else {
-      // Future project - отображаем документы и спецификации
-      const modal = this.container.querySelector("#future-project-modal");
-      if (!modal) return;
-
-      // Находим контейнеры для превью
-      const documentsContainer = modal.querySelector(
-        "#future-documents-preview"
-      );
-      const specificationsContainer = modal.querySelector(
-        "#future-specifications-preview"
-      );
-
-      // Очищаем контейнеры перед добавлением файлов
-      if (documentsContainer) documentsContainer.innerHTML = "";
-      if (specificationsContainer) specificationsContainer.innerHTML = "";
-
-      // Добавляем документы
+    } else if (type === "future") {
+      // Отображаем документы
       if (
-        documentsContainer &&
         project.documents &&
-        Array.isArray(project.documents)
+        Array.isArray(project.documents) &&
+        project.documents.length > 0
       ) {
-        project.documents.forEach((doc) => {
-          if (doc) {
-            this.addFilePreview(doc, documentsContainer, "document");
-          }
-        });
-      }
-
-      // Добавляем спецификации
-      if (
-        specificationsContainer &&
-        project.specifications &&
-        Array.isArray(project.specifications)
-      ) {
-        project.specifications.forEach((spec) => {
-          if (spec) {
-            this.addFilePreview(spec, specificationsContainer, "specification");
-          }
-        });
-      }
-
-      // Настраиваем обработчики для кнопок удаления
-      setTimeout(() => {
-        const allRemoveButtons = modal.querySelectorAll(".remove-file");
-        allRemoveButtons.forEach((button) => {
-          // Удаляем существующие обработчики
-          const clone = button.cloneNode(true);
-          button.parentNode.replaceChild(clone, button);
-
-          // Добавляем новый обработчик для модального окна
-          clone.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-
-            // Удаляем превью файла
-            const fileItem = clone.closest(".file-preview-item");
-            if (fileItem) {
-              if (fileItem.dataset.imgUrl) {
-                URL.revokeObjectURL(fileItem.dataset.imgUrl);
-              }
-              fileItem.remove();
+        const docsContainer = previewContainers[type].documents;
+        if (docsContainer) {
+          project.documents.forEach((doc) => {
+            if (doc) {
+              this.addFilePreview(doc, docsContainer, "document");
             }
           });
-        });
-      }, 200);
+        }
+      }
+
+      // Отображаем спецификации
+      if (
+        project.specifications &&
+        Array.isArray(project.specifications) &&
+        project.specifications.length > 0
+      ) {
+        const specificationsContainer = previewContainers[type].specifications;
+        if (specificationsContainer) {
+          project.specifications.forEach((spec) => {
+            if (spec) {
+              this.addFilePreview(
+                spec,
+                specificationsContainer,
+                "specification"
+              );
+            }
+          });
+        }
+      }
+    }
+
+    // Добавляем обработчики событий к файловым превью
+    Object.values(previewContainers[type]).forEach((container) => {
+      if (container) {
+        this.bindFilePreviewEvents(container);
+      }
+    });
+
+    // Также обрабатываем динамически созданные контейнеры для перенесенных проектов
+    if (isMigratedProject) {
+      const migratedContainers = document.querySelectorAll(
+        ".migrated-files .file-preview-container"
+      );
+      migratedContainers.forEach((container) => {
+        if (container) {
+          this.bindFilePreviewEvents(container);
+        }
+      });
     }
   }
 
@@ -2666,121 +2649,64 @@ export default class ConstructionManager {
   }
 
   setupFileUploadHandlers(type) {
-    // Define file input selectors based on project type
-    const fileInputs =
-      type === "current"
-        ? ["#current-photos", "#current-documents", "#current-reports"]
-        : ["#future-documents", "#future-specifications"];
-
-    fileInputs.forEach((inputSelector) => {
-      const input = this.container.querySelector(inputSelector);
-      if (!input) return;
-
-      // Определяем соответствующий контейнер превью
-      const previewSelector = inputSelector + "-preview";
-      const previewContainer = this.container.querySelector(previewSelector);
-      if (!previewContainer) return;
-
-      // Очищаем существующие обработчики
-      if (input._eventListenerAttached) {
-        input.removeEventListener("change", input._eventListenerAttached);
-      }
-
-      // Обработчик события выбора файлов
-      const handleFileSelect = (e) => {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
-
-        // Определяем тип файла на основе селектора
-        let fileType = "document";
-        if (inputSelector.includes("photos")) {
-          fileType = "photo";
-        } else if (inputSelector.includes("reports")) {
-          fileType = "report";
-        } else if (inputSelector.includes("specifications")) {
-          fileType = "specification";
-        }
-
-        console.log(
-          `Selected ${files.length} files of type ${fileType} for ${inputSelector}`
-        );
-
-        // Обрабатываем каждый выбранный файл
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          this.addFilePreview(file, previewContainer, fileType);
-        }
-      };
-
-      // Прикрепляем обработчик
-      input._eventListenerAttached = handleFileSelect;
-      input.addEventListener("change", handleFileSelect);
-
-      // Добавляем специальную обработку для кнопок удаления внутри модального окна
-      // Это предотвратит перенаправление на главную страницу при удалении фото
-      const setupRemoveButtons = () => {
-        const modal = input.closest(".modal");
-        if (!modal) return;
-
-        const removeButtons = modal.querySelectorAll(".remove-file");
-        removeButtons.forEach((button) => {
-          // Удаляем существующие обработчики, чтобы избежать дублирования
-          const clone = button.cloneNode(true);
-          button.parentNode.replaceChild(clone, button);
-
-          // Добавляем новый обработчик с правильной логикой для модального окна
-          clone.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-
-            // Удаляем превью файла
-            const fileItem = clone.closest(".file-preview-item");
-            if (fileItem) {
-              if (fileItem.dataset.imgUrl) {
-                URL.revokeObjectURL(fileItem.dataset.imgUrl);
-              }
-              fileItem.remove();
-            }
-          });
-        });
-      };
-
-      // Выполняем настройку обработчиков с небольшой задержкой, чтобы
-      // дать время для рендеринга превью файлов в модальном окне
-      setTimeout(setupRemoveButtons, 100);
-    });
-
-    // Добавляем обработчик для обеспечения правильного удаления файлов после загрузки модального окна
-    const setupModalRemoveHandlers = () => {
-      const modal = this.container.querySelector(`#${type}-project-modal`);
-      if (!modal) return;
-
-      // Обрабатываем все кнопки удаления в модальном окне
-      const allRemoveButtons = modal.querySelectorAll(".remove-file");
-      allRemoveButtons.forEach((button) => {
-        // Удаляем существующие обработчики
-        const clone = button.cloneNode(true);
-        button.parentNode.replaceChild(clone, button);
-
-        // Добавляем новый обработчик для модального окна
-        clone.addEventListener("click", (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-
-          // Удаляем превью файла
-          const fileItem = clone.closest(".file-preview-item");
-          if (fileItem) {
-            if (fileItem.dataset.imgUrl) {
-              URL.revokeObjectURL(fileItem.dataset.imgUrl);
-            }
-            fileItem.remove();
-          }
-        });
-      });
+    const fileInputs = {
+      current: {
+        photos: this.container.querySelector("#current-photos"),
+        reports: this.container.querySelector("#current-reports"),
+      },
+      future: {
+        documents: this.container.querySelector("#future-documents"),
+        specifications: this.container.querySelector("#future-specifications"),
+      },
     };
 
-    // Выполняем настройку с небольшой задержкой
-    setTimeout(setupModalRemoveHandlers, 200);
+    // Add documents handler only for non-migrated projects
+    const isMigratedProject =
+      type === "current" &&
+      (document.querySelector("#current-specifications-preview") ||
+        document.querySelector("#current-planning-docs-preview"));
+
+    if (type === "current" && !isMigratedProject) {
+      fileInputs.current.documents =
+        this.container.querySelector("#current-documents");
+    }
+
+    // Удаляем предыдущие обработчики, чтобы избежать дублирования
+    Object.entries(fileInputs[type]).forEach(([key, input]) => {
+      if (input) {
+        // Клонируем элемент, чтобы удалить все обработчики событий
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+
+        newInput.addEventListener("change", (e) => {
+          const previewContainer = this.container.querySelector(
+            `#${type}-${key}-preview`
+          );
+
+          if (previewContainer) {
+            // Проверка выбраны ли файлы
+            if (e.target.files && e.target.files.length > 0) {
+              // Обрабатываем каждый выбранный файл
+              Array.from(e.target.files).forEach((file) => {
+                // Add files without the migratedFromFuture flag for new uploads
+                this.addFilePreview(
+                  file,
+                  previewContainer,
+                  key === "photos"
+                    ? "photo"
+                    : key === "reports"
+                    ? "report"
+                    : "document"
+                );
+              });
+
+              // Сбрасываем input, чтобы можно было выбрать те же файлы повторно
+              e.target.value = "";
+            }
+          }
+        });
+      }
+    });
   }
 
   // Обновленный метод для отображения превью изображений в модальном окне
@@ -2799,163 +2725,27 @@ export default class ConstructionManager {
       return;
     }
 
-    // Создаем индикатор загрузки
-    let loadingIndicator = modal.querySelector(".loading-indicator");
-    if (!loadingIndicator) {
-      loadingIndicator = document.createElement("div");
-      loadingIndicator.className = "loading-indicator";
-      loadingIndicator.innerHTML = `
-        <div class="spinner">
-          <div class="bounce1"></div>
-          <div class="bounce2"></div>
-          <div class="bounce3"></div>
-        </div>
-        <p>Loading image...</p>
-      `;
-      loadingIndicator.style.position = "absolute";
-      loadingIndicator.style.top = "50%";
-      loadingIndicator.style.left = "50%";
-      loadingIndicator.style.transform = "translate(-50%, -50%)";
-      loadingIndicator.style.color = "#333";
-      loadingIndicator.style.fontSize = "16px";
-      loadingIndicator.style.textAlign = "center";
-
-      const spinner = loadingIndicator.querySelector(".spinner");
-      spinner.style.margin = "0 auto";
-      spinner.style.width = "70px";
-      spinner.style.textAlign = "center";
-
-      const bounces = loadingIndicator.querySelectorAll(
-        ".bounce1, .bounce2, .bounce3"
-      );
-      bounces.forEach((bounce) => {
-        bounce.style.width = "18px";
-        bounce.style.height = "18px";
-        bounce.style.backgroundColor = "#0088cc";
-        bounce.style.borderRadius = "100%";
-        bounce.style.display = "inline-block";
-        bounce.style.animation =
-          "sk-bouncedelay 1.4s infinite ease-in-out both";
-        bounce.style.marginRight = "5px";
-      });
-
-      const styleSheet = document.createElement("style");
-      styleSheet.textContent = `
-        @keyframes sk-bouncedelay {
-          0%, 80%, 100% { transform: scale(0); }
-          40% { transform: scale(1.0); }
-        }
-        .spinner .bounce1 { animation-delay: -0.32s; }
-        .spinner .bounce2 { animation-delay: -0.16s; }
-      `;
-      document.head.appendChild(styleSheet);
-
-      modal.querySelector(".preview-content").appendChild(loadingIndicator);
-    }
-
-    // Показываем индикатор загрузки и скрываем изображение
-    loadingIndicator.style.display = "block";
-    previewImage.style.display = "none";
-
-    // Важно! Удаляем предыдущие обработчики событий перед установкой новых
-    previewImage.onload = null;
-    previewImage.onerror = null;
-
-    // Очищаем предыдущее изображение
-    previewImage.src = "";
-
-    // Устанавливаем новые обработчики перед загрузкой нового изображения
+    // Устанавливаем изображение и показываем модальное окно
+    previewImage.src = imageSrc;
     previewImage.onload = () => {
       console.log("Image loaded successfully in modal"); // Для отладки
-      loadingIndicator.style.display = "none";
-      previewImage.style.display = "block";
     };
-
     previewImage.onerror = () => {
       console.error("Failed to load image in modal:", imageSrc); // Для отладки
-
       // Пытаемся исправить URL, если это путь к локальному файлу
       if (
         !imageSrc.startsWith("data:") &&
         !imageSrc.startsWith("blob:") &&
         !imageSrc.startsWith("http")
       ) {
-        // Пробуем разные пути к изображению
-        const attemptPaths = [
-          // Оригинальный путь
-          imageSrc,
-          // Путь относительно корня сайта
-          `${window.location.origin}/${imageSrc}`,
-          // Путь относительно Inspections-Checklist-Portal
-          `${window.location.origin}/Maintenance_P/Inspections-Checklist-Portal/${imageSrc}`,
-          // Путь с другим расширением
-          `${imageSrc.replace(/\.\w+$/, ".jpg")}`,
-          `${imageSrc.replace(/\.\w+$/, ".jpeg")}`,
-          `${imageSrc.replace(/\.\w+$/, ".png")}`,
-        ];
-
-        console.log("Trying alternative URLs:", attemptPaths);
-
-        // Последовательно пробуем все альтернативные пути
-        let currentPathIndex = 1; // Начинаем со второго пути, так как первый уже не сработал
-
-        const tryNextPath = () => {
-          if (currentPathIndex < attemptPaths.length) {
-            // Снова очищаем обработчики перед установкой нового src
-            const nextPath = attemptPaths[currentPathIndex];
-            currentPathIndex++;
-
-            // Устанавливаем обработчики перед установкой нового src
-            previewImage.onload = () => {
-              console.log(
-                "Image loaded with alternative URL:",
-                previewImage.src
-              );
-              loadingIndicator.style.display = "none";
-              previewImage.style.display = "block";
-            };
-
-            previewImage.onerror = tryNextPath;
-
-            // Устанавливаем новый src
-            previewImage.src = nextPath;
-          } else {
-            // Если все попытки не удались, показываем сообщение об ошибке
-            loadingIndicator.innerHTML = `
-              <div style="text-align: center;">
-                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f44336;"></i>
-                <p>Failed to load image</p>
-              </div>
-            `;
-          }
-        };
-
-        // Начинаем процесс
-        tryNextPath();
-      } else if (imageSrc.startsWith("blob:")) {
-        // Для blob URL есть проблема с повторным использованием
-        // Покажем сообщение с информацией, что превью может быть временно недоступно
-        loadingIndicator.innerHTML = `
-          <div style="text-align: center;">
-            <i class="fas fa-info-circle" style="font-size: 2rem; color: #0088cc;"></i>
-            <p>Preview may be temporarily unavailable.<br>Try closing and reopening the modal.</p>
-          </div>
-        `;
-      } else {
-        // Для URL из data или http протоколов, просто показываем сообщение об ошибке
-        loadingIndicator.innerHTML = `
-          <div style="text-align: center;">
-            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f44336;"></i>
-            <p>Failed to load image</p>
-          </div>
-        `;
+        const possibleBase = window.location.origin;
+        const newSrc = `${possibleBase}${
+          imageSrc.startsWith("/") ? "" : "/"
+        }${imageSrc}`;
+        console.log("Trying alternative URL:", newSrc);
+        previewImage.src = newSrc;
       }
     };
-
-    // Устанавливаем новый src после настройки обработчиков
-    setTimeout(() => {
-      previewImage.src = imageSrc;
-    }, 100);
 
     // Показываем модальное окно
     modal.style.display = "flex";
@@ -2964,11 +2754,6 @@ export default class ConstructionManager {
     const closePreviewHandler = () => {
       modal.style.display = "none";
       document.removeEventListener("keydown", escapeKeyHandler);
-
-      // Важно! Очищаем src и обработчики при закрытии
-      previewImage.src = "";
-      previewImage.onload = null;
-      previewImage.onerror = null;
     };
 
     // Находим кнопку закрытия
@@ -2991,7 +2776,6 @@ export default class ConstructionManager {
         closePreviewHandler();
       }
     };
-
     document.addEventListener("keydown", escapeKeyHandler);
   }
 
@@ -4440,59 +4224,24 @@ export default class ConstructionManager {
   }
 
   updateProject(id, data, type) {
-    // Find the project to update
-    if (type === "current") {
-      const index = this.currentProjects.findIndex((p) => p.id === id);
-      if (index !== -1) {
-        // Keep track of the existing photos to detect deletions
-        const existingPhotos = this.currentProjects[index].photos || [];
+    const projects =
+      type === "current" ? this.currentProjects : this.futureProjects;
+    const index = projects.findIndex((p) => p.id === id);
 
-        // Check if photos were deleted by comparing with what's in the form data
-        if (Array.isArray(existingPhotos) && Array.isArray(data.photos)) {
-          const existingPhotoMap = {};
-          existingPhotos.forEach((photo) => {
-            if (photo && (photo.name || photo.originalName)) {
-              const key = photo.name || photo.originalName;
-              existingPhotoMap[key] = true;
-            }
-          });
+    if (index !== -1) {
+      // Сохраняем старые данные проекта
+      const oldProject = projects[index];
 
-          // Check which photos are still present in the form data
-          const updatedPhotoMap = {};
-          data.photos.forEach((photo) => {
-            if (photo && (photo.name || photo.originalName)) {
-              const key = photo.name || photo.originalName;
-              updatedPhotoMap[key] = true;
-            }
-          });
+      // Создаем обновленный проект с сохранением ID и данных, которые не пришли в data
+      projects[index] = {
+        ...oldProject,
+        ...data,
+        id: oldProject.id, // Гарантируем, что ID не изменится
+      };
 
-          // Log deleted photos for debugging
-          existingPhotos.forEach((photo) => {
-            if (photo && (photo.name || photo.originalName)) {
-              const key = photo.name || photo.originalName;
-              if (!updatedPhotoMap[key]) {
-                console.log(`Photo deleted during update: ${key}`);
-              }
-            }
-          });
-        }
-
-        // Update the project with new data
-        this.currentProjects[index] = {
-          ...this.currentProjects[index],
-          ...data,
-        };
-      }
-    } else {
-      const index = this.futureProjects.findIndex((p) => p.id === id);
-      if (index !== -1) {
-        this.futureProjects[index] = { ...this.futureProjects[index], ...data };
-      }
+      this.renderProjects(type);
+      this.updateProjectStatistics(type);
     }
-
-    // Re-render the projects list to reflect changes
-    this.renderProjects(type);
-    this.updateProjectStatistics(type);
   }
 
   deleteProject(id, type) {
@@ -4524,29 +4273,6 @@ export default class ConstructionManager {
     // Обновляем значение в скрытом поле
     if (ratingInput) {
       ratingInput.value = rating;
-    }
-  }
-
-  // Новый метод для синхронизации удаленных фотографий
-  syncDeletedPhotos(deletedFileItem, project) {
-    if (!project || !deletedFileItem) return;
-
-    const fileName = deletedFileItem.dataset.fileName;
-    const fileType = deletedFileItem.dataset.fileType;
-
-    // Если это фото, удаляем его из массива фотографий проекта
-    if (
-      fileType === "photo" &&
-      project.photos &&
-      Array.isArray(project.photos)
-    ) {
-      project.photos = project.photos.filter((photo) => {
-        // Проверяем имя файла или оригинальное имя
-        return (
-          photo && photo.name !== fileName && photo.originalName !== fileName
-        );
-      });
-      console.log("Photo removed from project data:", fileName);
     }
   }
 }

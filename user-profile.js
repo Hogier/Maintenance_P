@@ -97,7 +97,7 @@ setTimeout(() => {
     ws.send(JSON.stringify(message));
   }
 }, 1000);*/
-}
+};
 // Отправка запроса на получение задач
 function requestTasks(staff) {
   if (ws.readyState === WebSocket.OPEN) {
@@ -111,8 +111,6 @@ function requestTasks(staff) {
     console.error("WebSocket не подключен");
   }
 }
-
-
 
 document.addEventListener("DOMContentLoaded", async function () {
   const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -159,7 +157,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   let isOpenButtons = [false, false, false];
   const TasksListHeader = document.getElementById("TasksListHeader");
 
-  const titleForTasksList = JSON.parse(localStorage.getItem("currentUser")).role === "user" ? "Your requests" : "Your tasks";
+  const titleForTasksList =
+    JSON.parse(localStorage.getItem("currentUser")).role === "user"
+      ? "Your requests"
+      : "Your tasks";
   TasksListHeader.textContent = titleForTasksList;
 
   headerContainer.addEventListener("click", function () {
@@ -360,32 +361,34 @@ document.addEventListener("DOMContentLoaded", async function () {
     userPhoto.onload = () => adjustImageSize(userPhoto);
   }
 
-  document.addEventListener('click', function (event) {
+  document.addEventListener("click", function (event) {
     // Проверяем, был ли клик вне .status-container-wrapper
-    const isClickInside = event.target.closest('.status-container-wrapper');
+    const isClickInside = event.target.closest(".status-container-wrapper");
     if (!isClickInside) {
       // Удаляем класс .show у всех .status-edit
-      document.querySelectorAll('.status-edit.show').forEach(edit => {
-        edit.classList.remove('show');
+      document.querySelectorAll(".status-edit.show").forEach((edit) => {
+        edit.classList.remove("show");
       });
-      
-      document.querySelectorAll('.task-item').forEach(taskItem => {
+
+      document.querySelectorAll(".task-item").forEach((taskItem) => {
         if (taskItem) {
-          taskItem.classList.remove('expanded-margin');
+          taskItem.classList.remove("expanded-margin");
         }
       });
 
       // Удаляем класс -active у всех span
-      document.querySelectorAll('.task-status .status-container-wrapper span').forEach(span => {
-        const activeClass = span.className.split(' ').find(cls => cls.endsWith('-active'));
-        if (activeClass) {
-          span.classList.remove(activeClass);
-        }
-      });
+      document
+        .querySelectorAll(".task-status .status-container-wrapper span")
+        .forEach((span) => {
+          const activeClass = span.className
+            .split(" ")
+            .find((cls) => cls.endsWith("-active"));
+          if (activeClass) {
+            span.classList.remove(activeClass);
+          }
+        });
     }
   });
-
-
 });
 
 // Функция для отображения информации о пользователе
@@ -547,7 +550,6 @@ async function displayUserTasks() {
     tasksList.id = "userTasksList";
     tasksList.classList.add("tasks-list");
 
-
     tasks.forEach((task) => {
       const listItem = document.createElement("li");
       listItem.classList.add("task-item");
@@ -557,19 +559,33 @@ async function displayUserTasks() {
               <div class="task-header">
                 <div class="task-header-left">
                   <span class="priority-indicator" style="background-color: ${getPriorityColor(
-        task.priority
-      )};"></span>
+                    task.priority
+                  )};"></span>
                   <span class="task-id">${task.request_id}</span>
                 </div>
                 <div class="task-header-right">
                   <span class="task-timestamp">${new Date(
-        task.timestamp
-      ).toLocaleString()}</span>
+                    task.timestamp
+                  ).toLocaleString()}</span>
                 </div>
               </div>
               <div class="task-status">
-                <span class="task-status-text">Request</span> <div class="status-container-wrapper" data-task-id="${task.request_id}"><span class="${user.role === 'maintenance' ? 'status-container-maintenance' : 'status-container'} ${task.status.toLowerCase().replace(/\s+/g, '-')}" style="border-color: ${getStatusBorderColor(task.status)};">${task.status}</span>
-                ${user.role === 'maintenance' ? generateStatusEditMarkup(task.status) : ''}
+                <span class="task-status-text">Request</span> <div class="status-container-wrapper" data-task-id="${
+                  task.request_id
+                }"><span class="${
+        user.role === "maintenance"
+          ? "status-container-maintenance"
+          : "status-container"
+      } ${task.status
+        .toLowerCase()
+        .replace(/\s+/g, "-")}" style="border-color: ${getStatusBorderColor(
+        task.status
+      )};">${task.status}</span>
+                ${
+                  user.role === "maintenance"
+                    ? generateStatusEditMarkup(task.status)
+                    : ""
+                }
                 </div>
                 <div class="profile-status-clock">
                   <div class="profile-hour-hand"></div>
@@ -585,7 +601,6 @@ async function displayUserTasks() {
       listItem.innerHTML = taskDetails;
       tasksList.appendChild(listItem);
 
-
       // Добавляем обработчик клика для разворачивания деталей задачи
       listItem.addEventListener("click", function () {
         const detailsWrapper = this.querySelector(".task-details-wrapper");
@@ -599,82 +614,117 @@ async function displayUserTasks() {
         }
       });
 
-      const spanStatus = listItem.querySelector(".task-status .status-container-wrapper span");
+      const spanStatus = listItem.querySelector(
+        ".task-status .status-container-wrapper span"
+      );
       spanStatus.addEventListener("click", function (e) {
-        if (user.role === 'maintenance') {
+        if (user.role === "maintenance") {
           e.stopPropagation();
-          this.classList.toggle(`${this.textContent.toLowerCase().replace(/\s+/g, '-')}-active`);
+          this.classList.toggle(
+            `${this.textContent.toLowerCase().replace(/\s+/g, "-")}-active`
+          );
 
-          const taskItem = this.closest('.task-item');
-          if (this.classList.contains('pending-active') || 
-              this.classList.contains('in-progress-active') || 
-              this.classList.contains('completed-active')) {
-            taskItem.classList.add('expanded-margin');
+          const taskItem = this.closest(".task-item");
+          if (
+            this.classList.contains("pending-active") ||
+            this.classList.contains("in-progress-active") ||
+            this.classList.contains("completed-active")
+          ) {
+            taskItem.classList.add("expanded-margin");
           } else {
-            taskItem.classList.remove('expanded-margin');
+            taskItem.classList.remove("expanded-margin");
           }
         }
-        const statusEdits = this.parentElement.querySelectorAll('.status-edit');
-        statusEdits.forEach(edit => {
-          edit.classList.toggle('show');
+        const statusEdits = this.parentElement.querySelectorAll(".status-edit");
+        statusEdits.forEach((edit) => {
+          edit.classList.toggle("show");
         });
       });
 
-    const statusContainer = listItem.querySelectorAll('.status-container-wrapper div');
-    changeStatus(statusContainer, spanStatus);
-    function changeStatus(statusContainer, spanStatus) {
-      statusContainer.forEach(wrapper => {
-        console.log(wrapper.closest('.status-container-wrapper').getAttribute('data-task-id'),wrapper.textContent, wrapper.isEventListener);
-        if (!wrapper.isEventListener) {
-          wrapper.isEventListener = true;
-          wrapper.addEventListener('click', async function (e) {
-            e.stopPropagation();
-            const anotherStatusContainer = Array.from(wrapper.closest('.status-container-wrapper').children).filter(child => child !== wrapper);
-          const taskId = listItem.querySelector('.status-container-wrapper').getAttribute('data-task-id');
-          const statusClock = listItem.querySelector('.profile-status-clock');
-          const taskItem = this.closest('.task-item');
-          const statusContainerWrapper = taskItem.querySelector('.status-container-wrapper');
-          await changeTaskStatusInProfile(taskId, wrapper.textContent, statusClock);
-          anotherStatusContainer.forEach(child => {
-            child.classList.remove('show');
-          });
-          setTimeout(() => {
-            wrapper.style.top = '0px';
-            taskItem.classList.remove('expanded-margin');
-            setTimeout(() => {
-              //const spanStatus = taskItem.querySelector('.status-container-wrapper span');
-              const statusText = spanStatus.textContent;
-              const isFirstWrapper = wrapper.classList.contains('first');
-
-              
-              const newDivInStatusContainer = document.createElement('div');
-              newDivInStatusContainer.textContent = statusText;
-              newDivInStatusContainer.classList.add('status-edit', `${statusText.toLowerCase().replace(/\s+/g, '-')}`, isFirstWrapper ? 'first' : 'second');
-              statusContainerWrapper.appendChild(newDivInStatusContainer);
-
-              
-              spanStatus.textContent = wrapper.textContent;
-              spanStatus.style.borderColor = getStatusBorderColor(wrapper.textContent);
-              spanStatus.classList.remove(`${statusText.toLowerCase().replace(/\s+/g, '-')}`);
-              spanStatus.classList.remove(`${statusText.toLowerCase().replace(/\s+/g, '-')}-active`);
-              spanStatus.classList.add(`${wrapper.textContent.toLowerCase().replace(/\s+/g, '-')}`);
-              
+      const statusContainer = listItem.querySelectorAll(
+        ".status-container-wrapper div"
+      );
+      changeStatus(statusContainer, spanStatus);
+      function changeStatus(statusContainer, spanStatus) {
+        statusContainer.forEach((wrapper) => {
+          console.log(
+            wrapper
+              .closest(".status-container-wrapper")
+              .getAttribute("data-task-id"),
+            wrapper.textContent,
+            wrapper.isEventListener
+          );
+          if (!wrapper.isEventListener) {
+            wrapper.isEventListener = true;
+            wrapper.addEventListener("click", async function (e) {
+              e.stopPropagation();
+              const anotherStatusContainer = Array.from(
+                wrapper.closest(".status-container-wrapper").children
+              ).filter((child) => child !== wrapper);
+              const taskId = listItem
+                .querySelector(".status-container-wrapper")
+                .getAttribute("data-task-id");
+              const statusClock = listItem.querySelector(
+                ".profile-status-clock"
+              );
+              const taskItem = this.closest(".profile-task-item");
+              const statusContainerWrapper = taskItem.querySelector(
+                ".status-container-wrapper"
+              );
+              await changeTaskStatusInProfile(
+                taskId,
+                wrapper.textContent,
+                statusClock
+              );
+              anotherStatusContainer.forEach((child) => {
+                child.classList.remove("show");
+              });
               setTimeout(() => {
-                wrapper.remove();
-                const statusContainer = listItem.querySelectorAll('.status-container-wrapper div');
-                console.log(statusContainer);
-                console.log(spanStatus);
-                changeStatus(statusContainer, spanStatus);
-              }, 300);
-            }, 500);
-          }, 150);
+                wrapper.style.top = "0px";
+                taskItem.classList.remove("expanded-margin");
+                setTimeout(() => {
+                  //const spanStatus = taskItem.querySelector('.status-container-wrapper span');
+                  const statusText = spanStatus.textContent;
+                  const isFirstWrapper = wrapper.classList.contains("first");
+
+                  const newDivInStatusContainer = document.createElement("div");
+                  newDivInStatusContainer.textContent = statusText;
+                  newDivInStatusContainer.classList.add(
+                    "status-edit",
+                    `${statusText.toLowerCase().replace(/\s+/g, "-")}`,
+                    isFirstWrapper ? "first" : "second"
+                  );
+                  statusContainerWrapper.appendChild(newDivInStatusContainer);
+
+                  spanStatus.textContent = wrapper.textContent;
+                  spanStatus.style.borderColor = getStatusBorderColor(
+                    wrapper.textContent
+                  );
+                  spanStatus.classList.remove(
+                    `${statusText.toLowerCase().replace(/\s+/g, "-")}`
+                  );
+                  spanStatus.classList.remove(
+                    `${statusText.toLowerCase().replace(/\s+/g, "-")}-active`
+                  );
+                  spanStatus.classList.add(
+                    `${wrapper.textContent.toLowerCase().replace(/\s+/g, "-")}`
+                  );
+
+                  setTimeout(() => {
+                    wrapper.remove();
+                    const statusContainer = listItem.querySelectorAll(
+                      ".status-container-wrapper div"
+                    );
+                    console.log(statusContainer);
+                    console.log(spanStatus);
+                    changeStatus(statusContainer, spanStatus);
+                  }, 300);
+                }, 500);
+              }, 150);
+            });
+          }
         });
       }
-      });
-    }
-
-
-
     });
 
     // Добавляем список задач в контейнер
@@ -716,32 +766,33 @@ function getStatusBorderColor(status) {
 
 function getAssignedInfo(task) {
   return task.assigned_to
-    ? `The task was assigned to ${task.assigned_to
-    } <span style="font-size: 0.8em; color: #666;">at ${new Date(
-      task.assigned_at
-    ).toLocaleString()}</span>`
+    ? `The task was assigned to ${
+        task.assigned_to
+      } <span style="font-size: 0.8em; color: #666;">at ${new Date(
+        task.assigned_at
+      ).toLocaleString()}</span>`
     : "No one has been assigned yet";
 }
 
 function generateStatusEditMarkup(status) {
-  const statuses = ['Pending', 'In Progress', 'Completed'];
+  const statuses = ["Pending", "In Progress", "Completed"];
   return statuses
-    .filter(s => s !== status)
+    .filter((s) => s !== status)
     .map((s, index) => {
-      return `<div class="status-edit ${s.toLowerCase().replace(/\s+/g, '-')} ${index === 0 ? 'first' : 'second'}">${s}</div>`;
+      return `<div class="status-edit ${s.toLowerCase().replace(/\s+/g, "-")} ${
+        index === 0 ? "first" : "second"
+      }">${s}</div>`;
     })
-    .join('');
+    .join("");
 }
 
 async function addUserPhotoToServer(file) {
-
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
   const formData = new FormData();
   formData.append("action", "addUserPhoto");
   formData.append("userPhoto", file);
   formData.append("role", currentUser.role);
-
 
   if (currentUser.role === "user") {
     formData.append("email", currentUser.email);
@@ -821,7 +872,6 @@ async function getUserPhotoFromServer() {
     });
 }
 
-
 async function loadUserPhoto() {
   try {
     const photoFileName = await getUserPhotoFromServer();
@@ -830,12 +880,18 @@ async function loadUserPhoto() {
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
     if (photoFileName !== "user.png") {
-      avatarContainer.style.backgroundImage = currentUser.role === "user" ? `url("/Maintenance_P/users/img/${photoFileName}")` : `url("/Maintenance_P/maintenance_staff/img/${photoFileName}")`;
+      avatarContainer.style.backgroundImage =
+        currentUser.role === "user"
+          ? `url("/Maintenance_P/users/img/${photoFileName}")`
+          : `url("/Maintenance_P/maintenance_staff/img/${photoFileName}")`;
       avatarContainer.style.backgroundSize = "cover";
       avatarContainer.style.backgroundPosition = "center";
       avatarContainer.innerHTML = ``;
     }
-    userPhotoElement.src = currentUser.role === "user" ? `/Maintenance_P/users/img/${photoFileName}` : `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
+    userPhotoElement.src =
+      currentUser.role === "user"
+        ? `/Maintenance_P/users/img/${photoFileName}`
+        : `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
     console.log(avatarContainer);
 
     // Добавляем проверку и выводим значение backgroundImage
@@ -1178,7 +1234,6 @@ async function getUserTasksForLastYear() {
   return [];
 }
 
-
 async function chengeTaskStatusInServer(taskId, newStatus) {
   const user = JSON.parse(localStorage.getItem("currentUser"));
   if (user) {
@@ -1294,7 +1349,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 ////// ФУНКЦИИ ЗАПРОСОВ НА СЕРВЕР ДЛЯ РОЛИ "МАINTENANCE" //////
 
-
 async function getMaintenanceSettingsInfo(username) {
   try {
     const formData = new FormData();
@@ -1318,7 +1372,6 @@ async function getMaintenanceSettingsInfo(username) {
     return null;
   }
 }
-
 
 /*
 - Подключить   getMaintenanceSettingsInfo(username) 

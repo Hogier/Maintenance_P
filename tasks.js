@@ -662,14 +662,13 @@ async function createTaskElement(task) {
       const taskElement = this.closest(".task-item");
       const parentList = taskElement.closest("#notCompletedTasksList");
       if (parentList && this.value === "Completed") {
-        
         setTimeout(() => {
           //askElement.classList.add("collapse");
           setTimeout(() => {
             updateAlertTasksListHeight(taskElement);
             //taskElement.remove();
-          }, 800); 
-        }, 1000); 
+          }, 800);
+        }, 1000);
       }
     });
   }
@@ -952,6 +951,12 @@ async function addNewTasksToPage(tasks) {
 setInterval(async () => {
   const newTasks = await checkNewTasksInServer();
 
+  // Ensure newTasks is an array before proceeding
+  if (!Array.isArray(newTasks)) {
+    console.error("newTasks is not an array:", newTasks);
+    return;
+  }
+
   const currentDateString = currentDate.toLocaleString("en-US", {
     year: "numeric",
     month: "2-digit",
@@ -962,13 +967,13 @@ setInterval(async () => {
     currentFilter === "all" ||
     (currentFilter === "custom" && currentDateString === getDallasDate());
 
-  if (newTasks && showedPageWithTodayTasks) {
+  if (newTasks.length > 0 && showedPageWithTodayTasks) {
     await addNewTasksToPage(newTasks);
     clientTasks = [...newTasks, ...clientTasks];
     clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }
 
-  if (newTasks && newTasks.length > 0) {
+  if (newTasks.length > 0) {
     counterNewTaskNotification = newTasks.length;
     alertIcon.textContent =
       counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
@@ -1351,8 +1356,34 @@ async function getTasksByDate(date) {
 
     const result = await response.json();
     if (!result.success) {
+      // Проверяем, не связана ли ошибка с директорией mini
+      if (
+        result.message &&
+        result.message.includes("Mini directory is not writable")
+      ) {
+        console.warn(
+          "Предупреждение: директория миниатюр недоступна для записи, но данные задач будут загружены"
+        );
+        // Пытаемся получить данные задач, несмотря на ошибку с миниатюрами
+        if (result.data && Array.isArray(result.data)) {
+          result.data.sort(
+            (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+          );
+          if (
+            getDallasDate() ===
+            date.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })
+          )
+            clientTasks = result.data;
+          return result.data;
+        }
+      }
       throw new Error(result.message);
     }
+
     result.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     if (
       getDallasDate() ===
@@ -1444,13 +1475,12 @@ async function checkNewTasksInServer() {
 
     const text = await response.text();
     try {
-      if (text === "false") return false;
+      if (text === "false") return []; // Return empty array instead of false
       const result = JSON.parse(text);
-      // Удаляем проверку на result.success, так как сервер возвращает массив
-      return result; // Предполагается, что сервер возвращает массив новых заданий
+      return Array.isArray(result) ? result : []; // Ensure we always return an array
     } catch (jsonError) {
       console.error("Ошибка при парсинге JSON:", jsonError, "Ответ:", text);
-      return false;
+      return [];
     }
   } catch (error) {
     console.error("Ошибка при проверке новых заданий:", error);
@@ -1473,6 +1503,19 @@ async function getNotCompletedTasksForLastWeek() {
 
     const result = await response.json();
     if (!result.success) {
+      // Проверяем, не связана ли ошибка с директорией mini
+      if (
+        result.message &&
+        result.message.includes("Mini directory is not writable")
+      ) {
+        console.warn(
+          "Предупреждение: директория миниатюр недоступна для записи, но данные задач будут загружены"
+        );
+        // Пытаемся получить данные задач, несмотря на ошибку с миниатюрами
+        if (result.data && Array.isArray(result.data)) {
+          return result.data;
+        }
+      }
       throw new Error(result.message);
     }
     return result.data;
@@ -1493,11 +1536,14 @@ function updateAlertTasksListHeight(taskElement) {
   const alertTasks = document.querySelector(".alert-tasks");
   const closeAlertTasks = document.getElementById("closeAlertTasks");
   //alertTasks.style.transition = "height 0.15s ease-in-out, opacity 0.5s ease-in-out";
-  console.log("alertTasksList.querySelectorAll('.task-item').length: ", alertTasksList.querySelectorAll(".task-item").length);
+  console.log(
+    "alertTasksList.querySelectorAll('.task-item').length: ",
+    alertTasksList.querySelectorAll(".task-item").length
+  );
   if (alertTasksList.querySelectorAll(".task-item").length === 1) {
     alertTasks.style.height = alertTasks.scrollHeight + "px";
     //taskElement.classList.add("collapse");
-   setTimeout(() => {
+    setTimeout(() => {
       alertTasks.style.height = "0";
       closeAlertTasks.classList.remove("exist-tasks");
       closeAlertTasks.classList.add("no-tasks");
@@ -1516,10 +1562,7 @@ function updateAlertTasksListHeight(taskElement) {
     taskElement.classList.add("collapse");
     setTimeout(() => {
       taskElement.remove();
-
     }, 650);
-
   }
   //alertTasks.style.transition = "height 0.5s ease-in-out, opacity 0.5s ease-in-out";
-
 }
