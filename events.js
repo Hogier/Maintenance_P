@@ -285,9 +285,32 @@ function updateEventsList() {
 function showEventModal() {
   const modal = document.getElementById("eventModal");
   modal.style.display = "block";
-  // Очищаем форму при открытии
-  document.getElementById("eventForm").reset();
-  // Устанавливаем минимальные даты для полей
+
+  // Reset the form only if we're creating a new event (no event ID in dataset)
+  const form = document.getElementById("eventForm");
+  const isEditing = !!form.dataset.eventId;
+
+  if (!isEditing) {
+    // Reset the form only for new events
+    form.reset();
+
+    // Update the modal title
+    const modalTitle = modal.querySelector("h2");
+    if (modalTitle) {
+      modalTitle.textContent = "Add New Event";
+    }
+
+    // Update the submit button text
+    const submitButton = form.querySelector(".submit-btn");
+    if (submitButton) {
+      submitButton.textContent = "Submit Event Request";
+    }
+
+    // Clear any existing file previews
+    clearFileUpload();
+  }
+
+  // Set minimum dates for date inputs
   const today = new Date().toISOString().split("T")[0];
   document.getElementById("eventStartDate").min = today;
   document.getElementById("setupDate").min = today;
@@ -297,6 +320,10 @@ function showEventModal() {
 function hideEventModal() {
   const modal = document.getElementById("eventModal");
   modal.style.display = "none";
+
+  // Reset the form and clear the event ID
+  const form = document.getElementById("eventForm");
+  delete form.dataset.eventId;
 }
 
 // Функция для загрузки файлов на сервер
@@ -334,8 +361,17 @@ async function handleEventSubmit(e) {
   const form = e.target;
   const formData = new FormData();
 
+  // Check if we're editing or creating
+  const eventId = form.dataset.eventId;
+  const isEditing = !!eventId;
+
+  // Set the appropriate action
+  formData.append("action", isEditing ? "updateEvent" : "createEvent");
+  if (isEditing) {
+    formData.append("eventId", eventId);
+  }
+
   // Базовые данные события
-  formData.append("action", "createEvent");
   formData.append("eventName", form.querySelector("#eventName").value);
   formData.append(
     "eventStartDate",
@@ -358,24 +394,17 @@ async function handleEventSubmit(e) {
 
   // Данные о создателе события
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  formData.append("createdBy", currentUser.fullName);
+  formData.append("createdBy", currentUser?.fullName || "Unknown");
 
   // Данные о столах
   formData.append("tablesNeeded", form.querySelector("#tablesNeeded").value);
   if (form.querySelector("#tablesNeeded").value === "yes") {
     // Проверяем каждый тип стола отдельно
-    const tables6ftCheckbox = form
-      .querySelector('[name="tables6ft"]')
-      .closest(".table-type")
-      .querySelector('input[type="checkbox"]');
-    const tables8ftCheckbox = form
-      .querySelector('[name="tables8ft"]')
-      .closest(".table-type")
-      .querySelector('input[type="checkbox"]');
-    const tablesRoundCheckbox = form
-      .querySelector('[name="tablesRound"]')
-      .closest(".table-type")
-      .querySelector('input[type="checkbox"]');
+    const tables6ftCheckbox = form.querySelector('[name="tables6ft_enabled"]');
+    const tables8ftCheckbox = form.querySelector('[name="tables8ft_enabled"]');
+    const tablesRoundCheckbox = form.querySelector(
+      '[name="tablesRound_enabled"]'
+    );
 
     const tables6ftInput = form.querySelector('[name="tables6ft"]');
     const tables8ftInput = form.querySelector('[name="tables8ft"]');
@@ -451,7 +480,18 @@ async function handleEventSubmit(e) {
     form.querySelector("#otherConsiderations").value
   );
 
-  // Обработка файлов
+  // Collect existing images that weren't removed
+  const existingImagesInputs = form.querySelectorAll(
+    'input[name="existing_images[]"]'
+  );
+  if (existingImagesInputs.length > 0) {
+    const existingImages = Array.from(existingImagesInputs).map(
+      (input) => input.value
+    );
+    formData.append("existingImages", JSON.stringify(existingImages));
+  }
+
+  // Обработка новых файлов
   const setupImageFiles = form.querySelector("#setupImage").files;
   if (setupImageFiles.length > 0) {
     for (let i = 0; i < setupImageFiles.length; i++) {
@@ -468,14 +508,27 @@ async function handleEventSubmit(e) {
     const data = await response.json();
     if (data.success) {
       clearFileUpload();
+      form.reset();
+      delete form.dataset.eventId; // Remove event ID from form
       hideEventModal();
-      loadEvents();
+      await loadEvents();
+      showNotification(
+        isEditing ? "Event updated successfully" : "Event created successfully"
+      );
     } else {
-      throw new Error(data.message || "Failed to create event");
+      throw new Error(data.message || "Failed to process event");
     }
   } catch (error) {
-    console.error("Error creating event:", error);
-    alert("Failed to create event: " + error.message);
+    console.error(
+      isEditing ? "Error updating event:" : "Error creating event:",
+      error
+    );
+    showNotification(
+      isEditing
+        ? "Failed to update event: "
+        : "Failed to create event: " + error.message,
+      "error"
+    );
   }
 }
 
@@ -575,18 +628,24 @@ function formatDate(dateString) {
 
 // Обновляем функцию проверки статуса
 function canChangeStatus(event, newStatus) {
-  const eventDate = new Date(event.startDate);
-  const eventTime = event.endTime ? event.endTime.split(":") : null;
-  if (eventTime) {
-    eventDate.setHours(eventTime[0], eventTime[1]);
-  }
+  // For "completed" status, we need to check against the end date and time
   const now = new Date();
 
   switch (newStatus) {
     case "cancelled":
       return true; // Можно отменить в любое время
     case "completed":
-      return now > eventDate; // Можно завершить только после окончания
+      // Create a date from the end date
+      const endDate = new Date(event.endDate);
+      const endTime = event.endTime ? event.endTime.split(":") : null;
+
+      // Add the end time hours and minutes
+      if (endTime) {
+        endDate.setHours(endTime[0], endTime[1]);
+      }
+
+      // Only allow completion if the current time is after the end time
+      return now > endDate;
     default:
       return true; // Для других статусов (pending)
   }
@@ -959,15 +1018,169 @@ function createEventElement(event) {
 }
 
 // Функции редактирования и удаления событий
-async function editEvent(event) {
-  // Заполняем форму данными события
-  const form = document.getElementById("eventForm");
-  form.eventName.value = event.name;
-  form.eventStartDate.value = event.startDate;
-  form.eventStartTime.value = event.startTime;
-  // ... заполняем остальные поля ...
+async function editEvent(eventId) {
+  // Find the event by ID
+  const event = events.find((e) => e.id === eventId);
+  if (!event) {
+    console.error("Event not found:", eventId);
+    return;
+  }
 
-  // Показываем модальное окно
+  console.log("Editing event:", event);
+
+  // Get the form and update its title
+  const form = document.getElementById("eventForm");
+  const modalTitle = document.querySelector("#eventModal h2");
+  if (modalTitle) {
+    modalTitle.textContent = "Edit Event";
+  }
+
+  // Store the event ID in the form for reference when submitting
+  form.dataset.eventId = event.id;
+
+  // Populate basic event information
+  form.eventName.value = event.name || "";
+  form.eventStartDate.value = event.startDate || "";
+  form.eventStartTime.value = event.startTime || "";
+  form.setupDate.value = event.setupDate || "";
+  form.setupTime.value = event.setupTime || "";
+  form.endDate.value = event.endDate || "";
+  form.endTime.value = event.endTime || "";
+  form.eventLocation.value = event.location || "";
+  form.eventContact.value = event.contact || "";
+  form.eventEmail.value = event.email || "";
+  form.eventPhone.value = event.phone || "";
+  form.alcuinContact.value = event.alcuinContact || "";
+  form.attendees.value = event.attendees || "";
+
+  // Set equipment fields
+  form.tablesNeeded.value = event.tables_needed || "no";
+  form.chairsNeeded.value = event.chairs_needed || "no";
+  form.podiumNeeded.value = event.podium || "no";
+  form.monitorsNeeded.value = event.monitors || "no";
+  form.laptopNeeded.value = event.laptop || "no";
+  form.ipadNeeded.value = event.ipad || "no";
+  form.microphonesNeeded.value = event.microphones || "no";
+  form.speakerNeeded.value = event.speaker || "no";
+  form.avAssistance.value = event.avAssistance || "no";
+  form.securityNeeded.value = event.security || "no";
+  form.buildingAccess.value = event.buildingAccess || "no";
+  form.otherConsiderations.value = event.otherConsiderations || "";
+
+  // Set up tables section if needed
+  if (event.tables_needed === "yes") {
+    const tablesSection = form.querySelector(".tables-options");
+    if (tablesSection) {
+      tablesSection.classList.remove("hidden");
+
+      // 6ft tables
+      const tables6ftCheckbox = form.querySelector("#tables6ft");
+      const tables6ftInput = form.querySelector('[name="tables6ft"]');
+      if (tables6ftCheckbox && tables6ftInput) {
+        const has6ftTables = event.tables6ft === "yes";
+        tables6ftCheckbox.checked = has6ftTables;
+        tables6ftInput.disabled = !has6ftTables;
+        tables6ftInput.value = event.tables6ftCount || "0";
+      }
+
+      // 8ft tables
+      const tables8ftCheckbox = form.querySelector("#tables8ft");
+      const tables8ftInput = form.querySelector('[name="tables8ft"]');
+      if (tables8ftCheckbox && tables8ftInput) {
+        const has8ftTables = event.tables8ft === "yes";
+        tables8ftCheckbox.checked = has8ftTables;
+        tables8ftInput.disabled = !has8ftTables;
+        tables8ftInput.value = event.tables8ftCount || "0";
+      }
+
+      // Round tables
+      const tablesRoundCheckbox = form.querySelector("#tablesRound");
+      const tablesRoundInput = form.querySelector('[name="tablesRound"]');
+      if (tablesRoundCheckbox && tablesRoundInput) {
+        const hasRoundTables = event.tablesRound === "yes";
+        tablesRoundCheckbox.checked = hasRoundTables;
+        tablesRoundInput.disabled = !hasRoundTables;
+        tablesRoundInput.value = event.tablesRoundCount || "0";
+      }
+
+      // Tablecloth color
+      const tableclothColorSelect = form.querySelector("#tableclothColor");
+      if (tableclothColorSelect) {
+        tableclothColorSelect.value = event.tablecloth_color || "";
+      }
+    }
+  }
+
+  // Set up chairs section if needed
+  if (event.chairs_needed === "yes") {
+    const chairsSection = form.querySelector(".chairs-input");
+    if (chairsSection) {
+      chairsSection.classList.remove("hidden");
+      const chairsInput = form.querySelector("#chairs");
+      if (chairsInput) {
+        chairsInput.disabled = false;
+        chairsInput.value = event.chairs_count || "0";
+      }
+    }
+  }
+
+  // Setup images display for editing
+  clearFileUpload(); // Clear any existing file previews
+
+  try {
+    // Parse the images if they exist
+    if (event.setupImages) {
+      let setupImages = [];
+      try {
+        setupImages = JSON.parse(event.setupImages);
+      } catch (e) {
+        console.error("Error parsing setupImages:", e);
+        setupImages = Array.isArray(event.setupImages) ? event.setupImages : [];
+      }
+
+      // If we have images, display them
+      if (setupImages.length > 0) {
+        // Create or get existing preview container
+        const fileUploadBox = document.querySelector(".file-upload-box");
+        let previewContainer = fileUploadBox.querySelector(
+          ".image-preview-container"
+        );
+        if (!previewContainer) {
+          previewContainer = document.createElement("div");
+          previewContainer.className = "image-preview-container";
+          fileUploadBox.appendChild(previewContainer);
+        }
+
+        // Add existing images as previews
+        setupImages.forEach((imagePath) => {
+          if (imagePath) {
+            const preview = document.createElement("div");
+            preview.className = "image-preview";
+            preview.innerHTML = `
+              <img src="uploads/${imagePath}" alt="Preview">
+              <span class="file-name">${imagePath.split("/").pop()}</span>
+              <button type="button" class="remove-image" onclick="removePreview(this)">×</button>
+              <input type="hidden" name="existing_images[]" value="${imagePath}">
+            `;
+            previewContainer.appendChild(preview);
+          }
+        });
+
+        // Update the upload text
+        updateUploadText(previewContainer);
+      }
+    }
+  } catch (error) {
+    console.error("Error displaying existing images:", error);
+  }
+
+  // Update the submit button text
+  const submitButton = form.querySelector(".submit-btn");
+  if (submitButton) {
+    submitButton.textContent = "Update Event";
+  }
+
+  // Show the modal
   showEventModal();
 }
 
