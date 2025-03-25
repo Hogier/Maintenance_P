@@ -939,6 +939,260 @@ try {
             }
             break;
 
+        case 'updateEvent':
+            try {
+                // Get event ID
+                if (!isset($_POST['eventId'])) {
+                    throw new Exception('Event ID is required for update');
+                }
+                $eventId = intval($_POST['eventId']);
+                
+                // First, fetch the existing event to get the current images
+                $existingEvent = [];
+                $existingStmt = $conn->prepare("SELECT setupImages FROM events WHERE id = ?");
+                $existingStmt->bind_param('i', $eventId);
+                
+                if (!$existingStmt->execute()) {
+                    throw new Exception('Failed to fetch existing event: ' . $existingStmt->error);
+                }
+                
+                $existingResult = $existingStmt->get_result();
+                if ($existingRow = $existingResult->fetch_assoc()) {
+                    $existingEvent = $existingRow;
+                } else {
+                    throw new Exception('Event not found with ID: ' . $eventId);
+                }
+                
+                // Parse existing images
+                $existingImages = [];
+                if (!empty($existingEvent['setupImages'])) {
+                    try {
+                        $existingImages = json_decode($existingEvent['setupImages'], true);
+                        if (!is_array($existingImages)) {
+                            $existingImages = [];
+                        }
+                    } catch (Exception $e) {
+                        debug_log("Error parsing existing images", $e->getMessage());
+                        $existingImages = [];
+                    }
+                }
+                
+                // Handle retained existing images
+                $retainedImages = [];
+                if (isset($_POST['existingImages'])) {
+                    try {
+                        $retainedImages = json_decode($_POST['existingImages'], true);
+                        if (!is_array($retainedImages)) {
+                            $retainedImages = [];
+                        }
+                    } catch (Exception $e) {
+                        debug_log("Error parsing retained images", $e->getMessage());
+                        $retainedImages = [];
+                    }
+                }
+                
+                // Добавим отладочное логирование входящих данных
+                debug_log("Updating event data:", [
+                    'eventId' => $eventId,
+                    'existingImages' => $existingImages,
+                    'retainedImages' => $retainedImages,
+                    'tablesNeeded' => $_POST['tablesNeeded'],
+                    'chairsNeeded' => $_POST['chairsNeeded']
+                ]);
+
+                // Process newly uploaded images
+                $uploadedImages = [];
+                if (isset($_FILES['setupImages'])) {
+                    // Проверяем/создаем директории
+                    foreach ([UPLOAD_DIR, UPLOAD_MINI_DIR] as $dir) {
+                        if (!file_exists($dir)) {
+                            if (!mkdir($dir, 0777, true)) {
+                                throw new Exception("Failed to create directory: $dir");
+                            }
+                            chmod($dir, 0777);
+                        }
+                    }
+
+                    foreach ($_FILES['setupImages']['tmp_name'] as $key => $tmpName) {
+                        if ($_FILES['setupImages']['error'][$key] === UPLOAD_ERR_OK) {
+                            $fileName = uniqid() . '_' . $_FILES['setupImages']['name'][$key];
+                            $uploadPath = UPLOAD_DIR . '/' . $fileName;
+                            $miniPath = UPLOAD_MINI_DIR . '/' . $fileName;
+
+                            if (move_uploaded_file($tmpName, $uploadPath)) {
+                                $uploadedImages[] = $fileName;
+                                
+                                if (!createThumbnail($uploadPath, $miniPath, 150)) {
+                                    error_log("Failed to create thumbnail for: " . $uploadPath);
+                                }
+
+                                chmod($uploadPath, 0644);
+                                if (file_exists($miniPath)) {
+                                    chmod($miniPath, 0644);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Combine retained and new images
+                $finalImages = array_merge($retainedImages, $uploadedImages);
+
+                // Явно обрабатываем значения yes/no
+                $tablesNeeded = strtolower(trim($_POST['tablesNeeded'])) === 'yes' ? 'yes' : 'no';
+                $chairsNeeded = strtolower(trim($_POST['chairsNeeded'])) === 'yes' ? 'yes' : 'no';
+                $tables6ft = strtolower(trim($_POST['tables6ft'])) === 'yes' ? 'yes' : 'no';
+                $tables8ft = strtolower(trim($_POST['tables8ft'])) === 'yes' ? 'yes' : 'no';
+                $tablesRound = strtolower(trim($_POST['tablesRound'])) === 'yes' ? 'yes' : 'no';
+
+                // Обрабатываем числовые значения
+                $tables6ftCount = $tables6ft === 'yes' ? max(0, intval($_POST['tables6ftCount'])) : 0;
+                $tables8ftCount = $tables8ft === 'yes' ? max(0, intval($_POST['tables8ftCount'])) : 0;
+                $tablesRoundCount = $tablesRound === 'yes' ? max(0, intval($_POST['tablesRoundCount'])) : 0;
+                $chairsCount = $chairsNeeded === 'yes' ? max(0, intval($_POST['chairs_count'])) : 0;
+
+                // Update the event
+                $sql = "UPDATE events SET 
+                    name = ?, 
+                    startDate = ?, 
+                    startTime = ?, 
+                    setupDate = ?, 
+                    setupTime = ?, 
+                    endDate = ?, 
+                    endTime = ?, 
+                    location = ?, 
+                    contact = ?, 
+                    email = ?, 
+                    phone = ?, 
+                    alcuinContact = ?, 
+                    attendees = ?,
+                    podium = ?, 
+                    monitors = ?, 
+                    laptop = ?, 
+                    ipad = ?, 
+                    microphones = ?,
+                    speaker = ?, 
+                    avAssistance = ?, 
+                    security = ?, 
+                    buildingAccess = ?, 
+                    otherConsiderations = ?,
+                    setupImages = ?,
+                    tables6ft = ?, 
+                    tables8ft = ?, 
+                    tablesRound = ?,
+                    tables6ftCount = ?, 
+                    tables8ftCount = ?, 
+                    tablesRoundCount = ?,
+                    tablecloth_color = ?, 
+                    chairs_count = ?, 
+                    chairs_needed = ?, 
+                    tables_needed = ?
+                WHERE id = ?";
+
+                $params = [
+                    $_POST['eventName'],
+                    $_POST['eventStartDate'],
+                    $_POST['eventStartTime'],
+                    $_POST['setupDate'],
+                    $_POST['setupTime'],
+                    $_POST['endDate'],
+                    $_POST['endTime'],
+                    $_POST['eventLocation'],
+                    $_POST['eventContact'],
+                    $_POST['eventEmail'],
+                    $_POST['eventPhone'],
+                    $_POST['alcuinContact'],
+                    $_POST['attendees'],
+                    $_POST['podiumNeeded'],
+                    $_POST['monitorsNeeded'],
+                    $_POST['laptopNeeded'],
+                    $_POST['ipadNeeded'],
+                    $_POST['microphonesNeeded'],
+                    $_POST['speakerNeeded'],
+                    $_POST['avAssistance'],
+                    $_POST['securityNeeded'],
+                    $_POST['buildingAccess'],
+                    $_POST['otherConsiderations'],
+                    !empty($finalImages) ? json_encode($finalImages) : null,
+                    $tables6ft,
+                    $tables8ft,
+                    $tablesRound,
+                    $tables6ftCount,
+                    $tables8ftCount,
+                    $tablesRoundCount,
+                    $_POST['tableclothColor'],
+                    $chairsCount,
+                    $chairsNeeded,
+                    $tablesNeeded,
+                    $eventId // WHERE clause parameter
+                ];
+
+                $types = str_repeat('s', 24) . 'sssiiisissi'; // 35 parameters
+
+                $stmt = $conn->prepare($sql);
+                if (!$stmt) {
+                    throw new Exception('Failed to prepare statement: ' . $conn->error);
+                }
+
+                if (!$stmt->bind_param($types, ...$params)) {
+                    throw new Exception('Failed to bind parameters: ' . $stmt->error . ' (Types: ' . $types . ', Params: ' . count($params) . ')');
+                }
+
+                if (!$stmt->execute()) {
+                    throw new Exception('Failed to update event: ' . $stmt->error);
+                }
+
+                // Delete images that are no longer used
+                foreach ($existingImages as $oldImage) {
+                    if (!in_array($oldImage, $retainedImages)) {
+                        $fullPath = UPLOAD_DIR . '/' . $oldImage;
+                        $miniPath = UPLOAD_MINI_DIR . '/' . $oldImage;
+                        
+                        if (file_exists($fullPath)) {
+                            unlink($fullPath);
+                        }
+                        
+                        if (file_exists($miniPath)) {
+                            unlink($miniPath);
+                        }
+                    }
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'eventId' => $eventId,
+                    'uploadedFiles' => $uploadedImages,
+                    'retainedFiles' => $retainedImages,
+                    'paths' => [
+                        'upload_dir' => WEB_UPLOAD_PATH,
+                        'upload_mini_dir' => WEB_UPLOAD_MINI_PATH
+                    ]
+                ]);
+                
+            } catch (Exception $e) {
+                error_log("Error in updateEvent: " . $e->getMessage());
+                if (!empty($uploadedImages)) {
+                    foreach ($uploadedImages as $fileName) {
+                        $fullPath = UPLOAD_DIR . '/' . $fileName;
+                        $miniPath = UPLOAD_MINI_DIR . '/' . $fileName;
+                        
+                        if (file_exists($fullPath)) {
+                            unlink($fullPath);
+                        }
+                        
+                        if (file_exists($miniPath)) {
+                            unlink($miniPath);
+                        }
+                    }
+                }
+                
+                echo json_encode([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ]);
+            }
+            break;
+
         default:
             throw new Exception('Invalid action: ' . $action);
     }
