@@ -282,16 +282,155 @@ function updateEventsList() {
 }
 
 // Функции управления модальным окном
-function showEventModal() {
+function showEventModal(event) {
   const modal = document.getElementById("eventModal");
   modal.style.display = "block";
 
-  // Reset the form only if we're creating a new event (no event ID in dataset)
+  // Get the form
   const form = document.getElementById("eventForm");
-  const isEditing = !!form.dataset.eventId;
+  const isEditing = !!event;
 
-  if (!isEditing) {
-    // Reset the form only for new events
+  if (isEditing) {
+    // We're editing an existing event
+    // Update the modal title
+    const modalTitle = modal.querySelector("h2");
+    if (modalTitle) {
+      modalTitle.textContent = "Edit Event";
+    }
+
+    // Update the submit button text
+    const submitButton = form.querySelector(".submit-btn");
+    if (submitButton) {
+      submitButton.textContent = "Save Changes";
+    }
+
+    // Set the event ID in the form dataset
+    form.dataset.eventId = event.id;
+
+    // Fill in the form fields with the event data
+    form.querySelector("#eventName").value = event.name || "";
+    form.querySelector("#eventStartDate").value = event.startDate || "";
+    form.querySelector("#eventStartTime").value = event.startTime || "";
+    form.querySelector("#setupDate").value = event.setupDate || "";
+    form.querySelector("#setupTime").value = event.setupTime || "";
+    form.querySelector("#endDate").value = event.endDate || "";
+    form.querySelector("#endTime").value = event.endTime || "";
+    form.querySelector("#eventLocation").value = event.location || "";
+    form.querySelector("#eventContact").value = event.contact || "";
+    form.querySelector("#eventEmail").value = event.email || "";
+    form.querySelector("#eventPhone").value = event.phone || "";
+    form.querySelector("#alcuinContact").value = event.alcuinContact || "";
+    form.querySelector("#attendees").value = event.attendees || "";
+
+    // Handle tables
+    form.querySelector("#tablesNeeded").value = event.tables_needed || "no";
+    if (event.tables_needed === "yes") {
+      document.querySelector(".tables-options").classList.remove("hidden");
+
+      // 6ft tables
+      const tables6ftCheckbox = form.querySelector(
+        '[name="tables6ft_enabled"]'
+      );
+      const tables6ftInput = form.querySelector('[name="tables6ft"]');
+      if (event.tables6ft === "yes") {
+        tables6ftCheckbox.checked = true;
+        tables6ftInput.disabled = false;
+        tables6ftInput.value = event.tables6ftCount || 0;
+      }
+
+      // 8ft tables
+      const tables8ftCheckbox = form.querySelector(
+        '[name="tables8ft_enabled"]'
+      );
+      const tables8ftInput = form.querySelector('[name="tables8ft"]');
+      if (event.tables8ft === "yes") {
+        tables8ftCheckbox.checked = true;
+        tables8ftInput.disabled = false;
+        tables8ftInput.value = event.tables8ftCount || 0;
+      }
+
+      // Round tables
+      const tablesRoundCheckbox = form.querySelector(
+        '[name="tablesRound_enabled"]'
+      );
+      const tablesRoundInput = form.querySelector('[name="tablesRound"]');
+      if (event.tablesRound === "yes") {
+        tablesRoundCheckbox.checked = true;
+        tablesRoundInput.disabled = false;
+        tablesRoundInput.value = event.tablesRoundCount || 0;
+      }
+
+      // Tablecloth color
+      form.querySelector("#tableclothColor").value =
+        event.tablecloth_color || "";
+    }
+
+    // Handle chairs
+    form.querySelector("#chairsNeeded").value = event.chairs_needed || "no";
+    if (event.chairs_needed === "yes") {
+      document.querySelector(".chairs-input").classList.remove("hidden");
+      const chairsInput = form.querySelector("#chairs");
+      chairsInput.disabled = false;
+      chairsInput.value = event.chairs_count || 0;
+    }
+
+    // Equipment
+    form.querySelector("#podiumNeeded").value = event.podium || "no";
+    form.querySelector("#monitorsNeeded").value = event.monitors || "no";
+    form.querySelector("#laptopNeeded").value = event.laptop || "no";
+    form.querySelector("#ipadNeeded").value = event.ipad || "no";
+    form.querySelector("#microphonesNeeded").value = event.microphones || "no";
+    form.querySelector("#speakerNeeded").value = event.speaker || "no";
+    form.querySelector("#avAssistance").value = event.avAssistance || "no";
+    form.querySelector("#securityNeeded").value = event.security || "no";
+    form.querySelector("#buildingAccess").value = event.buildingAccess
+      ? "yes"
+      : "no";
+    form.querySelector("#otherConsiderations").value =
+      event.otherConsiderations || "";
+
+    // If there are uploaded images, display them
+    if (event.setupImages && event.setupImages !== "[]") {
+      try {
+        const setupImages = JSON.parse(event.setupImages);
+        if (Array.isArray(setupImages) && setupImages.length > 0) {
+          const fileUploadBox = document.querySelector(".file-upload-box");
+          if (fileUploadBox) {
+            // Create or get existing container for previews
+            let previewContainer = fileUploadBox.querySelector(
+              ".image-preview-container"
+            );
+            if (!previewContainer) {
+              previewContainer = document.createElement("div");
+              previewContainer.className = "image-preview-container";
+              fileUploadBox.appendChild(previewContainer);
+            }
+
+            // Add existing images as previews
+            setupImages.forEach((image) => {
+              if (typeof image === "string") {
+                const preview = document.createElement("div");
+                preview.className = "image-preview";
+                preview.innerHTML = `
+                  <img src="uploads/mini/${image}" alt="Preview">
+                  <span class="file-name">${image}</span>
+                  <button type="button" class="remove-image" onclick="removePreview(this)">×</button>
+                  <input type="hidden" name="existing_images[]" value="${image}">
+                `;
+                previewContainer.appendChild(preview);
+              }
+            });
+
+            // Update the text
+            updateUploadText(previewContainer);
+          }
+        }
+      } catch (e) {
+        console.error("Error displaying existing images:", e);
+      }
+    }
+  } else {
+    // We're creating a new event
     form.reset();
 
     // Update the modal title
@@ -626,8 +765,46 @@ function formatDate(dateString) {
   });
 }
 
+// Функция для форматирования даты и времени создания события
+function formatCreationDate(dateTimeString) {
+  if (!dateTimeString) return "Unknown date";
+
+  try {
+    const date = new Date(dateTimeString);
+
+    // Проверяем, является ли дата валидной
+    if (isNaN(date.getTime())) {
+      return "Invalid date";
+    }
+
+    // Форматируем дату и время
+    return date.toLocaleString("en-US", {
+      timeZone: "America/Chicago",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch (e) {
+    console.error("Error formatting creation date:", e);
+    return "Date error";
+  }
+}
+
 // Обновляем функцию проверки статуса
 function canChangeStatus(event, newStatus) {
+  // Если статус одобрения "rejected", разрешаем установить статус "cancelled"
+  if (event.approved === "rejected" && newStatus === "cancelled") {
+    return true;
+  }
+
+  // First check if the event is approved
+  if (event.approved !== "approved") {
+    return false; // Cannot change status if not approved
+  }
+
   // For "completed" status, we need to check against the end date and time
   const now = new Date();
 
@@ -757,7 +934,8 @@ function showFullImage(imgElement) {
   // Добавляем обработчик для закрытия по клику вне изображения
   modal.onclick = function (e) {
     if (e.target === modal) {
-      modal.remove();
+      modal.style.opacity = "0";
+      setTimeout(() => modal.remove(), 300);
     }
   };
 
@@ -765,15 +943,40 @@ function showFullImage(imgElement) {
   const closeButton = document.createElement("button");
   closeButton.className = "modal-close";
   closeButton.innerHTML = "×";
-  closeButton.onclick = () => modal.remove();
+  closeButton.onclick = () => {
+    modal.style.opacity = "0";
+    setTimeout(() => modal.remove(), 300);
+  };
+
+  // Добавляем информацию об изображении
+  const imageCaption = document.createElement("div");
+  const filename = imgElement.dataset.full.split("/").pop();
+  imageCaption.className = "image-caption";
+  imageCaption.textContent = filename;
 
   // Собираем модальное окно
   modal.appendChild(img);
   modal.appendChild(closeButton);
+  modal.appendChild(imageCaption);
   document.body.appendChild(modal);
 
   // Добавляем класс для анимации появления
   setTimeout(() => modal.classList.add("show"), 10);
+
+  // Предотвращаем прокрутку страницы при открытом модальном окне
+  document.body.style.overflow = "hidden";
+
+  // Восстанавливаем прокрутку при закрытии
+  const restoreScroll = () => {
+    document.body.style.overflow = "";
+  };
+
+  closeButton.addEventListener("click", restoreScroll);
+  modal.addEventListener("transitionend", function (e) {
+    if (e.propertyName === "opacity" && modal.style.opacity === "0") {
+      restoreScroll();
+    }
+  });
 }
 
 // Обновляем функцию createEventElement, убирая секцию Event Setup Images из детальной информации
@@ -863,10 +1066,8 @@ function createEventElement(event) {
     <div class="event-preview">
       <div class="event-header">
         <h3>${event.name}</h3>
-        <div class="event-meta">
-          <div class="event-time">
-            <span class="event-date">${formatDate(event.startDate)}</span>
-          </div>
+        <div class="event-meta-container">
+          <div class="event-date">${formatDate(event.startDate)}</div>
           <div class="event-status">
             <select class="status-select" 
                     onchange="updateEventStatus(${event.id}, this.value)" 
@@ -886,6 +1087,35 @@ function createEventElement(event) {
             </select>
           </div>
         </div>
+      </div>
+      <div class="event-approval">
+        <div class="approval-label">Approval Status:</div>
+        <div class="approval-control">
+          <select class="approval-select" 
+                  onchange="updateEventApproval(${event.id}, this.value)"
+                  data-approval-id="${event.id}"
+                  data-approved="${event.approved || "pending"}">
+            <option value="pending" ${
+              event.approved === "pending" || !event.approved ? "selected" : ""
+            }>Pending</option>
+            <option value="approved" ${
+              event.approved === "approved" ? "selected" : ""
+            }>Approved</option>
+            <option value="rejected" ${
+              event.approved === "rejected" ? "selected" : ""
+            }>Rejected</option>
+          </select>
+        </div>
+        ${
+          event.approvedBy && event.approved === "approved"
+            ? `<div class="approval-info">Approved by ${event.approvedBy}</div>`
+            : ""
+        }
+        ${
+          event.approvedBy && event.approved === "rejected"
+            ? `<div class="approval-info">Rejected by ${event.approvedBy}</div>`
+            : ""
+        }
       </div>
       <div class="event-main-info">
         <p><strong>Location:</strong> ${event.location}</p>
@@ -917,6 +1147,10 @@ function createEventElement(event) {
             <h5>Setup Details</h5>
             <p><strong>Setup Date:</strong> ${formatDate(event.setupDate)}</p>
             <p><strong>Setup Time:</strong> ${event.setupTime || "Not set"}</p>
+            <p><strong>Created by:</strong> ${event.createdBy || "Unknown"}</p>
+            <p><strong>Creation date:</strong> ${formatCreationDate(
+              event.createdAt
+            )}</p>
         </div>
 
         <div class="details-section">
@@ -968,7 +1202,7 @@ function createEventElement(event) {
             </div>
             <form class="comment-form" onsubmit="addComment(event, '${
               event.id
-            }')">
+            }'); return false;">
                 <input type="text" class="comment-input" placeholder="Add a comment..." required>
                 <button type="submit" class="comment-submit">Send</button>
             </form>
@@ -1014,1003 +1248,53 @@ function createEventElement(event) {
   // Добавляем кнопку в превью события
   eventElement.querySelector(".event-preview").appendChild(toggleButton);
 
-  return eventElement;
-}
+  // Set the correct data attribute on the approval select
+  const approvalSelect = eventElement.querySelector(".approval-select");
+  if (approvalSelect) {
+    approvalSelect.setAttribute("data-approved", event.approved || "pending");
 
-// Функции редактирования и удаления событий
-async function editEvent(eventId) {
-  // Find the event by ID
-  const event = events.find((e) => e.id === eventId);
-  if (!event) {
-    console.error("Event not found:", eventId);
-    return;
-  }
+    // Hide the approval dropdown for non-admin users
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser || currentUser.role !== "admin") {
+      const approvalControl = eventElement.querySelector(".approval-control");
+      const approvalLabel = eventElement.querySelector(".approval-label");
 
-  console.log("Editing event:", event);
+      if (approvalControl) {
+        // Create a status badge instead of dropdown
+        const approvalBadge = document.createElement("div");
+        approvalBadge.className = `approval-badge ${
+          event.approved || "pending"
+        }`;
+        approvalBadge.textContent = event.approved
+          ? event.approved.charAt(0).toUpperCase() + event.approved.slice(1)
+          : "Pending";
 
-  // Get the form and update its title
-  const form = document.getElementById("eventForm");
-  const modalTitle = document.querySelector("#eventModal h2");
-  if (modalTitle) {
-    modalTitle.textContent = "Edit Event";
-  }
+        // Replace the select with the badge
+        approvalControl.innerHTML = "";
+        approvalControl.appendChild(approvalBadge);
 
-  // Store the event ID in the form for reference when submitting
-  form.dataset.eventId = event.id;
-
-  // Populate basic event information
-  form.eventName.value = event.name || "";
-  form.eventStartDate.value = event.startDate || "";
-  form.eventStartTime.value = event.startTime || "";
-  form.setupDate.value = event.setupDate || "";
-  form.setupTime.value = event.setupTime || "";
-  form.endDate.value = event.endDate || "";
-  form.endTime.value = event.endTime || "";
-  form.eventLocation.value = event.location || "";
-  form.eventContact.value = event.contact || "";
-  form.eventEmail.value = event.email || "";
-  form.eventPhone.value = event.phone || "";
-  form.alcuinContact.value = event.alcuinContact || "";
-  form.attendees.value = event.attendees || "";
-
-  // Set equipment fields
-  form.tablesNeeded.value = event.tables_needed || "no";
-  form.chairsNeeded.value = event.chairs_needed || "no";
-  form.podiumNeeded.value = event.podium || "no";
-  form.monitorsNeeded.value = event.monitors || "no";
-  form.laptopNeeded.value = event.laptop || "no";
-  form.ipadNeeded.value = event.ipad || "no";
-  form.microphonesNeeded.value = event.microphones || "no";
-  form.speakerNeeded.value = event.speaker || "no";
-  form.avAssistance.value = event.avAssistance || "no";
-  form.securityNeeded.value = event.security || "no";
-  form.buildingAccess.value = event.buildingAccess || "no";
-  form.otherConsiderations.value = event.otherConsiderations || "";
-
-  // Set up tables section if needed
-  if (event.tables_needed === "yes") {
-    const tablesSection = form.querySelector(".tables-options");
-    if (tablesSection) {
-      tablesSection.classList.remove("hidden");
-
-      // 6ft tables
-      const tables6ftCheckbox = form.querySelector("#tables6ft");
-      const tables6ftInput = form.querySelector('[name="tables6ft"]');
-      if (tables6ftCheckbox && tables6ftInput) {
-        const has6ftTables = event.tables6ft === "yes";
-        tables6ftCheckbox.checked = has6ftTables;
-        tables6ftInput.disabled = !has6ftTables;
-        tables6ftInput.value = event.tables6ftCount || "0";
-      }
-
-      // 8ft tables
-      const tables8ftCheckbox = form.querySelector("#tables8ft");
-      const tables8ftInput = form.querySelector('[name="tables8ft"]');
-      if (tables8ftCheckbox && tables8ftInput) {
-        const has8ftTables = event.tables8ft === "yes";
-        tables8ftCheckbox.checked = has8ftTables;
-        tables8ftInput.disabled = !has8ftTables;
-        tables8ftInput.value = event.tables8ftCount || "0";
-      }
-
-      // Round tables
-      const tablesRoundCheckbox = form.querySelector("#tablesRound");
-      const tablesRoundInput = form.querySelector('[name="tablesRound"]');
-      if (tablesRoundCheckbox && tablesRoundInput) {
-        const hasRoundTables = event.tablesRound === "yes";
-        tablesRoundCheckbox.checked = hasRoundTables;
-        tablesRoundInput.disabled = !hasRoundTables;
-        tablesRoundInput.value = event.tablesRoundCount || "0";
-      }
-
-      // Tablecloth color
-      const tableclothColorSelect = form.querySelector("#tableclothColor");
-      if (tableclothColorSelect) {
-        tableclothColorSelect.value = event.tablecloth_color || "";
-      }
-    }
-  }
-
-  // Set up chairs section if needed
-  if (event.chairs_needed === "yes") {
-    const chairsSection = form.querySelector(".chairs-input");
-    if (chairsSection) {
-      chairsSection.classList.remove("hidden");
-      const chairsInput = form.querySelector("#chairs");
-      if (chairsInput) {
-        chairsInput.disabled = false;
-        chairsInput.value = event.chairs_count || "0";
-      }
-    }
-  }
-
-  // Setup images display for editing
-  clearFileUpload(); // Clear any existing file previews
-
-  try {
-    // Parse the images if they exist
-    if (event.setupImages) {
-      let setupImages = [];
-      try {
-        setupImages = JSON.parse(event.setupImages);
-      } catch (e) {
-        console.error("Error parsing setupImages:", e);
-        setupImages = Array.isArray(event.setupImages) ? event.setupImages : [];
-      }
-
-      // If we have images, display them
-      if (setupImages.length > 0) {
-        // Create or get existing preview container
-        const fileUploadBox = document.querySelector(".file-upload-box");
-        let previewContainer = fileUploadBox.querySelector(
-          ".image-preview-container"
-        );
-        if (!previewContainer) {
-          previewContainer = document.createElement("div");
-          previewContainer.className = "image-preview-container";
-          fileUploadBox.appendChild(previewContainer);
+        // Update label
+        if (approvalLabel) {
+          approvalLabel.textContent = "Status:";
         }
-
-        // Add existing images as previews
-        setupImages.forEach((imagePath) => {
-          if (imagePath) {
-            const preview = document.createElement("div");
-            preview.className = "image-preview";
-            preview.innerHTML = `
-              <img src="uploads/${imagePath}" alt="Preview">
-              <span class="file-name">${imagePath.split("/").pop()}</span>
-              <button type="button" class="remove-image" onclick="removePreview(this)">×</button>
-              <input type="hidden" name="existing_images[]" value="${imagePath}">
-            `;
-            previewContainer.appendChild(preview);
-          }
-        });
-
-        // Update the upload text
-        updateUploadText(previewContainer);
       }
     }
-  } catch (error) {
-    console.error("Error displaying existing images:", error);
   }
 
-  // Update the submit button text
-  const submitButton = form.querySelector(".submit-btn");
-  if (submitButton) {
-    submitButton.textContent = "Update Event";
-  }
-
-  // Show the modal
-  showEventModal();
-}
-
-async function deleteEvent(eventId) {
-  if (confirm("Are you sure you want to delete this event?")) {
-    try {
-      const response = await fetch("events_db.php", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          action: "deleteEvent",
-          eventId: eventId,
-        }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        await loadEvents();
-        showNotification("Event successfully deleted!");
-      } else {
-        showNotification("Error deleting event: " + result.message, "error");
-      }
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      showNotification("Error deleting event. Please try again.", "error");
-    }
-  }
-}
-
-// Функция отображения информации о пользователе
-function displayUserInfo() {
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user) {
-    const userAccount = document.querySelector(".user-account");
-    userAccount.innerHTML = `
-      <div class="user-info">
-        <div class="avatar-container">
-          <span id="userAvatar">👤</span>
-        </div>
-        <div class="user-details">
-          <span id="userName">${user.fullName}</span>
-          ${
-            user.department
-              ? `<span class="user-department">${user.department}</span>`
-              : ""
-          }
-        </div>
-      </div>
-      <button id="logoutButton">
-        <span class="logout-icon">↪</span>
-        <span class="logout-text">Logout</span>
-      </button>
-    `;
-
-    // Добавляем обработчик для кнопки выхода
-    document.getElementById("logoutButton").addEventListener("click", () => {
-      localStorage.removeItem("currentUser");
-      window.location.href = "main.html";
-    });
-
-    userAccount.style.display = "flex";
-  }
-}
-
-// Функция добавления комментария
-async function addComment(e, eventId) {
-  e.preventDefault();
-  const form = e.target;
-  const input = form.querySelector(".comment-input");
-  const text = input.value.trim();
-
-  if (!text) return;
-
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (!user) {
-    showNotification("Please login to add comments", "error");
-    return;
-  }
-
-  // Получаем текущую дату в часовом поясе Далласа
-  const now = new Date();
-  const dallasTime = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Chicago" })
-  );
-
-  // Форматируем дату в MySQL формат
-  const formattedDate =
-    dallasTime.getFullYear() +
-    "-" +
-    String(dallasTime.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(dallasTime.getDate()).padStart(2, "0") +
-    " " +
-    String(dallasTime.getHours()).padStart(2, "0") +
-    ":" +
-    String(dallasTime.getMinutes()).padStart(2, "0") +
-    ":" +
-    String(dallasTime.getSeconds()).padStart(2, "0");
-
-  const commentData = {
-    eventId: eventId,
-    text: text,
-    author: user.fullName,
-    date: formattedDate,
-  };
-
-  try {
-    const response = await fetch("events_db.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "addComment",
-        commentData: JSON.stringify(commentData),
-      }),
-    });
-
-    const result = await response.json();
-    if (result.success) {
-      // Добавляем комментарий в DOM без перезагрузки
-      const commentsList = form.previousElementSibling;
-      const commentElement = createCommentElement(commentData);
-      commentsList.appendChild(commentElement);
-
-      // Очищаем поле ввода
-      input.value = "";
-
-      // Плавно прокручиваем к новому комментарию
-      commentElement.scrollIntoView({ behavior: "smooth" });
-    } else {
-      throw new Error(result.message || "Failed to add comment");
-    }
-  } catch (error) {
-    console.error("Error adding comment:", error);
-    showNotification("Error adding comment: " + error.message, "error");
-  }
-}
-
-// Функция создания элемента комментария
-function createCommentElement(comment) {
-  const div = document.createElement("div");
-  div.className = "comment-item";
-
-  // Форматируем дату для отображения
-  const commentDate = new Date(comment.date);
-  const formattedDate = commentDate.toLocaleString("en-US", {
-    timeZone: "America/Chicago",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-
-  div.innerHTML = `
-    <div class="comment-header">
-      <span class="comment-author">${comment.author}</span>
-      <span class="comment-date">${formattedDate}</span>
-    </div>
-    <div class="comment-text">${comment.text}</div>
-  `;
-  return div;
-}
-
-async function createEvent(eventData) {
-  try {
-    const response = await fetch("events_db.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "createEvent",
-        eventData: JSON.stringify(eventData),
-      }),
-    });
-
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(result.message);
-    }
-
-    return result.eventId;
-  } catch (error) {
-    console.error("Error creating event:", error);
-    throw error;
-  }
-}
-
-async function getEventsByDate(date) {
-  try {
-    console.log("Requesting events for date:", date.toISOString());
-    const response = await fetch("events_db.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "getEventsByDate",
-        date: date.toISOString().split("T")[0],
-      }),
-    });
-
-    const result = await response.json();
-    console.log("Server response:", result); // Добавляем для отладки
-
-    if (!result.success) {
-      throw new Error(result.message);
-    }
-
-    return result.events;
-  } catch (error) {
-    console.error("Error loading events:", error);
-    throw error;
-  }
-}
-
-async function addEventComment(eventId, comment) {
-  try {
-    const response = await fetch("events_db.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "addComment",
-        eventId: eventId,
-        comment: JSON.stringify(comment),
-      }),
-    });
-
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(result.message);
-    }
-
-    return result.commentId;
-  } catch (error) {
-    console.error("Error adding comment:", error);
-    throw error;
-  }
-}
-
-// Функция печати события
-function printEvent(eventId) {
-  const event = events.find((e) => e.id === eventId);
-  if (!event) return;
-
-  // Создаем содержимое для печати
-  const mainContent = `
-        <div class="print-content">
-            <div class="print-header">
-                <h1>${event.name}</h1>
-                <div class="print-status ${event.status || "pending"}">${
-    event.status ? event.status.toUpperCase() : "PENDING"
-  }</div>
-            </div>
-
-            <div class="print-grid">
-                <div class="print-section">
-                    <h2>Basic Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <i class="fas fa-calendar"></i>
-                            <strong>Date:</strong> ${formatDate(
-                              event.startDate
-                            )}
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-clock"></i>
-                            <strong>Time:</strong> ${event.startTime} - ${
-    event.endTime
-  }
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <strong>Location:</strong> ${event.location}
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-users"></i>
-                            <strong>Attendees:</strong> ${event.attendees}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="print-section">
-                    <h2>Contact Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <i class="fas fa-user"></i>
-                            <strong>Contact:</strong> ${event.contact}
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-envelope"></i>
-                            <strong>Email:</strong> ${event.email}
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-phone"></i>
-                            <strong>Phone:</strong> ${event.phone}
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-user-tie"></i>
-                            <strong>Alcuin Contact:</strong> ${
-                              event.alcuinContact
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <div class="print-section">
-                    <h2>Setup Details</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <i class="fas fa-calendar-check"></i>
-                            <strong>Setup Date:</strong> ${formatDate(
-                              event.setupDate
-                            )}
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-clock"></i>
-                            <strong>Setup Time:</strong> ${event.setupTime}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="print-section equipment-section">
-                    <h2>Equipment and Furniture</h2>
-                    <div class="equipment-grid">
-                        ${
-                          event.tables_needed === "yes"
-                            ? `
-                            <div class="equipment-group">
-                                <h3>Tables</h3>
-                                <ul>
-                                    ${
-                                      event.tables6ft === "yes"
-                                        ? `<li>6ft Tables: ${event.tables6ftCount}</li>`
-                                        : ""
-                                    }
-                                    ${
-                                      event.tables8ft === "yes"
-                                        ? `<li>8ft Tables: ${event.tables8ftCount}</li>`
-                                        : ""
-                                    }
-                                    ${
-                                      event.tablesRound === "yes"
-                                        ? `<li>Round Tables: ${event.tablesRoundCount}</li>`
-                                        : ""
-                                    }
-                                    ${
-                                      event.tablecloth_color
-                                        ? `<li>Tablecloth Color: ${event.tablecloth_color}</li>`
-                                        : ""
-                                    }
-                                </ul>
-                            </div>
-                        `
-                            : ""
-                        }
-                        
-                        ${
-                          event.chairs_needed === "yes"
-                            ? `
-                            <div class="equipment-group">
-                                <h3>Chairs</h3>
-                                <div class="chairs-info">Quantity: ${event.chairs_count}</div>
-                            </div>
-                        `
-                            : ""
-                        }
-
-                        <div class="equipment-group">
-                            <h3>Technical Equipment</h3>
-                            <ul>
-                                ${
-                                  event.podium === "yes"
-                                    ? "<li>Podium</li>"
-                                    : ""
-                                }
-                                ${
-                                  event.monitors === "yes"
-                                    ? "<li>Monitors</li>"
-                                    : ""
-                                }
-                                ${
-                                  event.laptop === "yes"
-                                    ? "<li>Laptop</li>"
-                                    : ""
-                                }
-                                ${event.ipad === "yes" ? "<li>iPad</li>" : ""}
-                                ${
-                                  event.microphones === "yes"
-                                    ? "<li>Microphones</li>"
-                                    : ""
-                                }
-                                ${
-                                  event.speaker === "yes"
-                                    ? "<li>Speakers</li>"
-                                    : ""
-                                }
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="print-section requirements-section">
-                    <h2>Additional Requirements</h2>
-                    <div class="requirements-grid">
-                        <div class="requirement-item ${
-                          event.avAssistance === "yes"
-                            ? "required"
-                            : "not-required"
-                        }">
-                            <i class="fas fa-tv"></i>
-                            <span>AV Support</span>
-                        </div>
-                        <div class="requirement-item ${
-                          event.security === "yes" ? "required" : "not-required"
-                        }">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Security</span>
-                        </div>
-                        <div class="requirement-item ${
-                          event.buildingAccess ? "required" : "not-required"
-                        }">
-                            <i class="fas fa-key"></i>
-                            <span>Building Access</span>
-                        </div>
-                    </div>
-                </div>
-
-                ${
-                  event.otherConsiderations
-                    ? `
-                    <div class="print-section notes-section">
-                        <h2>Notes</h2>
-                        <p>${event.otherConsiderations}</p>
-                    </div>
-                `
-                    : ""
-                }
-            </div>
-
-            <div class="print-footer">
-                <p>Created by: ${event.createdBy || "System"}</p>
-                <p>Event ID: ${event.id}</p>
-            </div>
-        </div>
-    `;
-
-  // Создаем страницы с изображениями
-  let imagePages = "";
-  if (event.setupImages && event.setupImages !== "[]") {
-    try {
-      const imageUrls = JSON.parse(event.setupImages);
-      const flatImageUrls = imageUrls
-        .flat()
-        .filter((url) => url && typeof url === "string");
-
-      imagePages = flatImageUrls
-        .map((image, index) => {
-          const fullPath = `uploads/${image}`;
-          return `
-                    <div class="print-page image-page">
-                        <div class="image-page-header">
-                            <h2>${event.name} - Setup Image ${index + 1}</h2>
-                        </div>
-                        <div class="print-image-container">
-                            <img src="${fullPath}" alt="Event setup image ${
-            index + 1
-          }">
-                        </div>
-                        <div class="image-page-footer">
-                            <p>Page ${index + 2} of ${
-            flatImageUrls.length + 1
-          }</p>
-                        </div>
-                    </div>
-                `;
-        })
-        .join("");
-    } catch (e) {
-      console.error("Error creating image pages:", e);
-    }
-  }
-
-  // Создаем временное окно для печати
-  const printWindow = window.open("", "_blank");
-  printWindow.document.write(`
-        <html>
-            <head>
-                <title>Print Event - ${event.name}</title>
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-                <style>
-                    @media print {
-                        @page {
-                            margin: 1cm;
-                            size: A4;
-                        }
-                    }
-                    
-                    body {
-                        font-family: Arial, sans-serif;
-                        line-height: 1.4;
-                        margin: 0;
-                        padding: 20px;
-                        color: #333;
-                        font-size: 15px;
-                    }
-
-                    .print-content {
-                        max-width: 210mm;
-                        margin: 0 auto;
-                    }
-
-                    .print-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 20px;
-                        padding-bottom: 10px;
-                        border-bottom: 2px solid #4CAF50;
-                    }
-
-                    .print-header h1 {
-                        margin: 0;
-                        color: #2C3E50;
-                        font-size: 28px;
-                    }
-
-                    .print-status {
-                        padding: 5px 10px;
-                        border-radius: 4px;
-                        font-weight: bold;
-                        font-size: 15px;
-                    }
-
-                    .print-status.pending { background: #FFF3CD; color: #856404; }
-                    .print-status.completed { background: #D4EDDA; color: #155724; }
-                    .print-status.cancelled { background: #F8D7DA; color: #721C24; }
-
-                    .print-grid {
-                        display: grid;
-                        grid-template-columns: repeat(2, 1fr);
-                        gap: 15px;
-                        margin-bottom: 20px;
-                    }
-
-                    .print-section {
-                        background: #f8f9fa;
-                        padding: 15px;
-                        border-radius: 4px;
-                        break-inside: avoid;
-                    }
-
-                    .print-section h2 {
-                        margin: 0 0 10px 0;
-                        font-size: 20px;
-                        color: #2C3E50;
-                        border-bottom: 1px solid #dee2e6;
-                        padding-bottom: 5px;
-                    }
-
-                    .info-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                        gap: 10px;
-                    }
-
-                    .info-item {
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        font-size: 15px;
-                    }
-
-                    .info-item i {
-                        width: 16px;
-                        color: #4CAF50;
-                    }
-
-                    .equipment-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                        gap: 10px;
-                    }
-
-                    .equipment-group h3 {
-                        font-size: 17px;
-                        margin: 0 0 8px 0;
-                        color: #2C3E50;
-                    }
-
-                    .equipment-group ul {
-                        margin: 0;
-                        padding-left: 20px;
-                        font-size: 15px;
-                        list-style-type: none;
-                    }
-
-                    .equipment-group li {
-                        margin-bottom: 5px;
-                        display: flex;
-                        align-items: center;
-                    }
-
-                    .equipment-group li::before {
-                        content: "•";
-                        color: #4CAF50;
-                        font-weight: bold;
-                        margin-right: 8px;
-                    }
-
-                    .chairs-info {
-                        margin: 0;
-                        padding-left: 20px;
-                        font-size: 15px;
-                        position: relative;
-                    }
-
-                    .chairs-info::before {
-                        content: "•";
-                        color: #4CAF50;
-                        font-weight: bold;
-                        position: absolute;
-                        left: 0;
-                    }
-
-                    .requirement-item {
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        padding: 8px;
-                        border-radius: 4px;
-                        font-size: 15px;
-                    }
-
-                    .notes-section p {
-                        margin: 0;
-                        font-size: 15px;
-                        white-space: pre-wrap;
-                    }
-
-                    .print-footer {
-                        margin-top: 20px;
-                        padding-top: 10px;
-                        border-top: 1px solid #dee2e6;
-                        font-size: 14px;
-                        color: #6c757d;
-                        display: flex;
-                        justify-content: space-between;
-                    }
-
-                    @media print {
-                        .no-print {
-                            display: none;
-                        }
-                        
-                        body {
-                            padding: 0;
-                        }
-                    }
-
-                    /* Стили для страниц с изображениями */
-                    .print-page {
-                        page-break-before: always;
-                        height: 100vh;
-                        display: flex;
-                        flex-direction: column;
-                        padding: 20px;
-                        box-sizing: border-box;
-                    }
-
-                    .image-page-header {
-                        text-align: center;
-                        margin-bottom: 20px;
-                    }
-
-                    .image-page-header h2 {
-                        color: #2C3E50;
-                        font-size: 24px;
-                        margin: 0;
-                    }
-
-                    .print-image-container {
-                        flex: 1;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        margin: 20px 0;
-                    }
-
-                    .print-image-container img {
-                        max-width: 100%;
-                        max-height: calc(100vh - 200px);
-                        object-fit: contain;
-                        border: 1px solid #dee2e6;
-                        border-radius: 4px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    }
-
-                    .image-page-footer {
-                        text-align: center;
-                        color: #6c757d;
-                        font-size: 14px;
-                        margin-top: 20px;
-                    }
-
-                    @media print {
-                        .print-page {
-                            height: 100vh;
-                            page-break-before: always;
-                            page-break-after: always;
-                        }
-
-                        .print-image-container img {
-                            max-height: calc(100vh - 200px);
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                ${mainContent}
-                ${imagePages}
-                <button onclick="window.print()" class="no-print" style="
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    padding: 10px 20px;
-                    background: #4CAF50;
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                    font-size: 15px;
-                ">Print</button>
-            </body>
-        </html>
-    `);
-  printWindow.document.close();
-}
-
-// Добавляем новую функцию для создания галереи изображений для печати
-function createPrintImageGallery(images) {
-  if (!images || images === "[]") return "";
-
-  try {
-    const imageUrls = JSON.parse(images);
-    const flatImageUrls = imageUrls
-      .flat()
-      .filter((url) => url && typeof url === "string");
-
-    if (flatImageUrls.length === 0) return "";
-
-    return flatImageUrls
-      .map((image, index) => {
-        const fullPath = `uploads/${image}`;
-        return `
-                <div class="print-image-item">
-                    <img src="${fullPath}" alt="Event setup image ${index + 1}">
-                    <div class="print-image-caption">Setup Image ${
-                      index + 1
-                    }</div>
-                </div>
-            `;
-      })
-      .join("");
-  } catch (e) {
-    console.error("Error creating print image gallery:", e);
-    return "";
-  }
-}
-
-// Обновляем функцию обновления статуса
-async function updateEventStatus(eventId, newStatus) {
-  try {
-    const event = events.find((e) => e.id === eventId);
-    if (!event) {
-      throw new Error("Event not found");
-    }
-
-    if (!canChangeStatus(event, newStatus)) {
-      alert("Cannot change to this status at this time");
-      // Возвращаем select к предыдущему значению
-      const statusSelect = document.querySelector(
-        `select[data-event-id="${eventId}"]`
-      );
-      if (statusSelect) {
-        statusSelect.value = event.status;
-      }
-      return;
-    }
-
-    const response = await fetch("events_db.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "updateEventStatus",
-        eventId: eventId,
-        status: newStatus,
-      }),
-    });
-
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(result.message);
-    }
-
-    // Обновляем локальное состояние
-    event.status = newStatus;
-
-    // Обновляем UI
-    const statusSelect = document.querySelector(
-      `select[data-event-id="${eventId}"]`
-    );
+  // Disable status options if not approved
+  if (event.approved !== "approved") {
+    const statusSelect = eventElement.querySelector(".status-select");
     if (statusSelect) {
-      statusSelect.value = newStatus;
-      statusSelect.setAttribute("data-status", newStatus);
+      const options = statusSelect.querySelectorAll("option");
+      options.forEach((option) => {
+        if (option.value !== event.status) {
+          option.disabled = true;
+        }
+      });
     }
-  } catch (error) {
-    console.error("Error updating event status:", error);
-    alert("Failed to update event status");
   }
+
+  return eventElement;
 }
 
 // Функция настройки загрузки файлов
@@ -2150,4 +1434,916 @@ function clearFileUpload() {
   }
 }
 
-// Продолжение следует...
+// Функция для обновления статуса события на сервере
+async function updateEventStatus(eventId, newStatus, skipCheck = false) {
+  try {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    // Проверяем разрешение на изменение статуса, если не установлен skipCheck
+    if (!skipCheck && !canChangeStatus(event, newStatus)) {
+      alert("You cannot change the status for this event.");
+      // Сбрасываем выбор к предыдущему значению
+      const statusSelect = document.querySelector(
+        `select[data-event-id="${eventId}"]`
+      );
+      if (statusSelect) {
+        statusSelect.value = event.status || "pending";
+      }
+      return;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser) {
+      window.location.href = "loginUser.html";
+      return;
+    }
+
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "updateEventStatus",
+        eventId: eventId,
+        status: newStatus,
+        updatedBy: currentUser.fullName,
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    // Обновляем локальное состояние
+    event.status = newStatus;
+    event.updatedBy = currentUser.fullName;
+    event.updatedAt = new Date().toISOString();
+
+    // Обновляем UI
+    const statusSelect = document.querySelector(
+      `select[data-event-id="${eventId}"]`
+    );
+    if (statusSelect) {
+      statusSelect.value = newStatus;
+      statusSelect.setAttribute("data-status", newStatus);
+    }
+
+    showNotification(`Event status updated to ${newStatus}`);
+  } catch (error) {
+    console.error("Error updating event status:", error);
+    alert("Failed to update event status");
+
+    // Сбрасываем выбор к предыдущему значению
+    const statusSelect = document.querySelector(
+      `select[data-event-id="${eventId}"]`
+    );
+    if (statusSelect && event) {
+      statusSelect.value = event.status || "pending";
+    }
+  }
+}
+
+// Функция для обновления статуса одобрения события
+async function updateEventApproval(eventId, approvalStatus) {
+  try {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    // Check if the current user is an admin
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser || currentUser.role !== "admin") {
+      alert("You do not have permission to approve events");
+
+      // Reset approval select to previous value
+      const approvalSelect = document.querySelector(
+        `select[data-approval-id="${eventId}"]`
+      );
+      if (approvalSelect) {
+        approvalSelect.value = event.approved || "pending";
+      }
+      return;
+    }
+
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "updateEventApproval",
+        eventId: eventId,
+        approved: approvalStatus,
+        approvedBy: currentUser.fullName,
+        isAdmin: true,
+      }),
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    // Обновляем локальное состояние
+    event.approved = approvalStatus;
+    event.approvedBy = currentUser.fullName;
+    event.approvedAt = new Date().toISOString();
+
+    // Обновляем UI
+    const approvalSelect = document.querySelector(
+      `select[data-approval-id="${eventId}"]`
+    );
+    if (approvalSelect) {
+      approvalSelect.value = approvalStatus;
+      approvalSelect.setAttribute("data-approved", approvalStatus);
+    }
+
+    // Update status selects to reflect approval status
+    const statusSelect = document.querySelector(
+      `select[data-event-id="${eventId}"]`
+    );
+    if (statusSelect) {
+      const options = statusSelect.querySelectorAll("option");
+
+      // Disable status options if not approved
+      options.forEach((option) => {
+        option.disabled = approvalStatus !== "approved";
+      });
+
+      // При изменении статуса на "approved", устанавливаем статус события "pending" если он был "cancelled"
+      if (approvalStatus === "approved" && event.status === "cancelled") {
+        updateEventStatus(eventId, "pending", true);
+      }
+
+      // Если статус одобрения "rejected", автоматически устанавливаем статус события "cancelled"
+      if (approvalStatus === "rejected") {
+        updateEventStatus(eventId, "cancelled", true);
+      }
+    }
+
+    showNotification(
+      `Event ${
+        approvalStatus === "approved"
+          ? "approved"
+          : approvalStatus === "rejected"
+          ? "rejected and cancelled"
+          : "approval status updated"
+      } successfully`
+    );
+  } catch (error) {
+    console.error("Error updating event approval:", error);
+    alert("Failed to update event approval status");
+  }
+}
+
+// Missing event functions
+async function addComment(event, eventId) {
+  event.preventDefault(); // Убедимся, что это вызывается первым
+
+  const form = event.target;
+  const input = form.querySelector(".comment-input");
+  const commentText = input.value.trim();
+
+  if (!commentText) return false;
+
+  try {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    const author = currentUser ? currentUser.fullName : "Anonymous";
+
+    const commentData = {
+      eventId: eventId,
+      text: commentText,
+      author: author,
+      date: new Date().toISOString(),
+    };
+
+    const formData = new FormData();
+    formData.append("action", "addComment");
+    formData.append("commentData", JSON.stringify(commentData));
+
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      input.value = "";
+      await loadEvents(); // Reload events to show the new comment
+      showNotification("Comment added successfully");
+    } else {
+      throw new Error(result.message || "Failed to add comment");
+    }
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    showNotification("Failed to add comment: " + error.message, "error");
+  }
+
+  return false; // Возвращаем false, чтобы предотвратить стандартное поведение формы
+}
+
+function editEvent(eventId) {
+  const event = events.find((e) => e.id === eventId);
+  if (!event) {
+    console.error("Event not found:", eventId);
+    showNotification("Event not found", "error");
+    return;
+  }
+
+  // Show modal
+  showEventModal(event);
+}
+
+async function deleteEvent(eventId) {
+  if (!confirm("Are you sure you want to delete this event?")) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("action", "deleteEvent");
+    formData.append("eventId", eventId);
+
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      await loadEvents(); // Reload events after deletion
+      showNotification("Event deleted successfully");
+    } else {
+      throw new Error(result.message || "Failed to delete event");
+    }
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    showNotification("Failed to delete event: " + error.message, "error");
+  }
+}
+
+function printEvent(eventId) {
+  const event = events.find((e) => e.id === eventId);
+  if (!event) {
+    console.error("Event not found:", eventId);
+    showNotification("Event not found", "error");
+    return;
+  }
+
+  // Create a printable version of the event
+  const printWindow = window.open("", "_blank");
+
+  if (!printWindow) {
+    alert("Please allow popups for this site to print events");
+    return;
+  }
+
+  // Parse setup images if available
+  let setupImages = [];
+  try {
+    setupImages = event.setupImages ? JSON.parse(event.setupImages) : [];
+    // Flatten the array if necessary
+    if (Array.isArray(setupImages)) {
+      setupImages = setupImages
+        .flat()
+        .filter((img) => img && typeof img === "string");
+    }
+  } catch (e) {
+    console.error("Error parsing setup images:", e);
+    setupImages = [];
+  }
+
+  // Generate tables and chairs information
+  let tablesAndChairsInfo = "";
+  if (event.tables_needed === "yes") {
+    let tablesList = [];
+    if (event.tables6ft === "yes" && parseInt(event.tables6ftCount) > 0) {
+      tablesList.push(`<li>6ft Tables: ${event.tables6ftCount}</li>`);
+    }
+    if (event.tables8ft === "yes" && parseInt(event.tables8ftCount) > 0) {
+      tablesList.push(`<li>8ft Tables: ${event.tables8ftCount}</li>`);
+    }
+    if (event.tablesRound === "yes" && parseInt(event.tablesRoundCount) > 0) {
+      tablesList.push(`<li>Round Tables: ${event.tablesRoundCount}</li>`);
+    }
+    if (event.tablecloth_color) {
+      tablesList.push(`<li>Tablecloth color: ${event.tablecloth_color}</li>`);
+    }
+
+    if (tablesList.length > 0) {
+      tablesAndChairsInfo = `
+        <div class="equipment-item">
+          <h3>Tables:</h3>
+          <ul>${tablesList.join("")}</ul>
+        </div>
+      `;
+    }
+  }
+
+  // Add chairs to the same section as tables
+  if (event.chairs_needed === "yes" && parseInt(event.chairs_count) > 0) {
+    tablesAndChairsInfo += `
+      <div class="equipment-item">
+        <h3>Chairs:</h3>
+        <p>${event.chairs_count}</p>
+      </div>
+    `;
+  }
+
+  // Generate equipment information
+  let equipmentInfo = "";
+  const equipmentItems = [];
+
+  if (event.podium === "yes") equipmentItems.push("<li>Podium</li>");
+  if (event.monitors === "yes") equipmentItems.push("<li>Monitors</li>");
+  if (event.laptop === "yes") equipmentItems.push("<li>Laptop</li>");
+  if (event.ipad === "yes") equipmentItems.push("<li>iPad</li>");
+  if (event.microphones === "yes") equipmentItems.push("<li>Microphones</li>");
+  if (event.speaker === "yes") equipmentItems.push("<li>Speaker</li>");
+
+  if (equipmentItems.length > 0) {
+    equipmentInfo = `
+      <div class="equipment-item">
+        <h3>Equipment:</h3>
+        <ul>${equipmentItems.join("")}</ul>
+      </div>
+    `;
+  }
+
+  // Generate services information
+  let servicesInfo = "";
+  const servicesItems = [];
+
+  if (event.avAssistance === "yes")
+    servicesItems.push("<li>A/V Assistance</li>");
+  if (event.security === "yes") servicesItems.push("<li>Security</li>");
+  if (event.buildingAccess) servicesItems.push("<li>Building Access</li>");
+
+  if (servicesItems.length > 0) {
+    servicesInfo = `
+      <div class="equipment-item">
+        <h3>Services Required:</h3>
+        <ul>${servicesItems.join("")}</ul>
+      </div>
+    `;
+  }
+
+  // Generate comments section
+  let commentsSection = "";
+  if (event.comments && event.comments.length > 0) {
+    const commentsHtml = event.comments
+      .map(
+        (comment) => `
+        <div class="comment">
+          <div class="comment-header">
+            <span class="comment-author">${comment.author}</span>
+            <span class="comment-date">${new Date(
+              comment.date
+            ).toLocaleDateString()} ${new Date(
+          comment.date
+        ).toLocaleTimeString()}</span>
+          </div>
+          <div class="comment-text">${comment.text}</div>
+        </div>
+      `
+      )
+      .join("");
+
+    commentsSection = `
+      <div class="section comments">
+        <h2>Comments</h2>
+        <div class="comments-container">
+          ${commentsHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  // Generate images section if there are any
+  let imagesSection = "";
+  if (setupImages.length > 0) {
+    imagesSection = `
+      <div class="page-break"></div>
+      <div class="image-page">
+        <h1>Event Setup Images</h1>
+        <div class="images-container">
+          ${setupImages
+            .map(
+              (image, index) => `
+            <div class="image-item">
+              <img src="uploads/${image}" alt="Event setup image ${index + 1}">
+              <p class="image-caption">Setup reference: ${image}</p>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  // Generate print content with improved layout
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Event: ${event.name}</title>
+      <meta charset="UTF-8">
+      <style>
+        @media print {
+          body { margin: 0; padding: 0; }
+          .page-break { page-break-before: always; }
+          .no-print { display: none; }
+          @page {
+            size: A4;
+            margin: 0.4cm;
+          }
+          .image-page {
+            page-break-before: always;
+            height: 100vh;
+            width: 100%;
+            box-sizing: border-box;
+          }
+          .image-item {
+            page-break-after: always;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+          }
+          .image-item img {
+            max-height: 82vh;
+            object-fit: contain;
+          }
+        }
+        
+        * {
+          box-sizing: border-box;
+        }
+        
+        body { 
+          font-family: 'Segoe UI', Arial, sans-serif; 
+          margin: 0; 
+          padding: 0;
+          line-height: 1.4;
+          color: #333;
+          background-color: #f9f9f9;
+          font-size: 11pt;
+        }
+        
+        .main-container {
+          max-width: 210mm;
+          margin: 0 auto;
+          background-color: white;
+          box-shadow: 0 0 10px rgba(0,0,0,0.1);
+          padding: 1.2rem;
+          border-radius: 5px;
+        }
+        
+        h1 { 
+          color: #1a4dbe; 
+          font-size: 20px;
+          border-bottom: 2px solid #1a4dbe;
+          padding-bottom: 6px;
+          margin: 0 0 12px 0;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        
+        h2 { 
+          color: #2563eb; 
+          font-size: 15px;
+          margin: 6px 0 4px 0;
+          padding-left: 6px;
+          border-left: 4px solid #2563eb;
+        }
+        
+        h3 {
+          font-size: 13px;
+          margin: 0 0 4px 0;
+          color: #1e3a8a;
+        }
+        
+        .event-banner {
+          background: linear-gradient(135deg, #1a4dbe, #4e81f4);
+          color: white;
+          padding: 12px;
+          border-radius: 6px;
+          margin-bottom: 10px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .event-title {
+          font-size: 20px;
+          font-weight: bold;
+          margin: 0;
+        }
+        
+        .event-date-time {
+          text-align: right;
+          font-size: 14px;
+        }
+        
+        .status-badges {
+          display: flex;
+          gap: 8px;
+          margin-top: 6px;
+        }
+        
+        .grid-container {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+          margin-bottom: 8px;
+        }
+        
+        .section { 
+          background-color: white;
+          border-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+          padding: 8px;
+          margin-bottom: 8px;
+          border: 1px solid #eaeaea;
+        }
+        
+        .info-box {
+          background-color: #f8fafc;
+          padding: 8px;
+          border-radius: 6px;
+          margin-bottom: 4px;
+          border-left: 3px solid #2563eb;
+        }
+        
+        .label { 
+          font-weight: bold; 
+          color: #475569;
+          min-width: 100px;
+        }
+        
+        .value {
+          display: inline-block;
+        }
+        
+        .status-box {
+          display: inline-block;
+          padding: 3px 8px;
+          border-radius: 20px;
+          font-weight: bold;
+          font-size: 10px;
+          text-transform: uppercase;
+        }
+        
+        .status-yes { 
+          background-color: #dcfce7;
+          color: #166534; 
+        }
+        
+        .status-no { 
+          background-color: #fee2e2;
+          color: #991b1b; 
+        }
+        
+        .status-pending {
+          background-color: #fef3c7;
+          color: #92400e;
+        }
+        
+        .status-completed {
+          background-color: #dbeafe;
+          color: #1e40af;
+        }
+        
+        .status-cancelled {
+          background-color: #fecaca;
+          color: #b91c1c;
+        }
+        
+        .status-approved {
+          background-color: #d1fae5;
+          color: #065f46;
+        }
+        
+        .status-rejected {
+          background-color: #fee2e2;
+          color: #991b1b;
+        }
+        
+        .equipment-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        
+        .equipment-item {
+          background-color: #f8fafc;
+          padding: 8px;
+          border-radius: 6px;
+          border-left: 3px solid #2563eb;
+          flex: 1 1 auto;
+          min-width: 120px;
+          max-width: 32%;
+        }
+        
+        .equipment-item h3 {
+          margin-top: 0;
+          border-bottom: 1px solid #e2e8f0;
+          padding-bottom: 3px;
+        }
+        
+        .equipment-item ul {
+          margin: 4px 0;
+          padding-left: 16px;
+        }
+        
+        .equipment-item li {
+          margin-bottom: 3px;
+        }
+        
+        .comments-container { 
+          max-height: 200px;
+          overflow-y: auto;
+        }
+        
+        .comment { 
+          padding: 8px; 
+          background: #f8fafc; 
+          margin-bottom: 6px; 
+          border-radius: 6px;
+          border-left: 3px solid #64748b;
+        }
+        
+        .comment-header { 
+          display: flex; 
+          justify-content: space-between; 
+          margin-bottom: 3px;
+          color: #64748b;
+          font-size: 11px;
+        }
+        
+        .comment-author { 
+          font-weight: bold;
+          color: #334155;
+        }
+        
+        .comment-text {
+          white-space: pre-line;
+          font-size: 11px;
+        }
+        
+        .images-container {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        
+        .image-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        
+        .image-item img {
+          max-width: 100%;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .image-caption {
+          font-size: 12px;
+          color: #64748b;
+          margin-top: 8px;
+          text-align: center;
+        }
+        
+        .print-footer {
+          margin-top: 15px;
+          text-align: center;
+          font-size: 10px;
+          color: #64748b;
+          border-top: 1px solid #ddd;
+          padding-top: 6px;
+        }
+        
+        .print-button {
+          padding: 8px 12px;
+          background: #2563eb;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 500;
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+        
+        .print-button:hover {
+          background: #1d4ed8;
+        }
+        
+        .info-row {
+          display: flex;
+          margin-bottom: 4px;
+        }
+        
+        .additional-info {
+          background-color: #eff6ff;
+          padding: 8px;
+          border-radius: 6px;
+          margin-top: 6px;
+          border: 1px solid #dbeafe;
+          font-size: 11px;
+        }
+        
+        .qr-code {
+          text-align: center;
+          padding: 8px;
+          background: white;
+          border-radius: 6px;
+          width: 80px;
+          height: 80px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: auto;
+        }
+        
+        .qr-code-content {
+          font-size: 9px;
+          color: #888;
+        }
+
+        .compact-layout {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .compact-layout .info-row {
+          width: 45%;
+          min-width: 200px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="main-container">
+        <button onclick="window.print();" class="print-button no-print">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          Print Event
+        </button>
+        
+        <div class="event-banner">
+          <div>
+            <div class="event-title">${event.name}</div>
+            <div class="status-badges">
+              <span class="status-box status-${event.status || "pending"}">${(
+    event.status || "Pending"
+  ).toUpperCase()}</span>
+              <span class="status-box status-${event.approved || "pending"}">${(
+    event.approved || "Pending"
+  ).toUpperCase()}</span>
+            </div>
+          </div>
+          <div class="event-date-time">
+            <div>${formatDate(event.startDate)}</div>
+            <div>${event.startTime || "Not set"} - ${
+    event.endTime || "Not set"
+  }</div>
+          </div>
+        </div>
+        
+        <div class="grid-container">
+          <div class="section">
+            <h2>Event Details</h2>
+            <div class="info-box">
+              <div class="info-row"><span class="label">Location:</span> <span class="value">${
+                event.location
+              }</span></div>
+              <div class="info-row"><span class="label">Attendees:</span> <span class="value">${
+                event.attendees || "Not specified"
+              }</span></div>
+              <div class="info-row"><span class="label">Created by:</span> <span class="value">${
+                event.createdBy || "Unknown"
+              }</span></div>
+              <div class="info-row"><span class="label">Creation date:</span> <span class="value">${formatCreationDate(
+                event.createdAt
+              )}</span></div>
+              ${
+                event.approvedBy
+                  ? `<div class="info-row"><span class="label">Approved by:</span> <span class="value">${event.approvedBy}</span></div>`
+                  : ""
+              }
+              ${
+                event.approvedAt
+                  ? `<div class="info-row"><span class="label">Approval date:</span> <span class="value">${formatCreationDate(
+                      event.approvedAt
+                    )}</span></div>`
+                  : ""
+              }
+            </div>
+          </div>
+          
+          <div class="section">
+            <h2>Contact Information</h2>
+            <div class="info-box">
+              <div class="info-row"><span class="label">Contact:</span> <span class="value">${
+                event.contact || "Not specified"
+              }</span></div>
+              <div class="info-row"><span class="label">Phone:</span> <span class="value">${
+                event.phone || "Not specified"
+              }</span></div>
+              <div class="info-row"><span class="label">Email:</span> <span class="value">${
+                event.email || "Not specified"
+              }</span></div>
+              <div class="info-row"><span class="label">Alcuin Contact:</span> <span class="value">${
+                event.alcuinContact || "Not specified"
+              }</span></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h2>Setup & Timeline</h2>
+          <div class="compact-layout">
+            <div class="info-row"><span class="label">Setup Date:</span> <span class="value">${formatDate(
+              event.setupDate
+            )}</span></div>
+            <div class="info-row"><span class="label">Setup Time:</span> <span class="value">${
+              event.setupTime || "Not set"
+            }</span></div>
+            <div class="info-row"><span class="label">End Date:</span> <span class="value">${formatDate(
+              event.endDate
+            )}</span></div>
+            <div class="info-row"><span class="label">End Time:</span> <span class="value">${
+              event.endTime || "Not set"
+            }</span></div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h2>Equipment & Resources</h2>
+          <div class="equipment-grid">
+            ${tablesAndChairsInfo}
+            ${equipmentInfo}
+            ${servicesInfo}
+          </div>
+        </div>
+        
+        ${commentsSection}
+        
+        ${
+          event.otherConsiderations
+            ? `
+        <div class="section">
+          <h2>Additional Considerations</h2>
+          <div class="info-box">
+            <p>${event.otherConsiderations}</p>
+            <div class="qr-code" style="margin-left: auto; margin-top: 8px;">
+              <div class="qr-code-content">Event #${event.id}</div>
+            </div>
+          </div>
+        </div>
+        `
+            : `
+        <div class="section">
+          <div class="info-box" style="display: flex; justify-content: flex-end;">
+            <div class="qr-code">
+              <div class="qr-code-content">Event #${event.id}</div>
+            </div>
+          </div>
+        </div>
+        `
+        }
+        
+        <div class="print-footer">
+          Alcuin School Event Management System • Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+        </div>
+      </div>
+      
+      ${imagesSection}
+    </body>
+    </html>
+  `;
+
+  printWindow.document.open();
+  printWindow.document.write(printContent);
+  printWindow.document.close();
+}

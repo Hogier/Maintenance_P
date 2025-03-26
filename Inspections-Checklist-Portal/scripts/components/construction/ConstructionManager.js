@@ -77,11 +77,11 @@ export default class ConstructionManager {
             width: 100px;
             height: 120px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+        border-radius: 4px;
             padding: 5px;
-            display: flex;
+        display: flex;
             flex-direction: column;
-            align-items: center;
+        align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -240,13 +240,13 @@ export default class ConstructionManager {
         }
         
         .migrated-flag {
-          display: inline-block;
+        display: inline-block;
           background-color: #0088cc;
-          color: white;
-          padding: 2px 6px;
-          border-radius: 4px;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
           font-size: 12px;
-          margin-left: 8px;
+        margin-left: 8px;
         }
         
         .migrated-files-group {
@@ -284,7 +284,7 @@ export default class ConstructionManager {
         
         .from-future-flag {
           color: #0088cc;
-          font-size: 12px;
+        font-size: 12px;
           font-weight: bold;
         }
         
@@ -2535,8 +2535,8 @@ export default class ConstructionManager {
             specsGroup.className = "form-group";
             specsGroup.innerHTML = `
               <label>Project Specifications</label>
-              <div id="current-specifications-preview" class="file-preview-container"></div>
-            `;
+                <div id="current-specifications-preview" class="file-preview-container"></div>
+              `;
             migratedFilesGroup.appendChild(specsGroup);
 
             const specsContainer = specsGroup.querySelector(

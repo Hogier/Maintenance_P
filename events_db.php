@@ -215,6 +215,9 @@ try {
         buildingAccess TINYTEXT NULL,
         otherConsiderations TEXT NULL,
         status TINYTEXT NULL,
+        approved ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+        approvedBy VARCHAR(255) NULL,
+        approvedAt DATETIME NULL,
         createdBy VARCHAR(255) NULL,
         createdAt DATETIME NULL,
         setupImages TEXT NULL,
@@ -730,6 +733,39 @@ try {
             echo json_encode([
                 'success' => true,
                 'message' => 'Event status updated successfully'
+            ]);
+            exit;
+
+        case 'updateEventApproval':
+            if (!isset($_POST['eventId']) || !isset($_POST['approved'])) {
+                throw new Exception('Missing required parameters');
+            }
+
+            $eventId = $_POST['eventId'];
+            $approved = $_POST['approved'];
+            $currentUser = isset($_POST['approvedBy']) ? $_POST['approvedBy'] : 'Admin';
+            
+            // Check if the user has admin privileges
+            $isAdmin = isset($_POST['isAdmin']) ? (bool)$_POST['isAdmin'] : false;
+            
+            if (!$isAdmin) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'You do not have permission to approve events'
+                ]);
+                exit;
+            }
+            
+            $stmt = $conn->prepare("UPDATE events SET approved = ?, approvedBy = ?, approvedAt = NOW() WHERE id = ?");
+            $stmt->bind_param('ssi', $approved, $currentUser, $eventId);
+            
+            if (!$stmt->execute()) {
+                throw new Exception('Failed to update event approval status: ' . $stmt->error);
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Event approval status updated successfully'
             ]);
             exit;
 
