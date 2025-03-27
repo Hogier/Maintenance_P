@@ -20,8 +20,8 @@ function formatDallasDate(date) {
 }
 
 function formatDallasDateForServer(dateString) {
-  const [month, day, year] = dateString.split('/');
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} 00:00:00`;
+  const [month, day, year] = dateString.split("/");
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")} 00:00:00`;
 }
 
 // Функция для получения только даты в формате Далласа
@@ -51,4 +51,21 @@ function isDallasToday(date) {
   });
 
   return dallasToday === checkDate;
+}
+
+// Функция для форматирования даты для поля ввода даты (YYYY-MM-DD)
+function formatDateForInput(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+// Функция для форматирования времени для поля ввода времени (HH:MM)
+function formatTimeForInput(date) {
+  const d = new Date(date);
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
