@@ -3,6 +3,9 @@
 ob_start();
 
 header('Content-Type: application/json');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
 date_default_timezone_set('America/Chicago');
 
 // Настройка обработки ошибок
@@ -353,154 +356,6 @@ try {
             }
             break;
 
-        case 'addEvent':
-            if (!isset($_POST['eventData'])) {
-                throw new Exception('No event data provided');
-            }
-
-            $eventData = json_decode($_POST['eventData'], true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception('Invalid JSON data: ' . json_last_error_msg());
-            }
-
-            // Преобразуем строки дат в объекты DateTime для правильной обработки
-            $startDate = new DateTime($eventData['startDate']);
-            $setupDate = !empty($eventData['setupDate']) ? new DateTime($eventData['setupDate']) : null;
-            $endDate = !empty($eventData['endDate']) ? new DateTime($eventData['endDate']) : null;
-
-            // Преобразуем формат даты createdAt из ISO в MySQL datetime
-            $createdAtISO = $eventData['createdAt'];
-            $createdAt = date('Y-m-d H:i:s', strtotime($createdAtISO));
-            $eventData['createdAt'] = $createdAt;
-
-            debug_log("Parsed event data", $eventData);
-
-            // Декодируем данные о столах из JSON
-            $tablesData = json_decode($eventData['tables'], true);
-            
-            // Подготавливаем данные
-            error_log("tables_needed before: " . print_r($eventData['tables_needed'], true));
-            error_log("chairs_needed before: " . print_r($eventData['chairs_needed'], true));
-            
-            // Обработка данных о столах
-            $tablesNeeded = $_POST['tablesNeeded'];
-            if ($tablesNeeded === 'yes') {
-                // Для каждого типа стола сохраняем yes/no как есть
-                $tables6ft = $_POST['tables6ft'];
-                $tables8ft = $_POST['tables8ft'];
-                $tablesRound = $_POST['tablesRound'];
-                
-                // Сохраняем количество столов
-                $tables6ftCount = ($tables6ft === 'yes') ? intval($_POST['tables6ftCount']) : 0;
-                $tables8ftCount = ($tables8ft === 'yes') ? intval($_POST['tables8ftCount']) : 0;
-                $tablesRoundCount = ($tablesRound === 'yes') ? intval($_POST['tablesRoundCount']) : 0;
-                $tableclothColor = $_POST['tableclothColor'] ?? '';
-            } else {
-                $tables6ft = 'no';
-                $tables8ft = 'no';
-                $tablesRound = 'no';
-                $tables6ftCount = 0;
-                $tables8ftCount = 0;
-                $tablesRoundCount = 0;
-                $tableclothColor = '';
-            }
-
-            // Обработка данных о стульях
-            $chairsNeeded = $_POST['chairsNeeded'];
-            $chairsCount = ($chairsNeeded === 'yes' && isset($_POST['chairs'])) ? intval($_POST['chairs']) : 0;
-
-            error_log("tables_needed after: " . print_r($eventData['tables_needed'], true));
-            error_log("chairs_needed after: " . print_r($chairsNeeded, true));
-
-            $stmt = $conn->prepare("INSERT INTO events (
-                name, startDate, startTime, setupDate, setupTime,
-                endDate, endTime, location, contact, email,
-                phone, alcuinContact, attendees,
-                podium, monitors, laptop, ipad, microphones,
-                speaker, avAssistance, security, buildingAccess, otherConsiderations,
-                status, createdBy, createdAt, setupImages,
-                tables6ft, tables8ft, tablesRound,
-                tables6ftCount, tables8ftCount, tablesRoundCount,
-                tablecloth_color, chairs_count, chairs_needed, tables_needed
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
-            if (!$stmt) {
-                throw new Exception('Failed to prepare statement: ' . $conn->error);
-            }
-
-            // Создаем временные переменные для всех параметров
-            $name = $eventData['name'];
-            $startDateStr = $startDate->format('Y-m-d');
-            $startTimeStr = $eventData['startTime'];
-            $setupDateStr = $setupDate ? $setupDate->format('Y-m-d') : null;
-            $setupTimeStr = $eventData['setupTime'] ?? null;
-            $endDateStr = $endDate ? $endDate->format('Y-m-d') : null;
-            $endTimeStr = $eventData['endTime'] ?? null;
-            $locationStr = $eventData['location'];
-            $contactStr = $eventData['contact'];
-            $emailStr = $eventData['email'];
-            $phoneStr = $eventData['phone'];
-            $alcuinContactStr = $eventData['alcuinContact'];
-            $attendeesStr = $eventData['attendees'];
-            $tablesStr = $eventData['tables'];
-            $chairsStr = $eventData['chairs'];
-            $podiumStr = $eventData['podium'];
-            $monitorsStr = $eventData['monitors'];
-            $laptopStr = $eventData['laptop'];
-            $ipadStr = $eventData['ipad'];
-            $microphonesStr = $eventData['microphones'];
-            $speakerStr = $eventData['speaker'];
-            $avAssistanceStr = $eventData['avAssistance'];
-            $securityStr = $eventData['security'];
-            $buildingAccessStr = $eventData['buildingAccess'];
-            $otherConsiderationsStr = $eventData['otherConsiderations'];
-            $statusStr = 'pending';
-            $createdByStr = $eventData['createdBy'];
-            $createdAtStr = $eventData['createdAt'];
-            $setupImagesStr = $eventData['setupImages'];
-            $tables6ftStr = $tables6ft;
-            $tables8ftStr = $tables8ft;
-            $tablesRoundStr = $tablesRound;
-            $tables6ftCountInt = intval($tables6ftCount);
-            $tables8ftCountInt = intval($tables8ftCount);
-            $tablesRoundCountInt = intval($tablesRoundCount);
-            $tableclothColorStr = $tableclothColor;
-            $chairsCountInt = intval($chairs_count);
-            $chairsNeededStr = $chairsNeeded;
-            $tablesNeededStr = $tablesNeeded;
-
-            if (!$stmt->bind_param('ssssssssssssssssssssssssssssssssiiisiss',
-                $name, $startDateStr, $startTimeStr, $setupDateStr, $setupTimeStr,
-                $endDateStr, $endTimeStr, $locationStr, $contactStr, $emailStr,
-                $phoneStr, $alcuinContactStr, $attendeesStr, $tablesStr, $chairsStr,
-                $podiumStr, $monitorsStr, $laptopStr, $ipadStr, $microphonesStr,
-                $speakerStr, $avAssistanceStr, $securityStr, $buildingAccessStr, $otherConsiderationsStr,
-                $statusStr, $createdByStr, $createdAtStr, $setupImagesStr, $tables6ftStr,
-                $tables8ftStr, $tablesRoundStr, $tables6ftCountInt, $tables8ftCountInt, $tablesRoundCountInt,
-                $tableclothColorStr, $chairsCountInt, $chairsNeededStr, $tablesNeededStr
-            )) {
-                throw new Exception('Failed to bind parameters: ' . $stmt->error);
-            }
-
-            if (!$stmt->execute()) {
-                throw new Exception('Execute failed: ' . $stmt->error);
-            }
-
-            debug_log("Event created successfully");
-
-            $response = [
-                'success' => true,
-                'message' => 'Event created successfully',
-                'eventId' => $conn->insert_id
-            ];
-
-            $stmt->close();
-            
-            // Очищаем буфер и отправляем ответ
-            ob_end_clean();
-            echo json_encode($response);
-            exit;
-
         case 'uploadFile':
             try {
                 if (!isset($_FILES['file'])) {
@@ -715,6 +570,97 @@ try {
             ]);
             break;
 
+        case 'updateComment':
+            if (!isset($_POST['commentId']) || !isset($_POST['eventId']) || !isset($_POST['text'])) {
+                throw new Exception('Missing required parameters for comment update');
+            }
+
+            $commentId = $_POST['commentId'];
+            $eventId = $_POST['eventId'];
+            $text = $_POST['text'];
+            
+            // Проверка существования комментария и его принадлежности к указанному событию
+            $checkStmt = $conn->prepare("SELECT author FROM event_comments WHERE id = ? AND event_id = ?");
+            if (!$checkStmt) {
+                throw new Exception('Failed to prepare check comment statement: ' . $conn->error);
+            }
+            
+            $checkStmt->bind_param('ii', $commentId, $eventId);
+            $checkStmt->execute();
+            $checkResult = $checkStmt->get_result();
+            
+            if ($checkResult->num_rows === 0) {
+                throw new Exception('Comment not found or does not belong to the specified event');
+            }
+            
+            $commentData = $checkResult->fetch_assoc();
+            $checkStmt->close();
+            
+            // Обновляем текст комментария
+            $updateStmt = $conn->prepare("UPDATE event_comments SET text = ? WHERE id = ?");
+            if (!$updateStmt) {
+                throw new Exception('Failed to prepare update comment statement: ' . $conn->error);
+            }
+            
+            $updateStmt->bind_param('si', $text, $commentId);
+            
+            if (!$updateStmt->execute()) {
+                throw new Exception('Failed to update comment: ' . $updateStmt->error);
+            }
+            
+            $updateStmt->close();
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Comment updated successfully'
+            ]);
+            break;
+            
+        case 'deleteComment':
+            if (!isset($_POST['commentId']) || !isset($_POST['eventId'])) {
+                throw new Exception('Missing required parameters for comment deletion');
+            }
+            
+            $commentId = $_POST['commentId'];
+            $eventId = $_POST['eventId'];
+            
+            // Проверка существования комментария и его принадлежности к указанному событию
+            $checkStmt = $conn->prepare("SELECT author FROM event_comments WHERE id = ? AND event_id = ?");
+            if (!$checkStmt) {
+                throw new Exception('Failed to prepare check comment statement: ' . $conn->error);
+            }
+            
+            $checkStmt->bind_param('ii', $commentId, $eventId);
+            $checkStmt->execute();
+            $checkResult = $checkStmt->get_result();
+            
+            if ($checkResult->num_rows === 0) {
+                throw new Exception('Comment not found or does not belong to the specified event');
+            }
+            
+            $commentData = $checkResult->fetch_assoc();
+            $checkStmt->close();
+            
+            // Удаляем комментарий
+            $deleteStmt = $conn->prepare("DELETE FROM event_comments WHERE id = ?");
+            if (!$deleteStmt) {
+                throw new Exception('Failed to prepare delete comment statement: ' . $conn->error);
+            }
+            
+            $deleteStmt->bind_param('i', $commentId);
+            
+            if (!$deleteStmt->execute()) {
+                throw new Exception('Failed to delete comment: ' . $deleteStmt->error);
+            }
+            
+            $deleteStmt->close();
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Comment deleted successfully'
+            ]);
+            break;
+
         case 'updateEventStatus':
             if (!isset($_POST['eventId']) || !isset($_POST['status'])) {
                 throw new Exception('Missing required parameters');
@@ -771,10 +717,16 @@ try {
 
         case 'createEvent':
             try {
+                // Detailed debug logging for all received parameters
+                $allPostData = $_POST;
+                $allFilesData = $_FILES;
+                debug_log("Create Event - All POST data:", $allPostData);
+                debug_log("Create Event - All FILES data:", $allFilesData);
+                
                 // Добавим отладочное логирование входящих данных
                 debug_log("Received tables and chairs data:", [
-                    'tablesNeeded' => $_POST['tablesNeeded'],
-                    'chairsNeeded' => $_POST['chairsNeeded']
+                    'tablesNeeded' => $_POST['tablesNeeded'] ?? 'not set',
+                    'chairsNeeded' => $_POST['chairsNeeded'] ?? 'not set'
                 ]);
 
                 // Сначала обрабатываем загрузку изображений
@@ -819,6 +771,53 @@ try {
                 $tables8ft = strtolower(trim($_POST['tables8ft'])) === 'yes' ? 'yes' : 'no';
                 $tablesRound = strtolower(trim($_POST['tablesRound'])) === 'yes' ? 'yes' : 'no';
 
+                // Validate required fields
+                $requiredFields = [
+                    'eventName', 'eventStartDate', 'eventStartTime', 'setupDate', 
+                    'setupTime', 'endDate', 'endTime', 'eventLocation', 
+                    'eventContact', 'createdBy'
+                ];
+                
+                $missingFields = [];
+                foreach ($requiredFields as $field) {
+                    if (!isset($_POST[$field]) || trim($_POST[$field]) === '') {
+                        $missingFields[] = $field;
+                    }
+                }
+                
+                if (!empty($missingFields)) {
+                    throw new Exception('Missing required fields: ' . implode(', ', $missingFields));
+                }
+
+                // Process createdAt in the Chicago timezone
+                $createdAtISO = $_POST['createdAt'] ?? null;
+                debug_log("Original createdAt value:", $createdAtISO);
+                
+                if ($createdAtISO) {
+                    try {
+                        // Ensure date is in the correct timezone
+                        $dateObj = new DateTime($createdAtISO);
+                        $dateObj->setTimezone(new DateTimeZone('America/Chicago'));
+                        $createdAt = $dateObj->format('Y-m-d H:i:s');
+                        debug_log("Converted createdAt in createEvent", [
+                            'original' => $createdAtISO,
+                            'converted' => $createdAt
+                        ]);
+                    } catch (Exception $e) {
+                        debug_log("Error parsing createdAt:", [
+                            'value' => $createdAtISO,
+                            'error' => $e->getMessage()
+                        ]);
+                        // Fallback to current time if parsing fails
+                        $createdAt = date('Y-m-d H:i:s');
+                        debug_log("Using fallback current time:", $createdAt);
+                    }
+                } else {
+                    // Fallback to current time if no createdAt provided
+                    $createdAt = date('Y-m-d H:i:s');
+                    debug_log("Using current time for createdAt in createEvent", $createdAt);
+                }
+
                 // Обрабатываем числовые значения
                 $tables6ftCount = $tables6ft === 'yes' ? max(0, intval($_POST['tables6ftCount'])) : 0;
                 $tables8ftCount = $tables8ft === 'yes' ? max(0, intval($_POST['tables8ftCount'])) : 0;
@@ -837,7 +836,14 @@ try {
                     'chairs' => ['needed' => $chairsNeeded, 'count' => $chairsCount]
                 ]);
 
-                // В case 'createEvent' обновляем SQL-запрос
+                // Логируем структуру SQL и параметров для отладки
+                debug_log("SQL query and parameters:", [
+                    'action' => 'createEvent',
+                    'params_keys' => array_keys($_POST),
+                    'files_keys' => isset($_FILES) ? array_keys($_FILES) : []
+                ]);
+
+                // В case 'createEvent' обновляем SQL-запрос, убеждаемся что запрос корректный
                 $sql = "INSERT INTO events (
                     name, startDate, startTime, setupDate, setupTime, 
                     endDate, endTime, location, contact, email, 
@@ -848,45 +854,7 @@ try {
                     tables6ft, tables8ft, tablesRound,
                     tables6ftCount, tables8ftCount, tablesRoundCount,
                     tablecloth_color, chairs_count, chairs_needed, tables_needed
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-                // Подсчитаем количество параметров
-                // 1. name (s)
-                // 2. startDate (s)
-                // 3. startTime (s)
-                // 4. setupDate (s)
-                // 5. setupTime (s)
-                // 6. endDate (s)
-                // 7. endTime (s)
-                // 8. location (s)
-                // 9. contact (s)
-                // 10. email (s)
-                // 11. phone (s)
-                // 12. alcuinContact (s)
-                // 13. attendees (s)
-                // 14. podium (s)
-                // 15. monitors (s)
-                // 16. laptop (s)
-                // 17. ipad (s)
-                // 18. microphones (s)
-                // 19. speaker (s)
-                // 20. avAssistance (s)
-                // 21. security (s)
-                // 22. buildingAccess (s)
-                // 23. otherConsiderations (s)
-                // 24. status (s)
-                // 25. createdBy (s)
-                // 26. setupImages (s)
-                // 27. tables6ft (s)
-                // 28. tables8ft (s)
-                // 29. tablesRound (s)
-                // 30. tables6ftCount (i)
-                // 31. tables8ftCount (i)
-                // 32. tablesRoundCount (i)
-                // 33. tablecloth_color (s)
-                // 34. chairs_count (i)
-                // 35. chairs_needed (s)
-                // 36. tables_needed (s)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 // Обновляем массив параметров (убираем legacy поля)
                 $params = [
@@ -915,6 +883,7 @@ try {
                     $_POST['otherConsiderations'],
                     'pending',
                     $_POST['createdBy'],
+                    $createdAt,
                     !empty($uploadedImages) ? json_encode($uploadedImages) : null,
                     $tables6ft,
                     $tables8ft,
@@ -928,9 +897,16 @@ try {
                     $tablesNeeded
                 ];
 
+                // Количество VALUES параметров должно совпадать с количеством передаваемых параметров
+                debug_log("SQL parameters check:", [
+                    'sql_placeholders' => substr_count($sql, '?'),
+                    'expected_params' => 37,
+                    'actual_params' => count($params)
+                ]);
+
                 // Обновляем типы параметров
-                $types = str_repeat('s', 26) . 'sssiiisiss';
-                // 26 строковых параметров до setupImages включительно
+                $types = str_repeat('s', 27) . 'sssiiisiss'; // Total: 37 characters
+                // 27 строковых параметров до setupImages включительно (включая status='pending')
                 // sss - tables6ft, tables8ft, tablesRound (строковые yes/no)
                 // iii - tables6ftCount, tables8ftCount, tablesRoundCount (числа)
                 // s - tablecloth_color (строка)
@@ -943,8 +919,24 @@ try {
                     throw new Exception('Failed to prepare statement: ' . $conn->error);
                 }
 
+                // Добавляем явную проверку соответствия количества параметров
+                $placeholdersCount = substr_count($sql, '?');
+                $paramsCount = count($params);
+                if ($placeholdersCount !== $paramsCount) {
+                    throw new Exception(
+                        "Parameter count mismatch: SQL expects {$placeholdersCount} parameters, but {$paramsCount} were provided"
+                    );
+                }
+
                 if (!$stmt->bind_param($types, ...$params)) {
-                    throw new Exception('Failed to bind parameters: ' . $stmt->error . ' (Types: ' . $types . ', Params: ' . count($params) . ')');
+                    debug_log("Binding parameters failed", [
+                        'params_count' => count($params),
+                        'types_length' => strlen($types),
+                        'sql_placeholders' => substr_count($sql, '?'),
+                        'params' => array_keys($_POST),
+                        'error' => $stmt->error
+                    ]);
+                    throw new Exception('Failed to bind parameters: ' . $stmt->error . ' (Types: ' . $types . ', Params: ' . count($params) . ', SQL placeholders: ' . substr_count($sql, '?') . ')');
                 }
 
                 if (!$stmt->execute()) {
@@ -1243,7 +1235,12 @@ try {
 
     // Очищаем буфер и отправляем ошибку
     ob_end_clean();
-    http_response_code(500);
+    
+    // Убеждаемся, что заголовки корректны
+    header('Content-Type: application/json');
+    header('HTTP/1.1 500 Internal Server Error');
+    
+    // Возвращаем ошибку как JSON
     echo json_encode([
         'success' => false,
         'message' => $e->getMessage(),

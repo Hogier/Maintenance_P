@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document
     .getElementById("addEventBtn")
-    .addEventListener("click", showEventModal);
+    .addEventListener("click", () => showEventModal(null));
   document
     .querySelector(".close-modal")
     .addEventListener("click", hideEventModal);
@@ -288,7 +288,7 @@ function showEventModal(event) {
 
   // Get the form
   const form = document.getElementById("eventForm");
-  const isEditing = !!event;
+  const isEditing = !!event && typeof event === "object";
 
   if (isEditing) {
     // We're editing an existing event
@@ -462,7 +462,15 @@ function hideEventModal() {
 
   // Reset the form and clear the event ID
   const form = document.getElementById("eventForm");
+  form.reset();
   delete form.dataset.eventId;
+
+  // Clear any existing file previews
+  clearFileUpload();
+
+  // Сбрасываем дополнительные поля и скрываем зависимые секции
+  document.querySelector(".tables-options")?.classList.add("hidden");
+  document.querySelector(".chairs-input")?.classList.add("hidden");
 }
 
 // Функция для загрузки файлов на сервер
@@ -585,10 +593,8 @@ async function handleEventSubmit(e) {
   formData.append("chairsNeeded", form.querySelector("#chairsNeeded").value);
   if (form.querySelector("#chairsNeeded").value === "yes") {
     const chairsInput = form.querySelector("#chairs");
-    formData.append("chairs", chairsInput.value || "0");
     formData.append("chairs_count", chairsInput.value || "0");
   } else {
-    formData.append("chairs", "0");
     formData.append("chairs_count", "0");
   }
 
@@ -754,14 +760,35 @@ function createEquipmentItem(label, value) {
 // Обновляем функцию форматирования даты
 function formatDate(dateString) {
   if (!dateString) return "";
-  // Добавляем 'T12:00:00' к дате, чтобы избежать проблем с часовыми поясами
-  const date = new Date(dateString + "T12:00:00");
-  // Используем часовой пояс Далласа для форматирования
-  return date.toLocaleDateString("en-US", {
-    timeZone: "America/Chicago",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+
+  try {
+    // Используем стандартную функцию из dateUtils для более надежной работы
+    if (dateString.includes(":")) {
+      // Если строка содержит время (HH:MM:SS), применяем полное форматирование
+      const date = new Date(dateString.replace(/-/g, "/"));
+      return formatDallasDate(date);
+    } else {
+      // Если строка содержит только дату (YYYY-MM-DD), форматируем только дату
+      const date = new Date(dateString.replace(/-/g, "/"));
+      return date.toLocaleDateString("en-US", {
+        timeZone: "America/Chicago",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+  } catch (e) {
+    console.error("Error formatting date:", e, dateString);
+    return "Date error";
+  }
+}
+
+// Функция воспроизведения звука при добавлении нового сообщения
+function playNewMessageSound() {
+  const audio = new Audio("sound/newMessage.mp3");
+  audio.volume = 0.45;
+  audio.play().catch((error) => {
+    console.error("Ошибка при воспроизведении аудио:", error);
   });
 }
 
@@ -770,25 +797,10 @@ function formatCreationDate(dateTimeString) {
   if (!dateTimeString) return "Unknown date";
 
   try {
-    const date = new Date(dateTimeString);
-
-    // Проверяем, является ли дата валидной
-    if (isNaN(date.getTime())) {
-      return "Invalid date";
-    }
-
-    // Форматируем дату и время
-    return date.toLocaleString("en-US", {
-      timeZone: "America/Chicago",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    // Используем стандартную функцию из dateUtils для более надежной работы
+    return formatDallasDate(new Date(dateTimeString.replace(/-/g, "/")));
   } catch (e) {
-    console.error("Error formatting creation date:", e);
+    console.error("Error formatting creation date:", e, dateTimeString);
     return "Date error";
   }
 }
@@ -812,17 +824,36 @@ function canChangeStatus(event, newStatus) {
     case "cancelled":
       return true; // Можно отменить в любое время
     case "completed":
-      // Create a date from the end date
-      const endDate = new Date(event.endDate);
-      const endTime = event.endTime ? event.endTime.split(":") : null;
+      try {
+        // Используем форматирование для ввода из dateUtils
+        const dateStr = event.endDate;
+        const timeStr = event.endTime || "23:59";
 
-      // Add the end time hours and minutes
-      if (endTime) {
-        endDate.setHours(endTime[0], endTime[1]);
+        // Создаем ISO строку в формате YYYY-MM-DDTHH:MM
+        const endDateTimeStr = `${dateStr}T${timeStr}`;
+
+        // Создаем объект Date
+        const endDate = new Date(endDateTimeStr);
+
+        // Убедимся, что дата валидная
+        if (isNaN(endDate.getTime())) {
+          console.error("Invalid end date or time:", endDateTimeStr);
+          return false;
+        }
+
+        console.log("Event end date check:", {
+          eventName: event.name,
+          endDate: endDate.toISOString(),
+          now: now.toISOString(),
+          canComplete: now >= endDate,
+        });
+
+        // Разрешаем установку статуса "completed" если текущее время после времени окончания
+        return now >= endDate;
+      } catch (error) {
+        console.error("Error checking end date:", error);
+        return false; // При ошибке парсинга не разрешаем изменение
       }
-
-      // Only allow completion if the current time is after the end time
-      return now > endDate;
     default:
       return true; // Для других статусов (pending)
   }
@@ -983,6 +1014,7 @@ function showFullImage(imgElement) {
 function createEventElement(event) {
   const eventElement = document.createElement("div");
   eventElement.className = "event-item";
+  eventElement.setAttribute("data-event-id", event.id);
 
   // Преобразуем строку setupImages в массив
   let setupImages = [];
@@ -1183,19 +1215,46 @@ function createEventElement(event) {
                 ${
                   event.comments
                     ? event.comments
-                        .map(
-                          (comment) => `
-                <div class="comment-item">
-                    <div class="comment-header">
-                        <span class="comment-author">${comment.author}</span>
-                        <span class="comment-date">${formatDate(
-                          comment.date
-                        )}</span>
-                    </div>
-                    <div class="comment-text">${comment.text}</div>
-                </div>
-            `
-                        )
+                        .map((comment) => {
+                          // Получаем текущего пользователя
+                          const currentUser = JSON.parse(
+                            localStorage.getItem("currentUser")
+                          );
+                          // Проверяем, является ли автор комментария текущим пользователем
+                          const isAuthor =
+                            currentUser &&
+                            currentUser.fullName === comment.author;
+
+                          return `
+                            <div class="comment-item" data-comment-id="${
+                              comment.id
+                            }">
+                                <div class="comment-header">
+                                    <span class="comment-author">${
+                                      comment.author
+                                    }</span>
+                                    <span class="comment-date">${formatDate(
+                                      comment.date
+                                    )}</span>
+                                    ${
+                                      isAuthor
+                                        ? `
+                                    <div class="comment-actions">
+                                        <button class="comment-edit" onclick="editComment(event, '${event.id}', '${comment.id}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="comment-delete" onclick="deleteComment(event, '${event.id}', '${comment.id}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    `
+                                        : ""
+                                    }
+                                </div>
+                                <div class="comment-text">${comment.text}</div>
+                            </div>
+                        `;
+                        })
                         .join("")
                     : ""
                 }
@@ -1604,25 +1663,39 @@ async function updateEventApproval(eventId, approvalStatus) {
 
 // Missing event functions
 async function addComment(event, eventId) {
-  event.preventDefault(); // Убедимся, что это вызывается первым
-
+  event.preventDefault();
   const form = event.target;
-  const input = form.querySelector(".comment-input");
-  const commentText = input.value.trim();
+  const commentInput = form.querySelector(".comment-input");
+  const commentText = commentInput.value.trim();
 
-  if (!commentText) return false;
+  if (!commentText) return;
 
   try {
+    // Получаем текущего пользователя
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    const author = currentUser ? currentUser.fullName : "Anonymous";
+    if (!currentUser) {
+      showNotification("You need to be logged in to add comments", "error");
+      return;
+    }
 
+    const author = currentUser.fullName;
+
+    // Форматируем дату для передачи на сервер
+    const now = new Date();
+    // Используем формат MySQL для сервера
+    const serverDateStr = now.toISOString().slice(0, 19).replace("T", " ");
+    // Сохраняем исходную дату для локального форматирования
+    const localDate = now;
+
+    // Создаем объект с данными комментария
     const commentData = {
       eventId: eventId,
       text: commentText,
       author: author,
-      date: new Date().toISOString(),
+      date: serverDateStr,
     };
 
+    // Отправляем запрос на сервер
     const formData = new FormData();
     formData.append("action", "addComment");
     formData.append("commentData", JSON.stringify(commentData));
@@ -1633,20 +1706,89 @@ async function addComment(event, eventId) {
     });
 
     const result = await response.json();
-
-    if (result.success) {
-      input.value = "";
-      await loadEvents(); // Reload events to show the new comment
-      showNotification("Comment added successfully");
-    } else {
+    if (!result.success) {
       throw new Error(result.message || "Failed to add comment");
     }
+
+    // Находим событие в массиве
+    const currentEvent = events.find((e) => String(e.id) === String(eventId));
+    if (!currentEvent) throw new Error("Event not found");
+
+    // Добавляем комментарий в массив комментариев события
+    if (!currentEvent.comments) {
+      currentEvent.comments = [];
+    }
+
+    const newComment = {
+      id: result.commentId,
+      text: commentText,
+      author: author,
+      date: serverDateStr,
+    };
+
+    currentEvent.comments.push(newComment);
+
+    // Очищаем поле ввода
+    commentInput.value = "";
+
+    // Обновляем отображение комментариев в DOM
+    const eventElement = document.querySelector(
+      `.event-item[data-event-id="${eventId}"]`
+    );
+
+    if (eventElement) {
+      const commentsList = eventElement.querySelector(".comments-list");
+
+      if (commentsList) {
+        // Используем форматированную дату напрямую, а не через formatDate
+        const formattedDate = localDate.toLocaleString("en-US", {
+          timeZone: "America/Chicago",
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+
+        // Создаем элемент нового комментария
+        const commentElement = document.createElement("div");
+        commentElement.className = "comment-item";
+        commentElement.setAttribute("data-comment-id", result.commentId);
+        commentElement.innerHTML = `
+          <div class="comment-header">
+            <span class="comment-author">${author}</span>
+            <span class="comment-date">${formattedDate}</span>
+            <div class="comment-actions">
+              <button class="comment-edit" onclick="editComment(event, '${eventId}', '${result.commentId}')">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="comment-delete" onclick="deleteComment(event, '${eventId}', '${result.commentId}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="comment-text">${commentText}</div>
+        `;
+
+        // Добавляем комментарий в список
+        commentsList.appendChild(commentElement);
+
+        // Прокручиваем к новому комментарию
+        commentsList.scrollTop = commentsList.scrollHeight;
+
+        // Воспроизведем звук нового сообщения, если есть функция
+        if (typeof playNewMessageSound === "function") {
+          playNewMessageSound();
+        }
+      }
+    }
+
+    showNotification("Comment added successfully");
   } catch (error) {
     console.error("Error adding comment:", error);
     showNotification("Failed to add comment: " + error.message, "error");
   }
-
-  return false; // Возвращаем false, чтобы предотвратить стандартное поведение формы
 }
 
 function editEvent(eventId) {
@@ -1692,8 +1834,8 @@ async function deleteEvent(eventId) {
 
 function printEvent(eventId) {
   const event = events.find((e) => e.id === eventId);
+
   if (!event) {
-    console.error("Event not found:", eventId);
     showNotification("Event not found", "error");
     return;
   }
@@ -1796,7 +1938,7 @@ function printEvent(eventId) {
     `;
   }
 
-  // Generate comments section
+  // Если есть комментарии, форматируем их
   let commentsSection = "";
   if (event.comments && event.comments.length > 0) {
     const commentsHtml = event.comments
@@ -1805,11 +1947,7 @@ function printEvent(eventId) {
         <div class="comment">
           <div class="comment-header">
             <span class="comment-author">${comment.author}</span>
-            <span class="comment-date">${new Date(
-              comment.date
-            ).toLocaleDateString()} ${new Date(
-          comment.date
-        ).toLocaleTimeString()}</span>
+            <span class="comment-date">${formatDate(comment.date)}</span>
           </div>
           <div class="comment-text">${comment.text}</div>
         </div>
@@ -1903,7 +2041,7 @@ function printEvent(eventId) {
           margin: 0 auto;
           background-color: white;
           box-shadow: 0 0 10px rgba(0,0,0,0.1);
-          padding: 1.2rem;
+          padding: 0.8rem;
           border-radius: 5px;
         }
         
@@ -1934,9 +2072,8 @@ function printEvent(eventId) {
         .event-banner {
           background: linear-gradient(135deg, #1a4dbe, #4e81f4);
           color: white;
-          padding: 12px;
-          border-radius: 6px;
-          margin-bottom: 10px;
+          padding: 8px;
+          margin-bottom: 5px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           display: flex;
           justify-content: space-between;
@@ -1963,16 +2100,16 @@ function printEvent(eventId) {
         .grid-container {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
-          margin-bottom: 8px;
+          gap: 5px;
+          margin-bottom: 5px;
         }
         
         .section { 
           background-color: white;
           border-radius: 6px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-          padding: 8px;
-          margin-bottom: 8px;
+          padding: 6px;
+          margin-bottom: 5px;
           border: 1px solid #eaeaea;
         }
         
@@ -2149,6 +2286,10 @@ function printEvent(eventId) {
           align-items: center;
           justify-content: center;
           gap: 6px;
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 1000;
         }
         
         .print-button:hover {
@@ -2346,4 +2487,170 @@ function printEvent(eventId) {
   printWindow.document.open();
   printWindow.document.write(printContent);
   printWindow.document.close();
+}
+
+// Функция для редактирования комментария
+function editComment(event, eventId, commentId) {
+  event.stopPropagation(); // Предотвращаем всплытие события
+
+  // Находим комментарий в DOM
+  const commentItem = document.querySelector(
+    `.comment-item[data-comment-id="${commentId}"]`
+  );
+  if (!commentItem) return;
+
+  // Проверяем, есть ли уже открытая форма редактирования
+  const existingForm = commentItem.querySelector(".comment-edit-form");
+  if (existingForm) return; // Если форма уже открыта, ничего не делаем
+
+  const commentTextElement = commentItem.querySelector(".comment-text");
+  const originalText = commentTextElement.textContent;
+
+  // Создаем форму редактирования
+  const editForm = document.createElement("form");
+  editForm.className = "comment-edit-form";
+  editForm.innerHTML = `
+    <textarea class="comment-edit-input">${originalText}</textarea>
+    <div class="comment-edit-actions">
+      <button type="submit" class="comment-save">Save</button>
+      <button type="button" class="comment-cancel">Cancel</button>
+    </div>
+  `;
+
+  // Заменяем текстовое содержимое формой редактирования
+  commentTextElement.style.display = "none";
+  commentItem.appendChild(editForm);
+
+  // Устанавливаем фокус в текстовое поле и помещаем курсор в конец текста
+  const textarea = editForm.querySelector("textarea");
+  textarea.focus();
+  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+  // Обработчик отмены редактирования
+  editForm.querySelector(".comment-cancel").addEventListener("click", () => {
+    commentTextElement.style.display = "";
+    editForm.remove();
+  });
+
+  // Обработчик сохранения изменений
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const newText = textarea.value.trim();
+    if (!newText) return;
+
+    try {
+      // Находим событие в массиве
+      const currentEvent = events.find((e) => String(e.id) === String(eventId));
+      if (!currentEvent) throw new Error("Event not found");
+
+      // Находим комментарий в событии
+      const comment = currentEvent.comments.find(
+        (c) => String(c.id) === String(commentId)
+      );
+      if (!comment) throw new Error("Comment not found");
+
+      // Проверяем, что пользователь является автором комментария
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (!currentUser || currentUser.fullName !== comment.author) {
+        throw new Error("You are not authorized to edit this comment");
+      }
+
+      // Отправляем запрос на сервер
+      const formData = new FormData();
+      formData.append("action", "updateComment");
+      formData.append("commentId", commentId);
+      formData.append("eventId", eventId);
+      formData.append("text", newText);
+
+      const response = await fetch("events_db.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || "Failed to update comment");
+      }
+
+      // Обновляем комментарий в локальном состоянии
+      comment.text = newText;
+
+      // Обновляем отображение в DOM
+      commentTextElement.textContent = newText;
+      commentTextElement.style.display = "";
+      editForm.remove();
+
+      showNotification("Comment updated successfully");
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      showNotification("Failed to update comment: " + error.message, "error");
+
+      // Восстанавливаем первоначальное состояние
+      commentTextElement.style.display = "";
+      editForm.remove();
+    }
+  });
+}
+
+// Функция для удаления комментария
+async function deleteComment(event, eventId, commentId) {
+  event.stopPropagation(); // Предотвращаем всплытие события
+
+  // Запрашиваем подтверждение у пользователя
+  if (!confirm("Are you sure you want to delete this comment?")) {
+    return;
+  }
+
+  try {
+    // Находим событие в массиве
+    const currentEvent = events.find((e) => String(e.id) === String(eventId));
+    if (!currentEvent) throw new Error("Event not found");
+
+    // Находим комментарий в событии
+    const commentIndex = currentEvent.comments.findIndex(
+      (c) => String(c.id) === String(commentId)
+    );
+    if (commentIndex === -1) throw new Error("Comment not found");
+
+    const comment = currentEvent.comments[commentIndex];
+
+    // Проверяем, что пользователь является автором комментария
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser || currentUser.fullName !== comment.author) {
+      throw new Error("You are not authorized to delete this comment");
+    }
+
+    // Отправляем запрос на сервер
+    const formData = new FormData();
+    formData.append("action", "deleteComment");
+    formData.append("commentId", commentId);
+    formData.append("eventId", eventId);
+
+    const response = await fetch("events_db.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message || "Failed to delete comment");
+    }
+
+    // Удаляем комментарий из локального состояния
+    currentEvent.comments.splice(commentIndex, 1);
+
+    // Удаляем комментарий из DOM
+    const commentItem = document.querySelector(
+      `.comment-item[data-comment-id="${commentId}"]`
+    );
+    if (commentItem) {
+      commentItem.remove();
+    }
+
+    showNotification("Comment deleted successfully");
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    showNotification("Failed to delete comment: " + error.message, "error");
+  }
 }
