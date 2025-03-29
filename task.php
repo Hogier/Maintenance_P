@@ -180,6 +180,21 @@ if ($action === 'addTask') {
             'message' => 'fullFile not found'
         ]);
     }
+} elseif ($action === 'getUrlOfMediaFilesByTaskId') {
+    $taskId = $_POST['taskId'];
+    $stmt = $conn->prepare("SELECT media FROM tasks WHERE request_id = ?");
+    $stmt->bind_param("s", $taskId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $task = $result->fetch_assoc();
+    
+    if (isset($task['media'])) {
+        $media = json_decode($task['media'], true);
+        echo json_encode(['success' => true, 'data' => $media]);
+    } else {
+        // Возвращаем пустой массив с success => true
+        echo json_encode(['success' => true, 'data' => []]);
+    }
 } elseif ($action === 'getMINIMediaFile') {
     error_log("Начало выполнения действия 'getMINIMediaFile'");
     $fileName = $_POST['fileName'];

@@ -3,6 +3,114 @@ let currentDate = new Date();
 let selectedDate = new Date();
 let events = [];
 
+///////////////////////////////////////////////////////
+
+const eventsWS = new WebSocket("ws://localhost:2346");
+
+window.onload = function () {
+  eventsWS.onopen = function () {
+    console.log("Подключено к WebSocket серверу");
+  };
+
+  eventsWS.onerror = function (e) {
+    console.error("WebSocket ошибка: " + e.message);
+  };
+
+  eventsWS.onclose = function () {
+    console.log("Соединение закрыто");
+  };
+}
+
+function showCommentNotification(comment) {
+  const notificationElement = document.getElementById('newCommentNotification');
+  const headerElement = notificationElement.querySelector('h3');
+  const textElement = notificationElement.querySelector('p');
+  
+  headerElement.textContent = comment.author;
+  textElement.textContent = comment.text;
+  const eventDate = comment.eventDate;
+
+  notificationElement.addEventListener('click', function() {
+    console.log("eventDate: ", eventDate);
+    console.log("selectedDate: ", selectedDate);
+    
+    const parts = eventDate.split(', ');
+    const year = parseInt(parts[1]);
+    const dateParts = parts[0].split(' ');
+    const day = parseInt(dateParts[1]);
+    
+    const months = ["January", "February", "March", "April", "May", "June", 
+                  "July", "August", "September", "October", "November", "December"];
+    const monthIndex = months.indexOf(dateParts[0]);
+    
+    const parsedDate = new Date(year, monthIndex, day);
+    console.log("parsedDate: ", parsedDate);
+    
+    selectedDate = parsedDate;
+    
+    try {
+      updateCalendar();
+      updateEventsList();
+      
+      // Автоматически раскрываем только первое событие в списке
+  setTimeout(() => {
+        // Получаем только первую кнопку toggle-details
+        const firstToggleButton = document.querySelector('.toggle-details');
+        if (firstToggleButton) {
+          // Находим блок деталей для этой кнопки
+          const eventItem = firstToggleButton.closest('.event-item');
+          const details = eventItem.querySelector('.event-details');
+          
+          details.classList.remove('hidden');
+          firstToggleButton.textContent = 'Hide Details';
+          firstToggleButton.classList.add('active');
+          
+
+          setTimeout(() => {
+            eventItem.scrollIntoView({ behavior: 'smooth', block: "end" });
+          }, 100);
+        }
+      }, 100); 
+      
+    } catch (error) {
+      console.error("Error updating calendar or events list:", error);
+    }
+    notificationElement.classList.remove('show');
+  });
+  
+  notificationElement.classList.add('show');
+  
+  setTimeout(() => {
+    notificationElement.classList.remove('show');
+  }, 10000);
+}
+
+eventsWS.onmessage = function(e) {
+  try {
+    const data = JSON.parse(e.data);
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    const currentUserName = currentUser.fullName ? currentUser.fullName : currentUser.username;
+    if (data.action === "eventCommentAdded") {
+      const comment = data.message;
+      console.log("comment.author: ", comment.author);
+      console.log("currentUser.username: ", currentUser.username);
+      console.log("comment.author != currentUser.username: ", comment.author != currentUser.username);
+      if (comment.author != currentUserName) {
+        showCommentNotification(comment);
+      }
+    }
+  } catch (error) {
+    console.error('Error processing WebSocket message:', error);
+  }
+};
+
+// Добавляем обработчик для кнопки закрытия
+document.getElementById('closeNotificationButton').addEventListener('click', function() {
+  document.getElementById('newCommentNotification').classList.remove('show');
+});
+
+///////////////////////////////////////////////////////
+
 // Инициализация при загрузке страницы
 document.addEventListener("DOMContentLoaded", function () {
   // Проверка авторизации
@@ -1005,7 +1113,7 @@ function displayUserInfo() {
   if (user) {
     const userAccount = document.querySelector(".user-account");
     userAccount.innerHTML = `
-      <div class="user-info">
+      <div class="profile-user-info">
         <div class="avatar-container">
           <span id="userAvatar">👤</span>
         </div>
@@ -1090,6 +1198,11 @@ async function addComment(e, eventId) {
 
     const result = await response.json();
     if (result.success) {
+      console.log("Comment added successfully");
+      console.log(commentData);
+      commentData.action = "addEventComment";
+      commentData.eventDate = document.querySelector('.event-date').textContent;
+      eventsWS.send(JSON.stringify(commentData));
       // Добавляем комментарий в DOM без перезагрузки
       const commentsList = form.previousElementSibling;
       const commentElement = createCommentElement(commentData);
@@ -1161,6 +1274,7 @@ async function createEvent(eventData) {
   }
 }
 
+//УДАЛИТЬ?
 async function getEventsByDate(date) {
   try {
     console.log("Requesting events for date:", date.toISOString());
@@ -1189,6 +1303,7 @@ async function getEventsByDate(date) {
   }
 }
 
+//УДАЛИТЬ?
 async function addEventComment(eventId, comment) {
   try {
     const response = await fetch("events_db.php", {
