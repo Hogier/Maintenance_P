@@ -10,6 +10,18 @@
   gap: 15px;
 }
 
+.tasksuser-profile-container .header-container {
+  position: relative;
+  top: 0;
+  right: 0;
+  padding: 5px 20px;
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+}
+
 .user-profile-account {
   display: none;
   justify-content: flex-end;
@@ -17,7 +29,7 @@
   padding: 5px 15px;
 }
 
-.user-info {
+.profile-user-info {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -28,7 +40,34 @@
   backdrop-filter: blur(5px);
   cursor: pointer;
 }
-.user-profile .user-info {
+
+.tasksuser-profile-container .header-container .profile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: transparent;
+  padding: 0px 0px;
+  border-radius: 0px;
+  box-shadow: none;
+  backdrop-filter: none;
+  cursor: pointer;
+  transform: scale(1);
+  transition: transform 0.3s ease;
+}
+
+.tasksuser-profile-container .header-container .profile-user-info:hover {
+  transform: scale(1.05);
+}
+
+.tasksuser-profile-container .header-container #userName {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: normal;
+  font-family: Arial, sans-serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+  
+.user-profile .profile-user-info {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -106,7 +145,7 @@
     padding: 5px;
   }
 
-  .user-info {
+  .profile-user-info {
     padding: 5px 10px;
     cursor: pointer;
   }
@@ -174,12 +213,12 @@
   margin-bottom: 7px;
 }
 
-.user-profile .user-info h2,
-.user-profile .user-info p {
+.user-profile .profile-user-info h2,
+.user-profile .profile-user-info p {
   margin: 2px 0;
 }
 
-.user-profile .user-info p {
+.user-profile .profile-user-info p {
 color: #333;
 font-size: 12px;
 }
@@ -316,19 +355,8 @@ font-size: 12px;
 #EventsList {
   padding: 10px 0 0 0px;
 }
-/*
-.task-item {
-  margin: 0 0 10px 0;
-  padding: 15px;
-  background: linear-gradient(135deg, #dee5e8, rgb(183 209 232 / 11%));
-  border-radius: 8px;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease;
-  overflow: hidden;
-  cursor: pointer;
-}
-*/
-.task-item {
+
+.profile-task-item {
   position: relative;
   z-index: 1100;
   margin: 0 0 10px 0;
@@ -341,29 +369,29 @@ font-size: 12px;
   cursor: pointer;
 }
 
-.task-item:hover {
+.profile-task-item:hover {
   transform: translateY(-3px);
   z-index: 1100;
 
 }
 
-.task-item.expanded-margin {
+.profile-task-item.expanded-margin {
   margin-bottom: 40px; /* Увеличенный отступ */
 }
 
-.task-header {
+.profile-task-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 5px;
 }
 
-.task-header-left {
+.profile-task-header-left {
   font-weight: bold;
   color: #171717;
 }
 
-.task-header-right {
+.profile-task-header-right {
   color: #2b2b2b;
 }
 
@@ -375,18 +403,18 @@ font-size: 12px;
   margin-left: 5px;
 }
 
-.task-timestamp {
+.profile-task-timestamp {
   font-size: 0.9em;
   color: #666;
 }
 
-.task-status {
+.profile-task-status {
   margin-bottom: 5px;
   display: flex;
   align-items:flex-start;
 }
 
-.task-status-text {
+.profile-task-status-text {
   font-size: 16px;
   font-weight: bold;
   color: #171717;
@@ -416,12 +444,15 @@ font-size: 12px;
   transition: background-color 0.3s ease;
 }
 
-
+.pending-active, .in-progress-active, .completed-active {
+  box-shadow: 0 0 10px rgb(163, 177, 187);
+}
 
 .status-container-maintenance.pending:hover, .pending-active {
   background-color: #ff5445fc;
   color: #fff;
 }
+
 .status-container-maintenance.in-progress:hover, .in-progress-active {
   background-color: #e1d400;
   color: #fff;
@@ -455,6 +486,7 @@ font-size: 12px;
   visibility: visible;
   display: block; /* Отображаем элемент */
   transform: scale(1); /* Конечное значение для анимации */
+  box-shadow: 0 0 10px rgb(163, 177, 187);
   opacity: 1; /* Конечная прозрачность */
 }
 
@@ -499,7 +531,7 @@ font-size: 12px;
   transition: max-height 0.5s ease; /* Плавный переход для max-height */
 }
 
-.task-details {
+.profile-task-details {
   color: #333;
   line-height: 1.5;
   background-color: #f9f9f9;
@@ -991,7 +1023,7 @@ button.order img {
   background-color: #1976d2;
 }
 
-.status-container-maintenance:not(.pending-active):not(.in-progress-active):not(.completed-active) ~ .task-item {
+.status-container-maintenance:not(.pending-active):not(.in-progress-active):not(.completed-active) ~ .profile-task-item {
   margin-bottom: 10px; /* Уменьшаем отступ */
 }
 

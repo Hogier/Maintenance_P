@@ -1,3 +1,4 @@
+
 let isFirstLoadEvents = false;
 
 let displayedTasks = [];
@@ -49,6 +50,7 @@ window.onload = function () {
     }, 1000);
   };
 
+  /*
   // При получении сообщения
   ws.onmessage = function (e) {
     try {
@@ -69,7 +71,7 @@ window.onload = function () {
       console.log("Полученные данные:", e.data);
     }
   };
-
+*/
   // При ошибке
   ws.onerror = function (e) {
     console.error("WebSocket ошибка: " + e.message);
@@ -369,14 +371,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         edit.classList.remove('show');
       });
       
-      document.querySelectorAll('.task-item').forEach(taskItem => {
+      document.querySelectorAll('.profile-task-item').forEach(taskItem => {
         if (taskItem) {
           taskItem.classList.remove('expanded-margin');
         }
       });
 
       // Удаляем класс -active у всех span
-      document.querySelectorAll('.task-status .status-container-wrapper span').forEach(span => {
+      document.querySelectorAll('.profile-task-status .status-container-wrapper span').forEach(span => {
         const activeClass = span.className.split(' ').find(cls => cls.endsWith('-active'));
         if (activeClass) {
           span.classList.remove(activeClass);
@@ -550,25 +552,25 @@ async function displayUserTasks() {
 
     tasks.forEach((task) => {
       const listItem = document.createElement("li");
-      listItem.classList.add("task-item");
+      listItem.classList.add("profile-task-item");
 
       // Форматируем данные задачи
       const taskDetails = `
-              <div class="task-header">
-                <div class="task-header-left">
+              <div class="profile-task-header">
+                <div class="profile-task-header-left">
                   <span class="priority-indicator" style="background-color: ${getPriorityColor(
         task.priority
       )};"></span>
                   <span class="task-id">${task.request_id}</span>
                 </div>
-                <div class="task-header-right">
-                  <span class="task-timestamp">${new Date(
+                <div class="profile-task-header-right">
+                  <span class="profile-task-timestamp">${new Date(
         task.timestamp
       ).toLocaleString()}</span>
                 </div>
               </div>
-              <div class="task-status">
-                <span class="task-status-text">Request</span> <div class="status-container-wrapper" data-task-id="${task.request_id}"><span class="${user.role === 'maintenance' ? 'status-container-maintenance' : 'status-container'} ${task.status.toLowerCase().replace(/\s+/g, '-')}" style="border-color: ${getStatusBorderColor(task.status)};">${task.status}</span>
+              <div class="profile-task-status">
+                <span class="profile-task-status-text">Request</span> <div class="status-container-wrapper" data-task-id="${task.request_id}"><span class="${user.role === 'maintenance' ? 'status-container-maintenance' : 'status-container'} ${task.status.toLowerCase().replace(/\s+/g, '-')}" style="border-color: ${getStatusBorderColor(task.status)};">${task.status}</span>
                 ${user.role === 'maintenance' ? generateStatusEditMarkup(task.status) : ''}
                 </div>
                 <div class="profile-status-clock">
@@ -578,7 +580,7 @@ async function displayUserTasks() {
                 </div>
               <div class="task-assigned">${getAssignedInfo(task)}</div>
               <div class="task-details-wrapper">
-                <div class="task-details">${task.details}</div>
+                <div class="profile-task-details">${task.details}</div>
               </div>
             `;
 
@@ -599,13 +601,13 @@ async function displayUserTasks() {
         }
       });
 
-      const spanStatus = listItem.querySelector(".task-status .status-container-wrapper span");
+      const spanStatus = listItem.querySelector(".profile-task-status .status-container-wrapper span");
       spanStatus.addEventListener("click", function (e) {
         if (user.role === 'maintenance') {
           e.stopPropagation();
           this.classList.toggle(`${this.textContent.toLowerCase().replace(/\s+/g, '-')}-active`);
 
-          const taskItem = this.closest('.task-item');
+          const taskItem = this.closest('.profile-task-item');
           if (this.classList.contains('pending-active') || 
               this.classList.contains('in-progress-active') || 
               this.classList.contains('completed-active')) {
@@ -632,7 +634,7 @@ async function displayUserTasks() {
             const anotherStatusContainer = Array.from(wrapper.closest('.status-container-wrapper').children).filter(child => child !== wrapper);
           const taskId = listItem.querySelector('.status-container-wrapper').getAttribute('data-task-id');
           const statusClock = listItem.querySelector('.profile-status-clock');
-          const taskItem = this.closest('.task-item');
+          const taskItem = this.closest('.profile-task-item');
           const statusContainerWrapper = taskItem.querySelector('.status-container-wrapper');
           await changeTaskStatusInProfile(taskId, wrapper.textContent, statusClock);
           anotherStatusContainer.forEach(child => {
