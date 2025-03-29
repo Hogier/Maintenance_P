@@ -1,134 +1,197 @@
 <div class="construction-container">
-  <div class="construction-nav">
-    <div class="nav-tabs">
-      <button class="nav-tab active" data-tab="contractors">
-        <i class="fas fa-building"></i> Contractors
-      </button>
-      <button class="nav-tab" data-tab="current-projects">
-        <i class="fas fa-project-diagram"></i> Current Projects
-      </button>
-      <button class="nav-tab" data-tab="future-projects">
-        <i class="fas fa-calendar-alt"></i> Future Projects
-      </button>
-    </div>
+  <!-- Header with filters and add button -->
+  <div class="construction-header">
+    <div class="header-content">
+      <h2 id="section-title">Contractors</h2>
+      <div class="header-actions">
+        <!-- Contractors Filters -->
+        <div class="filter-group" id="contractors-filters">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="contractor-search"
+            placeholder="Search contractors..."
+          />
+          <select id="business-type-filter">
+            <option value="all">All Types</option>
+          </select>
+          <select id="rating-filter">
+            <option value="all">All Ratings</option>
+            <option value="5">5 Stars</option>
+            <option value="4">4+ Stars</option>
+            <option value="3">3+ Stars</option>
+            <option value="2">2+ Stars</option>
+            <option value="1">1+ Star</option>
+          </select>
+          <button id="reset-filters" class="btn-reset">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
 
-    <div class="nav-filters">
-      <!-- Contractors Filters -->
-      <div class="filter-group" id="contractors-filters">
-        <i class="fas fa-search"></i>
-        <input
-          type="text"
-          id="contractor-search"
-          placeholder="Search contractors..."
-        />
-        <select id="business-type-filter">
-          <option value="all">All Types</option>
-        </select>
-        <select id="rating-filter">
-          <option value="all">All Ratings</option>
-          <option value="5">5 Stars</option>
-          <option value="4">4+ Stars</option>
-          <option value="3">3+ Stars</option>
-          <option value="2">2+ Stars</option>
-          <option value="1">1+ Star</option>
-        </select>
-        <button id="reset-filters" class="btn-reset">
-          <i class="fas fa-undo"></i>
-        </button>
-      </div>
+        <!-- Current Projects Filters -->
+        <div class="filter-group" id="current-projects-filters">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="current-project-search"
+            placeholder="Search current projects..."
+          />
+          <input
+            type="text"
+            id="current-location-search"
+            placeholder="Filter by location..."
+          />
+          <select id="current-status-filter">
+            <option value="all">All Statuses</option>
+            <option value="in-progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="on-hold">On Hold</option>
+          </select>
+          <select id="current-date-filter">
+            <option value="all">All Dates</option>
+            <option value="week">Last Week</option>
+            <option value="month">Last Month</option>
+            <option value="year">Last Year</option>
+          </select>
+          <button id="reset-current-filters" class="btn-reset">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
 
-      <!-- Current Projects Filters -->
-      <div
-        class="filter-group"
-        id="current-projects-filters"
-        style="display: none"
-      >
-        <i class="fas fa-search"></i>
-        <input
-          type="text"
-          id="current-project-search"
-          placeholder="Search projects..."
-        />
-        <input
-          type="text"
-          id="current-location-search"
-          placeholder="Location..."
-        />
-        <input type="date" id="current-date-filter" class="date-input" />
-        <select id="current-time-range" class="time-range-select">
-          <option value="all">All Time</option>
-          <option value="week">Last Week</option>
-          <option value="month">Last Month</option>
-          <option value="year">Last Year</option>
-        </select>
-        <button id="reset-current-filters" class="btn-reset">
-          <i class="fas fa-undo"></i>
-        </button>
-      </div>
+        <!-- Future Projects Filters -->
+        <div class="filter-group" id="future-projects-filters">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="future-project-search"
+            placeholder="Search future projects..."
+          />
+          <input
+            type="text"
+            id="future-location-search"
+            placeholder="Filter by location..."
+          />
+          <select id="future-priority-filter">
+            <option value="all">All Priorities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select id="future-status-filter">
+            <option value="all">All Statuses</option>
+            <option value="planned">Planned</option>
+            <option value="delayed">Delayed</option>
+            <option value="move-to-current">Move to Current</option>
+          </select>
+          <select id="future-date-filter">
+            <option value="all">All Dates</option>
+            <option value="week">Next Week</option>
+            <option value="month">Next Month</option>
+            <option value="halfyear">Next 6 Months</option>
+            <option value="year">Next Year</option>
+          </select>
+          <button id="reset-future-filters" class="btn-reset">
+            <i class="fas fa-undo"></i>
+          </button>
+        </div>
 
-      <!-- Future Projects Filters -->
-      <div
-        class="filter-group"
-        id="future-projects-filters"
-        style="display: none"
-      >
-        <i class="fas fa-search"></i>
-        <input
-          type="text"
-          id="future-project-search"
-          placeholder="Search projects..."
-        />
-        <input
-          type="text"
-          id="future-location-search"
-          placeholder="Location..."
-        />
-        <input type="date" id="future-date-filter" class="date-input" />
-        <select id="future-time-range" class="time-range-select">
-          <option value="all">All Time</option>
-          <option value="week">Week</option>
-          <option value="month">Month</option>
-          <option value="halfyear">6 Months</option>
-          <option value="year">Year</option>
-        </select>
-        <button id="reset-future-filters" class="btn-reset">
-          <i class="fas fa-undo"></i>
-        </button>
+        <div class="add-buttons">
+          <button class="btn-primary" id="add-contractor">
+            <i class="fas fa-plus"></i> Add Contractor
+          </button>
+          <button class="btn-primary" id="add-current-project">
+            <i class="fas fa-plus"></i> Add Current Project
+          </button>
+          <button class="btn-primary" id="add-future-project">
+            <i class="fas fa-plus"></i> Add Future Project
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Contractors Section -->
-  <div class="construction-section active" id="contractors-section">
-    <div class="section-header">
-      <h2>Contractors</h2>
-      <button class="btn-primary" id="add-contractor">
-        <i class="fas fa-plus"></i> Add Contractor
-      </button>
+  <!-- Content Sections -->
+  <div class="construction-content">
+    <!-- Contractors Section -->
+    <div class="construction-section active" id="contractors-section">
+      <div class="contractors-grid" id="contractors-list"></div>
     </div>
-    <div class="contractors-grid" id="contractors-list"></div>
-  </div>
 
-  <!-- Current Projects Section -->
-  <div class="construction-section" id="current-projects-section">
-    <div class="section-header">
-      <h2>Current Projects</h2>
-      <button class="btn-primary" id="add-current-project">
-        <i class="fas fa-plus"></i> Add Project
-      </button>
-    </div>
-    <div class="projects-grid" id="current-projects-list"></div>
-  </div>
+    <!-- Current Projects Section -->
+    <div id="current-projects-section" class="construction-section">
+      <!-- Current Projects Header and Content -->
+      <div class="projects-grid" id="current-projects-list"></div>
 
-  <!-- Future Projects Section -->
-  <div class="construction-section" id="future-projects-section">
-    <div class="section-header">
-      <h2>Future Projects</h2>
-      <button class="btn-primary" id="add-future-project">
-        <i class="fas fa-plus"></i> Add Project
-      </button>
+      <!-- Current Projects Footer with Statistics -->
+      <div class="projects-stats-footer" id="current-projects-stats">
+        <div class="stats-container">
+          <div class="stat-item">
+            <span class="stat-label">Total Projects:</span>
+            <span class="stat-value" id="current-projects-total">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Completed:</span>
+            <span
+              class="stat-value stat-completed"
+              id="current-projects-completed"
+              >0</span
+            >
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">In Progress:</span>
+            <span
+              class="stat-value stat-in-progress"
+              id="current-projects-in-progress"
+              >0</span
+            >
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">On Hold:</span>
+            <span class="stat-value stat-on-hold" id="current-projects-on-hold"
+              >0</span
+            >
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="projects-grid" id="future-projects-list"></div>
+
+    <!-- Future Projects Section -->
+    <div id="future-projects-section" class="construction-section">
+      <!-- Future Projects Header and Content -->
+      <div class="projects-grid" id="future-projects-list"></div>
+
+      <!-- Future Projects Footer with Statistics -->
+      <div class="projects-stats-footer" id="future-projects-stats">
+        <div class="stats-container">
+          <div class="stat-item">
+            <span class="stat-label">Total Planned:</span>
+            <span class="stat-value" id="future-projects-total">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">High Priority:</span>
+            <span class="stat-value stat-high" id="future-projects-high"
+              >0</span
+            >
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Medium Priority:</span>
+            <span class="stat-value stat-medium" id="future-projects-medium"
+              >0</span
+            >
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Low Priority:</span>
+            <span class="stat-value stat-low" id="future-projects-low">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Delayed:</span>
+            <span class="stat-value stat-delayed" id="future-projects-delayed"
+              >0</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Contractor Modal -->
@@ -148,7 +211,20 @@
             </div>
             <div class="form-group">
               <label>Business Type</label>
-              <input type="text" name="businessType" required />
+              <select name="businessType" required>
+                <option value="">Select Business Type</option>
+                <option value="General Contractor">General Contractor</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="HVAC">HVAC</option>
+                <option value="Roofing">Roofing</option>
+                <option value="Flooring">Flooring</option>
+                <option value="Landscaping">Landscaping</option>
+                <option value="Painting">Painting</option>
+                <option value="Carpentry">Carpentry</option>
+                <option value="Masonry">Masonry</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Location</label>
@@ -266,11 +342,21 @@
             </div>
             <div class="form-group">
               <label>Start Date</label>
-              <input type="date" name="startDate" required />
+              <input
+                type="text"
+                name="startDate"
+                placeholder="MM-DD-YY"
+                required
+              />
             </div>
             <div class="form-group">
               <label>End Date</label>
-              <input type="date" name="endDate" required />
+              <input
+                type="text"
+                name="endDate"
+                placeholder="MM-DD-YY"
+                required
+              />
             </div>
             <div class="form-group">
               <label>Estimated Cost</label>
@@ -281,14 +367,33 @@
           <div class="form-section">
             <h4 class="section-title">Contractor Information</h4>
             <div class="form-group">
+              <label>Business Type</label>
+              <select name="businessType" required>
+                <option value="">Select Business Type</option>
+                <option value="General Contractor">General Contractor</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="HVAC">HVAC</option>
+                <option value="Roofing">Roofing</option>
+                <option value="Flooring">Flooring</option>
+                <option value="Landscaping">Landscaping</option>
+                <option value="Painting">Painting</option>
+                <option value="Carpentry">Carpentry</option>
+                <option value="Masonry">Masonry</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Contractor</label>
               <select name="contractorId" required>
+                <option value="">Select Contractor</option>
                 <!-- Will be populated dynamically -->
               </select>
             </div>
             <div class="form-group">
               <label>Contact Person</label>
               <select name="contactPersonId">
+                <option value="">Select Contact Person</option>
                 <!-- Will be populated dynamically -->
               </select>
             </div>
@@ -336,69 +441,492 @@
     </div>
   </div>
 
-  <!-- Project Card Template -->
-  <template id="project-card-template">
-    <div class="project-card">
-      <div class="card-header">
-        <h3 class="project-name"></h3>
-        <div class="status-badge">
+  <!-- Current Project Modal -->
+  <div id="current-project-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="current-project-modal-title">Add Current Project</h3>
+        <button class="close-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="current-project-form">
+          <input type="hidden" name="projectType" value="current" />
+          <div class="form-section">
+            <h4 class="section-title">Project Information</h4>
+            <div class="form-group">
+              <label>Project Name</label>
+              <input type="text" name="projectName" required />
+            </div>
+            <div class="form-group">
+              <label>Location</label>
+              <input type="text" name="location" required />
+            </div>
+            <div class="form-group">
+              <label>Start Date</label>
+              <input
+                type="text"
+                name="startDate"
+                placeholder="MM-DD-YY"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Expected End Date</label>
+              <input
+                type="text"
+                name="endDate"
+                placeholder="MM-DD-YY"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Current Progress (%)</label>
+              <input type="number" name="progress" min="0" max="100" required />
+            </div>
+            <div class="form-group">
+              <label>Actual Cost</label>
+              <input type="number" name="actualCost" step="0.01" required />
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="section-title">Contractor Information</h4>
+            <div class="form-group">
+              <label>Business Type</label>
+              <select name="businessType" required>
+                <option value="">Select Business Type</option>
+                <option value="General Contractor">General Contractor</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="HVAC">HVAC</option>
+                <option value="Roofing">Roofing</option>
+                <option value="Flooring">Flooring</option>
+                <option value="Landscaping">Landscaping</option>
+                <option value="Painting">Painting</option>
+                <option value="Carpentry">Carpentry</option>
+                <option value="Masonry">Masonry</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Contractor</label>
+              <select name="contractorId" required>
+                <option value="">Select Contractor</option>
+                <!-- Will be populated dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Project Manager</label>
+              <select name="contactPersonId">
+                <option value="">Select Project Manager</option>
+                <!-- Will be populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="section-title">Project Status</h4>
+            <div class="form-group">
+              <label>Current Status</label>
+              <select name="status" required>
+                <option value="in-progress">In Progress</option>
+                <option value="on-hold">On Hold</option>
+                <option value="delayed">Delayed</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Last Update</label>
+              <input
+                type="text"
+                name="lastUpdate"
+                placeholder="MM-DD-YY"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="section-title">Project Documents</h4>
+            <div class="form-group">
+              <label for="current-photos">Project Photos</label>
+              <input
+                type="file"
+                id="current-photos"
+                name="photos"
+                accept="image/*"
+                multiple
+                class="form-control"
+              />
+              <div
+                id="current-photos-preview"
+                class="file-preview-container"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="current-documents">Project Documents</label>
+              <input
+                type="file"
+                id="current-documents"
+                name="documents"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                multiple
+                class="form-control"
+              />
+              <div
+                id="current-documents-preview"
+                class="file-preview-container"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="current-reports">Progress Reports</label>
+              <input
+                type="file"
+                id="current-reports"
+                name="reports"
+                accept=".pdf,.doc,.docx"
+                multiple
+                class="form-control"
+              />
+              <div
+                id="current-reports-preview"
+                class="file-preview-container"
+              ></div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-save"></i> Save
+            </button>
+            <button type="button" class="btn-secondary close-modal">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Future Project Modal -->
+  <div id="future-project-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="future-project-modal-title">Add Future Project</h3>
+        <button class="close-modal"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="future-project-form">
+          <input type="hidden" name="projectType" value="future" />
+          <div class="form-section">
+            <h4 class="section-title">Project Information</h4>
+            <div class="form-group">
+              <label>Project Name</label>
+              <input type="text" name="projectName" required />
+            </div>
+            <div class="form-group">
+              <label>Location</label>
+              <input type="text" name="location" required />
+            </div>
+            <div class="form-group">
+              <label>Planned Start Date</label>
+              <input
+                type="text"
+                name="startDate"
+                placeholder="MM-DD-YY"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Planned End Date</label>
+              <input
+                type="text"
+                name="endDate"
+                placeholder="MM-DD-YY"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Budget</label>
+              <input type="number" name="budget" step="0.01" required />
+            </div>
+            <div class="form-group">
+              <label>Priority Level</label>
+              <select name="priority" required>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="section-title">Contractor Information</h4>
+            <div class="form-group">
+              <label>Business Type</label>
+              <select name="businessType" required>
+                <option value="">Select Business Type</option>
+                <option value="General Contractor">General Contractor</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="HVAC">HVAC</option>
+                <option value="Roofing">Roofing</option>
+                <option value="Flooring">Flooring</option>
+                <option value="Landscaping">Landscaping</option>
+                <option value="Painting">Painting</option>
+                <option value="Carpentry">Carpentry</option>
+                <option value="Masonry">Masonry</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Preferred Contractor</label>
+              <select name="contractorId">
+                <option value="">Select Contractor</option>
+                <!-- Will be populated dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Project Manager</label>
+              <select name="contactPersonId">
+                <option value="">Select Project Manager</option>
+                <!-- Will be populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="section-title">Project Planning</h4>
+            <div class="form-group">
+              <label>Project Description</label>
+              <textarea name="description" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label>Key Objectives</label>
+              <textarea name="objectives" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label>Risk Assessment</label>
+              <textarea name="risks" rows="4"></textarea>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="section-title">Project Documents</h4>
+            <div class="form-group">
+              <label for="future-documents">Planning Documents</label>
+              <input
+                type="file"
+                id="future-documents"
+                name="documents"
+                accept=".pdf,.doc,.docx,.xls,.xlsx"
+                multiple
+                class="form-control"
+              />
+              <div
+                id="future-documents-preview"
+                class="file-preview-container"
+              ></div>
+            </div>
+
+            <div class="form-group">
+              <label for="future-specifications">Specifications</label>
+              <input
+                type="file"
+                id="future-specifications"
+                name="specifications"
+                accept=".pdf,.doc,.docx"
+                multiple
+                class="form-control"
+              />
+              <div
+                id="future-specifications-preview"
+                class="file-preview-container"
+              ></div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-save"></i> Save
+            </button>
+            <button type="button" class="btn-secondary close-modal">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Project Card Template -->
+  <template id="current-project-card-template">
+    <div class="project-card" data-id="">
+      <div class="project-header">
+        <div class="project-title">
+          <h3 class="project-name"></h3>
           <select class="status-select">
-            <option value="planned">Planned</option>
             <option value="in-progress">In Progress</option>
             <option value="completed">Completed</option>
             <option value="on-hold">On Hold</option>
           </select>
         </div>
+        <button class="btn-toggle-details">
+          <i class="fas fa-chevron-down"></i>
+        </button>
       </div>
-
-      <div class="card-body">
-        <div class="project-details">
-          <div class="detail-item">
-            <i class="fas fa-map-marker-alt"></i>
-            <span class="location"></span>
-          </div>
-          <div class="detail-item">
-            <i class="fas fa-calendar"></i>
-            <span class="dates"></span>
-          </div>
-          <div class="detail-item">
-            <i class="fas fa-dollar-sign"></i>
-            <span class="estimated-cost"></span>
-          </div>
-          <div class="detail-item">
+      <div class="project-main-info">
+        <div class="info-item">
+          <i class="fas fa-location-dot"></i>
+          <span class="location"></span>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-calendar"></i>
+          <span class="dates"></span>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-percent"></i>
+          <span class="progress"></span>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-dollar-sign"></i>
+          <span class="actual-cost"></span>
+        </div>
+      </div>
+      <div class="project-details" style="display: none">
+        <div class="details-section">
+          <h4>Contractor Information</h4>
+          <div class="info-item">
             <i class="fas fa-building"></i>
             <span class="contractor"></span>
           </div>
-          <div class="detail-item">
-            <i class="fas fa-user"></i>
-            <span class="contact-person"></span>
+          <div class="info-item">
+            <i class="fas fa-user-tie"></i>
+            <span class="project-manager"></span>
           </div>
         </div>
-
-        <div class="documents-section">
-          <div class="file-type">
-            <i class="fas fa-file-alt"></i>
-            <span>Project Calculations</span>
+        <div class="details-section">
+          <h4>Project Status</h4>
+          <div class="info-item">
+            <i class="fas fa-clock"></i>
+            <span class="last-update"></span>
           </div>
-          <div class="calculations-preview"></div>
-
-          <div class="file-type">
-            <i class="fas fa-images"></i>
-            <span>Project Photos</span>
+        </div>
+        <div class="details-section">
+          <h4>Project Documents</h4>
+          <div class="documents-grid">
+            <div class="documents-group">
+              <h5>Photos</h5>
+              <div class="photos-preview file-preview-container"></div>
+            </div>
+            <div class="documents-group">
+              <h5>Documents</h5>
+              <div class="documents-preview file-preview-container"></div>
+            </div>
+            <div class="documents-group">
+              <h5>Reports</h5>
+              <div class="reports-preview file-preview-container"></div>
+            </div>
           </div>
-          <div class="photos-preview"></div>
         </div>
       </div>
+      <div class="project-actions">
+        <button class="btn-action edit-project">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-action delete-project">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  </template>
 
-      <div class="card-footer">
-        <div class="card-actions">
-          <button class="btn-icon edit-project" title="Edit Project">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-icon delete-project" title="Delete Project">
-            <i class="fas fa-trash"></i>
-          </button>
+  <!-- Future Project Card Template -->
+  <template id="future-project-card-template">
+    <div class="project-card" data-id="">
+      <div class="project-header">
+        <div class="project-title">
+          <h3 class="project-name"></h3>
+          <select class="status-select">
+            <option value="planned">Planned</option>
+            <option value="delayed">Delayed</option>
+            <option value="move-to-current">Move to Current</option>
+          </select>
         </div>
+        <button class="btn-toggle-details">
+          <i class="fas fa-chevron-down"></i>
+        </button>
+      </div>
+      <div class="project-main-info">
+        <div class="info-item">
+          <i class="fas fa-location-dot"></i>
+          <span class="location"></span>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-calendar"></i>
+          <span class="dates"></span>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-dollar-sign"></i>
+          <span class="budget"></span>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-flag"></i>
+          <span class="priority"></span>
+        </div>
+      </div>
+      <div class="project-details" style="display: none">
+        <div class="details-section">
+          <h4>Contractor Information</h4>
+          <div class="info-item">
+            <i class="fas fa-building"></i>
+            <span class="preferred-contractor"></span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-user-tie"></i>
+            <span class="project-manager"></span>
+          </div>
+        </div>
+        <div class="details-section">
+          <h4>Project Planning</h4>
+          <div class="planning-info">
+            <div class="info-group">
+              <h5>Description</h5>
+              <p class="description"></p>
+            </div>
+            <div class="info-group">
+              <h5>Key Objectives</h5>
+              <p class="objectives"></p>
+            </div>
+            <div class="info-group">
+              <h5>Risk Assessment</h5>
+              <p class="risks"></p>
+            </div>
+          </div>
+        </div>
+        <div class="details-section">
+          <h4>Project Documents</h4>
+          <div class="documents-grid">
+            <div class="documents-group">
+              <h5>Planning Documents</h5>
+              <div class="documents-preview file-preview-container"></div>
+            </div>
+            <div class="documents-group">
+              <h5>Specifications</h5>
+              <div class="specifications-preview file-preview-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-action edit-project">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-action delete-project">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
     </div>
   </template>
@@ -411,105 +939,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  .construction-container {
-    padding: 20px;
-    height: 100%;
-  }
-
-  .construction-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #e1e1e1;
-  }
-
-  .nav-tabs {
-    display: flex;
-    gap: 10px;
-  }
-
-  .nav-tab {
-    padding: 15px 25px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 1rem;
-    color: #7f8c8d;
-    border-bottom: 2px solid transparent;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .nav-tab:hover {
-    color: #3498db;
-  }
-
-  .nav-tab.active {
-    color: #3498db;
-    border-bottom-color: #3498db;
-  }
-
-  .nav-filters {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 10px 0;
-  }
-
-  .filter-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #f8f9fa;
-    padding: 8px 12px;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-  }
-
-  .filter-group:hover {
-    background: #e9ecef;
-  }
-
-  .filter-group input,
-  .filter-group select {
-    border: none;
-    background: none;
-    padding: 4px 8px;
-    font-size: 0.9rem;
-    color: #2c3e50;
-    outline: none;
-  }
-
-  .filter-group input::placeholder {
-    color: #95a5a6;
-  }
-
-  .filter-group i {
-    color: #7f8c8d;
-    font-size: 0.9rem;
-  }
-
-  .btn-reset {
-    background: none;
-    border: none;
-    color: #7f8c8d;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .btn-reset:hover {
-    background: #e9ecef;
-    color: #e74c3c;
-  }
-</style>

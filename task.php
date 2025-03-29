@@ -17,18 +17,35 @@ if (!file_exists($miniDir)) {
 
 // Проверяем права доступа
 if (!is_writable($uploadDir)) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Upload directory is not writable'
-    ]);
-    exit;
+    error_log("Upload directory is not writable: " . $uploadDir);
+    // Продолжаем выполнение, хотя загрузка файлов может не работать
+} else {
+    error_log("Upload directory is writable: " . $uploadDir);
 }
+
 if (!is_writable($miniDir)) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Mini directory is not writable'
-    ]);
-    exit;
+    error_log("Mini directory is not writable: " . $miniDir);
+    // Продолжаем выполнение, хотя миниатюры могут не создаваться
+} else {
+    error_log("Mini directory is writable: " . $miniDir);
+}
+
+// Проверка прав доступа только при загрузке файлов
+if ($action === 'addTask' || $action === 'uploadFile') {
+    if (!is_writable($uploadDir)) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Upload directory is not writable'
+        ]);
+        exit;
+    }
+    if (!is_writable($miniDir)) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Mini directory is not writable'
+        ]);
+        exit;
+    }
 }
 
 // Разрешенные типы файлов
@@ -37,7 +54,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = 'root';  // Пустой пароль для XAMPP
+$password = '';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -481,34 +498,47 @@ if ($action === 'addTask') {
     }
 } elseif ($action === 'getNotCompletedTasksForLastWeek') {
     $currentDate = $_POST['currentDate'];
-
     $date = new DateTime($currentDate);
-
     $date->modify('-7 days');
-
     $previousDate = $date->format('Y-m-d');
 
     error_log("previousDate: " . $previousDate);
 
     global $conn;
 
-    // Изменяем запрос, чтобы исключить задания за сегодняшний день
-    $query = "SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?";
-    $stmt = $conn->prepare($query);
+    try {
+        // Check if upload directory is writable
+        $uploadDir = __DIR__ . '/uploads';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        
+        if (!is_writable($uploadDir)) {
+            error_log("Upload directory is not writable: " . $uploadDir);
+            // Continue execution even if directory is not writable
+        }
 
-    if (!$stmt) {
-        error_log("Ошибка подготовки запроса: " . $conn->error);
-        echo json_encode(['error' => 'Ошибка подготовки запроса']);
-        exit;   
+        // Изменяем запрос, чтобы исключить задания за сегодняшний день
+        $query = "SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?";
+        $stmt = $conn->prepare($query);
+
+        if (!$stmt) {
+            throw new Exception("Ошибка подготовки запроса: " . $conn->error);
+        }
+
+        $stmt->bind_param('ss', $previousDate, $currentDate);
+        if (!$stmt->execute()) {
+            throw new Exception("Ошибка выполнения запроса: " . $stmt->error);
+        }
+
+        $result = $stmt->get_result();
+        $tasks = $result->fetch_all(MYSQLI_ASSOC);
+
+        echo json_encode(['success' => true, 'data' => $tasks]);
+    } catch (Exception $e) {
+        error_log("Error in getNotCompletedTasksForLastWeek: " . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
-
-    $stmt->bind_param('ss', $previousDate, $currentDate);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-    $tasks = $result->fetch_all(MYSQLI_ASSOC);  
-
-    echo json_encode(['success' => true, 'data' => $tasks]);
 }
 
 $conn->close();

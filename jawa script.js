@@ -47,7 +47,6 @@ async function checkCurrentUser() {
     await db.waitForDB();
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     if (currentUser) {
-
     } else {
       console.error("Error checking current user:", error);
     }
@@ -462,31 +461,31 @@ function formatDateFromTimestamp(timestamp) {
 }
 
 async function getUserLocation() {
-    try {
-        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-        if (!currentUser || !currentUser.email) {
-            throw new Error('User not logged in');
-        }
-
-        const formData = new FormData();
-        formData.append('action', 'getUserLocation');
-        formData.append('email', currentUser.email);
-
-        const response = await fetch('database.php', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            console.log('User location:', data.location);
-            return data.location;
-        } else {
-            throw new Error(data.message || 'Failed to get user location');
-        }
-    } catch (error) {
-        console.error('Error getting user location:', error);
-        return null;
+  try {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser || !currentUser.email) {
+      throw new Error("User not logged in");
     }
+
+    const formData = new FormData();
+    formData.append("action", "getUserLocation");
+    formData.append("email", currentUser.email);
+
+    const response = await fetch("database.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      console.log("User location:", data.location);
+      return data.location;
+    } else {
+      throw new Error(data.message || "Failed to get user location");
+    }
+  } catch (error) {
+    console.error("Error getting user location:", error);
+    return null;
+  }
 }
