@@ -1,136 +1,46 @@
-/*const buildingRooms = {
-  westWing: ["Room 101", "Room 102", "Room 103"],
-  southWing: ["Room 201", "Room 202", "Room 203"],
-  northWing: ["Room 301", "Room 302", "Room 303"],
-  upperSchool: ["Class 401", "Class 402", "Class 403"],
-  GFB: ["Lab 1", "Lab 2", "Lab 3"],
-  WLFA: ["Studio 1", "Studio 2", "Studio 3"],
-  Administration: ["Office 1", "Office 2", "Office 3"],
-};
+// Создаем WebSocket соединение
+const requestWS = new WebSocket("ws://localhost:2346");
 
-// Расширяем данные об учителях для всех комнат (кроме Administration)
-const roomTeachers = {
-  // Upper School
-  "Class 401": {
-    mainTeacher: ["John Smith", "Mary Johnson", "Robert Brown"],
-    assistant: ["Alice White", "David Miller", "Emma Davis"],
-  },
-  "Class 402": {
-    mainTeacher: ["Michael Wilson", "Sarah Lee", "James Anderson"],
-    assistant: ["Laura Martin", "Peter Taylor", "Sophie Clark"],
-  },
-  "Class 403": {
-    mainTeacher: ["William Turner", "Elizabeth Moore", "Thomas Hall"],
-    assistant: ["Oliver Wright", "Grace Lewis", "Harry King"],
-  },
-  // West Wing
-  "Room 101": {
-    mainTeacher: ["Paul Adams", "Linda Wilson", "George Davis"],
-    assistant: ["Kate Brown", "Mark Evans", "Lucy Taylor"],
-  },
-  "Room 102": {
-    mainTeacher: ["Helen White", "Daniel Green", "Rachel Black"],
-    assistant: ["Tom Harris", "Anna Lee", "Jack Thompson"],
-  },
-  "Room 103": {
-    mainTeacher: ["Steve Parker", "Diana Ross", "Kevin Hart"],
-    assistant: ["Mike Collins", "Julia Reed", "Chris Martin"],
-  },
-  // South Wing
-  "Room 201": {
-    mainTeacher: ["Brian Cox", "Maria Garcia", "Andrew Wilson"],
-    assistant: ["Sarah Palmer", "David Chen", "Emma Watson"],
-  },
-  "Room 202": {
-    mainTeacher: ["Frank Miller", "Sofia Rodriguez", "Peter Zhang"],
-    assistant: ["Lisa Cooper", "James Wright", "Nina Patel"],
-  },
-  "Room 203": {
-    mainTeacher: ["Alan Turing", "Marie Curie", "Isaac Newton"],
-    assistant: ["Albert Einstein", "Jane Goodall", "Charles Darwin"],
-  },
-  // North Wing
-  "Room 301": {
-    mainTeacher: ["Leo Davidson", "Sophia Lee", "Marcus Johnson"],
-    assistant: ["Olivia Brown", "Lucas Martinez", "Isabella Kim"],
-  },
-  "Room 302": {
-    mainTeacher: ["Nathan Phillips", "Emily Watson", "Ryan Cooper"],
-    assistant: ["Hannah Baker", "Dylan Murphy", "Victoria Chen"],
-  },
-  "Room 303": {
-    mainTeacher: ["Benjamin Gray", "Ava Wilson", "Mason Thompson"],
-    assistant: ["Ella Davis", "Owen Rodriguez", "Mia Taylor"],
-  },
-  // GFB Labs
-  "Lab 1": {
-    mainTeacher: ["Dr. Richard Feynman", "Dr. Lisa Su", "Dr. James Maxwell"],
-    assistant: ["Ted Cooper", "Rose Martinez", "Alan Shepherd"],
-  },
-  "Lab 2": {
-    mainTeacher: [
-      "Dr. Marie Smith",
-      "Dr. Robert Oppenheimer",
-      "Dr. Niels Bohr",
-    ],
-    assistant: ["Carl Sagan", "Grace Hopper", "Neil Armstrong"],
-  },
-  "Lab 3": {
-    mainTeacher: ["Dr. Stephen Hawking", "Dr. Jane Foster", "Dr. Bruce Banner"],
-    assistant: ["Tony Stark", "Peter Parker", "Reed Richards"],
-  },
-  // WLFA Studios
-  "Studio 1": {
-    mainTeacher: ["Vincent van Gogh", "Frida Kahlo", "Pablo Picasso"],
-    assistant: ["Claude Monet", "Georgia O'Keeffe", "Andy Warhol"],
-  },
-  "Studio 2": {
-    mainTeacher: ["Leonardo da Vinci", "Michelangelo", "Raphael"],
-    assistant: ["Salvador Dali", "Jackson Pollock", "Henri Matisse"],
-  },
-  "Studio 3": {
-    mainTeacher: ["Gustav Klimt", "Wassily Kandinsky", "Edgar Degas"],
-    assistant: ["Paul Klee", "Joan Miro", "Marc Chagall"],
-  },
-  // Administration
-  "Office 1": {
-    mainTeacher: [
-      "Dr. Jennifer Adams - Principal",
-      "Michael Scott - Vice Principal",
-      "Sarah Johnson - Dean",
-    ],
-    assistant: [
-      "Patricia Wilson - Secretary",
-      "Robert Brown - Administrator",
-      "Emily Davis - Coordinator",
-    ],
-  },
-  "Office 2": {
-    mainTeacher: [
-      "David Miller - Financial Director",
-      "Amanda White - HR Manager",
-      "James Thompson - Operations Manager",
-    ],
-    assistant: [
-      "Lisa Chen - Accountant",
-      "Mark Wilson - HR Assistant",
-      "Karen Taylor - Office Manager",
-    ],
-  },
-  "Office 3": {
-    mainTeacher: [
-      "Richard Moore - Facilities Director",
-      "Susan Clark - Student Affairs",
-      "John Davis - IT Director",
-    ],
-    assistant: [
-      "Tom Baker - IT Support",
-      "Mary Johnson - Administrative Assistant",
-      "Paul Green - Facilities Coordinator",
-    ],
-  },
-};
-*/
+window.onload = function () {
+  // При открытии соединения
+  requestWS.onopen = function () {
+    console.log("Подключено к WebSocket серверу");
+  };
+
+  // При получении сообщения
+  requestWS.onmessage = function (e) {
+    try {
+      const response = JSON.parse(e.data);
+      console.log("Получен ответ:", response);
+
+      if (response.type === "tasks") {
+        // Обработка полученных задач
+        const tasks = response.data;
+        console.log("Получены задачи:", tasks);
+        // Здесь можно вызвать функцию для отображения задач
+        displayUserTasks(tasks);
+      } else if (response.type === "error") {
+        console.error("Ошибка сервера:", response.message);
+      }
+    } catch (error) {
+      console.error("Ошибка парсинга JSON:", error);
+      console.log("Полученные данные:", e.data);
+    }
+  };
+
+  // При ошибке
+  requestWS.onerror = function (e) {
+    console.error("WebSocket ошибка: " + e.message);
+  };
+
+  
+  // При закрытии соединения
+  requestWS.onclose = function () {
+    console.log("Соединение закрыто");
+  };
+}
+
+
 // В начале файла добавим функцию для проверки текущего пользователя
 async function checkCurrentUser() {
   try {
@@ -366,9 +276,12 @@ async function initializeForm() {
         const success = await db.addTaskWithMedia(requestData, mediaFiles);
 
         if (success) {
-          console.log("Task saved successfully"); // Для отладки
-          console.log("getDallasDate(): ", getDallasDate());
-          // Показываем модальное окно с подтверждением
+          console.log("Task saved successfully"); 
+          console.log("mediaFiles.length: " + mediaFiles.length); 
+          console.log("Array.from(mediaFiles): " + Array.from(mediaFiles));
+
+          requestWS.send(JSON.stringify({...requestData, action: "addTask"}));
+
           showConfirmationModal(requestData.requestId);
 
           // Очищаем форму

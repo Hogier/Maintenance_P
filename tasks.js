@@ -1,22 +1,27 @@
+function checkAuth() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  if (user.role === "maintenance") {
+    return true;
+  }
+  return false;
+}
+
+console.log("checkAuth: ", checkAuth());
+console.log("START TASKS.JS");
+
 if (!checkAuth()) {
   window.location.href = "login.html";
 }
 
 // Добавим отображение имени авторизованного сотрудника
 const user = JSON.parse(localStorage.getItem("currentUser"));
-if (user && user.fullName) {
-  const staffNameElement = document.getElementById("staffName");
-  if (staffNameElement) {
-    staffNameElement.textContent = `Welcome, ${user.fullName}`;
-  }
-}
 
 // Создаем переменную для индикатора обновления
 let updateIndicator;
 
 let clientTasks = [];
 
-let currentFilter = "today"; // возможные значения: 'today', 'all', 'custom'
+let tasksCurrentFilter = "today"; // возможные значения: 'today', 'all', 'custom'
 let currentDate = new Date(getDallasDate());
 let checkDate = currentDate.toISOString().split("T")[0];
 
@@ -68,7 +73,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Добавляем обработчики для кнопок фильтрации
   document.getElementById("todayTasks").addEventListener("click", async (e) => {
-    currentFilter = "today";
+    tasksCurrentFilter = "today";
     console.log("today: ", today);
     checkDate = currentDate.toISOString().split("T")[0];
 
@@ -82,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.getElementById("allTasks").addEventListener("click", async (e) => {
-    currentFilter = "all";
+    tasksCurrentFilter = "all";
     document
       .querySelectorAll(".date-filter button")
       .forEach((btn) => btn.classList.remove("active"));
@@ -95,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document
     .getElementById("dateFilter")
     .addEventListener("change", async (e) => {
-      currentFilter = "custom";
+      tasksCurrentFilter = "custom";
       //currentDate = new Date(e.target.value);
       // Преобразуем выбранную дату в дату по времени Далласа
       const selectedDate = luxon.DateTime.fromISO(e.target.value, {
@@ -120,7 +125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
   // Добавим обработчик выхода
-  document.getElementById("logoutBtn").addEventListener("click", logout);
+  //document.getElementById("logoutBtn").addEventListener("click", logout);
 });
 
 //////////////////////////////////ОСНОВНЫЕ ФУНКЦИИ////////////////////////////
@@ -220,9 +225,8 @@ async function createTaskElement(task) {
       <div class="task-details task-details-${task.priority}">${task.details}
       <div class="task-location">
         <div class="task-location-icon">📍</div>
-        <div class="task-location-text">${task.building} - ${
-    task.room
-  } (Staff: ${task.staff})</div>
+        <div class="task-location-text">${task.building} - ${task.room
+    } (Staff: ${task.staff})</div>
       </div>
       </div>
       <div class="task-meta-container">
@@ -231,9 +235,8 @@ async function createTaskElement(task) {
         </div>
       </div>
       <div class="task-action-container">
-        ${
-          !task.assigned_to
-            ? `<div class="assign-container">
+        ${!task.assigned_to
+      ? `<div class="assign-container">
 
                  <div class="assign-btn" data-task-id="${task.request_id}">Assign to Me
                    <div class="clock">
@@ -245,20 +248,17 @@ async function createTaskElement(task) {
                    Assigned to You
                  </div>
                </div>`
-            : `<div class="assigned-to">Assigned to: ${task.assigned_to}</div>`
-        }
+      : `<div class="assigned-to">Assigned to: ${task.assigned_to}</div>`
+    }
         <div class="task-status">
           Status: 
           <select class="status-select" data-task-id="${task.request_id}">
-            <option value="Pending" ${
-              task.status === "Pending" ? "selected" : ""
-            }>Pending</option>
-            <option value="In Progress" ${
-              task.status === "In Progress" ? "selected" : ""
-            }>In Progress</option>
-            <option value="Completed" ${
-              task.status === "Completed" ? "selected" : ""
-            }>Completed</option>
+            <option value="Pending" ${task.status === "Pending" ? "selected" : ""
+    }>Pending</option>
+            <option value="In Progress" ${task.status === "In Progress" ? "selected" : ""
+    }>In Progress</option>
+            <option value="Completed" ${task.status === "Completed" ? "selected" : ""
+    }>Completed</option>
           </select>
           <div class="status-clock">
             <div class="hour-hand"></div>
@@ -279,9 +279,8 @@ async function createTaskElement(task) {
         <div class="comments-list"></div>
         <div class="comment-input-container">
           <input type="text" class="comment-input" placeholder="Add a comment...">
-          <button class="comment-btn" data-task-id="${
-            task.request_id
-          }">Send</button>
+          <button class="comment-btn" data-task-id="${task.request_id
+    }">Send</button>
         </div>
       </div>
     </div>
@@ -338,7 +337,62 @@ async function createTaskElement(task) {
       await updateComments(task, commentsContainer, isFirstLoad);
       clock.style.opacity = "0";
 
-      commentsUpdateInterval = setInterval(async () => {
+      console.log("Прослушка на комментарии");
+
+      tasksWS.onmessage = async function (e) {
+        const data = JSON.parse(e.data).message;
+        console.log("tasksWS.onmessage : " + data);
+
+        let deltaComments = await updateComments(
+          task,
+          commentsContainer,
+          isFirstLoad
+        );
+        console.log("deltaComments: ", deltaComments);
+
+        if (data.action === "updateComments" && data.taskId === task.request_id) {
+          await updateComments(task, commentsContainer, isFirstLoad);
+          isFirstLoad = false;
+
+          let hasNewComments = true;
+
+          const commentsRect = commentsContainer.getBoundingClientRect();
+          const isCommentsVisible =
+            commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
+
+          if (
+            !showNewCommentNotification &&
+            hasNewComments &&
+            !isCommentsVisible
+          ) {
+            showNewCommentNotification = true;
+            newCommentsPosition.push(commentsRect.top + window.scrollY);
+          }
+          if (showNewCommentNotification) {
+            newCommentNotification.style.display = "block";
+          }
+
+          const notifications = document.querySelectorAll(
+            ".new-comment-notification[style='display: block;']"
+          );
+          if (notifications.length > 1) {
+            console.log(
+              "Внутри ИНТЕРВАЛА условие + notifications.length: ",
+              notifications.length
+            );
+            counterNewCommentNotification.textContent = notifications.length;
+            counterNewCommentNotification.style.display = "block";
+          } else {
+            console.log(
+              "Внутри ИНТЕРВАЛА условие - notifications.length: ",
+              notifications.length
+            );
+            counterNewCommentNotification.style.display = "none";
+          }
+        }
+      };
+
+      /*commentsUpdateInterval = setInterval(async () => {
         isFirstLoad = false;
 
         let deltaComments = await updateComments(
@@ -386,9 +440,9 @@ async function createTaskElement(task) {
           );
           counterNewCommentNotification.style.display = "none";
         }
-      }, 3500);
+      }, 3500);*/
     } else {
-      clearInterval(commentsUpdateInterval);
+      //clearInterval(commentsUpdateInterval);
       newCommentNotification.style.display = "none"; // Скрываем уведомление при закрытии
     }
     openComments = !openComments;
@@ -445,9 +499,9 @@ async function createTaskElement(task) {
       day: "2-digit",
     });
     const showedPageWithTodayTasks =
-      currentFilter === "today" ||
-      currentFilter === "all" ||
-      (currentFilter === "custom" && currentDateString === getDallasDate());
+      tasksCurrentFilter === "today" ||
+      tasksCurrentFilter === "all" ||
+      (tasksCurrentFilter === "custom" && currentDateString === getDallasDate());
 
     if (showedPageWithTodayTasks && window.scrollY < 100) {
       newTaskNotification.style.display = "none";
@@ -662,11 +716,14 @@ async function createTaskElement(task) {
       const taskElement = this.closest(".task-item");
       const parentList = taskElement.closest("#notCompletedTasksList");
       if (parentList && this.value === "Completed") {
+
         setTimeout(() => {
           //askElement.classList.add("collapse");
           setTimeout(() => {
             updateAlertTasksListHeight(taskElement);
             //taskElement.remove();
+          }, 800);
+        }, 1000);
           }, 800);
         }, 1000);
       }
@@ -722,9 +779,9 @@ async function createMediaSection(task) {
       if (isImage) {
         mediaHtml += `
           <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url.replace(
-            "uploads/mini/mini_",
-            "uploads/"
-          )}', 'image')">
+          "uploads/mini/mini_",
+          "uploads/"
+        )}', 'image')">
             <img src="${mediaFile.url}" alt="${mediaFile.name}">
             <span class="media-name">${mediaFile.name}</span>
           </div>
@@ -786,8 +843,8 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
     const isScrolledToBottom =
       Math.abs(
         commentsContainer.scrollHeight -
-          commentsContainer.scrollTop -
-          commentsContainer.clientHeight
+        commentsContainer.scrollTop -
+        commentsContainer.clientHeight
       ) < 1;
 
     const newCommentsHtml = allComments
@@ -804,21 +861,18 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
               <i class="fas fa-user"></i> ${comment.staffName}
               ${comment.staffName === task.assigned_to ? " (Assigned)" : ""}
             </span>
-            <span class="comment-time" data-timestamp="${
-              comment.timestamp
-            }">${formatDate(comment.timestamp)} <span class="${statusClass}">${
-          isLocal ? "&#128337;" : "&#10003;"
-        }</span></span>
+            <span class="comment-time" data-timestamp="${comment.timestamp
+          }">${formatDate(comment.timestamp)} <span class="${statusClass}">${isLocal ? "&#128337;" : "&#10003;"
+          }</span></span>
           </div>
           <div class="comment-text">${comment.text}</div>
-          ${
-            comment.staffName === currentUser.fullName
-              ? `
+          ${comment.staffName === currentUser.fullName
+            ? `
             <div class="comment-delete">
             <i class="fas fa-trash" title="delete" onclick="deleteComment('${task.request_id}', '${comment.timestamp}')"></i>
             </div>
           `
-              : ""
+            : ""
           }
         </div>
       `;
@@ -897,6 +951,14 @@ async function handleAddComment(taskId, commentText, userFullName) {
   try {
     // Используем существующую функцию для добавления комментария на сервер
     const success = await db.addComment(taskId, commentText, userFullName);
+    console.log("Отправка комментария на сервер handleAddComment()");
+    tasksWS.send(JSON.stringify({
+      action: "updateComments",
+      taskId: taskId,
+      comment: commentText,
+      staffName: userFullName,
+      timestamp: timestamp
+    }));
     if (success) {
       // Удаляем комментарий из локального состояния после успешной отправки
       localComments[taskId] = localComments[taskId].filter(
@@ -948,39 +1010,95 @@ async function addNewTasksToPage(tasks) {
 
 // Добавляем элемент для уведомления о новых задачах
 
+
+// Создаем WebSocket соединение
+const tasksWS = new WebSocket("ws://localhost:2346");
+
+window.onload = function () {
+  // При открытии соединения
+  tasksWS.onopen = function () {
+    console.log("Подключено к WebSocket серверу");
+  };
+
+  // При ошибке
+  ws.onerror = function (e) {
+    console.error("WebSocket ошибка: " + e.message);
+  };
+
+  // При закрытии соединения
+  ws.onclose = function () {
+    console.log("Соединение закрыто");
+  };
+}
+
+
+// При получении сообщения
+tasksWS.onmessage = async function (e) {
+  try {
+    const newTasks = [JSON.parse(e.data).message];
+    const mediaFiles = await getUrlOfMediaFilesByTaskId(newTasks[0].request_id);
+    newTasks[0].media = mediaFiles;
+    console.log("newTasks: ", newTasks);
+
+    const currentDateString = currentDate.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const showedPageWithTodayTasks =
+      tasksCurrentFilter === "today" ||
+      tasksCurrentFilter === "all" ||
+      (tasksCurrentFilter === "custom" && currentDateString === getDallasDate());
+
+    if (newTasks && showedPageWithTodayTasks) {
+      await addNewTasksToPage(newTasks);
+      clientTasks = [...newTasks, ...clientTasks];
+      clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+
+    if (newTasks && newTasks.length > 0) {
+      counterNewTaskNotification = newTasks.length;
+      alertIcon.textContent =
+        counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
+      newTaskNotification.style.display = "block";
+      playNewTaskSound();
+    }
+
+  } catch (error) {
+    console.error("Ошибка парсинга JSON:", error);
+    console.log("Полученные данные:", e.data);
+  }
+};
+
+/*
 setInterval(async () => {
-  const newTasks = await checkNewTasksInServer();
+const newTasks = await checkNewTasksInServer();
 
-  // Ensure newTasks is an array before proceeding
-  if (!Array.isArray(newTasks)) {
-    console.error("newTasks is not an array:", newTasks);
-    return;
-  }
+const currentDateString = currentDate.toLocaleString("en-US", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const showedPageWithTodayTasks =
+  tasksCurrentFilter === "today" ||
+  tasksCurrentFilter === "all" ||
+  (tasksCurrentFilter === "custom" && currentDateString === getDallasDate());
 
-  const currentDateString = currentDate.toLocaleString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const showedPageWithTodayTasks =
-    currentFilter === "today" ||
-    currentFilter === "all" ||
-    (currentFilter === "custom" && currentDateString === getDallasDate());
+if (newTasks && showedPageWithTodayTasks) {
+  await addNewTasksToPage(newTasks);
+  clientTasks = [...newTasks, ...clientTasks];
+  clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+}
 
-  if (newTasks.length > 0 && showedPageWithTodayTasks) {
-    await addNewTasksToPage(newTasks);
-    clientTasks = [...newTasks, ...clientTasks];
-    clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }
-
-  if (newTasks.length > 0) {
-    counterNewTaskNotification = newTasks.length;
-    alertIcon.textContent =
-      counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
-    newTaskNotification.style.display = "block";
-    playNewTaskSound();
-  }
+if (newTasks && newTasks.length > 0) {
+  counterNewTaskNotification = newTasks.length;
+  alertIcon.textContent =
+    counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
+  newTaskNotification.style.display = "block";
+  playNewTaskSound();
+}
 }, 7000);
+*/
 
 // Добавляем обработчик клика для скрытия уведомления
 newTaskNotification.addEventListener("click", async () => {
@@ -990,13 +1108,13 @@ newTaskNotification.addEventListener("click", async () => {
     day: "2-digit",
   });
   const showedPageWithTodayTasks =
-    currentFilter === "today" ||
-    currentFilter === "all" ||
-    (currentFilter === "custom" && currentDateString === getDallasDate());
+    tasksCurrentFilter === "today" ||
+    tasksCurrentFilter === "all" ||
+    (tasksCurrentFilter === "custom" && currentDateString === getDallasDate());
 
   if (!showedPageWithTodayTasks) {
     const todays = new Date(getDallasDate());
-    currentFilter = "today";
+    tasksCurrentFilter = "today";
     checkDate = currentDate.toISOString().split("T")[0];
     document
       .querySelectorAll(".date-filter button")
@@ -1306,7 +1424,7 @@ async function AJAXUpdateTask() {
   clearInterval(updateInterval); // Останавливаем интервал
   try {
     let tasksFromServer;
-    if(currentFilter === "all"){
+    if(tasksCurrentFilter === "all"){
       tasksFromServer = await db.getAllTasksFromServer();
     } else {
       console.log("checkDate: ",checkDate);
@@ -1525,6 +1643,27 @@ async function getNotCompletedTasksForLastWeek() {
   }
 }
 
+async function getUrlOfMediaFilesByTaskId(taskId) {
+  const response = await fetch("task.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      action: "getUrlOfMediaFilesByTaskId",
+      taskId: taskId,
+    }),
+  });
+  const result = await response.json();
+  if (!result.success) {
+    throw new Error(result.message);
+  }
+  return result.data;
+}
+
+
+
+
 let notCompletedTasks = (async () => {
   const tasks = await getNotCompletedTasksForLastWeek();
   console.log("getNotCompletedTasksForLastWeek: ", tasks);
@@ -1543,6 +1682,7 @@ function updateAlertTasksListHeight(taskElement) {
   if (alertTasksList.querySelectorAll(".task-item").length === 1) {
     alertTasks.style.height = alertTasks.scrollHeight + "px";
     //taskElement.classList.add("collapse");
+    setTimeout(() => {
     setTimeout(() => {
       alertTasks.style.height = "0";
       closeAlertTasks.classList.remove("exist-tasks");
@@ -1565,4 +1705,109 @@ function updateAlertTasksListHeight(taskElement) {
     }, 650);
   }
   //alertTasks.style.transition = "height 0.5s ease-in-out, opacity 0.5s ease-in-out";
+
 }
+
+////////////// HELPER PANEL //////////////
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', function () {
+    // Находим подменю, связанное с текущим элементом навигации
+    const submenu = this.nextElementSibling;
+
+    // Если есть подменю и оно имеет класс submenu-items
+    if (submenu && submenu.classList.contains('submenu-items')) {
+      // Переключаем состояние (показать/скрыть)
+      if (submenu.style.display === 'block') {
+        submenu.style.display = 'none';
+        this.classList.remove('active');
+      } else {
+        submenu.style.display = 'block';
+        this.classList.add('active');
+      }
+    } else {
+      // Если нет подменю, просто переключаем класс активности
+      this.classList.toggle('active');
+    }
+  });
+});
+
+// Код для вспомогательной панели
+document.addEventListener('DOMContentLoaded', function () {
+  // Данные для вспомогательной панели
+  const helperTitles = {
+    'By Date': {
+      title: 'Filter by Date'
+    },
+    'By Status': {
+      title: 'Filter by Status'
+    },
+    'By Priority': {
+      title: 'Filter by Priority'
+    },
+    'By Assignment': {
+      title: 'Filter by Assignment'
+    },
+    'By Sender': {
+      title: 'Filter by Sender'
+    },
+    'By Location': {
+      title: 'Filter by Location'
+    },
+    'By Sort': {
+      title: 'Sorting'
+    }
+  };
+
+  // Добавляем класс has-helper к элементам подменю, для которых есть справка
+  document.querySelectorAll('.submenu-item').forEach(item => {
+    const itemText = item.textContent.trim();
+    if (helperTitles[itemText]) {
+      item.classList.add('has-helper');
+    }
+  });
+
+  const helperPanel = document.querySelector('.helper-panel');
+  const helperTitle = helperPanel.querySelector('.helper-panel-title');
+  const helperContent = helperPanel.querySelector('.helper-panel-content');
+  let activeItem = null;
+
+  // Показываем панель при наведении на элемент подменю
+  document.querySelectorAll('.submenu-item').forEach(item => {
+    item.addEventListener('mouseenter', function () {
+      const itemText = this.textContent.trim();
+      if (helperTitles[itemText]) {
+        activeItem = this;
+        helperTitle.textContent = helperTitles[itemText].title;
+        helperContent.textContent = helperTitles[itemText].content;
+        helperPanel.classList.add('visible');
+      }
+    });
+  });
+
+  // Закрываем панель при клике на кнопку закрытия
+  helperPanel.querySelector('.helper-panel-close').addEventListener('click', function () {
+    helperPanel.classList.remove('visible');
+    activeItem = null;
+  });
+
+  // Закрываем панель при клике вне панели
+  document.addEventListener('click', function (event) {
+    // Получаем ссылку на боковую панель
+    const sidebar = document.querySelector('.sidebar');
+
+    // Проверяем: если панель видима И клик не внутри панели И клик не внутри сайдбара И клик не на активном элементе
+    if (helperPanel.classList.contains('visible') &&
+      !helperPanel.contains(event.target) &&
+      !sidebar.contains(event.target) &&
+      (!activeItem || !activeItem.contains(event.target))) {
+      helperPanel.classList.remove('visible');
+      activeItem = null;
+    }
+  });
+
+  // Предотвращаем скрытие панели при клике внутри нее
+  helperPanel.addEventListener('click', function (event) {
+    event.stopPropagation();
+  });
+});
