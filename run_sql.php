@@ -15,7 +15,7 @@ try {
     $fullName = 'Jana Haigood';
     $department = 'admin';
     $role = 'admin';
-    $password = 'roooot'; 
+    //$password = 'roooot'; 
     
     echo "Checking if user exists...\n";
     $checkStmt = $conn->prepare("SELECT id, email FROM users WHERE email = ?");
