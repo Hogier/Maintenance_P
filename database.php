@@ -9,7 +9,7 @@ ini_set('display_errors', 1);
 class Database {
     private $host = 'localhost';
     private $user = 'root';
-    private $password = '';
+    private $password = 'root';
     private $database = 'maintenancedb';
     private $conn;
 
