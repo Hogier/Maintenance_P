@@ -3,6 +3,25 @@ date_default_timezone_set('America/Chicago');
 header("Cache-Control: max-age=604800, public");
 header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
 
+// Отключаем прямой вывод ошибок, чтобы они не попадали в JSON-ответ
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_error.log');
+
+// Перехватываем фатальные ошибки
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Fatal PHP Error: ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line']
+        ]);
+        exit;
+    }
+});
+
 // Папка для сохранения загруженных файлов
 $uploadDir = "uploads/";
 $miniDir = "uploads/mini/";
@@ -54,7 +73,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';  // Пустой пароль для XAMPP
+$password = 'root';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -497,43 +516,77 @@ if ($action === 'addTask') {
         echo json_encode($newTasks); // Возвращаем новые задания
     }
 } elseif ($action === 'getNotCompletedTasksForLastWeek') {
+    // Обязательно устанавливаем заголовок
+    header('Content-Type: application/json; charset=utf-8');
+    
     $currentDate = $_POST['currentDate'];
     $date = new DateTime($currentDate);
     $date->modify('-7 days');
     $previousDate = $date->format('Y-m-d');
 
     error_log("previousDate: " . $previousDate);
+    error_log("currentDate: " . $currentDate);
 
     global $conn;
 
     try {
+        // Логирование начала процесса
+        error_log("getNotCompletedTasksForLastWeek: Начало выполнения метода");
+        
         // Check if upload directory is writable
         $uploadDir = __DIR__ . '/uploads';
         if (!is_dir($uploadDir)) {
+            error_log("getNotCompletedTasksForLastWeek: Создание директории загрузки");
             mkdir($uploadDir, 0777, true);
         }
         
         if (!is_writable($uploadDir)) {
-            error_log("Upload directory is not writable: " . $uploadDir);
+            error_log("getNotCompletedTasksForLastWeek: Upload directory is not writable: " . $uploadDir);
             // Continue execution even if directory is not writable
+        } else {
+            error_log("getNotCompletedTasksForLastWeek: Upload directory is writable");
         }
+
+        // Проверяем подключение к базе данных
+        if ($conn->connect_error) {
+            error_log("getNotCompletedTasksForLastWeek: Ошибка подключения к БД: " . $conn->connect_error);
+            throw new Exception("Database connection error: " . $conn->connect_error);
+        }
+        error_log("getNotCompletedTasksForLastWeek: Подключение к БД успешно");
 
         // Изменяем запрос, чтобы исключить задания за сегодняшний день
         $query = "SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?";
+        error_log("getNotCompletedTasksForLastWeek: Подготовка запроса: " . $query);
+        error_log("getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=" . $previousDate . ", currentDate=" . $currentDate);
+        
         $stmt = $conn->prepare($query);
 
         if (!$stmt) {
+            error_log("getNotCompletedTasksForLastWeek: Ошибка подготовки запроса: " . $conn->error);
             throw new Exception("Ошибка подготовки запроса: " . $conn->error);
         }
+        error_log("getNotCompletedTasksForLastWeek: Запрос подготовлен успешно");
 
         $stmt->bind_param('ss', $previousDate, $currentDate);
+        error_log("getNotCompletedTasksForLastWeek: Привязка параметров завершена");
+        
         if (!$stmt->execute()) {
+            error_log("getNotCompletedTasksForLastWeek: Ошибка выполнения запроса: " . $stmt->error);
             throw new Exception("Ошибка выполнения запроса: " . $stmt->error);
         }
+        error_log("getNotCompletedTasksForLastWeek: Запрос выполнен успешно");
 
         $result = $stmt->get_result();
+        if (!$result) {
+            error_log("getNotCompletedTasksForLastWeek: Ошибка получения результатов: " . $stmt->error);
+            throw new Exception("Ошибка получения результатов: " . $stmt->error);
+        }
+        error_log("getNotCompletedTasksForLastWeek: Результаты запроса получены");
+        
         $tasks = $result->fetch_all(MYSQLI_ASSOC);
+        error_log("getNotCompletedTasksForLastWeek: Количество найденных задач: " . count($tasks));
 
+        error_log("getNotCompletedTasksForLastWeek: Успешное завершение метода");
         echo json_encode(['success' => true, 'data' => $tasks]);
     } catch (Exception $e) {
         error_log("Error in getNotCompletedTasksForLastWeek: " . $e->getMessage());

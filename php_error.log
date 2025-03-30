@@ -1,0 +1,1287 @@
+[29-Mar-2025 10:18:04 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:04 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:04 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:04 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:04 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:04 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:04 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:04 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:06 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:18:06 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:18:06 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:18:06 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:18:06 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:18:06 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:06 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:06 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:06 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:08 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:18:08 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:18:08 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:18:31 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:31 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:31 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:31 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:33 America/Chicago] Received date for filtering tasks: 2025-03-27
+[29-Mar-2025 10:18:33 America/Chicago] Number of tasks found: 5
+[29-Mar-2025 10:18:33 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:33 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:33 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:33 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:33 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:33 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:33 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:33 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:33 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:33 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:33 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:33 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:33 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:33 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:33 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:33 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:35 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:35 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:35 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:35 America/Chicago] Имя файла: 67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:18:35 America/Chicago] Имя файла: 67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:18:35 America/Chicago] Имя файла: 67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:18:35 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:18:35 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:18:35 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:18:35 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:35 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:35 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:35 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:35 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:35 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:35 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:35 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:35 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:35 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:35 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:35 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:35 America/Chicago] Имя файла: 67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:18:35 America/Chicago] Путь к файлу: uploads/mini/mini_67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:18:35 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:37 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:37 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:37 America/Chicago] Имя файла: 67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:18:37 America/Chicago] Имя файла: 67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:18:37 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:18:37 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:18:37 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:37 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:37 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:37 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:37 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:37 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:37 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:37 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:37 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:37 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:39 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:39 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:39 America/Chicago] Имя файла: 67e5fc09e477d_изображение_viber_2022-03-17_19-25-14-746.jpg
+[29-Mar-2025 10:18:39 America/Chicago] Имя файла: 67e5fd20c74d4_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:18:39 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09e477d_изображение_viber_2022-03-17_19-25-14-746.jpg
+[29-Mar-2025 10:18:39 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20c74d4_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:18:39 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:39 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:39 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:39 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:39 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:39 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:39 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:39 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:39 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:39 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:41 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:41 America/Chicago] Имя файла: 67e5fd20ec24b_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:18:41 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20ec24b_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:18:41 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:41 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:18:41 America/Chicago] Имя файла: 67e5fc0a162b5_изображение_viber_2022-03-17_19-25-22-725.jpg
+[29-Mar-2025 10:18:41 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc0a162b5_изображение_viber_2022-03-17_19-25-22-725.jpg
+[29-Mar-2025 10:18:41 America/Chicago] Тип файла: image
+[29-Mar-2025 10:18:56 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:56 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:56 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:56 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:58 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:18:58 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:18:58 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:18:58 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:18:58 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:18:58 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:18:58 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:18:58 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:18:58 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:01 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:19:01 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:19:01 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:19:07 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:07 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:07 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:07 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:09 America/Chicago] Received date for filtering tasks: 2025-03-27
+[29-Mar-2025 10:19:09 America/Chicago] Number of tasks found: 5
+[29-Mar-2025 10:19:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:11 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:11 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:11 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:11 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:11 America/Chicago] Имя файла: 67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:19:11 America/Chicago] Имя файла: 67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:19:11 America/Chicago] Имя файла: 67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:19:11 America/Chicago] Имя файла: 67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:19:11 America/Chicago] Путь к файлу: uploads/mini/mini_67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:19:11 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:19:11 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:19:11 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:19:11 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:11 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:11 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:11 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:11 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:11 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:11 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:11 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:13 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:13 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:13 America/Chicago] Имя файла: 67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:19:13 America/Chicago] Имя файла: 67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:19:13 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:19:13 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:19:13 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:13 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:13 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:13 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:13 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:13 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:13 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:13 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:13 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:13 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:16 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:16 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:16 America/Chicago] Имя файла: 67e5fd20c74d4_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:19:16 America/Chicago] Имя файла: 67e5fc09e477d_изображение_viber_2022-03-17_19-25-14-746.jpg
+[29-Mar-2025 10:19:16 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20c74d4_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:19:16 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09e477d_изображение_viber_2022-03-17_19-25-14-746.jpg
+[29-Mar-2025 10:19:16 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:16 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:16 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:16 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:16 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:16 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:16 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:16 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:16 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:16 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:18 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:18 America/Chicago] Имя файла: 67e5fc0a162b5_изображение_viber_2022-03-17_19-25-22-725.jpg
+[29-Mar-2025 10:19:18 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc0a162b5_изображение_viber_2022-03-17_19-25-22-725.jpg
+[29-Mar-2025 10:19:18 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:18 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:19:18 America/Chicago] Имя файла: 67e5fd20ec24b_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:19:18 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20ec24b_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:19:18 America/Chicago] Тип файла: image
+[29-Mar-2025 10:19:20 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:20 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:20 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:20 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:27 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:27 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:27 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:27 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:34 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:34 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:34 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:34 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:36 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 382
+[29-Mar-2025 10:19:36 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:36 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:36 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:36 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:36 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:19:36 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:19:36 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:19:36 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:20:12 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:20:12 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:20:12 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:20:12 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:20:14 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 382
+[29-Mar-2025 10:20:14 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:20:14 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:20:14 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:20:14 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:20:14 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:20:14 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:20:14 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:20:14 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:54 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:28:54 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:28:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:54 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:28:54 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:28:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:56 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:28:56 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:28:56 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:28:56 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:28:56 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:28:56 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:28:56 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:28:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:58 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:28:58 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:28:58 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:58 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:58 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:28:58 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:28:58 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:58 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:28:58 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:28:58 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:28:58 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:29:00 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:29:00 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:29:00 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:29:00 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:29:00 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:29:00 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:00 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:02 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:29:02 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:29:02 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:29:07 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:07 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:07 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:07 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:09 America/Chicago] Received date for filtering tasks: 2025-03-27
+[29-Mar-2025 10:29:09 America/Chicago] Number of tasks found: 5
+[29-Mar-2025 10:29:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:11 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:11 America/Chicago] Имя файла: 67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:11 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:11 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:11 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:11 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:11 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:11 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:11 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:11 America/Chicago] Имя файла: 67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:11 America/Chicago] Имя файла: 67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:29:11 America/Chicago] Имя файла: 67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:11 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:11 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:29:11 America/Chicago] Путь к файлу: uploads/mini/mini_67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:11 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:11 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:11 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:11 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:11 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:13 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:13 America/Chicago] Имя файла: 67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:29:13 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:29:13 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:13 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:13 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:13 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:13 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:13 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:13 America/Chicago] Имя файла: 67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:13 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:13 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:13 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:13 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:13 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:13 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:15 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:15 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:15 America/Chicago] Имя файла: 67e5fd20c74d4_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:15 America/Chicago] Имя файла: 67e5fc09e477d_изображение_viber_2022-03-17_19-25-14-746.jpg
+[29-Mar-2025 10:29:15 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09e477d_изображение_viber_2022-03-17_19-25-14-746.jpg
+[29-Mar-2025 10:29:15 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20c74d4_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:15 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:15 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:15 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:15 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:15 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:15 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:15 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:15 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:15 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:15 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:17 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:17 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:17 America/Chicago] Имя файла: 67e5fd20ec24b_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:17 America/Chicago] Имя файла: 67e5fc0a162b5_изображение_viber_2022-03-17_19-25-22-725.jpg
+[29-Mar-2025 10:29:17 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20ec24b_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:17 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc0a162b5_изображение_viber_2022-03-17_19-25-22-725.jpg
+[29-Mar-2025 10:29:17 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:17 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:22 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:22 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:22 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:22 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:24 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:24 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:24 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:24 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:24 America/Chicago] Received date for filtering tasks: 2025-03-07
+[29-Mar-2025 10:29:24 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:29:26 America/Chicago] Received date for filtering tasks: 2025-03-27
+[29-Mar-2025 10:29:26 America/Chicago] Number of tasks found: 5
+[29-Mar-2025 10:29:26 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:26 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:26 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:26 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:26 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:26 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:26 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:26 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:26 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:26 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:26 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:26 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:26 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:26 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:26 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:26 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:27 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:27 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:27 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:27 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:27 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:27 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:27 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:27 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:28 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:28 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:28 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:28 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:28 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:28 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:28 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:28 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:28 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:28 America/Chicago] Имя файла: 67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:28 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:28 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:28 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:28 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:28 America/Chicago] Имя файла: 67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:29:28 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:28 America/Chicago] Имя файла: 67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:28 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:29:28 America/Chicago] Имя файла: 67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:28 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:28 America/Chicago] Путь к файлу: uploads/mini/mini_67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:28 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:28 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:28 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:29 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:29 America/Chicago] Имя файла: 67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:29 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:29 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:29 America/Chicago] Имя файла: 67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:29:29 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:29:29 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:29 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:30 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:29:30 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:29:30 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:29:30 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:29:30 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:29:30 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:30 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:30 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:30 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:32 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:29:32 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:29:32 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:29:32 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:32 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:32 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:32 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:34 America/Chicago] Received date for filtering tasks: 2025-03-28
+[29-Mar-2025 10:29:34 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:29:41 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:41 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:41 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:41 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:43 America/Chicago] Received date for filtering tasks: 2025-03-27
+[29-Mar-2025 10:29:43 America/Chicago] Number of tasks found: 5
+[29-Mar-2025 10:29:43 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:43 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:43 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:43 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:43 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:43 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:43 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:43 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:45 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:45 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:45 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:45 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:45 America/Chicago] Имя файла: 67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:45 America/Chicago] Имя файла: 67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:29:45 America/Chicago] Имя файла: 67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:45 America/Chicago] Имя файла: 67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:45 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fa0f4027d_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:45 America/Chicago] Путь к файлу: uploads/mini/mini_67e5f97104384_изображение_viber_2022-03-10_14-11-50-618.jpg
+[29-Mar-2025 10:29:45 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd207bb6d_изображение_viber_2022-03-17_19-24-46-589.jpg
+[29-Mar-2025 10:29:45 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc099841f_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:45 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:45 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:45 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:45 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:45 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:45 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:45 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:45 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:45 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:45 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:45 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:45 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:47 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:47 America/Chicago] Имя файла: 67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:47 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09bec2a_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:47 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:47 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:47 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:47 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:47 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:47 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:47 America/Chicago] Имя файла: 67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:29:47 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20a1e03_изображение_viber_2022-03-17_19-24-53-714.jpg
+[29-Mar-2025 10:29:47 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:47 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:47 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:47 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:47 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:49 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:49 America/Chicago] Имя файла: 67e5fc09e477d_изображение_viber_2022-03-17_19-25-14-746.jpg
+[29-Mar-2025 10:29:49 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc09e477d_изображение_viber_2022-03-17_19-25-14-746.jpg
+[29-Mar-2025 10:29:49 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:49 America/Chicago] Имя файла: 67e5fd20c74d4_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:49 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20c74d4_изображение_viber_2022-03-17_19-25-05-510.jpg
+[29-Mar-2025 10:29:49 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:49 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:49 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:49 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:49 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:49 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:49 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:49 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:49 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:49 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:51 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:51 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 10:29:51 America/Chicago] Имя файла: 67e5fd20ec24b_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:51 America/Chicago] Имя файла: 67e5fc0a162b5_изображение_viber_2022-03-17_19-25-22-725.jpg
+[29-Mar-2025 10:29:51 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fd20ec24b_изображение_viber_2022-03-17_19-25-06-355.jpg
+[29-Mar-2025 10:29:51 America/Chicago] Путь к файлу: uploads/mini/mini_67e5fc0a162b5_изображение_viber_2022-03-17_19-25-22-725.jpg
+[29-Mar-2025 10:29:51 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:51 America/Chicago] Тип файла: image
+[29-Mar-2025 10:29:53 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:53 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:53 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:53 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:56 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:29:56 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:29:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:29:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:30:09 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:30:09 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:30:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:30:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:30:11 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 382
+[29-Mar-2025 10:30:11 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:30:11 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:30:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:30:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:30:11 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:30:11 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:30:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:30:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:00 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:40:00 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:40:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:00 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:40:00 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:40:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:02 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:40:02 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:40:02 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:40:02 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:40:02 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:40:02 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:40:02 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:40:02 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:02 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:03 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:40:03 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:40:03 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:03 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:03 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:40:03 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:40:03 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:03 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:05 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:40:05 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:40:05 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:40:05 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:40:05 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:40:05 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:40:05 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:40:05 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:40:05 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:40:05 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:05 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:40:07 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:40:07 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:40:07 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:41:25 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:41:25 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:41:25 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:25 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:38 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:41:38 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:41:38 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:38 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:44 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:41:44 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:41:44 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:44 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:46 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 382
+[29-Mar-2025 10:41:46 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:41:46 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:41:46 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:46 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:46 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:41:46 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:41:46 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:41:46 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:54 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:44:54 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:44:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:54 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:44:54 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:44:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:56 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:44:56 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:44:56 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:44:56 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:44:56 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:44:56 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:44:56 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:44:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:56 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:44:56 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:44:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:56 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:44:56 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:44:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:58 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:44:58 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:44:58 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:44:58 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:44:58 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:44:58 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 10:44:58 America/Chicago] Number of tasks found: 0
+[29-Mar-2025 10:44:58 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:44:58 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:44:58 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:44:58 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:00 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 10:45:00 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 10:45:00 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 10:45:02 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:02 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:02 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:02 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:10 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:10 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:10 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:10 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:18 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:18 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:18 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:18 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:20 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 382
+[29-Mar-2025 10:45:20 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:20 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:20 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:20 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:20 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:20 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:20 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:20 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:35 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:35 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:35 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:35 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:37 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 382
+[29-Mar-2025 10:45:37 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:37 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:37 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:37 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:37 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:37 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:37 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:37 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:45 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:45 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:45 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:45 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:47 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 382
+[29-Mar-2025 10:45:47 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:47 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:47 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:47 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:47 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:45:47 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:45:47 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:45:47 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:49:28 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 10:49:28 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 10:49:28 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:49:28 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 10:49:30 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 157
+[29-Mar-2025 11:20:51 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 11:20:51 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 11:20:51 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:20:51 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:20:51 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 11:20:51 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 11:20:51 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:20:51 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:20:54 America/Chicago] Received date for filtering tasks: 2025-03-29
+[29-Mar-2025 11:20:54 America/Chicago] Number of tasks found: 1
+[29-Mar-2025 11:20:54 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 11:20:54 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 11:20:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:20:54 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:20:54 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 11:20:54 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 11:20:54 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 11:20:56 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 11:20:56 America/Chicago] Имя файла: 67e8168aa1b12_Alan_Turing_(1951).jpg
+[29-Mar-2025 11:20:56 America/Chicago] Путь к файлу: uploads/mini/mini_67e8168aa1b12_Alan_Turing_(1951).jpg
+[29-Mar-2025 11:20:56 America/Chicago] Тип файла: image
+[29-Mar-2025 11:20:56 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 11:20:56 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 11:20:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:20:56 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:20:58 America/Chicago] previousDate: 2025-03-22
+[29-Mar-2025 11:20:58 America/Chicago] currentDate: 2025-03-29 00:00:00
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-22, currentDate=2025-03-29 00:00:00
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 5
+[29-Mar-2025 11:20:58 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[29-Mar-2025 11:21:15 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 11:21:15 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 11:21:15 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:21:15 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:21:17 America/Chicago] PHP Notice:  Only variables should be passed by reference in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 157
+[29-Mar-2025 11:21:17 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 11:21:17 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 11:21:17 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:21:17 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:21:19 America/Chicago] Upload directory is writable: uploads/
+[29-Mar-2025 11:21:19 America/Chicago] Mini directory is writable: uploads/mini/
+[29-Mar-2025 11:21:19 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:21:19 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[29-Mar-2025 11:21:21 America/Chicago] Начало выполнения действия 'getMINIMediaFile'
+[29-Mar-2025 11:21:21 America/Chicago] Имя файла: 67e81dfda7119_pexels-photo-1239291.jpeg
+[29-Mar-2025 11:21:21 America/Chicago] Путь к файлу: uploads/mini/mini_67e81dfda7119_pexels-photo-1239291.jpeg
+[29-Mar-2025 11:21:21 America/Chicago] Тип файла: image
+[30-Mar-2025 08:27:18 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 08:27:18 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 08:27:18 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 08:27:18 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:00 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:00 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:00 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:00 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:00 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:01 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:01 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:01 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:01 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:01 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:01 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:01 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:01 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:01 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:01 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:01 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:01 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:02 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:02 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:02 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:02 America/Chicago] Received date for filtering tasks: 2025-03-30
+[30-Mar-2025 10:35:02 America/Chicago] Number of tasks found: 0
+[30-Mar-2025 10:35:03 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:03 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:03 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:03 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:03 America/Chicago] Received date for filtering tasks: 2025-03-30
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:03 America/Chicago] Number of tasks found: 0
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:03 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:03 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:03 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:03 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:03 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:05 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:05 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:05 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:12 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:12 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:12 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:12 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:12 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:12 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:12 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:12 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:14 America/Chicago] Received date for filtering tasks: 2025-03-30
+[30-Mar-2025 10:35:14 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:14 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:14 America/Chicago] Number of tasks found: 0
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:14 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:14 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:14 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:14 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:14 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:17 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:17 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:17 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:41 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:41 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:41 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:41 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:41 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:41 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:41 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:41 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:43 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:43 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:43 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:43 America/Chicago] Received date for filtering tasks: 2025-03-30
+[30-Mar-2025 10:35:43 America/Chicago] Number of tasks found: 0
+[30-Mar-2025 10:35:43 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:43 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:43 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:45 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:45 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:45 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:51 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:51 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:51 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:51 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:51 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:51 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:51 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:51 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:53 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:53 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:53 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:35:53 America/Chicago] Received date for filtering tasks: 2025-03-30
+[30-Mar-2025 10:35:53 America/Chicago] Number of tasks found: 0
+[30-Mar-2025 10:35:53 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:35:53 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:35:53 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:53 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:35:55 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:35:55 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:35:55 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:38:09 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:38:09 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:38:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:09 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:38:09 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:38:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:09 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:11 America/Chicago] Received date for filtering tasks: 2025-03-30
+[30-Mar-2025 10:38:11 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:38:11 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:38:11 America/Chicago] Number of tasks found: 0
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:38:11 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:38:11 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:38:11 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:38:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:11 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:13 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:38:13 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:38:13 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:38:55 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:38:55 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:38:55 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:55 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:55 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:38:55 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:38:55 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:55 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:57 America/Chicago] Received date for filtering tasks: 2025-03-30
+[30-Mar-2025 10:38:57 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:38:57 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:38:57 America/Chicago] Number of tasks found: 0
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:38:57 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:38:57 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:38:57 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:38:57 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:57 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:38:59 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:38:59 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:38:59 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:44:42 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:44:42 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:44:42 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:44:42 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:44:42 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:44:42 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:44:42 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:44:42 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:44:44 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:44:44 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:44:44 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода
+[30-Mar-2025 10:44:44 America/Chicago] Received date for filtering tasks: 2025-03-30
+[30-Mar-2025 10:44:44 America/Chicago] Number of tasks found: 0
+[30-Mar-2025 10:44:44 America/Chicago] Upload directory is writable: uploads/
+[30-Mar-2025 10:44:44 America/Chicago] Mini directory is writable: uploads/mini/
+[30-Mar-2025 10:44:44 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:44:44 America/Chicago] PHP Warning:  Undefined variable $action in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\task.php on line 53
+[30-Mar-2025 10:44:46 America/Chicago] previousDate: 2025-03-23
+[30-Mar-2025 10:44:46 America/Chicago] currentDate: 2025-03-30 00:00:00
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Начало выполнения метода
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Upload directory is writable
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Подключение к БД успешно
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Подготовка запроса: SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=2025-03-23, currentDate=2025-03-30 00:00:00
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Запрос подготовлен успешно
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Привязка параметров завершена
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Запрос выполнен успешно
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Результаты запроса получены
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Количество найденных задач: 7
+[30-Mar-2025 10:44:46 America/Chicago] getNotCompletedTasksForLastWeek: Успешное завершение метода

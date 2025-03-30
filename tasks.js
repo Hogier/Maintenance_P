@@ -1,6 +1,6 @@
 function checkAuth() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user.role === "maintenance") {
+  if (user && user.role === "maintenance") {
     return true;
   }
   return false;
@@ -340,17 +340,12 @@ async function createTaskElement(task) {
       console.log("Прослушка на комментарии");
 
       tasksWS.onmessage = async function (e) {
+        const action = JSON.parse(e.data).action;
         const data = JSON.parse(e.data).message;
-        console.log("tasksWS.onmessage : " + data);
+        console.log("tasksWS.onmessage : ");
+        console.log(data);
 
-        let deltaComments = await updateComments(
-          task,
-          commentsContainer,
-          isFirstLoad
-        );
-        console.log("deltaComments: ", deltaComments);
-
-        if (data.action === "updateComments" && data.taskId === task.request_id) {
+        if (action === "updateComments" && data.request_id === task.request_id) {
           await updateComments(task, commentsContainer, isFirstLoad);
           isFirstLoad = false;
 
@@ -359,7 +354,10 @@ async function createTaskElement(task) {
           const commentsRect = commentsContainer.getBoundingClientRect();
           const isCommentsVisible =
             commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
-
+          
+          console.log('showNewCommentNotification: ', showNewCommentNotification);
+          console.log('hasNewComments: ', hasNewComments);
+          console.log('isCommentsVisible: ', isCommentsVisible);
           if (
             !showNewCommentNotification &&
             hasNewComments &&
@@ -722,8 +720,7 @@ async function createTaskElement(task) {
           setTimeout(() => {
             updateAlertTasksListHeight(taskElement);
             //taskElement.remove();
-          }, 800);
-        }, 1000);
+
           }, 800);
         }, 1000);
       }
@@ -1032,7 +1029,6 @@ window.onload = function () {
 }
 
 
-// При получении сообщения
 tasksWS.onmessage = async function (e) {
   try {
     const newTasks = [JSON.parse(e.data).message];
@@ -1608,6 +1604,8 @@ async function checkNewTasksInServer() {
 
 async function getNotCompletedTasksForLastWeek() {
   try {
+    console.log('Отправка запроса getNotCompletedTasksForLastWeek с датой:', formatDallasDateForServer(getDallasDate()));
+    
     const response = await fetch("task.php", {
       method: "POST",
       headers: {
@@ -1619,7 +1617,19 @@ async function getNotCompletedTasksForLastWeek() {
       }),
     });
 
-    const result = await response.json();
+    // Получаем сырой текст ответа
+    const rawResponse = await response.text();
+    console.log('Сырой ответ сервера:', rawResponse);
+    
+    // Пробуем распарсить JSON
+    let result;
+    try {
+      result = JSON.parse(rawResponse);
+    } catch (jsonError) {
+      console.error('Ошибка парсинга JSON:', jsonError);
+      throw new Error(`Неверный формат ответа сервера: ${rawResponse.substring(0, 100)}...`);
+    }
+    
     if (!result.success) {
       // Проверяем, не связана ли ошибка с директорией mini
       if (
@@ -1636,6 +1646,7 @@ async function getNotCompletedTasksForLastWeek() {
       }
       throw new Error(result.message);
     }
+    console.log('Успешно получены незавершенные задачи:', result.data.length);
     return result.data;
   } catch (error) {
     console.error("Error fetching not completed tasks for last week:", error);
@@ -1683,7 +1694,6 @@ function updateAlertTasksListHeight(taskElement) {
     alertTasks.style.height = alertTasks.scrollHeight + "px";
     //taskElement.classList.add("collapse");
     setTimeout(() => {
-    setTimeout(() => {
       alertTasks.style.height = "0";
       closeAlertTasks.classList.remove("exist-tasks");
       closeAlertTasks.classList.add("no-tasks");
@@ -1705,7 +1715,6 @@ function updateAlertTasksListHeight(taskElement) {
     }, 650);
   }
   //alertTasks.style.transition = "height 0.5s ease-in-out, opacity 0.5s ease-in-out";
-
 }
 
 ////////////// HELPER PANEL //////////////

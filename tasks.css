@@ -31,7 +31,7 @@ position: relative;
 
 header {
   position: fixed;
-  z-index: 700;
+  z-index: 2700;
   width: calc(100% - 250px);
   display: flex;
   justify-content: space-between;
@@ -1119,7 +1119,7 @@ h1 {
   left: 0;
   height: 100vh;
   overflow-y: auto;
-  z-index: 800;
+  z-index: 2800;
   transition: transform 0.3s ease;
 }
 
@@ -1387,7 +1387,7 @@ h1 {
   transform: translateX(-100%); /* Начальное положение - скрыта */
   transition: transform 0.3s ease-out;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-  z-index: 799; /* Чуть ниже sidebar */
+  z-index: 2799; /* Чуть ниже sidebar */
   padding: 20px;
   color: white;
   overflow-y: auto;
