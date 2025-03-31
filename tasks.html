@@ -47,8 +47,6 @@
         <li class="submenu-item">By Status</li>
         <li class="submenu-item">By Priority</li>
         <li class="submenu-item">By Assignment</li>
-        <li class="submenu-item">By Sender</li>
-        <li class="submenu-item">By Location</li>
       </ul>
       <li class="nav-item" data-page="sort">
         <i class="fas fa-sort"></i>
@@ -101,7 +99,7 @@
       <div class="date-filter">
         <button id="todayTasks" class="active">Today</button>
         <button id="allTasks">All Tasks</button>
-        <input type="date" id="dateFilter" />
+        <!--<input type="date" id="dateFilter" />-->
       </div>
     </header>
     <div class="container">
@@ -328,6 +326,14 @@
       <button class="settings-save-btn">Save Changes</button>
     </div>
   </div>
+    <!-- Вспомогательная панель -->
+    <div class="helper-panel">
+      <div class="helper-panel-close">&times;</div>
+      <h3 class="helper-panel-title">Справка</h3>
+      <div class="helper-panel-content">
+        <!-- Содержимое будет заполняться динамически -->
+      </div>
+    </div>
   <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
   <script src="database.js"></script>
   <script src="auth.js"></script>
@@ -345,14 +351,7 @@
     updateDallasTime(); // Первоначальное обновление
   </script>
   
-  <!-- Вспомогательная панель -->
-  <div class="helper-panel">
-    <div class="helper-panel-close">&times;</div>
-    <h3 class="helper-panel-title">Справка</h3>
-    <div class="helper-panel-content">
-      <!-- Содержимое будет заполняться динамически -->
-    </div>
-  </div>
+
 </body>
 
 </html>

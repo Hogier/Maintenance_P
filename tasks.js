@@ -30,6 +30,26 @@ let newCommentsPosition = [];
 let localComments = {};
 let counterNewTaskNotification = 0;
 
+// Добавление глобальных переменных для хранения значений фильтров
+let filters = {
+  byDate: {
+    date: "",
+    period: {
+      last: "lastWeek",
+      custom: {
+        from: "",
+        to: "",
+      },
+    },
+  },
+  byStatus: {
+    status: [], // Массив для хранения выбранных статусов
+  },
+  byPriority: {
+    priority: "",
+  },
+}
+
 //////////////////////////////////ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ////////////////////////////
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -44,10 +64,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Получаем задания на сегодня
   const today = new Date(getDallasDate());
-  //const today = new Date();
-  const todayTasks = await getTasksByDate(today);
+
+
+/*  const todayTasks = await getTasksByDate(today);
+  clientTasks = todayTasks;
+  await updateTasksList(todayTasks);*/
+  const fromDate = luxon.DateTime.now().minus({ days: 7 }).toISO();
+  const toDate = luxon.DateTime.now().toISO();
+  const todayTasks = await getTasksByPeriod(fromDate, toDate);
   clientTasks = todayTasks;
   await updateTasksList(todayTasks);
+
   await displayNotCompletedTasks();
 
   document
@@ -97,33 +124,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await updateTasksList(allTasks);
   });
 
-  document
-    .getElementById("dateFilter")
-    .addEventListener("change", async (e) => {
-      tasksCurrentFilter = "custom";
-      //currentDate = new Date(e.target.value);
-      // Преобразуем выбранную дату в дату по времени Далласа
-      const selectedDate = luxon.DateTime.fromISO(e.target.value, {
-        zone: "America/Chicago",
-      });
-      currentDate = new Date(selectedDate.toISO());
-
-      console.log(
-        "currentDate: ",
-        currentDate,
-        "e.target.value: ",
-        e.target.value
-      );
-      checkDate = currentDate.toISOString().split("T")[0];
-
-      document
-        .querySelectorAll(".date-filter button")
-        .forEach((btn) => btn.classList.remove("active"));
-
-      const filteredTasks = await getTasksByDate(currentDate);
-      await updateTasksList(filteredTasks);
-    });
-
+ 
   // Добавим обработчик выхода
   //document.getElementById("logoutBtn").addEventListener("click", logout);
 });
@@ -159,12 +160,62 @@ async function updateTasksList(tasks) {
       newTasksContainer.innerHTML =
         '<div class="no-tasks">No tasks found</div>';
     } else {
-      const taskElements = await Promise.all(
-        tasks.map((task) => createTaskElement(task))
-      );
-      taskElements.forEach((element) => {
-        newTasksContainer.appendChild(element);
+      // Сортируем задания по дате (от новых к старым)
+      tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      // Группируем задания по дате
+      const tasksByDate = {};
+      tasks.forEach(task => {
+        // Получаем только дату (без времени)
+        const taskDate = new Date(task.timestamp).toLocaleDateString('ru-RU');
+        if (!tasksByDate[taskDate]) {
+          tasksByDate[taskDate] = [];
+        }
+        tasksByDate[taskDate].push(task);
       });
+
+      // Создаем элементы и добавляем их в контейнер с разделителями
+      const dates = Object.keys(tasksByDate);
+      
+      for (let i = 0; i < dates.length; i++) {
+        const currentDate = dates[i];
+        const tasksForDate = tasksByDate[currentDate];
+        
+        // Добавляем разделитель с датой (кроме первой группы)
+        if (i > 0) {
+          const dateDivider = document.createElement("div");
+          dateDivider.className = "task-date-divider";
+          
+          const dateLabel = document.createElement("span");
+          dateLabel.className = "task-date-label";
+          dateLabel.textContent = formatDisplayDate(currentDate);
+          
+          dateDivider.appendChild(dateLabel);
+          newTasksContainer.appendChild(dateDivider);
+        }
+        
+        // Добавляем задания для текущей даты
+        const taskElements = await Promise.all(
+          tasksForDate.map((task) => createTaskElement(task))
+        );
+        
+        // Если это первая группа, добавляем разделитель перед группой
+        if (i === 0) {
+          const dateDivider = document.createElement("div");
+          dateDivider.className = "task-date-divider";
+          
+          const dateLabel = document.createElement("span");
+          dateLabel.className = "task-date-label";
+          dateLabel.textContent = formatDisplayDate(currentDate);
+          
+          dateDivider.appendChild(dateLabel);
+          newTasksContainer.appendChild(dateDivider);
+        }
+        
+        taskElements.forEach((element) => {
+          newTasksContainer.appendChild(element);
+        });
+      }
     }
 
     // Добавляем стили для плавного перехода
@@ -194,6 +245,60 @@ async function updateTasksList(tasks) {
       }, 300);
     }
   }
+}
+
+// Вспомогательная функция для форматирования даты в читаемом виде
+function formatDisplayDate(dateString) {
+  // Преобразуем строку даты в объект Date
+  let date;
+  
+  if (typeof dateString === 'string') {
+    // Для формата дат с точками (DD.MM.YYYY) используем специальную обработку
+    if (dateString.includes('.')) {
+      const parts = dateString.split('.');
+      if (parts.length === 3) {
+        // Преобразуем в формат MM/DD/YYYY для создания Date
+        date = new Date(`${parts[1]}/${parts[0]}/${parts[2]}`);
+      } else {
+        date = new Date(dateString);
+      }
+    } else {
+      date = new Date(dateString);
+    }
+  } else {
+    date = new Date(dateString);
+  }
+  
+  // Проверяем, валидная ли дата
+  if (isNaN(date.getTime())) {
+    console.error("Invalid date:", dateString);
+    return "Unknown date"; // Возвращаем сообщение, если дата некорректная
+  }
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  // Форматирование даты в американском стиле
+  const options = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    weekday: 'long'
+  };
+  
+  let formattedDate = date.toLocaleDateString('en-US', options);
+  
+  // Добавляем пометки "Today" и "Yesterday" на английском
+  if (date.getTime() === today.getTime()) {
+    formattedDate = "Today";
+  } else if (date.getTime() === yesterday.getTime()) {
+    formattedDate = "Yesterday";
+  }
+  
+  return formattedDate;
 }
 
 const newTaskNotification = document.createElement("div");
@@ -1744,37 +1849,70 @@ document.querySelectorAll('.nav-item').forEach(item => {
 // Код для вспомогательной панели
 document.addEventListener('DOMContentLoaded', function () {
   // Данные для вспомогательной панели
-  const helperTitles = {
+  const helperFilterContent = {
     'By Date': {
-      title: 'Filter by Date'
+      title: 'Filter by Date',
+      content: `<div class="choose-period">
+                  <p>Choose period:</p>
+                  <div class="last-period-filter">
+                  <select id="last-period-filter">
+                    <option value="Custom">Custom</option>
+                    <option value="lastWeek">Last week</option>
+                    <option value="lastMonth">Last Month</option>
+                    <option value="last3Months">Last 3 Months</option>
+                    <option value="lastYear">Last Year</option>
+                  </select>
+                  </div>
+                  <p style="margin-bottom: 15px;">or</p>
+                  <input type="date" placeholder="from" id="from-periodFilter" />
+                  <p class="period-separator">-</p>
+                  <input type="date" placeholder="to" id="to-periodFilter" />
+                </div>
+                <div class="choose-date">
+                  <p>Choose date:</p>
+                  <input type="date" id="dateFilter" />
+                </div>`
     },
     'By Status': {
-      title: 'Filter by Status'
+      title: 'Filter by Status',
+      content: `<div class="status-filter-container">
+                <div class="status-filter-item">
+                  <input type="checkbox" id="status-pending" value="Pending" class="status-checkbox">
+                  <label for="status-pending">Pending</label>
+                </div>
+                <div class="status-filter-item">
+                  <input type="checkbox" id="status-in-progress" value="In Progress" class="status-checkbox">
+                  <label for="status-in-progress">In Progress</label>
+                </div>
+                <div class="status-filter-item">
+                  <input type="checkbox" id="status-completed" value="Completed" class="status-checkbox">
+                  <label for="status-completed">Completed</label>
+                </div>
+                <button id="apply-status-filter" class="status-filter-button">Apply</button>
+              </div>`
     },
     'By Priority': {
-      title: 'Filter by Priority'
+      title: 'Filter by Priority',
+      content: '<p>Filter by Priority</p>'
     },
     'By Assignment': {
-      title: 'Filter by Assignment'
+      title: 'Filter by Assignment',
+      content: '<p>Filter by Assignment</p>'
     },
     'By Sender': {
-      title: 'Filter by Sender'
+      title: 'Filter by Sender',
+      content: '<p>Filter by Sender</p>'
     },
-    'By Location': {
-      title: 'Filter by Location'
-    },
-    'By Sort': {
-      title: 'Sorting'
-    }
   };
 
   // Добавляем класс has-helper к элементам подменю, для которых есть справка
   document.querySelectorAll('.submenu-item').forEach(item => {
     const itemText = item.textContent.trim();
-    if (helperTitles[itemText]) {
+    if (helperFilterContent[itemText]) {
       item.classList.add('has-helper');
     }
   });
+  
 
   const helperPanel = document.querySelector('.helper-panel');
   const helperTitle = helperPanel.querySelector('.helper-panel-title');
@@ -1785,11 +1923,42 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.submenu-item').forEach(item => {
     item.addEventListener('mouseenter', function () {
       const itemText = this.textContent.trim();
-      if (helperTitles[itemText]) {
+      if (helperFilterContent[itemText]) {
         activeItem = this;
-        helperTitle.textContent = helperTitles[itemText].title;
-        helperContent.textContent = helperTitles[itemText].content;
+        helperTitle.textContent = helperFilterContent[itemText].title;
+        helperContent.innerHTML = helperFilterContent[itemText].content;
         helperPanel.classList.add('visible');
+        
+        // Добавляем код для восстановления значений в полях фильтров
+        // после добавления контента в helperContent
+        setTimeout(() => {
+          const dateFilter = document.getElementById("dateFilter");
+          const fromPeriodFilter = document.getElementById("from-periodFilter");
+          const toPeriodFilter = document.getElementById("to-periodFilter");
+          const lastPeriodFilter = document.getElementById("last-period-filter");
+          const statusCheckboxes = document.querySelectorAll('.status-checkbox');
+
+          if (dateFilter && filters.byDate.date) {
+            dateFilter.value = filters.byDate.date;
+          }
+          
+          if (fromPeriodFilter && filters.byDate.period.custom.from) {
+            fromPeriodFilter.value = filters.byDate.period.custom.from;
+          }
+          
+          if (toPeriodFilter && filters.byDate.period.custom.to) {
+            toPeriodFilter.value = filters.byDate.period.custom.to;
+          }
+
+          if (lastPeriodFilter && filters.byDate.period.last) {
+            lastPeriodFilter.value = filters.byDate.period.last;
+          }
+          if (statusCheckboxes.length > 0 && filters.byStatus.status.length > 0) {
+            statusCheckboxes.forEach(checkbox => {
+              checkbox.checked = filters.byStatus.status.includes(checkbox.value);
+            });
+          }
+        }, 0); // Используем setTimeout с нулевой задержкой для выполнения после рендеринга
       }
     });
   });
@@ -1819,4 +1988,160 @@ document.addEventListener('DOMContentLoaded', function () {
   helperPanel.addEventListener('click', function (event) {
     event.stopPropagation();
   });
+});
+
+
+
+document.querySelector('.helper-panel-content').addEventListener('change', async function(e) {
+  const dateFilter = document.getElementById("dateFilter");
+  const toPeriodFilter = document.getElementById("to-periodFilter");
+  const fromPeriodFilter = document.getElementById("from-periodFilter");  
+  const lastPeriodFilter = document.getElementById("last-period-filter");
+  console.log("e.target ", e.target);
+
+  if (e.target.id === "from-periodFilter") {    
+    if (e.target.value && toPeriodFilter.value && toPeriodFilter.value > e.target.value) {
+      const filteredTasks = await getTasksByPeriod(e.target.value, toPeriodFilter.value);
+      await updateTasksList(filteredTasks);
+      dateFilter.value = "";
+      lastPeriodFilter.value = "Custom";
+      // Сохраняем в глобальные переменные вместо sessionStorage
+      filters.byDate.period.custom.from = e.target.value;
+      filters.byDate.period.custom.to = toPeriodFilter.value;
+      filters.byDate.date = "";
+      filters.byDate.period.last = "Custom";
+    }
+  } 
+  else if (e.target.id === "to-periodFilter") {
+    if (fromPeriodFilter.value && e.target.value && e.target.value > fromPeriodFilter.value) {
+      const filteredTasks = await getTasksByPeriod(fromPeriodFilter.value, e.target.value);
+      await updateTasksList(filteredTasks);
+      dateFilter.value = "";
+      lastPeriodFilter.value = "Custom";
+      // Сохраняем в глобальные переменные
+      filters.byDate.period.custom.from = fromPeriodFilter.value;
+      filters.byDate.period.custom.to = e.target.value;
+      filters.byDate.date = "";
+      filters.byDate.period.last = "Custom";
+    }
+  } 
+  else if (e.target.id === "last-period-filter" && e.target.value !== "Custom") {
+    const selectedPeriod = e.target.value;
+    let fromDate, toDate;
+
+    switch (selectedPeriod) {
+      case "lastWeek":
+        fromDate = luxon.DateTime.now().minus({ days: 7 }).toISO();
+        toDate = luxon.DateTime.now().toISO();
+        break;
+      case "lastMonth":
+        fromDate = luxon.DateTime.now().minus({ months: 1 }).toISO(); 
+        toDate = luxon.DateTime.now().toISO();
+        break;
+      case "last3Months":
+        fromDate = luxon.DateTime.now().minus({ months: 3 }).toISO();
+        toDate = luxon.DateTime.now().toISO();
+        break;
+      case "lastYear":
+        fromDate = luxon.DateTime.now().minus({ years: 1 }).toISO();
+        toDate = luxon.DateTime.now().toISO();
+        break;
+    }
+
+    const filteredTasks = await getTasksByPeriod(fromDate, toDate);
+    await updateTasksList(filteredTasks);
+
+    dateFilter.value = "";
+    fromPeriodFilter.value = "";
+    toPeriodFilter.value = "";
+
+    filters.byDate.period.last = selectedPeriod;
+    filters.byDate.date = "";
+    filters.byDate.period.custom.from = "";
+    filters.byDate.period.custom.to = "";
+  } 
+  else if (e.target.id === "dateFilter") {
+    tasksCurrentFilter = "custom";
+    const selectedDate = luxon.DateTime.fromISO(e.target.value, {
+      zone: "America/Chicago",
+    });
+    currentDate = new Date(selectedDate.toISO());
+
+    console.log(
+      "currentDate: ",
+      currentDate,
+      "e.target.value: ",
+      e.target.value
+    );
+    checkDate = currentDate.toISOString().split("T")[0];
+
+    document
+      .querySelectorAll(".date-filter button")
+      .forEach((btn) => btn.classList.remove("active"));
+
+    const filteredTasks = await getTasksByDate(currentDate);
+    await updateTasksList(filteredTasks);
+    fromPeriodFilter.value = "";
+    toPeriodFilter.value = "";
+    lastPeriodFilter.value = "Custom";
+    // Сохраняем в глобальные переменные
+    filters.byDate.date = e.target.value;
+    filters.byDate.period.custom.from = "";
+    filters.byDate.period.custom.to = "";
+    filters.byDate.period.last = "Custom";
+  }
+
+  // Добавьте новый код для обработки чекбоксов статуса
+  if (e.target.classList.contains('status-checkbox')) {
+    // Обновляем состояние фильтра в объекте filters
+    // Это будет выполняться при каждом изменении чекбокса, 
+    // но фактическая фильтрация будет происходить только после нажатия кнопки "Apply Filter"
+    const checkedStatuses = Array.from(document.querySelectorAll('.status-checkbox:checked'))
+      .map(checkbox => checkbox.value);
+    
+    filters.byStatus.status = checkedStatuses;
+  }
+});
+
+
+
+async function getTasksByPeriod(fromDate, toDate) {
+  const response = await fetch("task.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      action: "getTasksByPeriod",
+      fromDate: fromDate,
+      toDate: toDate,
+    }),
+  });
+  const result = await response.json();
+  if (!result.success) {
+    throw new Error(result.message);
+  }
+  clientTasks = result.data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return clientTasks;
+}
+
+// Добавьте обработчик клика для кнопки Apply Filter
+document.querySelector('.helper-panel-content').addEventListener('click', async function(e) {
+  if (e.target.id === 'apply-status-filter') {
+    // Получаем выбранные статусы
+    const selectedStatuses = filters.byStatus.status;
+    
+    if (selectedStatuses.length > 0) {
+      // Фильтруем задачи по выбранным статусам
+      const filteredTasks = clientTasks.filter(task => 
+        selectedStatuses.includes(task.status)
+      );
+      
+      await updateTasksList(filteredTasks);
+    } else {
+      // Если ничего не выбрано, показываем все задачи
+      await updateTasksList(clientTasks);
+    }
+  }
 });

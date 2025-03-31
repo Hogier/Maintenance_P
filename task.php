@@ -592,6 +592,17 @@ if ($action === 'addTask') {
         error_log("Error in getNotCompletedTasksForLastWeek: " . $e->getMessage());
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
+} elseif ($action === 'getTasksByPeriod') {
+    $fromDate = $_POST['fromDate'];
+    $toDate = $_POST['toDate'];
+
+    $stmt = $conn->prepare("SELECT * FROM tasks WHERE date >= ? AND date <= ?");
+    $stmt->bind_param("ss", $fromDate, $toDate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);
+    echo json_encode(['success' => true, 'data' => $tasks]);
+    $stmt->close();
 }
 
 $conn->close();
