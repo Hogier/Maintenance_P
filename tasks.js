@@ -30,7 +30,6 @@ let newCommentsPosition = [];
 let localComments = {};
 let counterNewTaskNotification = 0;
 
-// Добавление глобальных переменных для хранения значений фильтров
 let filters = {
   byDate: {
     date: "",
@@ -46,9 +45,22 @@ let filters = {
     status: [], // Массив для хранения выбранных статусов
   },
   byPriority: {
-    priority: "",
+    priority: [], // Массив для хранения выбранных приоритетов
   },
-}
+  byAssignment: {
+    assignment: "All",
+  },
+};
+
+let sort = {
+  byDate: "desc",
+  byStatus: "asc",
+  byPriority: "asc",
+  byAssignment: "asc",
+};
+
+let currentPage = 1;
+let limitTasksInPage = 10;
 
 //////////////////////////////////ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ////////////////////////////
 
@@ -69,11 +81,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 /*  const todayTasks = await getTasksByDate(today);
   clientTasks = todayTasks;
   await updateTasksList(todayTasks);*/
-  const fromDate = luxon.DateTime.now().minus({ days: 7 }).toISO();
-  const toDate = luxon.DateTime.now().toISO();
-  const todayTasks = await getTasksByPeriod(fromDate, toDate);
+  const filteredObj = await getTasksWithFilteringSortingPagination(filters);
+  const todayTasks = filteredObj.data;
   clientTasks = todayTasks;
   await updateTasksList(todayTasks);
+  updatePagination(filteredObj.pagination);
 
   await displayNotCompletedTasks();
 
@@ -97,32 +109,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayNotCompletedTasksButton.style.transform = "rotate(0deg)";
       }
     });
-
-  // Добавляем обработчики для кнопок фильтрации
-  document.getElementById("todayTasks").addEventListener("click", async (e) => {
-    tasksCurrentFilter = "today";
-    console.log("today: ", today);
-    checkDate = currentDate.toISOString().split("T")[0];
-
-    document
-      .querySelectorAll(".date-filter button")
-      .forEach((btn) => btn.classList.remove("active"));
-    e.target.classList.add("active");
-
-    const todayTasks = await getTasksByDate(today);
-    await updateTasksList(todayTasks);
-  });
-
-  document.getElementById("allTasks").addEventListener("click", async (e) => {
-    tasksCurrentFilter = "all";
-    document
-      .querySelectorAll(".date-filter button")
-      .forEach((btn) => btn.classList.remove("active"));
-    e.target.classList.add("active");
-
-    const allTasks = await getTasks(); // Если нужно загрузить все задания
-    await updateTasksList(allTasks);
-  });
 
  
   // Добавим обработчик выхода
@@ -1053,7 +1039,6 @@ async function handleAddComment(taskId, commentText, userFullName) {
   try {
     // Используем существующую функцию для добавления комментария на сервер
     const success = await db.addComment(taskId, commentText, userFullName);
-    console.log("Отправка комментария на сервер handleAddComment()");
     tasksWS.send(JSON.stringify({
       action: "updateComments",
       taskId: taskId,
@@ -1433,11 +1418,7 @@ async function getMediaFileFromServer(fileName) {
       console.log("Server returned error:", result.message);
       return null;
     }
-    console.log("resultMedia: ", {
-      type: result.type || "unknown",
-      url: result.url || "",
-      name: fileName,
-    });
+
     return {
       type: result.type || "unknown",
       url: result.url || "",
@@ -1450,7 +1431,6 @@ async function getMediaFileFromServer(fileName) {
 }
 
 async function getMiniMediaFileFromServer(fileName) {
-  console.log("getMiniMediaFileFromServer: ", fileName);
   try {
     if (!fileName) {
       console.log("No file name provided");
@@ -1478,11 +1458,11 @@ async function getMiniMediaFileFromServer(fileName) {
       console.log("Server returned error:", result.message);
       return null;
     }
-    console.log("resultMedia: ", {
+    /*console.log("resultMedia: ", {
       type: result.type || "unknown",
       url: result.url || "",
       name: fileName,
-    });
+    });*/
     return {
       type: result.type || "unknown",
       url: result.url || "",
@@ -1676,10 +1656,7 @@ async function checkNewTasksInServer() {
   try {
     const lastTaskDate =
       clientTasks.length > 0 ? clientTasks[0].timestamp : null;
-    console.log(
-      "formatDallasDateForServer(getDallasDate()) ",
-      formatDallasDateForServer(getDallasDate())
-    );
+
     const response = await fetch("task.php", {
       method: "POST",
       headers: {
@@ -1709,7 +1686,6 @@ async function checkNewTasksInServer() {
 
 async function getNotCompletedTasksForLastWeek() {
   try {
-    console.log('Отправка запроса getNotCompletedTasksForLastWeek с датой:', formatDallasDateForServer(getDallasDate()));
     
     const response = await fetch("task.php", {
       method: "POST",
@@ -1724,7 +1700,6 @@ async function getNotCompletedTasksForLastWeek() {
 
     // Получаем сырой текст ответа
     const rawResponse = await response.text();
-    console.log('Сырой ответ сервера:', rawResponse);
     
     // Пробуем распарсить JSON
     let result;
@@ -1751,7 +1726,6 @@ async function getNotCompletedTasksForLastWeek() {
       }
       throw new Error(result.message);
     }
-    console.log('Успешно получены незавершенные задачи:', result.data.length);
     return result.data;
   } catch (error) {
     console.error("Error fetching not completed tasks for last week:", error);
@@ -1782,7 +1756,6 @@ async function getUrlOfMediaFilesByTaskId(taskId) {
 
 let notCompletedTasks = (async () => {
   const tasks = await getNotCompletedTasksForLastWeek();
-  console.log("getNotCompletedTasksForLastWeek: ", tasks);
   return tasks;
 })();
 
@@ -1791,10 +1764,7 @@ function updateAlertTasksListHeight(taskElement) {
   const alertTasks = document.querySelector(".alert-tasks");
   const closeAlertTasks = document.getElementById("closeAlertTasks");
   //alertTasks.style.transition = "height 0.15s ease-in-out, opacity 0.5s ease-in-out";
-  console.log(
-    "alertTasksList.querySelectorAll('.task-item').length: ",
-    alertTasksList.querySelectorAll(".task-item").length
-  );
+
   if (alertTasksList.querySelectorAll(".task-item").length === 1) {
     alertTasks.style.height = alertTasks.scrollHeight + "px";
     //taskElement.classList.add("collapse");
@@ -1888,16 +1858,41 @@ document.addEventListener('DOMContentLoaded', function () {
                   <input type="checkbox" id="status-completed" value="Completed" class="status-checkbox">
                   <label for="status-completed">Completed</label>
                 </div>
-                <button id="apply-status-filter" class="status-filter-button">Apply</button>
               </div>`
     },
     'By Priority': {
       title: 'Filter by Priority',
-      content: '<p>Filter by Priority</p>'
+      content: `<div class="priority-filter-container">
+                <div class="priority-filter-item">
+                  <input type="checkbox" id="priority-low" value="Low" class="priority-checkbox">
+                  <label for="priority-low">Low</label>
+                </div>
+                <div class="priority-filter-item">
+                  <input type="checkbox" id="priority-medium" value="Medium" class="priority-checkbox">
+                  <label for="priority-medium">Medium</label>
+                </div>
+                <div class="priority-filter-item">
+                  <input type="checkbox" id="priority-high" value="High" class="priority-checkbox">
+                  <label for="priority-high">High</label>
+                </div>
+                <div class="priority-filter-item">
+                  <input type="checkbox" id="priority-urgent" value="Urgent" class="priority-checkbox">
+                  <label for="priority-urgent">Urgent</label>
+                </div>
+              </div>`
     },
     'By Assignment': {
       title: 'Filter by Assignment',
-      content: '<p>Filter by Assignment</p>'
+      content: `<div class="assignment-filter-container">
+                <p>Choose assignment:</p>
+                <div class="assignment-filter">
+                <select id="assignment-filter">
+                  <option value="All">All</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+                </div>
+              </div>`
     },
     'By Sender': {
       title: 'Filter by Sender',
@@ -1937,6 +1932,8 @@ document.addEventListener('DOMContentLoaded', function () {
           const toPeriodFilter = document.getElementById("to-periodFilter");
           const lastPeriodFilter = document.getElementById("last-period-filter");
           const statusCheckboxes = document.querySelectorAll('.status-checkbox');
+          const priorityCheckboxes = document.querySelectorAll('.priority-checkbox');
+          const assignmentFilter = document.getElementById("assignment-filter");
 
           if (dateFilter && filters.byDate.date) {
             dateFilter.value = filters.byDate.date;
@@ -1957,6 +1954,16 @@ document.addEventListener('DOMContentLoaded', function () {
             statusCheckboxes.forEach(checkbox => {
               checkbox.checked = filters.byStatus.status.includes(checkbox.value);
             });
+          }
+          
+          if (priorityCheckboxes.length > 0 && filters.byPriority.priority.length > 0) {
+            priorityCheckboxes.forEach(checkbox => {
+              checkbox.checked = filters.byPriority.priority.includes(checkbox.value);
+            });
+          }
+          
+          if (assignmentFilter && filters.byAssignment.assignment) {
+            assignmentFilter.value = filters.byAssignment.assignment;
           }
         }, 0); // Используем setTimeout с нулевой задержкой для выполнения после рендеринга
       }
@@ -2001,8 +2008,8 @@ document.querySelector('.helper-panel-content').addEventListener('change', async
 
   if (e.target.id === "from-periodFilter") {    
     if (e.target.value && toPeriodFilter.value && toPeriodFilter.value > e.target.value) {
-      const filteredTasks = await getTasksByPeriod(e.target.value, toPeriodFilter.value);
-      await updateTasksList(filteredTasks);
+      //const filteredTasks = await getTasksByPeriod(e.target.value, toPeriodFilter.value);
+      //await updateTasksList(filteredTasks);
       dateFilter.value = "";
       lastPeriodFilter.value = "Custom";
       // Сохраняем в глобальные переменные вместо sessionStorage
@@ -2014,8 +2021,8 @@ document.querySelector('.helper-panel-content').addEventListener('change', async
   } 
   else if (e.target.id === "to-periodFilter") {
     if (fromPeriodFilter.value && e.target.value && e.target.value > fromPeriodFilter.value) {
-      const filteredTasks = await getTasksByPeriod(fromPeriodFilter.value, e.target.value);
-      await updateTasksList(filteredTasks);
+      //const filteredTasks = await getTasksByPeriod(fromPeriodFilter.value, e.target.value);
+      //await updateTasksList(filteredTasks);
       dateFilter.value = "";
       lastPeriodFilter.value = "Custom";
       // Сохраняем в глобальные переменные
@@ -2048,8 +2055,8 @@ document.querySelector('.helper-panel-content').addEventListener('change', async
         break;
     }
 
-    const filteredTasks = await getTasksByPeriod(fromDate, toDate);
-    await updateTasksList(filteredTasks);
+    //const filteredTasks = await getTasksByPeriod(fromDate, toDate);
+    //await updateTasksList(filteredTasks);
 
     dateFilter.value = "";
     fromPeriodFilter.value = "";
@@ -2079,8 +2086,8 @@ document.querySelector('.helper-panel-content').addEventListener('change', async
       .querySelectorAll(".date-filter button")
       .forEach((btn) => btn.classList.remove("active"));
 
-    const filteredTasks = await getTasksByDate(currentDate);
-    await updateTasksList(filteredTasks);
+    //const filteredTasks = await getTasksByDate(currentDate);
+    //await updateTasksList(filteredTasks);
     fromPeriodFilter.value = "";
     toPeriodFilter.value = "";
     lastPeriodFilter.value = "Custom";
@@ -2101,6 +2108,45 @@ document.querySelector('.helper-panel-content').addEventListener('change', async
     
     filters.byStatus.status = checkedStatuses;
   }
+  
+  // Обработка изменений чекбоксов приоритета
+  if (e.target.classList.contains('priority-checkbox')) {
+    const checkedPriorities = Array.from(document.querySelectorAll('.priority-checkbox:checked'))
+      .map(checkbox => checkbox.value);
+    
+    filters.byPriority.priority = checkedPriorities;
+  }
+  
+  // Обработка изменений выпадающего списка assignment-filter
+  else if (e.target.id === "assignment-filter") {
+    const selectedAssignment = e.target.value;
+    filters.byAssignment.assignment = selectedAssignment;
+    
+    /*
+    // Применяем фильтрацию сразу при выборе значения
+    if (selectedAssignment && selectedAssignment !== "All") {
+      // Фильтруем задачи по выбранному состоянию назначения
+      const filteredTasks = clientTasks.filter(task => {
+        if (selectedAssignment === "Yes") {
+          return task.assigned_to && task.assigned_to !== "";
+        } else if (selectedAssignment === "No") {
+          return !task.assigned_to || task.assigned_to === "";
+        }
+        return true;
+      });
+      */
+      //await updateTasksList(filteredTasks);
+    } else {
+      // Если выбрано "All", показываем все задачи
+      //await updateTasksList(clientTasks);
+    }
+  
+  console.log("Обновленные фильтры:", filters);
+  currentPage = 1;
+  const filteredObj = await getTasksWithFilteringSortingPagination(filters, currentPage, limitTasksInPage);
+  await updateTasksList(filteredObj.data);
+  updatePagination(filteredObj.pagination);
+  console.log("filteredObj: ", filteredObj);
 });
 
 
@@ -2125,7 +2171,7 @@ async function getTasksByPeriod(fromDate, toDate) {
 
   return clientTasks;
 }
-
+/*
 // Добавьте обработчик клика для кнопки Apply Filter
 document.querySelector('.helper-panel-content').addEventListener('click', async function(e) {
   if (e.target.id === 'apply-status-filter') {
@@ -2144,4 +2190,120 @@ document.querySelector('.helper-panel-content').addEventListener('click', async 
       await updateTasksList(clientTasks);
     }
   }
+  
+  // Обработка клика на кнопку фильтрации по приоритету
+  if (e.target.id === 'apply-priority-filter') {
+    // Получаем выбранные приоритеты
+    const selectedPriorities = filters.byPriority.priority;
+    
+    if (selectedPriorities.length > 0) {
+      // Фильтруем задачи по выбранным приоритетам
+      const filteredTasks = clientTasks.filter(task => 
+        selectedPriorities.includes(task.priority)
+      );
+      
+      await updateTasksList(filteredTasks);
+    } else {
+      // Если ничего не выбрано, показываем все задачи
+      await updateTasksList(clientTasks);
+    }
+  }
+  console.log("filters: ", filters);
 });
+*/
+
+let currentAbortController = null;
+
+async function getTasksWithFilteringSortingPagination(filters, page = currentPage, limit = limitTasksInPage) {
+  try {
+
+    page = page < 1 ? 1 : page;
+    
+    if (currentAbortController) {
+      currentAbortController.abort();
+      console.log("Предыдущий запрос отменен");
+    }
+    
+    currentAbortController = new AbortController();
+    const signal = currentAbortController.signal;
+    
+    // Показываем индикатор обновления
+    if (updateIndicator) {
+      updateIndicator.style.display = "block";
+      updateIndicator.style.opacity = "1";
+    }
+    
+    // Отправляем запрос с параметрами фильтрации и пагинации
+    const response = await fetch("task.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "getTasksWithFiltering",
+        filters: JSON.stringify(filters), // Передаем все фильтры
+        page: page,
+        limit: limit,
+      }),
+      signal
+    });
+    
+    const result = await response.json();
+    
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
+    console.log("getTasksWithFilteringSortingPagination result.data: ", result.data);
+    console.log("getTasksWithFilteringSortingPagination result.pagination: ", result.pagination);
+
+    // Здесь добавляем проверку перед установкой currentPage
+    if (result.pagination && result.pagination.page > 0) {
+      currentPage = result.pagination.page;
+    }
+
+    return {data: result.data, pagination: result.pagination};
+  } catch (error) {
+    // Проверяем, была ли ошибка вызвана отменой запроса
+    if (error.name === 'AbortError') {
+      console.log('Запрос был отменен');
+      // Не показываем ошибку пользователю, это ожидаемое поведение
+      return { data: [], pagination: {} };
+    }
+    
+    console.error("Ошибка при получении заданий:", error);
+    return { data: [], pagination: { currentPage: currentPage, totalPages: 1, totalTasks: 0, limit: limitTasksInPage } };
+  } finally {
+    // Скрываем индикатор обновления только если это не отмененный запрос
+    if (updateIndicator && currentAbortController.signal.aborted === false) {
+      updateIndicator.style.opacity = "0";
+      setTimeout(() => {
+        updateIndicator.style.display = "none";
+      }, 300);
+    }
+  }
+}
+
+function updatePagination(pagination) {
+  const paginationContainer = document.querySelector('.pagination-container');
+  paginationContainer.innerHTML = '';
+  for (let i = 1; i <= pagination.totalPages; i++) {
+    const paginationButton = document.createElement('div');
+    if (i === pagination.page) {
+      paginationButton.classList.add('pagination-button', 'active');
+    } else {
+      paginationButton.classList.add('pagination-button');
+    }
+    paginationButton.textContent = i;
+    paginationContainer.appendChild(paginationButton);
+
+    paginationButton.addEventListener('click', async () => {
+      currentPage = i;
+      document.querySelector('.pagination-container div.active').classList.remove('active');
+      paginationButton.classList.add('active');
+      const filteredObj = await getTasksWithFilteringSortingPagination(filters, currentPage, limitTasksInPage);
+      await updateTasksList(filteredObj.data);
+      updatePagination(filteredObj.pagination);
+    });
+  }
+}

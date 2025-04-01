@@ -1597,3 +1597,242 @@ h1 {
   background-color: #0b7ddb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
+
+
+
+/* Стили для контейнера фильтра приоритетов */
+.priority-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+/* Стили для элементов фильтра приоритета */
+.priority-filter-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.priority-filter-item label {
+  position: relative;
+  padding-left: 35px;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
+
+/* Создаем псевдоэлемент для чекбокса приоритета */
+.priority-filter-item label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+/* Стили для галочки внутри чекбокса приоритета */
+.priority-filter-item label::after {
+  content: '✓';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  color: white;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Скрываем стандартный чекбокс */
+.priority-checkbox {
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  background: none;
+  pointer-events: none;
+}
+
+/* Стили для чекбоксов приоритета Low */
+.priority-checkbox#priority-low:checked + label::before {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+/* Стили для чекбоксов приоритета Medium */
+.priority-checkbox#priority-medium:checked + label::before {
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+/* Стили для чекбоксов приоритета High */
+.priority-checkbox#priority-high:checked + label::before {
+  background-color: #ff9800;
+  border-color: #ff9800;
+}
+
+/* Стили для чекбоксов приоритета Urgent */
+.priority-checkbox#priority-urgent:checked + label::before {
+  background-color: #f44336;
+  border-color: #f44336;
+}
+
+/* Показываем галочку когда чекбокс приоритета отмечен */
+.priority-checkbox:checked + label::after {
+  opacity: 1;
+}
+
+/* Стили для контейнера фильтра назначения */
+.assignment-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.assignment-filter {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 15px;
+}
+
+.assignment-filter select {
+  width: 100%;
+  height: 30px;
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.pagination-container div.pagination-button {
+  padding: 0 10px;
+  margin: 0 7px;
+  cursor: pointer;
+  border: 1px solid #b5b5b5;
+  border-radius: 5px;
+  background-color: #ffffff;
+  color: #757575;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 30px;
+}
+
+.pagination-container div.pagination-button:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.pagination-container div.pagination-button.active {
+  background-color: #2196F3;
+  color: #ffffff;
+}
+
+/* Стили для контейнера поиска */
+.tasks-search-container {
+  display: flex;
+  align-items: center;
+}
+
+.search-type {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px 0 0 5px;
+  background-color: white;
+  font-size: 14px;
+  color: #333;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 200px;
+}
+
+.tasks-search-input {
+  width: 100%;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 0 5px 5px 0;
+  font-size: 14px;
+}
+
+.tasks-search-reset {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+  font-size: 12px;
+}
+
+.tasks-search-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.tasks-search-button:hover {
+  background-color: #1976d2;
+}
+
+.applied-filters-indicator {
+  display: flex;
+  align-items: center;
+  background-color: #f0f8ff;
+  border-left: 4px solid #4caf50;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.applied-filters-indicator i {
+  margin-right: 8px;
+  color: #4caf50;
+}
+
+.reset-filters-button {
+  margin-left: auto;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.reset-filters-button:hover {
+  background-color: #d32f2f;
+}
+

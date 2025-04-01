@@ -26,6 +26,8 @@ register_shutdown_function(function() {
 $uploadDir = "uploads/";
 $miniDir = "uploads/mini/";
 
+error_log("task.php: ");
+
 // Проверяем существование директорий и создаем их при необходимости
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
@@ -524,69 +526,46 @@ if ($action === 'addTask') {
     $date->modify('-7 days');
     $previousDate = $date->format('Y-m-d');
 
-    error_log("previousDate: " . $previousDate);
-    error_log("currentDate: " . $currentDate);
-
     global $conn;
 
     try {
-        // Логирование начала процесса
-        error_log("getNotCompletedTasksForLastWeek: Начало выполнения метода");
-        
-        // Check if upload directory is writable
         $uploadDir = __DIR__ . '/uploads';
         if (!is_dir($uploadDir)) {
-            error_log("getNotCompletedTasksForLastWeek: Создание директории загрузки");
             mkdir($uploadDir, 0777, true);
         }
         
         if (!is_writable($uploadDir)) {
-            error_log("getNotCompletedTasksForLastWeek: Upload directory is not writable: " . $uploadDir);
             // Continue execution even if directory is not writable
         } else {
-            error_log("getNotCompletedTasksForLastWeek: Upload directory is writable");
         }
 
         // Проверяем подключение к базе данных
         if ($conn->connect_error) {
-            error_log("getNotCompletedTasksForLastWeek: Ошибка подключения к БД: " . $conn->connect_error);
             throw new Exception("Database connection error: " . $conn->connect_error);
         }
-        error_log("getNotCompletedTasksForLastWeek: Подключение к БД успешно");
 
         // Изменяем запрос, чтобы исключить задания за сегодняшний день
         $query = "SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?";
-        error_log("getNotCompletedTasksForLastWeek: Подготовка запроса: " . $query);
-        error_log("getNotCompletedTasksForLastWeek: Параметры запроса: previousDate=" . $previousDate . ", currentDate=" . $currentDate);
         
         $stmt = $conn->prepare($query);
 
         if (!$stmt) {
-            error_log("getNotCompletedTasksForLastWeek: Ошибка подготовки запроса: " . $conn->error);
             throw new Exception("Ошибка подготовки запроса: " . $conn->error);
         }
-        error_log("getNotCompletedTasksForLastWeek: Запрос подготовлен успешно");
 
         $stmt->bind_param('ss', $previousDate, $currentDate);
-        error_log("getNotCompletedTasksForLastWeek: Привязка параметров завершена");
         
         if (!$stmt->execute()) {
-            error_log("getNotCompletedTasksForLastWeek: Ошибка выполнения запроса: " . $stmt->error);
             throw new Exception("Ошибка выполнения запроса: " . $stmt->error);
         }
-        error_log("getNotCompletedTasksForLastWeek: Запрос выполнен успешно");
 
         $result = $stmt->get_result();
         if (!$result) {
-            error_log("getNotCompletedTasksForLastWeek: Ошибка получения результатов: " . $stmt->error);
             throw new Exception("Ошибка получения результатов: " . $stmt->error);
         }
-        error_log("getNotCompletedTasksForLastWeek: Результаты запроса получены");
         
         $tasks = $result->fetch_all(MYSQLI_ASSOC);
-        error_log("getNotCompletedTasksForLastWeek: Количество найденных задач: " . count($tasks));
 
-        error_log("getNotCompletedTasksForLastWeek: Успешное завершение метода");
         echo json_encode(['success' => true, 'data' => $tasks]);
     } catch (Exception $e) {
         error_log("Error in getNotCompletedTasksForLastWeek: " . $e->getMessage());
@@ -603,6 +582,168 @@ if ($action === 'addTask') {
     $tasks = $result->fetch_all(MYSQLI_ASSOC);
     echo json_encode(['success' => true, 'data' => $tasks]);
     $stmt->close();
+} elseif ($action === 'getTasksWithFiltering') {
+    // Извлекаем параметры запроса
+    $filtersJson = $_POST['filters'] ?? '{}';
+    $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
+    $limit = isset($_POST['limit']) ? (int)$_POST['limit'] : 10;
+
+    // Вычисляем смещение для LIMIT в SQL
+    $offset = ($page - 1) * $limit;
+    
+    // Декодируем фильтры
+    $filters = json_decode($filtersJson, true);
+    
+    // Базовый запрос
+    $baseQuery = "SELECT * FROM tasks";
+    $countQuery = "SELECT COUNT(*) as total FROM tasks";
+    $whereConditions = [];
+    $params = [];
+    $types = "";
+    
+    // Применяем фильтры
+    // 1. Фильтр по дате
+    if (!empty($filters['byDate']['date']) && $filters['byDate']['period']['last'] === 'Custom') {
+        $whereConditions[] = "DATE(date) = ?";
+        $params[] = $filters['byDate']['date'];
+        $types .= "s";
+    } elseif (!empty($filters['byDate']['period']['custom']['from']) && !empty($filters['byDate']['period']['custom']['to']) && $filters['byDate']['period']['last'] === 'Custom') {
+        $whereConditions[] = "date >= ? AND date <= ?";
+        $params[] = $filters['byDate']['period']['custom']['from'];
+        $params[] = $filters['byDate']['period']['custom']['to'];
+        $types .= "ss";
+    } elseif (!empty($filters['byDate']['period']['last']) && $filters['byDate']['period']['last'] !== 'Custom') {
+        // Добавляем обработку предопределенных периодов
+        $currentDate = date('Y-m-d');
+        $fromDate = "";
+        
+        switch ($filters['byDate']['period']['last']) {
+            case 'lastWeek':
+                $fromDate = date('Y-m-d', strtotime('-7 days'));
+                break;
+            case 'lastMonth':
+                $fromDate = date('Y-m-d', strtotime('-1 month'));
+                break;
+            case 'last3Months':
+                $fromDate = date('Y-m-d', strtotime('-3 months'));
+                break;
+            case 'lastYear':
+                $fromDate = date('Y-m-d', strtotime('-1 year'));
+                break;
+        }
+        
+        if (!empty($fromDate)) {
+            $whereConditions[] = "date >= ? AND date <= ?";
+            $params[] = $fromDate;
+            $params[] = $currentDate;
+            $types .= "ss";
+        }
+    }
+    
+    // 2. Фильтр по статусу
+    if (!empty($filters['byStatus']['status']) && is_array($filters['byStatus']['status'])) {
+        $statusPlaceholders = implode(',', array_fill(0, count($filters['byStatus']['status']), '?'));
+        $whereConditions[] = "status IN (" . $statusPlaceholders . ")";
+        
+        foreach ($filters['byStatus']['status'] as $status) {
+            $params[] = $status;
+            $types .= "s";
+        }
+    }
+    
+    // 3. Фильтр по приоритету
+    if (!empty($filters['byPriority']['priority']) && is_array($filters['byPriority']['priority'])) {
+        $priorityPlaceholders = implode(',', array_fill(0, count($filters['byPriority']['priority']), '?'));
+        $whereConditions[] = "priority IN (" . $priorityPlaceholders . ")";
+        
+        foreach ($filters['byPriority']['priority'] as $priority) {
+            $params[] = $priority;
+            $types .= "s";
+        }
+    }
+    
+    // 4. Фильтр по назначениям
+    if (!empty($filters['byAssignment']['assignment']) && $filters['byAssignment']['assignment'] !== 'All') {
+        if ($filters['byAssignment']['assignment'] === 'Yes') {
+            $whereConditions[] = "assigned_to IS NOT NULL AND assigned_to != ''";
+        } elseif ($filters['byAssignment']['assignment'] === 'No') {
+            $whereConditions[] = "(assigned_to IS NULL OR assigned_to = '')";
+        }
+    }
+    
+    // Объединяем условия WHERE
+    if (!empty($whereConditions)) {
+        $baseQuery .= " WHERE " . implode(" AND ", $whereConditions);
+        $countQuery .= " WHERE " . implode(" AND ", $whereConditions);
+    }
+    
+    // Добавляем сортировку (по умолчанию по дате создания)
+    $baseQuery .= " ORDER BY timestamp DESC";
+    
+    // Добавляем пагинацию
+    $baseQuery .= " LIMIT ? OFFSET ?";
+    $params[] = $limit;
+    $params[] = $offset;
+    $types .= "ii";
+    
+
+    // Выполняем запрос для получения общего количества задач
+    $countStmt = $conn->prepare($countQuery);
+
+    error_log("getTasksWithFiltering: baseQuery: " . $baseQuery);
+    error_log("getTasksWithFiltering: countQuery: " . $countQuery);
+    error_log("getTasksWithFiltering: params: " . json_encode($params));
+    error_log("getTasksWithFiltering: types: " . $types);
+    error_log("getTasksWithFiltering: countStmt выполнен");
+
+    if (!empty($params) && !empty($types)) {
+        // Создаем копии параметров для запроса подсчета (без limit и offset)
+        $countParams = array_slice($params, 0, count($params) - 2);
+        $countTypes = substr($types, 0, strlen($types) - 2);
+        
+        $countStmt->bind_param($countTypes, ...$countParams);
+    }
+    
+    $countStmt->execute();
+    $totalResult = $countStmt->get_result()->fetch_assoc();
+    $totalTasks = $totalResult['total'];
+    $totalPages = ceil($totalTasks / $limit);
+    
+    // Выполняем основной запрос для получения данных с пагинацией
+    $stmt = $conn->prepare($baseQuery);
+    
+    if (!empty($params) && !empty($types)) {
+        // Привязываем параметры только если они есть
+        $stmt->bind_param($types, ...$params);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);
+    
+    // Декодируем JSON-поля
+    foreach ($tasks as &$task) {
+        if (isset($task['comments'])) {
+            $task['comments'] = json_decode($task['comments'], true);
+        }
+        if (isset($task['media'])) {
+            $task['media'] = json_decode($task['media'], true);
+        }
+    }
+    
+    echo json_encode([
+        'success' => true, 
+        'data' => $tasks,
+        'pagination' => [
+            'totalTasks' => (int)$totalTasks,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages
+        ]
+    ]);
+    
+    $stmt->close();
+    $countStmt->close();
 }
 
 $conn->close();
