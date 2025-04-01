@@ -94,12 +94,22 @@
     <header>
       <h1>Maintenance Tasks</h1>
       <div class="current-time">
-        <span id="dallasTime"></span>
+        <!--<span id="dallasTime"></span>-->
       </div>
       <div class="date-filter">
-        <button id="todayTasks" class="active">Today</button>
-        <button id="allTasks">All Tasks</button>
-        <!--<input type="date" id="dateFilter" />-->
+        <div class="tasks-search-container">
+          <select class="search-type">
+            <option value="ID">ID</option>
+            <option value="Details">Details</option>
+          </select>
+          <div class="search-input-wrapper">
+            <input type="search" class="tasks-search-input" placeholder="Search...">
+            <span class="tasks-search-reset">✕</span>
+          </div>
+          <button class="tasks-search-button">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
       </div>
     </header>
     <div class="container">
@@ -117,12 +127,16 @@
           </div>
           <div id="closeAlertTasks">&#10006;</div>
         </div>
+        
+        
         <div class="tasks-container">
           <div class="tasks-list" id="tasksList">
             <!-- Задачи будут добавляться здесь динамически -->
           </div>
+          <div class="pagination-container"></div>
         </div>
       </main>
+
 
       <div class="task-stats">
         <div class="stat-item">
@@ -138,20 +152,7 @@
           <span id="pendingTasks" class="stat-value">0</span>
         </div>
       </div>
-      <div class="task-stats">
-        <div class="stat-item">
-          <span class="stat-label">Total Tasks:</span>
-          <span id="totalTasks" class="stat-value">0</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Completed:</span>
-          <span id="completedTasks" class="stat-value">0</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Pending:</span>
-          <span id="pendingTasks" class="stat-value">0</span>
-        </div>
-      </div>
+
 
       <div class="nav-links">
         <a href="main.html" class="back-button">Back to Main</a>
@@ -342,13 +343,13 @@
   <script src="user-profile.js"></script>
   <script>
     // Обновление времени каждую секунду
-    function updateDallasTime() {
+   /* function updateDallasTime() {
       const timeElement = document.getElementById("dallasTime");
       timeElement.textContent = getDallasDateTime();
     }
 
     setInterval(updateDallasTime, 1000);
-    updateDallasTime(); // Первоначальное обновление
+    updateDallasTime(); // Первоначальное обновление */
   </script>
   
 
