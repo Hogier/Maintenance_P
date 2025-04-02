@@ -1,0 +1,148 @@
+2025-03-29 06:50:46 - Starting API test
+2025-03-29 06:50:46 - Sending data: {"company_name":"Test Company 1743227446","business_type":"Test Business","location":"Test Location","email":"test@example.com","phone":"123-456-7890","website":"www.test.com","rating":5,"notes":"Test notes"}
+2025-03-29 06:50:46 - HTTP Status: 404
+2025-03-29 06:50:46 - Response: <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Object not found!</title>
+<link rev="made" href="mailto:you@example.com" />
+<style type="text/css"><!--/*--><![CDATA[/*><!--*/ 
+    body { color: #000000; background-color: #FFFFFF; }
+    a:link { color: #0000CC; }
+    p, address {margin-left: 3em;}
+    span {font-size: smaller;}
+/*]]>*/--></style>
+</head>
+
+<body>
+<h1>Object not found!</h1>
+<p>
+
+
+    The requested URL was not found on this server.
+
+  
+
+    If you entered the URL manually please check your
+    spelling and try again.
+
+  
+
+</p>
+<p>
+If you think this is a server error, please contact
+the <a href="mailto:you@example.com">webmaster</a>.
+
+</p>
+
+<h2>Error 404</h2>
+<address>
+  <a href="/">localhost</a><br />
+  <span>Apache/2.4.56 (Unix) OpenSSL/1.1.1t PHP/8.2.4 mod_perl/2.0.12 Perl/v5.34.1</span>
+</address>
+</body>
+</html>
+
+
+2025-03-29 06:50:55 - Starting API test
+2025-03-29 06:50:55 - Sending data: {"company_name":"Test Company 1743227455","business_type":"Test Business","location":"Test Location","email":"test@example.com","phone":"123-456-7890","website":"www.test.com","rating":5,"notes":"Test notes"}
+2025-03-29 06:50:55 - HTTP Status: 404
+2025-03-29 06:50:55 - Response: <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Object not found!</title>
+<link rev="made" href="mailto:you@example.com" />
+<style type="text/css"><!--/*--><![CDATA[/*><!--*/ 
+    body { color: #000000; background-color: #FFFFFF; }
+    a:link { color: #0000CC; }
+    p, address {margin-left: 3em;}
+    span {font-size: smaller;}
+/*]]>*/--></style>
+</head>
+
+<body>
+<h1>Object not found!</h1>
+<p>
+
+
+    The requested URL was not found on this server.
+
+  
+
+    If you entered the URL manually please check your
+    spelling and try again.
+
+  
+
+</p>
+<p>
+If you think this is a server error, please contact
+the <a href="mailto:you@example.com">webmaster</a>.
+
+</p>
+
+<h2>Error 404</h2>
+<address>
+  <a href="/">localhost</a><br />
+  <span>Apache/2.4.56 (Unix) OpenSSL/1.1.1t PHP/8.2.4 mod_perl/2.0.12 Perl/v5.34.1</span>
+</address>
+</body>
+</html>
+
+
+2025-03-29 06:51:29 - Starting API test
+2025-03-29 06:51:29 - Sending data: {"company_name":"Test Company 1743227489","business_type":"Test Business","location":"Test Location","email":"test@example.com","phone":"123-456-7890","website":"www.test.com","rating":5,"notes":"Test notes"}
+2025-03-29 06:51:29 - HTTP Status: 404
+2025-03-29 06:51:29 - Response: <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Object not found!</title>
+<link rev="made" href="mailto:you@example.com" />
+<style type="text/css"><!--/*--><![CDATA[/*><!--*/ 
+    body { color: #000000; background-color: #FFFFFF; }
+    a:link { color: #0000CC; }
+    p, address {margin-left: 3em;}
+    span {font-size: smaller;}
+/*]]>*/--></style>
+</head>
+
+<body>
+<h1>Object not found!</h1>
+<p>
+
+
+    The requested URL was not found on this server.
+
+  
+
+    If you entered the URL manually please check your
+    spelling and try again.
+
+  
+
+</p>
+<p>
+If you think this is a server error, please contact
+the <a href="mailto:you@example.com">webmaster</a>.
+
+</p>
+
+<h2>Error 404</h2>
+<address>
+  <a href="/">localhost</a><br />
+  <span>Apache/2.4.56 (Unix) OpenSSL/1.1.1t PHP/8.2.4 mod_perl/2.0.12 Perl/v5.34.1</span>
+</address>
+</body>
+</html>
+
+
+2025-03-29 06:52:29 - Starting API test
+2025-03-29 06:52:29 - Sending data: {"company_name":"Test Company 1743227549","business_type":"Test Business","location":"Test Location","email":"test@example.com","phone":"123-456-7890","website":"www.test.com","rating":5,"notes":"Test notes"}
+2025-03-29 06:52:29 - HTTP Status: 200
+2025-03-29 06:52:29 - Response: {"success":true,"message":"\u041f\u043e\u0434\u0440\u044f\u0434\u0447\u0438\u043a \u043d\u0430\u0439\u0434\u0435\u043d","data":{"id":10,"company_name":"Test Company 1743227549","business_type":"Test Business","location":"Test Location","email":"test@example.com","phone":"123-456-7890","website":"www.test.com","rating":5,"notes":"Test notes","created_at":"2025-03-29 00:52:29","updated_at":"2025-03-29 00:52:29","employees":[]}}
