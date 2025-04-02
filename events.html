@@ -19,7 +19,7 @@
   <body>
     <div class="header-container">
       <div class="user-profile-account">
-        <div class="user-info">
+        <div class="profile-user-info">
           <div class="avatar-container">
             <span id="userAvatar">👤</span>
           </div>
@@ -532,7 +532,7 @@
             </div>
             <div class="change-photo" id="changePhotoButton">&#128247;</div>
           </div>
-          <div class="user-info">
+          <div class="profile-user-info">
             <h2 id="dashboardUserName"></h2>
             <p id="dashboardUserEmail"></p>
             <!-- Добавьте другие данные о пользователе здесь -->
@@ -613,6 +613,11 @@
       </div>
     </div>
 
+    <div id="newCommentNotification" class="new-comment-notification">
+      <h3></h3>
+      <p></p>
+      <button id="closeNotificationButton">&#10005;</button>
+    </div>
     <script src="database.js"></script>
     <script src="dateUtils.js"></script>
     <script src="events.js"></script>
