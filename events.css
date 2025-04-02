@@ -1770,7 +1770,10 @@ input[type="date"]:invalid::before {
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  display: inline-flex;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  min-width: 80px;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -1781,7 +1784,8 @@ input[type="date"]:invalid::before {
 
 .event-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
 }
 
 .event-btn i {
@@ -2073,5 +2077,123 @@ input[type="date"]:invalid::before {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Стилизация уведомления о новом комментарии */
+.new-comment-notification {
+  position: fixed;
+  bottom: 30px;
+  right: 20px;
+  width: 270px;
+  height: 107px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-radius: 12px 12px 0 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  z-index: 1000;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  border-left: 4px solid #4caf50;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+/* Класс для показа уведомления */
+.new-comment-notification.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Сохраняем видимость при наведении курсора */
+.new-comment-notification:hover {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+
+/* Добавляем хвостик облачка */
+.new-comment-notification::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: -8px;
+  width: 50px;
+  height: 20px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  transform: skew(40deg, 0);
+  border-radius: 0 0 1px 0;
+  z-index: 900;
+}
+
+.new-comment-notification h3 {
+  margin: 0 0 10px 0;
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding-right: 20px;
+}
+
+.new-comment-notification p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-height: 3em; /* Высота ограничена 2 строками (1.5 × 2 = 3em) */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Добавляет "..." в конце обрезанного текста */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Для WebKit/Blink браузеров */
+  -webkit-box-orient: vertical;
+}
+
+.new-comment-notification p::-webkit-scrollbar {
+  width: 4px;
+}
+
+.new-comment-notification p::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.new-comment-notification p::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+#closeNotificationButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 16px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+#closeNotificationButton:hover {
+  color: #ef4444;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
