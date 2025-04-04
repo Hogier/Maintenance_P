@@ -19,95 +19,112 @@ window.onload = function () {
   eventsWS.onclose = function () {
     console.log("Соединение закрыто");
   };
-}
+};
 
 function showCommentNotification(comment) {
-  const notificationElement = document.getElementById('newCommentNotification');
-  const headerElement = notificationElement.querySelector('h3');
-  const textElement = notificationElement.querySelector('p');
-  
+  const notificationElement = document.getElementById("newCommentNotification");
+  const headerElement = notificationElement.querySelector("h3");
+  const textElement = notificationElement.querySelector("p");
+
   headerElement.textContent = comment.author;
   textElement.textContent = comment.text;
   const eventDate = comment.eventDate;
 
-  notificationElement.addEventListener('click', function() {
+  notificationElement.addEventListener("click", function () {
     console.log("eventDate: ", eventDate);
     console.log("selectedDate: ", selectedDate);
-    
-    const parts = eventDate.split(', ');
+
+    const parts = eventDate.split(", ");
     const year = parseInt(parts[1]);
-    const dateParts = parts[0].split(' ');
+    const dateParts = parts[0].split(" ");
     const day = parseInt(dateParts[1]);
-    
-    const months = ["January", "February", "March", "April", "May", "June", 
-                  "July", "August", "September", "October", "November", "December"];
+
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
     const monthIndex = months.indexOf(dateParts[0]);
-    
+
     const parsedDate = new Date(year, monthIndex, day);
     console.log("parsedDate: ", parsedDate);
-    
+
     selectedDate = parsedDate;
-    
+
     try {
       updateCalendar();
       updateEventsList();
-      
+
       // Автоматически раскрываем только первое событие в списке
-  setTimeout(() => {
+      setTimeout(() => {
         // Получаем только первую кнопку toggle-details
-        const firstToggleButton = document.querySelector('.toggle-details');
+        const firstToggleButton = document.querySelector(".toggle-details");
         if (firstToggleButton) {
           // Находим блок деталей для этой кнопки
-          const eventItem = firstToggleButton.closest('.event-item');
-          const details = eventItem.querySelector('.event-details');
-          
-          details.classList.remove('hidden');
-          firstToggleButton.textContent = 'Hide Details';
-          firstToggleButton.classList.add('active');
-          
+          const eventItem = firstToggleButton.closest(".event-item");
+          const details = eventItem.querySelector(".event-details");
+
+          details.classList.remove("hidden");
+          firstToggleButton.textContent = "Hide Details";
+          firstToggleButton.classList.add("active");
 
           setTimeout(() => {
-            eventItem.scrollIntoView({ behavior: 'smooth', block: "end" });
+            eventItem.scrollIntoView({ behavior: "smooth", block: "end" });
           }, 100);
         }
-      }, 100); 
-      
+      }, 100);
     } catch (error) {
       console.error("Error updating calendar or events list:", error);
     }
-    notificationElement.classList.remove('show');
+    notificationElement.classList.remove("show");
   });
-  
-  notificationElement.classList.add('show');
-  
+
+  notificationElement.classList.add("show");
+
   setTimeout(() => {
-    notificationElement.classList.remove('show');
+    notificationElement.classList.remove("show");
   }, 10000);
 }
 
-eventsWS.onmessage = function(e) {
+eventsWS.onmessage = function (e) {
   try {
     const data = JSON.parse(e.data);
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    const currentUserName = currentUser.fullName ? currentUser.fullName : currentUser.username;
+    const currentUserName = currentUser.fullName
+      ? currentUser.fullName
+      : currentUser.username;
     if (data.action === "eventCommentAdded") {
       const comment = data.message;
       console.log("comment.author: ", comment.author);
       console.log("currentUser.username: ", currentUser.username);
-      console.log("comment.author != currentUser.username: ", comment.author != currentUser.username);
+      console.log(
+        "comment.author != currentUser.username: ",
+        comment.author != currentUser.username
+      );
       if (comment.author != currentUserName) {
         showCommentNotification(comment);
       }
     }
   } catch (error) {
-    console.error('Error processing WebSocket message:', error);
+    console.error("Error processing WebSocket message:", error);
   }
 };
 
 // Добавляем обработчик для кнопки закрытия
-document.getElementById('closeNotificationButton').addEventListener('click', function() {
-  document.getElementById('newCommentNotification').classList.remove('show');
-});
+document
+  .getElementById("closeNotificationButton")
+  .addEventListener("click", function () {
+    document.getElementById("newCommentNotification").classList.remove("show");
+  });
 
 ///////////////////////////////////////////////////////
 
@@ -786,16 +803,18 @@ async function handleEventSubmit(e) {
 }
 
 // Функция для отображения уведомлений
-function showNotification(message, type = "success") {
+function showNotification(message, type = "success", duration = 3000) {
   const notification = document.createElement("div");
   notification.className = `notification ${type}`;
   notification.textContent = message;
   document.body.appendChild(notification);
 
-  // Удаляем уведомление через 3 секунды
   setTimeout(() => {
-    notification.remove();
-  }, 3000);
+    notification.style.opacity = "0";
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 300);
+  }, duration);
 }
 
 // Функция для создания элемента оборудования
@@ -873,11 +892,25 @@ function formatDate(dateString) {
     // Используем стандартную функцию из dateUtils для более надежной работы
     if (dateString.includes(":")) {
       // Если строка содержит время (HH:MM:SS), применяем полное форматирование
-      const date = new Date(dateString.replace(/-/g, "/"));
-      return formatDallasDate(date);
+      // const date = new Date(dateString.replace(/-/g, "/")); // OLD
+      // Treat the incoming string as UTC by adding 'Z'
+      const date = new Date(dateString.replace(" ", "T") + "Z");
+      // return formatDallasDate(date); // Assuming formatDallasDate handles a Date object correctly
+      // Replacing formatDallasDate call with explicit formatting for clarity
+      return date.toLocaleString("en-US", {
+        timeZone: "America/Chicago",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
     } else {
       // Если строка содержит только дату (YYYY-MM-DD), форматируем только дату
-      const date = new Date(dateString.replace(/-/g, "/"));
+      // Assuming date-only strings are not UTC and should be treated as local/Chicago?
+      // If they might represent UTC dates, this part might also need adjustment.
+      const date = new Date(dateString.replace(/-/g, "/")); // Keep as is for now, assuming date-only is fine
       return date.toLocaleDateString("en-US", {
         timeZone: "America/Chicago",
         month: "long",
@@ -1381,6 +1414,11 @@ function createEventElement(event) {
             })">
                 <i class="fas fa-print"></i> Print
             </button>
+            <button class="event-btn email-btn" onclick="emailEvent(${
+              event.id
+            })">
+                <i class="fas fa-envelope"></i> Email
+            </button>
             <button class="event-btn edit-btn" onclick="editEvent(${event.id})">
                 <i class="fas fa-edit"></i> Edit
             </button>
@@ -1516,7 +1554,9 @@ async function addComment(event, eventId) {
       return;
     }
 
-    const author = currentUser.fullName ? currentUser.fullName : currentUser.username;
+    const author = currentUser.fullName
+      ? currentUser.fullName
+      : currentUser.username;
 
     // Форматируем дату для передачи на сервер
     const now = new Date();
@@ -1550,9 +1590,9 @@ async function addComment(event, eventId) {
     console.log("Comment added successfully");
     console.log(commentData);
     commentData.action = "addEventComment";
-    commentData.eventDate = document.querySelector('.event-date').textContent;
+    commentData.eventDate = document.querySelector(".event-date").textContent;
     eventsWS.send(JSON.stringify(commentData));
-   
+
     // Находим событие в массиве
     const currentEvent = events.find((e) => String(e.id) === String(eventId));
     if (!currentEvent) throw new Error("Event not found");
@@ -1830,7 +1870,7 @@ async function updateEventStatus(eventId, newStatus, skipCheck = false) {
     }
 
     showNotification(`Event status updated to ${newStatus}`);
-  }  catch (error) {
+  } catch (error) {
     console.error("Error updating event status:", error);
     alert("Failed to update event status");
 
@@ -2891,5 +2931,164 @@ async function deleteComment(event, eventId, commentId) {
   } catch (error) {
     console.error("Error deleting comment:", error);
     showNotification("Failed to delete comment: " + error.message, "error");
+  }
+}
+
+function emailEvent(eventId) {
+  // Находим информацию о событии по ID
+  const event = events.find((e) => e.id === eventId);
+
+  if (!event) {
+    showNotification("Event not found", "error");
+    return;
+  }
+
+  // Создаем основные детали события
+  const startDate = formatDate(event.startDate);
+  const endDate = formatDate(event.endDate);
+  const timeInfo = `${event.startTime || "Not set"} - ${
+    event.endTime || "Not set"
+  }`;
+
+  // Генерируем тему письма
+  const subject = `Event: ${event.name}`;
+
+  // Формируем список оборудования, если доступно
+  let equipmentList = "";
+  if (event.podium === "yes") equipmentList += "- Podium\n";
+  if (event.monitors === "yes") equipmentList += "- Monitors\n";
+  if (event.laptop === "yes") equipmentList += "- Laptop\n";
+  if (event.ipad === "yes") equipmentList += "- iPad\n";
+  if (event.microphones === "yes") equipmentList += "- Microphones\n";
+  if (event.speaker === "yes") equipmentList += "- Speaker\n";
+
+  // Формируем список услуг, если доступно
+  let servicesList = "";
+  if (event.avAssistance === "yes") servicesList += "- A/V Assistance\n";
+  if (event.security === "yes") servicesList += "- Security\n";
+  if (event.buildingAccess) servicesList += "- Building Access\n";
+
+  // Формируем информацию о столах, если доступно
+  let tablesInfo = "";
+  if (event.tables_needed === "yes") {
+    if (event.tables6ft === "yes" && parseInt(event.tables6ftCount) > 0) {
+      tablesInfo += `- 6ft Tables: ${event.tables6ftCount}\n`;
+    }
+    if (event.tables8ft === "yes" && parseInt(event.tables8ftCount) > 0) {
+      tablesInfo += `- 8ft Tables: ${event.tables8ftCount}\n`;
+    }
+    if (event.tablesRound === "yes" && parseInt(event.tablesRoundCount) > 0) {
+      tablesInfo += `- Round Tables: ${event.tablesRoundCount}\n`;
+    }
+    if (event.tablecloth_color) {
+      tablesInfo += `- Tablecloth color: ${event.tablecloth_color}\n`;
+    }
+  }
+
+  // Формируем информацию о стульях, если доступно
+  let chairsInfo = "";
+  if (event.chairs_needed === "yes" && parseInt(event.chairs_count) > 0) {
+    chairsInfo = `- Chairs: ${event.chairs_count}\n`;
+  }
+
+  // Создаем хорошо форматированный текстовый контент для письма, который работает во всех почтовых клиентах
+  const plainTextBody = `=========================================
+EVENT: ${event.name.toUpperCase()}
+=========================================
+Date: ${startDate}
+Time: ${timeInfo}
+Location: ${event.location}
+Status: ${event.status || "Pending"}
+${event.attendees ? `Attendees: ${event.attendees}` : ""}
+
+-----------------------------------------
+CONTACT INFORMATION
+-----------------------------------------
+Contact: ${event.contact || "Not specified"}
+Phone: ${event.phone || "Not specified"}
+Email: ${event.email || "Not specified"}
+${event.alcuinContact ? `Alcuin Contact: ${event.alcuinContact}` : ""}
+
+${
+  tablesInfo || chairsInfo
+    ? `-----------------------------------------
+TABLES & CHAIRS
+-----------------------------------------
+${tablesInfo}${chairsInfo}`
+    : ""
+}
+
+${
+  equipmentList
+    ? `-----------------------------------------
+EQUIPMENT
+-----------------------------------------
+${equipmentList}`
+    : ""
+}
+
+${
+  servicesList
+    ? `-----------------------------------------
+SERVICES
+-----------------------------------------
+${servicesList}`
+    : ""
+}
+
+${
+  event.otherConsiderations
+    ? `-----------------------------------------
+ADDITIONAL CONSIDERATIONS
+-----------------------------------------
+${event.otherConsiderations}
+`
+    : ""
+}
+
+-----------------------------------------
+Event #${
+    event.id
+  } • Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+To see complete event details, please visit the Event Management System.
+-----------------------------------------`;
+
+  try {
+    // Проверяем, используется ли Microsoft Outlook
+    const isOutlook =
+      navigator.userAgent.indexOf("MSOutlook") > -1 ||
+      navigator.userAgent.indexOf("Microsoft Outlook") > -1 ||
+      window.navigator.msSaveOrOpenBlob; // Характерно для IE/Outlook
+
+    // Кодируем содержимое письма и тему
+    const encodedBody = encodeURIComponent(plainTextBody);
+    const encodedSubject = encodeURIComponent(subject);
+
+    // Создаем ссылку mailto, которая откроет почтовый клиент
+    const mailtoLink = `mailto:?subject=${encodedSubject}&body=${encodedBody}`;
+
+    // Показываем уведомление пользователю
+    if (isOutlook) {
+      showNotification(
+        "Открывается Microsoft Outlook для отправки информации о событии",
+        "success",
+        3000
+      );
+    } else {
+      showNotification(
+        "Открывается почтовый клиент для отправки информации о событии",
+        "success",
+        3000
+      );
+    }
+
+    // Открываем почтовый клиент по умолчанию
+    window.location.href = mailtoLink;
+  } catch (error) {
+    console.error("Ошибка при открытии почтового клиента:", error);
+    showNotification(
+      "Ошибка при открытии почтового клиента. Пожалуйста, попробуйте снова.",
+      "error"
+    );
   }
 }

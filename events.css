@@ -759,6 +759,8 @@ body {
   font-size: 14px;
   z-index: 1000;
   animation: slideIn 0.3s ease-out;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 .notification.success {
@@ -1120,11 +1122,11 @@ body {
 
 /* Специфические стили для разных типов кнопок */
 .action-button.print {
-  background: linear-gradient(145deg, #059669, #047857);
+  background-color: #059669;
 }
 
 .action-button.print:hover {
-  background: linear-gradient(145deg, #047857, #036c4e);
+  background-color: #026046;
 }
 
 .action-button.edit {
@@ -1141,6 +1143,15 @@ body {
 
 .action-button.delete:hover {
   background: linear-gradient(145deg, #dc2626, #b91c1c);
+}
+
+.email-btn {
+  background-color: #0284c7;
+  color: white;
+}
+
+.email-btn:hover {
+  background-color: #0369a1;
 }
 
 /* Контейнер для кнопок */
@@ -1793,11 +1804,11 @@ input[type="date"]:invalid::before {
 }
 
 .print-btn {
-  background: linear-gradient(145deg, #059669, #047857);
+  background-color: #059669;
 }
 
 .print-btn:hover {
-  background: linear-gradient(145deg, #047857, #036c4e);
+  background-color: #026046;
 }
 
 .edit-btn {

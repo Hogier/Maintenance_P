@@ -315,8 +315,11 @@ try {
                 $events = [];
                 while ($row = $result->fetch_assoc()) {
                     // Получаем комментарии для каждого события
+                    $current_event_id = $row['id']; // Store event ID for logging
+                    debug_log("Fetching comments for event ID: " . $current_event_id);
+
                     $commentStmt = $conn->prepare("SELECT * FROM event_comments WHERE event_id = ? ORDER BY created_at ASC");
-                    $commentStmt->bind_param('i', $row['id']);
+                    $commentStmt->bind_param('i', $current_event_id);
                     $commentStmt->execute();
                     $commentResult = $commentStmt->get_result();
                     
@@ -329,6 +332,8 @@ try {
                             'date' => $commentRow['created_at']
                         ];
                     }
+                    // Log how many comments were found for this event
+                    debug_log("Found " . count($comments) . " comments for event ID: " . $current_event_id);
                     $commentStmt->close();
 
                     // Удаляем обработку устаревших полей
@@ -505,6 +510,7 @@ try {
 
             // Преобразуем дату в формат MySQL
             $date = date('Y-m-d H:i:s', strtotime($commentData['date']));
+            debug_log("Preparing to insert comment", ['data' => $commentData, 'prepared_date' => $date]); // Log data before binding
 
             if (!$stmt->bind_param('isss', 
                 $commentData['eventId'],
@@ -515,8 +521,23 @@ try {
                 throw new Exception('Failed to bind comment parameters: ' . $stmt->error);
             }
 
+            debug_log("Attempting to execute comment insert..."); // Log before execution
             if (!$stmt->execute()) {
-                throw new Exception('Failed to add comment: ' . $stmt->error);
+                // Log the specific SQL error
+                $sqlError = $stmt->error;
+                debug_log("Failed to add comment - SQL Error", ['error' => $sqlError]);
+                throw new Exception('Failed to add comment: ' . $sqlError);
+            }
+            // Log affected rows immediately after execute
+            $affected_rows = $conn->affected_rows;
+            debug_log("Comment insert executed. Affected rows: " . $affected_rows); 
+
+            // Check if affected_rows is as expected
+            if ($affected_rows < 1) {
+                 // Even if execute returned true, no rows were inserted. Log this specific case.
+                 debug_log("Execute returned true, but affected_rows is not 1. Insert likely failed silently.", ['affected_rows' => $affected_rows]);
+                 // Optionally, throw an exception here too, as the insert didn't behave as expected.
+                 // throw new Exception('Comment insertion failed silently (affected_rows: ' . $affected_rows . ')');
             }
 
             $commentId = $conn->insert_id;
