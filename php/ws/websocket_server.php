@@ -104,6 +104,18 @@ $ws_worker->onMessage = function($connection, $data) use ($ws_worker) {
         $comment = $message['comment'] ?? '';
         $staffName = $message['staffName'] ?? '';
         $timestamp = $message['timestamp'] ?? '';
+        $photoUrl = $message['photoUrl'] ?? '';
+        
+        // Добавляем комментарий в базу данных task_comments
+        if (!empty($taskId) && !empty($comment) && !empty($staffName)) {
+            $stmt = $conn->prepare("INSERT INTO task_comments (task_id, staff_name, text, timestamp, photo_url) VALUES (?, ?, ?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param("sssss", $taskId, $staffName, $comment, $timestamp, $photoUrl);
+                $stmt->execute();
+                $stmt->close();
+            }
+        }
+        
         error_log("WS - updateComments: " . $taskId . " " . $comment . " " . $staffName . " " . $timestamp);
         foreach($ws_worker->connections as $clientConnection) {
             $clientConnection->send(json_encode([
@@ -123,6 +135,7 @@ $ws_worker->onMessage = function($connection, $data) use ($ws_worker) {
         $author = $message['author'] ?? '';
         $date = $message['date'] ?? '';
         $eventDate = $message['eventDate'] ?? '';
+        $userPhotoUrl = $message['userPhotoUrl'] ?? '';
 
         error_log("WS - addEventComment: " . $eventId . " " . $text . " " . $author . " " . $date);
         foreach($ws_worker->connections as $clientConnection) {
@@ -133,7 +146,8 @@ $ws_worker->onMessage = function($connection, $data) use ($ws_worker) {
                     'text' => $text,
                     'author' => $author,
                     'date' => $date,
-                    'eventDate' => $eventDate
+                    'eventDate' => $eventDate,
+                    'userPhotoUrl' => $userPhotoUrl
                 ]
             ]));
         }

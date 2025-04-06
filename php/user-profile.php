@@ -30,7 +30,7 @@ $action = $_POST['action'] ?? '';
 
 if ($action === 'addUserPhoto') {
     $role = $_POST['role'] ?? '';
-    if ($role === 'user') {
+    if ($role === 'user' || $role === 'admin' || $role === 'support') {
         $email = $_POST['email'] ?? '';
     } else if ($role === 'maintenance') {
         $username = $_POST['username'] ?? '';
@@ -77,7 +77,7 @@ if ($action === 'addUserPhoto') {
         $rootPath = $_SERVER['DOCUMENT_ROOT'] . '/Maintenance_P';
         
         // Формируем абсолютные пути
-        if ($role === 'user') {
+        if ($role === 'user' || $role === 'admin' || $role === 'support') {
             $targetDir = $rootPath . '/users/img/';
             $miniDir = $rootPath . '/users/mini/';
         } else if ($role === 'maintenance') {
@@ -169,7 +169,7 @@ if ($action === 'addUserPhoto') {
             imagedestroy($miniImage);
 
             // Обновление информации в базе данных
-            if ($role === 'user') {
+            if ($role === 'user' || $role === 'admin' || $role === 'support') {
                 $stmt = $conn->prepare("UPDATE users SET photo = ? WHERE email = ?");
                 $stmt->bind_param('ss', $fileName, $email);
             } else if ($role === 'maintenance') {
@@ -200,34 +200,46 @@ if ($action === 'addUserPhoto') {
 } 
 elseif ($action === 'getUserPhoto') {
     $role = $_POST['role'] ?? '';
-    if ($role === 'user') {
-        $email = $_POST['email'] ?? '';
-    } else if ($role === 'maintenance') {
-        $username = $_POST['username'] ?? '';
-    }
+    
+    // Получаем email или имя пользователя
+    $email = $_POST['email'] ?? '';
+    $username = $_POST['username'] ?? '';
 
     if ($email || $username) {
-        if ($role === 'user') {
-            $stmt = $conn->prepare("SELECT photo FROM users WHERE email = ?");
-            $stmt->bind_param('s', $email);
+        if ($role === 'user' || $role === 'admin' || $role === 'support') {
+            if ($email) {
+                // Если предоставлен email, ищем по нему
+                $stmt = $conn->prepare("SELECT photo FROM users WHERE email = ?");
+                $stmt->bind_param('s', $email);
+            } else if ($username) {
+                // Если предоставлено имя пользователя, ищем по полному имени или username
+                $stmt = $conn->prepare("SELECT photo FROM users WHERE fullName = ? OR username = ?");
+                $stmt->bind_param('ss', $username, $username);
+            }
         } else if ($role === 'maintenance') {
+            // Для maintenance staff ищем по username
             $stmt = $conn->prepare("SELECT photo FROM maintenance_staff WHERE username = ?");
             $stmt->bind_param('s', $username);
         }
-        $stmt->execute();
-        $result = $stmt->get_result();
+        
+        if (isset($stmt)) {
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        if ($result->num_rows === 1) {
-            $row = $result->fetch_assoc();
-            $photo = $row['photo'] ?? 'nophoto';
-            echo json_encode(['success' => true, 'photo' => $photo]);
+            if ($result->num_rows === 1) {
+                $row = $result->fetch_assoc();
+                $photo = $row['photo'] ?? 'nophoto';
+                echo json_encode(['success' => true, 'photo' => $photo]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'User not found']);
+            }
+
+            $stmt->close();
         } else {
-            echo json_encode(['success' => false, 'message' => 'User not found']);
+            echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
         }
-
-        $stmt->close();
     } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid email']);
+        echo json_encode(['success' => false, 'message' => 'Missing email or username']);
     }
 } elseif ($action === 'getUserTasks') {
     $staff = $_POST['staff'] ?? '';
@@ -370,7 +382,7 @@ elseif ($action === 'getUserTasksForLastWeek') {
 } elseif ($action === 'getUserSettingsInfo') {
     $email = $_POST['email'];
     
-    $query = "SELECT email, full_name, department, building, room, staffType FROM users WHERE email = ?";
+    $query = "SELECT email, full_name, department, building, room FROM users WHERE email = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $email);
     $stmt->execute();

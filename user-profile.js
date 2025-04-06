@@ -1,4 +1,3 @@
-
 let isFirstLoadEvents = false;
 
 let displayedTasks = [];
@@ -371,20 +370,24 @@ document.addEventListener("DOMContentLoaded", async function () {
       document.querySelectorAll(".status-edit.show").forEach((edit) => {
         edit.classList.remove("show");
       });
-      
-      document.querySelectorAll('.profile-task-item').forEach(taskItem => {
+
+      document.querySelectorAll(".profile-task-item").forEach((taskItem) => {
         if (taskItem) {
           taskItem.classList.remove("expanded-margin");
         }
       });
 
       // Удаляем класс -active у всех span
-      document.querySelectorAll('.profile-task-status .status-container-wrapper span').forEach(span => {
-        const activeClass = span.className.split(' ').find(cls => cls.endsWith('-active'));
-        if (activeClass) {
-          span.classList.remove(activeClass);
-        }
-      });
+      document
+        .querySelectorAll(".profile-task-status .status-container-wrapper span")
+        .forEach((span) => {
+          const activeClass = span.className
+            .split(" ")
+            .find((cls) => cls.endsWith("-active"));
+          if (activeClass) {
+            span.classList.remove(activeClass);
+          }
+        });
     }
   });
 });
@@ -563,13 +566,27 @@ async function displayUserTasks() {
                 </div>
                 <div class="profile-task-header-right">
                   <span class="profile-task-timestamp">${new Date(
-        task.timestamp
-      ).toLocaleString()}</span>
+                    task.timestamp
+                  ).toLocaleString()}</span>
                 </div>
               </div>
               <div class="profile-task-status">
-                <span class="profile-task-status-text">Request</span> <div class="status-container-wrapper" data-task-id="${task.request_id}"><span class="${user.role === 'maintenance' ? 'status-container-maintenance' : 'status-container'} ${task.status.toLowerCase().replace(/\s+/g, '-')}" style="border-color: ${getStatusBorderColor(task.status)};">${task.status}</span>
-                ${user.role === 'maintenance' ? generateStatusEditMarkup(task.status) : ''}
+                <span class="profile-task-status-text">Request</span> <div class="status-container-wrapper" data-task-id="${
+                  task.request_id
+                }"><span class="${
+        user.role === "maintenance"
+          ? "status-container-maintenance"
+          : "status-container"
+      } ${task.status
+        .toLowerCase()
+        .replace(/\s+/g, "-")}" style="border-color: ${getStatusBorderColor(
+        task.status
+      )};">${task.status}</span>
+                ${
+                  user.role === "maintenance"
+                    ? generateStatusEditMarkup(task.status)
+                    : ""
+                }
                 </div>
                 <div class="profile-status-clock">
                   <div class="profile-hour-hand"></div>
@@ -598,7 +615,9 @@ async function displayUserTasks() {
         }
       });
 
-      const spanStatus = listItem.querySelector(".profile-task-status .status-container-wrapper span");
+      const spanStatus = listItem.querySelector(
+        ".profile-task-status .status-container-wrapper span"
+      );
       spanStatus.addEventListener("click", function (e) {
         if (user.role === "maintenance") {
           e.stopPropagation();
@@ -606,11 +625,13 @@ async function displayUserTasks() {
             `${this.textContent.toLowerCase().replace(/\s+/g, "-")}-active`
           );
 
-          const taskItem = this.closest('.profile-task-item');
-          if (this.classList.contains('pending-active') || 
-              this.classList.contains('in-progress-active') || 
-              this.classList.contains('completed-active')) {
-            taskItem.classList.add('expanded-margin');
+          const taskItem = this.closest(".profile-task-item");
+          if (
+            this.classList.contains("pending-active") ||
+            this.classList.contains("in-progress-active") ||
+            this.classList.contains("completed-active")
+          ) {
+            taskItem.classList.add("expanded-margin");
           } else {
             taskItem.classList.remove("expanded-margin");
           }
@@ -621,31 +642,51 @@ async function displayUserTasks() {
         });
       });
 
-    const statusContainer = listItem.querySelectorAll('.status-container-wrapper div');
-    changeStatus(statusContainer, spanStatus);
-    function changeStatus(statusContainer, spanStatus) {
-      statusContainer.forEach(wrapper => {
-        console.log(wrapper.closest('.status-container-wrapper').getAttribute('data-task-id'),wrapper.textContent, wrapper.isEventListener);
-        if (!wrapper.isEventListener) {
-          wrapper.isEventListener = true;
-          wrapper.addEventListener('click', async function (e) {
-            e.stopPropagation();
-            const anotherStatusContainer = Array.from(wrapper.closest('.status-container-wrapper').children).filter(child => child !== wrapper);
-          const taskId = listItem.querySelector('.status-container-wrapper').getAttribute('data-task-id');
-          const statusClock = listItem.querySelector('.profile-status-clock');
-          const taskItem = this.closest('.profile-task-item');
-          const statusContainerWrapper = taskItem.querySelector('.status-container-wrapper');
-          await changeTaskStatusInProfile(taskId, wrapper.textContent, statusClock);
-          anotherStatusContainer.forEach(child => {
-            child.classList.remove('show');
-          });
-          setTimeout(() => {
-            wrapper.style.top = '0px';
-            taskItem.classList.remove('expanded-margin');
-            setTimeout(() => {
-              //const spanStatus = taskItem.querySelector('.status-container-wrapper span');
-              const statusText = spanStatus.textContent;
-              const isFirstWrapper = wrapper.classList.contains('first');
+      const statusContainer = listItem.querySelectorAll(
+        ".status-container-wrapper div"
+      );
+      changeStatus(statusContainer, spanStatus);
+      function changeStatus(statusContainer, spanStatus) {
+        statusContainer.forEach((wrapper) => {
+          console.log(
+            wrapper
+              .closest(".status-container-wrapper")
+              .getAttribute("data-task-id"),
+            wrapper.textContent,
+            wrapper.isEventListener
+          );
+          if (!wrapper.isEventListener) {
+            wrapper.isEventListener = true;
+            wrapper.addEventListener("click", async function (e) {
+              e.stopPropagation();
+              const anotherStatusContainer = Array.from(
+                wrapper.closest(".status-container-wrapper").children
+              ).filter((child) => child !== wrapper);
+              const taskId = listItem
+                .querySelector(".status-container-wrapper")
+                .getAttribute("data-task-id");
+              const statusClock = listItem.querySelector(
+                ".profile-status-clock"
+              );
+              const taskItem = this.closest(".profile-task-item");
+              const statusContainerWrapper = taskItem.querySelector(
+                ".status-container-wrapper"
+              );
+              await changeTaskStatusInProfile(
+                taskId,
+                wrapper.textContent,
+                statusClock
+              );
+              anotherStatusContainer.forEach((child) => {
+                child.classList.remove("show");
+              });
+              setTimeout(() => {
+                wrapper.style.top = "0px";
+                taskItem.classList.remove("expanded-margin");
+                setTimeout(() => {
+                  //const spanStatus = taskItem.querySelector('.status-container-wrapper span');
+                  const statusText = spanStatus.textContent;
+                  const isFirstWrapper = wrapper.classList.contains("first");
 
                   const newDivInStatusContainer = document.createElement("div");
                   newDivInStatusContainer.textContent = statusText;
@@ -754,7 +795,11 @@ async function addUserPhotoToServer(file) {
   formData.append("userPhoto", file);
   formData.append("role", currentUser.role);
 
-  if (currentUser.role === "user") {
+  if (
+    currentUser.role === "user" ||
+    currentUser.role === "admin" ||
+    currentUser.role === "support"
+  ) {
     formData.append("email", currentUser.email);
   } else if (currentUser.role === "maintenance") {
     formData.append("username", currentUser.username);
@@ -807,7 +852,11 @@ async function getUserPhotoFromServer() {
   const formData = new FormData();
   formData.append("action", "getUserPhoto");
   formData.append("role", currentUser.role);
-  if (currentUser.role === "user") {
+  if (
+    currentUser.role === "user" ||
+    currentUser.role === "admin" ||
+    currentUser.role === "support"
+  ) {
     formData.append("email", currentUser.email);
   } else if (currentUser.role === "maintenance") {
     formData.append("username", currentUser.username);
@@ -841,7 +890,9 @@ async function loadUserPhoto() {
 
     if (photoFileName !== "user.png") {
       avatarContainer.style.backgroundImage =
-        currentUser.role === "user"
+        currentUser.role === "user" ||
+        currentUser.role === "admin" ||
+        currentUser.role === "support"
           ? `url("/Maintenance_P/users/img/${photoFileName}")`
           : `url("/Maintenance_P/maintenance_staff/img/${photoFileName}")`;
       avatarContainer.style.backgroundSize = "cover";
@@ -849,7 +900,9 @@ async function loadUserPhoto() {
       avatarContainer.innerHTML = ``;
     }
     userPhotoElement.src =
-      currentUser.role === "user"
+      currentUser.role === "user" ||
+      currentUser.role === "admin" ||
+      currentUser.role === "support"
         ? `/Maintenance_P/users/img/${photoFileName}`
         : `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
     console.log(avatarContainer);
@@ -1226,25 +1279,26 @@ async function chengeTaskStatusInServer(taskId, newStatus) {
 // Функция для получения информации о пользователе
 async function getUserSettingsInfo(email) {
   try {
-    const formData = new FormData();
-    formData.append("action", "getUserSettingsInfo");
-    formData.append("email", email);
-
-    const response = await fetch("php/user-profile.php", {
+    const response = await fetch("database.php", {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "getUserLocation",
+        email: email,
+      }),
     });
 
-    const data = await response.json();
-    if (data.success) {
-      return data.userInfo;
-    } else {
-      console.error("Ошибка получения информации:", data.message);
-      return null;
+    const result = await response.json();
+    if (result.success && result.location) {
+      const userInfo = result.location;
+      document.getElementById("settingsBuilding").value = userInfo.building;
+      populateSettingsRoomSelect(userInfo.building);
+      document.getElementById("settingsRoom").value = userInfo.room;
     }
   } catch (error) {
-    console.error("Ошибка:", error);
-    return null;
+    console.error("Error getting user settings:", error);
   }
 }
 
@@ -1282,7 +1336,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("settingsBuilding").value = userInfo.building;
         populateSettingsRoomSelect(userInfo.building);
         document.getElementById("settingsRoom").value = userInfo.room;
-        document.getElementById("settingsStaffType").value = userInfo.staffType;
 
         settingsModal.style.display = "block";
       }
@@ -1384,4 +1437,3 @@ async function changeTaskStatusInProfile(requestId, newStatus, statusClock) {
     console.error("Error updating task status:", error);
   }
 }
-

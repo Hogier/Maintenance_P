@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug JavaScript Comment Functionality</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      h1,
+      h2 {
+        color: #333;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      #loadingIndicator {
+        display: none;
+        color: blue;
+      }
+      #resultContainer {
+        margin-top: 20px;
+      }
+      button {
+        padding: 8px 16px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      fieldset {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      legend {
+        padding: 0 10px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Debug JavaScript Comment Functionality</h1>
+
+      <fieldset>
+        <legend>Test Direct API Call</legend>
+        <form id="apiTestForm">
+          <div>
+            <label for="taskId">Task ID:</label>
+            <input type="text" id="taskId" name="taskId" required />
+          </div>
+          <div>
+            <label for="staffName">Staff Name:</label>
+            <input type="text" id="staffName" name="staffName" required />
+          </div>
+          <div>
+            <label for="commentText">Comment:</label>
+            <textarea id="commentText" name="commentText" required></textarea>
+          </div>
+          <button type="submit">Test Direct API Call</button>
+        </form>
+        <div id="loadingIndicator">Processing...</div>
+        <div id="apiResult"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Test Database.js addComment Method</legend>
+        <form id="dbTestForm">
+          <div>
+            <label for="dbTaskId">Task ID:</label>
+            <input type="text" id="dbTaskId" name="dbTaskId" required />
+          </div>
+          <div>
+            <label for="dbStaffName">Staff Name:</label>
+            <input type="text" id="dbStaffName" name="dbStaffName" required />
+          </div>
+          <div>
+            <label for="dbCommentText">Comment:</label>
+            <textarea
+              id="dbCommentText"
+              name="dbCommentText"
+              required
+            ></textarea>
+          </div>
+          <button type="submit">Test Database.js Method</button>
+        </form>
+        <div id="dbResult"></div>
+      </fieldset>
+
+      <h2>Console Output</h2>
+      <pre id="consoleOutput"></pre>
+    </div>
+
+    <script>
+      // Override console.log to capture output
+      const originalConsoleLog = console.log;
+      const originalConsoleError = console.error;
+
+      console.log = function () {
+        const args = Array.from(arguments);
+        document.getElementById("consoleOutput").textContent +=
+          "✓ LOG: " +
+          args
+            .map((arg) =>
+              typeof arg === "object" ? JSON.stringify(arg, null, 2) : arg
+            )
+            .join(" ") +
+          "\n";
+        originalConsoleLog.apply(console, arguments);
+      };
+
+      console.error = function () {
+        const args = Array.from(arguments);
+        document.getElementById("consoleOutput").textContent +=
+          "❌ ERROR: " +
+          args
+            .map((arg) =>
+              typeof arg === "object" ? JSON.stringify(arg, null, 2) : arg
+            )
+            .join(" ") +
+          "\n";
+        originalConsoleError.apply(console, arguments);
+      };
+
+      // Direct API test
+      document
+        .getElementById("apiTestForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const taskId = document.getElementById("taskId").value;
+          const staffName = document.getElementById("staffName").value;
+          const commentText = document.getElementById("commentText").value;
+
+          if (!taskId || !staffName || !commentText) {
+            document.getElementById("apiResult").innerHTML =
+              '<p class="error">All fields are required</p>';
+            return;
+          }
+
+          document.getElementById("loadingIndicator").style.display = "block";
+          document.getElementById("apiResult").innerHTML = "";
+
+          try {
+            console.log(
+              `Sending direct API request with taskId=${taskId}, staffName=${staffName}, commentText=${commentText}`
+            );
+
+            const formData = new FormData();
+            formData.append("action", "addComment");
+            formData.append("taskId", taskId);
+            formData.append("staffName", staffName);
+            formData.append("commentText", commentText);
+            formData.append("timestamp", new Date().toISOString());
+            formData.append("photoUrl", "/Maintenance_P/users/img/user.png");
+
+            const response = await fetch("comments.php", {
+              method: "POST",
+              body: formData,
+            });
+
+            const responseText = await response.text();
+            console.log("API Response:", responseText);
+
+            try {
+              const result = JSON.parse(responseText);
+
+              if (result.success) {
+                document.getElementById(
+                  "apiResult"
+                ).innerHTML = `<p class="success">Comment added successfully! ID: ${result.commentId}</p>`;
+              } else {
+                document.getElementById(
+                  "apiResult"
+                ).innerHTML = `<p class="error">Error: ${
+                  result.message || "Unknown error"
+                }</p>`;
+              }
+            } catch (jsonError) {
+              document.getElementById(
+                "apiResult"
+              ).innerHTML = `<p class="error">Error parsing JSON response: ${jsonError.message}</p>`;
+            }
+          } catch (error) {
+            console.error("Error in API request:", error);
+            document.getElementById(
+              "apiResult"
+            ).innerHTML = `<p class="error">Error: ${error.message}</p>`;
+          } finally {
+            document.getElementById("loadingIndicator").style.display = "none";
+          }
+        });
+
+      // Test Database.js addComment method
+      document
+        .getElementById("dbTestForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const taskId = document.getElementById("dbTaskId").value;
+          const staffName = document.getElementById("dbStaffName").value;
+          const commentText = document.getElementById("dbCommentText").value;
+
+          if (!taskId || !staffName || !commentText) {
+            document.getElementById("dbResult").innerHTML =
+              '<p class="error">All fields are required</p>';
+            return;
+          }
+
+          document.getElementById("dbResult").innerHTML = "<p>Testing...</p>";
+
+          try {
+            console.log(
+              `Testing db.addComment with taskId=${taskId}, staffName=${staffName}, commentText=${commentText}`
+            );
+
+            // Check if db object is available
+            if (typeof db === "undefined") {
+              throw new Error(
+                "Database.js not loaded or db object not available"
+              );
+            }
+
+            // Call the addComment method
+            const success = await db.addComment(taskId, commentText, staffName);
+
+            if (success) {
+              document.getElementById(
+                "dbResult"
+              ).innerHTML = `<p class="success">Comment added successfully!</p>`;
+            } else {
+              document.getElementById(
+                "dbResult"
+              ).innerHTML = `<p class="error">Error adding comment through db.addComment</p>`;
+            }
+          } catch (error) {
+            console.error("Error in db.addComment:", error);
+            document.getElementById(
+              "dbResult"
+            ).innerHTML = `<p class="error">Error: ${error.message}</p>`;
+          }
+        });
+
+      // Try to load a valid Task ID
+      fetch("task.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "action=getAllTask",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success && data.data && data.data.length > 0) {
+            const firstTask = data.data[0];
+            document.getElementById("taskId").value = firstTask.request_id;
+            document.getElementById("dbTaskId").value = firstTask.request_id;
+            console.log("Loaded task ID:", firstTask.request_id);
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading tasks:", error);
+        });
+
+      // Load current user
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (currentUser) {
+        document.getElementById("staffName").value =
+          currentUser.fullName || "Unknown User";
+        document.getElementById("dbStaffName").value =
+          currentUser.fullName || "Unknown User";
+        console.log("Loaded user:", currentUser.fullName);
+      }
+    </script>
+
+    <!-- Load the database.js script for testing db.addComment -->
+    <script src="database.js"></script>
+  </body>
+</html>

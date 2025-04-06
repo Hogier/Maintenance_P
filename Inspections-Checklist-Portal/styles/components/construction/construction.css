@@ -487,6 +487,9 @@
   min-width: 120px;
   text-align: center;
   position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .status-select::before {
@@ -501,53 +504,63 @@
 }
 
 .status-select.planned {
-  background-color: #e3f2fd;
-  color: #1976d2;
-  border: 1px solid #90caf9;
+  background-color: #e3f2fd !important;
+  color: #1976d2 !important;
+  border: 1px solid #90caf9 !important;
 }
 
 .status-select.planned::before {
-  background-color: #1976d2;
+  background-color: #1976d2 !important;
 }
 
 .status-select.in-progress {
-  background-color: #fff3e0;
-  color: #f57c00;
-  border: 1px solid #ffcc80;
+  background-color: #fff3e0 !important;
+  color: #f57c00 !important;
+  border: 1px solid #ffcc80 !important;
 }
 
 .status-select.in-progress::before {
-  background-color: #f57c00;
+  background-color: #f57c00 !important;
 }
 
 .status-select.completed {
-  background-color: #e8f5e9;
-  color: #388e3c;
-  border: 1px solid #a5d6a7;
+  background-color: #e8f5e9 !important;
+  color: #388e3c !important;
+  border: 1px solid #a5d6a7 !important;
 }
 
 .status-select.completed::before {
-  background-color: #388e3c;
+  background-color: #388e3c !important;
 }
 
 .status-select.on-hold {
-  background-color: #ffebee;
-  color: #d32f2f;
-  border: 1px solid #ef9a9a;
+  background-color: #ffebee !important;
+  color: #d32f2f !important;
+  border: 1px solid #ef9a9a !important;
 }
 
 .status-select.on-hold::before {
-  background-color: #d32f2f;
+  background-color: #d32f2f !important;
 }
 
 .status-select.move-to-current {
-  background-color: #f3e5f5;
-  color: #7b1fa2;
-  border: 1px solid #ce93d8;
+  background-color: #f3e5f5 !important;
+  color: #7b1fa2 !important;
+  border: 1px solid #ce93d8 !important;
 }
 
 .status-select.move-to-current::before {
-  background-color: #7b1fa2;
+  background-color: #7b1fa2 !important;
+}
+
+.status-select.delayed {
+  background-color: #ffebee !important;
+  color: #d32f2f !important;
+  border: 1px solid #ef9a9a !important;
+}
+
+.status-select.delayed::before {
+  background-color: #d32f2f !important;
 }
 
 .status-select:hover {
@@ -890,53 +903,6 @@
   min-width: 150px;
   text-align: right;
   margin-top: 0;
-}
-
-.status-select {
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: none;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  width: 100%;
-  text-align: center;
-}
-
-/* Status colors */
-.status-select.planned {
-  background-color: #e3f2fd;
-  color: #1976d2;
-}
-
-.status-select.in-progress {
-  background-color: #fff3e0;
-  color: #f57c00;
-}
-
-.status-select.completed {
-  background-color: #e8f5e9;
-  color: #388e3c;
-}
-
-.status-select.on-hold {
-  background-color: #ffebee;
-  color: #d32f2f;
-}
-
-.status-select.move-to-current {
-  background-color: #f3e5f5;
-  color: #7b1fa2;
-}
-
-.status-select:hover {
-  opacity: 0.9;
-}
-
-.status-select:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Улучшенные стили для рейтинга в карточке */
@@ -2099,31 +2065,52 @@ select option:hover {
   padding-top: 0;
 }
 
-/* Migrated Files Group */
+/* Новые стили для меток разделов */
+.section-label {
+  margin: 10px 0;
+  padding: 5px 0;
+  font-weight: 500;
+  color: #555;
+  border-bottom: 1px solid #eee;
+}
+
+.from-future-flag {
+  background-color: #f8f3e3;
+  color: #b7994e;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.current-files-title {
+  background-color: #e8f4f8;
+  color: #4e8db7;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Обновленные стили для групп файлов */
 .migrated-files-group {
   margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px dashed #03a9f4;
-}
-
-.migrated-files {
-  position: relative;
-  border-left: 4px solid #03a9f4;
-  padding-left: 15px;
-  margin-bottom: 15px;
-}
-
-.migrated-files:before {
-  content: "From Future Project";
-  position: absolute;
-  top: -18px;
-  left: 0;
-  font-size: 11px;
-  color: #03a9f4;
+  padding-bottom: 10px;
 }
 
 .current-files-group {
-  margin-top: 15px;
+  margin-top: 10px;
+}
+
+/* Обеспечиваем отступы для файловых групп */
+.documents-group {
+  margin-bottom: 15px;
+}
+
+.documents-group h5 {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 /* Enhancing document grid layout */
@@ -2131,18 +2118,6 @@ select option:hover {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.documents-group {
-  margin-bottom: 10px;
-}
-
-.documents-group h5 {
-  font-size: 0.9rem;
-  color: #2c3e50;
-  margin: 0 0 10px 0;
-  padding-bottom: 5px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Project Planning Section Styles */
@@ -2190,4 +2165,17 @@ select option:hover {
   padding-bottom: 8px;
   border-bottom: 2px solid #3498db;
   display: inline-block;
+}
+
+.project-image img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.project-image img:hover {
+  transform: scale(1.02);
 }

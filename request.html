@@ -299,13 +299,6 @@
         <label for="settingsRoom">Room:</label>
         <select id="settingsRoom"></select>
       </div>
-      <div class="settings-form-group">
-        <label for="settingsStaffType">Staff Type:</label>
-        <select id="settingsStaffType">
-          <option value="mainTeacher">Main Teacher</option>
-          <option value="assistant">Teaching Assistant</option>
-        </select>
-      </div>
       <button class="settings-save-btn">Save Changes</button>
     </div>
   </div>
@@ -332,20 +325,17 @@
   <script src="dateUtils.js"></script>
   <script src="jawa script.js"></script>
   <script src="user-profile.js"></script>
-
-  <!-- <script src="user-profile.js"></script>-->
+  <script src="authUser.js"></script>
+  
   <script>
-    // Добавим проверку и отображение информации о пользователе
-    /*document.addEventListener("DOMContentLoaded", function () {
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (user) {
-        const userNameElement = document.getElementById("userName");
-        if (userNameElement) {
-          userNameElement.textContent = user.fullName;
-        }
-        document.querySelector(".user-account").style.display = "flex";
+    // Проверка авторизации при загрузке страницы
+    document.addEventListener("DOMContentLoaded", function() {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (!currentUser) {
+        // Если пользователь не авторизован, перенаправляем на страницу входа
+        window.location.href = "loginUser.html?redirect=request.html";
       }
-    });*/
+    });
   </script>
 </body>
 

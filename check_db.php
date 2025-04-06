@@ -1,59 +1,86 @@
 <?php
+// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once dirname(__FILE__) . '/database.php';
+echo "<h1>Database Structure Check</h1>";
+
+// Database connection
+$host = 'localhost';
+$user = 'root';
+$password = '';
+$database = 'maintenancedb';
 
 try {
-    $database = new Database();
-    $conn = $database->getConnection();
+    $conn = new mysqli($host, $user, $password, $database);
     
-    // Check all codes in the database
-    $query = "SELECT * FROM access_codes ORDER BY created_at DESC";
-    $result = $conn->query($query);
-    
-    echo "<h2>All Access Codes in Database</h2>";
-    echo "<pre>";
-    while ($row = $result->fetch_assoc()) {
-        echo "ID: " . $row['id'] . "\n";
-        echo "Code: " . $row['code'] . "\n";
-        echo "Status: " . $row['status'] . "\n";
-        echo "Created at: " . $row['created_at'] . "\n";
-        echo "Expires at: " . $row['expires_at'] . "\n";
-        echo "Used at: " . ($row['used_at'] ? $row['used_at'] : 'Not used') . "\n";
-        echo "----------------------------------------\n";
+    if ($conn->connect_error) {
+        throw new Exception("Connection failed: " . $conn->connect_error);
     }
-    echo "</pre>";
     
-    // Try to reset the code again with a different query
-    $code = '9H67-QXRK-F1Y4';
-    $resetQuery = "UPDATE access_codes SET status = 'active', used_at = NULL WHERE code = ? AND expires_at > NOW()";
-    $stmt = $conn->prepare($resetQuery);
-    $stmt->bind_param('s', $code);
+    echo "<p>Connected to database successfully.</p>";
     
-    if ($stmt->execute()) {
-        echo "<h3>Reset Attempt Result:</h3>";
-        echo "Rows affected: " . $stmt->affected_rows . "<br>";
+    // Check if task_comments table exists
+    $result = $conn->query("SHOW TABLES LIKE 'task_comments'");
+    if ($result->num_rows > 0) {
+        echo "<p style='color:green'>Table 'task_comments' exists.</p>";
         
-        // Check the code status after reset
-        $checkStmt = $conn->prepare("SELECT * FROM access_codes WHERE code = ?");
-        $checkStmt->bind_param('s', $code);
-        $checkStmt->execute();
-        $codeData = $checkStmt->get_result()->fetch_assoc();
+        // Check table structure
+        echo "<h2>Table Structure:</h2>";
+        $structure = $conn->query("DESCRIBE task_comments");
+        echo "<table border='1'><tr><th>Field</th><th>Type</th><th>Null</th><th>Key</th><th>Default</th><th>Extra</th></tr>";
+        while ($row = $structure->fetch_assoc()) {
+            echo "<tr>";
+            echo "<td>{$row['Field']}</td>";
+            echo "<td>{$row['Type']}</td>";
+            echo "<td>{$row['Null']}</td>";
+            echo "<td>{$row['Key']}</td>";
+            echo "<td>{$row['Default']}</td>";
+            echo "<td>{$row['Extra']}</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
         
-        echo "<pre>";
-        echo "Current status after reset:\n";
-        echo "Code: " . $codeData['code'] . "\n";
-        echo "Status: " . $codeData['status'] . "\n";
-        echo "Created at: " . $codeData['created_at'] . "\n";
-        echo "Expires at: " . $codeData['expires_at'] . "\n";
-        echo "Used at: " . ($codeData['used_at'] ? $codeData['used_at'] : 'Not used') . "\n";
-        echo "</pre>";
+        // Check number of records
+        $count = $conn->query("SELECT COUNT(*) as total FROM task_comments");
+        $countRow = $count->fetch_assoc();
+        echo "<p>Total records in table: {$countRow['total']}</p>";
+        
+        // Test insert operation
+        echo "<h2>Testing Insert Operation:</h2>";
+        
+        $testTaskId = "TEST-" . uniqid();
+        $testStaffName = "Test Staff";
+        $testText = "Test comment";
+        $testTimestamp = date('Y-m-d H:i:s');
+        $testPhotoUrl = null;
+        
+        $insertStmt = $conn->prepare("INSERT INTO task_comments (task_id, staff_name, text, timestamp, photo_url) VALUES (?, ?, ?, ?, ?)");
+        
+        if (!$insertStmt) {
+            echo "<p style='color:red'>Prepare failed: " . $conn->error . "</p>";
+        } else {
+            $insertStmt->bind_param("sssss", $testTaskId, $testStaffName, $testText, $testTimestamp, $testPhotoUrl);
+            
+            if ($insertStmt->execute()) {
+                $newId = $insertStmt->insert_id;
+                echo "<p style='color:green'>Test insert successful. New ID: $newId</p>";
+                
+                // Clean up test data
+                $conn->query("DELETE FROM task_comments WHERE id = $newId");
+                echo "<p>Test record deleted.</p>";
+            } else {
+                echo "<p style='color:red'>Test insert failed: " . $insertStmt->error . "</p>";
+            }
+            
+            $insertStmt->close();
+        }
     } else {
-        echo "Error resetting code: " . $stmt->error;
+        echo "<p style='color:red'>Table 'task_comments' does not exist!</p>";
     }
     
+    $conn->close();
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
+    echo "<p style='color:red'>Error: " . $e->getMessage() . "</p>";
 }
 ?> 

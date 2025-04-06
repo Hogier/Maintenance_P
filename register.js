@@ -11,7 +11,7 @@ document
       const confirmPassword = document.getElementById("confirmPassword").value;
       const building = document.getElementById("buildingSelect").value;
       const room = document.getElementById("roomSelect").value;
-      const staffTypeRadio = document.querySelector('input[name="staffType"]:checked');
+      const role = document.getElementById("role").value;
 
       // Clear previous error messages
       const errorElement = document.getElementById("errorMessage");
@@ -29,12 +29,10 @@ document
         return;
       }
 
-      if (!staffTypeRadio) {
-        errorElement.textContent = "Fill in the field (Staff Type)";
+      if (!role) {
+        errorElement.textContent = "Please select a user role";
         return;
       }
-
-      const staffType = staffTypeRadio.value;
 
       // Password validation
       if (password !== confirmPassword) {
@@ -52,28 +50,14 @@ document
       errorElement.textContent = "Processing registration...";
       errorElement.style.color = "blue";
 
-      // Verify if the teacher name exists in roomTeachers
-      const isValidTeacher = Object.values(roomTeachers).some(
-        (room) =>
-          room.mainTeacher.includes(fullName) ||
-          room.assistant.includes(fullName)
-      );
-
-      if (!isValidTeacher) {
-        errorElement.textContent =
-          "This name is not in the list of authorized teachers";
-        return;
-      }
-
       const user = {
         fullName,
         email,
         department,
         password,
-        role: "user",
+        role,
         building,
         room,
-        staffType,
       };
 
       // Send registration request
@@ -105,7 +89,12 @@ document
         errorElement.textContent = "Registration successful! Redirecting...";
 
         setTimeout(() => {
-          window.location.href = "request.html";
+          // Redirect based on user role
+          if (user.role === "admin" || user.role === "support") {
+            window.location.href = "main.html";
+          } else {
+            window.location.href = "request.html";
+          }
         }, 1500);
       } else {
         errorElement.style.color = "red";

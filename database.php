@@ -35,7 +35,12 @@ class Database {
 }
 
 // Обработка POST запросов
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Skip processing if this is a materials request
+    if (isset($_POST['materials_action'])) {
+        return;
+    }
+    
     header('Content-Type: application/json');
     try {
         $db = new Database();
@@ -53,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $password = $_POST['password'] ?? '';
             $building = $_POST['building'] ?? '';
             $room = $_POST['room'] ?? '';
-            $staffType = $_POST['staffType'] ?? '';
             
             // Check if email or full name already exists
             $checkStmt = $conn->prepare("SELECT email, full_name FROM users WHERE email = ? OR full_name = ?");
@@ -72,13 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // If no duplicates found, proceed with registration
-            if ($email && $fullName && $department && $role && $password && $building && $room && $staffType) {
+            if ($email && $fullName && $department && $role && $password && $building && $room) {
                 // Хэширование пароля
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
                 // Подготовка и выполнение запроса
-                $stmt = $conn->prepare("INSERT INTO users (email, full_name, department, role, password, building, room, staffType) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param('ssssssss', $email, $fullName, $department, $role, $passwordHash, $building, $room, $staffType);
+                $stmt = $conn->prepare("INSERT INTO users (email, full_name, department, role, password, building, room) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param('sssssss', $email, $fullName, $department, $role, $passwordHash, $building, $room);
                 
                 if ($stmt->execute()) {
                     echo json_encode(['success' => true, 'message' => 'User registered successfully']);
@@ -199,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Получаем данные о локации пользователя
-            $stmt = $conn->prepare("SELECT building, room, staffType FROM users WHERE email = ?");
+            $stmt = $conn->prepare("SELECT building, room FROM users WHERE email = ?");
             $stmt->bind_param('s', $email);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -210,8 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'success' => true, 
                     'location' => [
                         'building' => $userData['building'],
-                        'room' => $userData['room'],
-                        'staffType' => $userData['staffType']
+                        'room' => $userData['room']
                     ]
                 ]);
             } else {

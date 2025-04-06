@@ -1,7 +1,42 @@
 <div class="supplies-container">
   <div class="supplies-header">
     <h2>Supplies</h2>
-    <button id="add-supply">Add Supply</button>
   </div>
+
+  <div class="supplies-filter">
+    <div class="filter-group">
+      <label for="status-filter">Status</label>
+      <select id="status-filter" class="status-filter">
+        <option value="all">All Active Statuses</option>
+        <option value="all_including_hidden">All (including hidden)</option>
+        <option value="active">Active Orders</option>
+        <option value="pending">Pending</option>
+        <option value="processing">Processing</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="date-from">From Date</label>
+      <input type="date" id="date-from" class="date-from" />
+    </div>
+
+    <div class="filter-group">
+      <label for="date-to">To Date</label>
+      <input type="date" id="date-to" class="date-to" />
+    </div>
+
+    <div class="filter-actions">
+      <button class="apply-filter-btn">
+        <i class="fas fa-filter"></i> Apply Filters
+      </button>
+      <button class="reset-filter-btn">Reset</button>
+    </div>
+  </div>
+
+  <div class="active-filters" id="active-filters"></div>
+  <p class="filter-status" id="filter-status"></p>
+
   <div class="supplies-grid" id="supplies-list"></div>
 </div>
