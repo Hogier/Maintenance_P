@@ -188,3 +188,9 @@ Stack trace:
 [2025-03-02 13:32:19 America/Chicago] Current server time: 2025-03-02 13:32:19
 [2025-03-02 13:32:19 America/Chicago] Code data from database: 
 [2025-03-02 13:32:19 America/Chicago] Error: Code not found or not active
+[02-Apr-2025 18:49:19 America/Chicago] PHP Warning:  Undefined array key "REQUEST_METHOD" in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\database.php on line 38
+[02-Apr-2025 18:49:19 America/Chicago] PHP Warning:  Undefined array key "REQUEST_METHOD" in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\verify_code.php on line 152
+[2025-04-02 18:49:19 America/Chicago] === End of script ===
+[02-Apr-2025 18:54:03 America/Chicago] PHP Warning:  Undefined array key "REQUEST_METHOD" in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\database.php on line 38
+[02-Apr-2025 18:54:03 America/Chicago] PHP Warning:  Undefined array key "REQUEST_METHOD" in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\verify_code.php on line 152
+[2025-04-02 18:54:03 America/Chicago] === End of script ===

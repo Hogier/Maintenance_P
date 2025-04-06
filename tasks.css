@@ -21,6 +21,8 @@ body {
 .main-content {
   margin-left: 250px;
   position: relative;
+  margin-left: 250px;
+  position: relative;
 }
 
 .container {
@@ -31,7 +33,7 @@ body {
 
 header {
   position: fixed;
-  z-index: 700;
+  z-index: 2700;
   width: calc(100% - 250px);
   display: flex;
   justify-content: space-between;
@@ -46,6 +48,7 @@ header {
 h1 {
   color: #2196f3;
 }
+
 
 .date-filter {
   display: flex;
@@ -185,10 +188,12 @@ h1 {
   border-width: 12px;
   transform: scaleX(0.8);
 }
+
 .task-location-icon {
   margin: 0 10px 0 7px;
   font-size: 16px;
 }
+
 /*
 .task-location::before {
   content: "📍";
@@ -204,6 +209,7 @@ h1 {
   text-transform: uppercase;
   display: inline-block;
   margin: 0px 0;
+  /*box-shadow: inset 0px -2px 4px rgba(0, 0, 0, 0.10);*/
   /*box-shadow: inset 0px -2px 4px rgba(0, 0, 0, 0.10);*/
   text-shadow: 1px 1px 1px rgb(0 0 0 / 37%);
   z-index: 99;
@@ -244,6 +250,7 @@ h1 {
   font-size: 14px;
   letter-spacing: 1px;
   color: #ffffff;
+
 }
 
 .task-stats {
@@ -385,6 +392,7 @@ h1 {
   transform: scale(1);
   transition: transform 0.3s, top 0.3s ease-out;
 }
+
 .assign-btn:hover {
   transform: scale(1.05);
 }
@@ -393,7 +401,8 @@ h1 {
   background-color: white;
   border: 1px solid #5b6fce;
   color: #5b6fce;
-  width: auto; /* Позволяет кнопке изменять ширину */
+  width: auto;
+  /* Позволяет кнопке изменять ширину */
 }
 
 .assigned-to-you-btn {
@@ -406,7 +415,8 @@ h1 {
   line-height: 40px;
   background-color: #ffffff;
   color: #5b6fce;
-  width: 100%; /* Позволяет кнопке изменять ширину */
+  width: 100%;
+  /* Позволяет кнопке изменять ширину */
   transition: top 0.3s ease-out;
 }
 
@@ -579,7 +589,9 @@ h1 {
   border-radius: 4px;
   border: 1px solid #ddd;
   grid-column: span 2;
+  grid-column: span 2;
 }
+
 .media-item-video video {
   width: 100%;
   height: 100px;
@@ -643,6 +655,7 @@ h1 {
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -657,6 +670,7 @@ h1 {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -708,8 +722,10 @@ h1 {
   border-radius: 50%;
   display: inline-block;
   margin: 0 10px 0 10px;
-  opacity: 0; /* Изначально невидимы */
-  transition: opacity 0.3s ease; /* Плавное появление */
+  opacity: 0;
+  /* Изначально невидимы */
+  transition: opacity 0.3s ease;
+  /* Плавное появление */
 }
 
 .clock {
@@ -726,7 +742,8 @@ h1 {
 
 .clock.visible,
 .refuse-clock.visible {
-  opacity: 1; /* Видимы, когда добавлен класс visible */
+  opacity: 1;
+  /* Видимы, когда добавлен класс visible */
 }
 
 .hour-hand,
@@ -744,7 +761,8 @@ h1 {
   width: 1px;
   height: 4px;
   transform: translateX(-50%) rotate(45deg);
-  animation: rotateHourHand 20s linear infinite; /* Анимация для часовой стрелки */
+  animation: rotateHourHand 20s linear infinite;
+  /* Анимация для часовой стрелки */
 }
 
 .minute-hand,
@@ -752,7 +770,8 @@ h1 {
   width: 1px;
   height: 6px;
   transform: translateX(-50%) rotate(90deg);
-  animation: rotateMinuteHand 4s linear infinite; /* Анимация для минутной стрелки */
+  animation: rotateMinuteHand 4s linear infinite;
+  /* Анимация для минутной стрелки */
 }
 
 .hour-hand,
@@ -786,14 +805,17 @@ h1 {
   from {
     transform: translateX(-50%) rotate(0deg);
   }
+
   to {
     transform: translateX(-50%) rotate(360deg);
   }
 }
+
 @keyframes rotateMinuteHand {
   from {
     transform: translateX(-50%) rotate(0deg);
   }
+
   to {
     transform: translateX(-50%) rotate(360deg);
   }
@@ -838,6 +860,9 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 }
 
@@ -862,7 +887,8 @@ h1 {
 
 .comments-list.expanded {
   /*height: auto;*/
-  max-height: 200px; /* Максимальная высота для comments-list */
+  max-height: 200px;
+  /* Максимальная высота для comments-list */
   opacity: 1;
 }
 
@@ -894,6 +920,7 @@ h1 {
   border-radius: 2px;
   transform-origin: bottom center;
 }
+
 
 .discussion-toggle-clock .hour-hand,
 .status-clock .hour-hand {
@@ -950,6 +977,20 @@ h1 {
 .new-comment-notification {
   position: fixed;
   top: 20px;
+  left: 20px;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #bf83ff, #2196f3);
+  color: white;
+  font-size: 35px;
+  text-align: center;
+  line-height: 70px;
+  border-radius: 30%;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  display: none;
   left: 20px;
   width: 70px;
   height: 70px;
@@ -1136,7 +1177,7 @@ h1 {
   left: 0;
   height: 100vh;
   overflow-y: auto;
-  z-index: 800;
+  z-index: 2800;
   transition: transform 0.3s ease;
 }
 
@@ -1199,6 +1240,7 @@ h1 {
   list-style: none;
   padding-left: 20px;
 }
+
 
 .nav-item.active .submenu-items {
   display: block;
@@ -1354,6 +1396,7 @@ h1 {
     margin-left: 0;
     width: 100%;
   }
+
   /* Overlay for mobile menu */
   .sidebar-overlay {
     display: none;
@@ -1396,29 +1439,35 @@ h1 {
 /* Вспомогательная панель */
 .helper-panel {
   position: fixed;
+  visibility: hidden;
   top: 0;
-  left: var(--sidebar-width); /* Начальная позиция - сразу за сайдбаром */
+  left: var(--sidebar-width);
+  /* Начальная позиция - сразу за сайдбаром */
   width: var(--sidebar-width);
   height: 100vh;
   background-color: var(--secondary-color);
-  transform: translateX(-100%); /* Начальное положение - скрыта */
+  transform: translateX(-100%);
+  /* Начальное положение - скрыта */
   transition: transform 0.3s ease-out;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-  z-index: 799; /* Чуть ниже sidebar */
+  z-index: 2799;
+  /* Чуть ниже sidebar */
   padding: 20px;
   color: white;
   overflow-y: auto;
 }
 
 .helper-panel.visible {
-  transform: translateX(0); /* Видимое положение */
+  visibility: visible;
+  transform: translateX(0);
+  /* Видимое положение */
 }
 
 .helper-panel-title {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 15px;
-  padding-bottom: 10px;
+  padding-bottom: 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -1440,3 +1489,520 @@ h1 {
 .helper-panel-close:hover {
   opacity: 1;
 }
+
+.helper-panel-content .choose-date,
+.helper-panel-content .choose-period {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.helper-panel-content .choose-date input,
+.helper-panel-content .choose-period input,
+.helper-panel-content .choose-period .last-period-filter select {
+  width: 100%;
+  height: 30px;
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.helper-panel-content .choose-period .last-period-filter {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 15px;
+}
+
+.helper-panel-content .choose-period .period-separator {
+  width: 100%;
+  text-align: center;
+}
+
+.task-date-divider {
+  display: flex;
+  color: #b8b8b8;
+  align-items: center;
+  text-align: center;
+  margin: 25px 0;
+}
+
+.task-date-divider::before,
+.task-date-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #b8b8b8;
+  ;
+}
+
+.task-date-label {
+  padding: 0 10px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  background: none;
+  box-shadow: none;
+}
+
+#tasksList .task-date-divider:first-of-type {
+  margin-top: 5px;
+}
+
+/* Стили для контейнера фильтра статусов */
+.status-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+/* Стили для элементов фильтра */
+.status-filter-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Скрываем стандартный чекбокс */
+.status-checkbox {
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
+}
+
+/* Стили для кастомного чекбокса */
+.status-filter-item label {
+  position: relative;
+  padding-left: 35px;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
+/* Создаем псевдоэлемент для чекбокса */
+.status-filter-item label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+/* Стили для галочки внутри чекбокса */
+.status-filter-item label::after {
+  content: '✓';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  color: white;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Стили для состояния "отмечено" у чекбокса статуса Pending */
+.status-checkbox#status-pending:checked+label::before {
+  background-color: #ff5445fc;
+  border-color: #ff5445fc;
+}
+
+/* Стили для состояния "отмечено" у чекбокса статуса In Progress */
+.status-checkbox#status-in-progress:checked+label::before {
+  background-color: #e1d400;
+  border-color: #e1d400;
+}
+
+/* Стили для состояния "отмечено" у чекбокса статуса Completed */
+.status-checkbox#status-completed:checked+label::before {
+  background-color: #17cb1f;
+  border-color: #17cb1f;
+}
+
+/* Показываем галочку когда чекбокс отмечен */
+.status-checkbox:checked+label::after {
+  opacity: 1;
+}
+
+/* Стили для кнопки Apply Filter - в стиле back-button, без смещения при наведении */
+.status-filter-button {
+  width: 100%;
+  padding: 10px 15px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 15px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.status-filter-button:hover {
+  background-color: #0d8aed;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.status-filter-button:active {
+  background-color: #0b7ddb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+
+
+/* Стили для контейнера фильтра приоритетов */
+.priority-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+/* Стили для элементов фильтра приоритета */
+.priority-filter-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.priority-filter-item label {
+  position: relative;
+  padding-left: 35px;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
+
+/* Создаем псевдоэлемент для чекбокса приоритета */
+.priority-filter-item label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+/* Стили для галочки внутри чекбокса приоритета */
+.priority-filter-item label::after {
+  content: '✓';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  color: white;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Скрываем стандартный чекбокс */
+.priority-checkbox {
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  background: none;
+  pointer-events: none;
+}
+
+/* Стили для чекбоксов приоритета Low */
+.priority-checkbox#priority-low:checked+label::before {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+/* Стили для чекбоксов приоритета Medium */
+.priority-checkbox#priority-medium:checked+label::before {
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+/* Стили для чекбоксов приоритета High */
+.priority-checkbox#priority-high:checked+label::before {
+  background-color: #ff9800;
+  border-color: #ff9800;
+}
+
+/* Стили для чекбоксов приоритета Urgent */
+.priority-checkbox#priority-urgent:checked+label::before {
+  background-color: #f44336;
+  border-color: #f44336;
+}
+
+/* Показываем галочку когда чекбокс приоритета отмечен */
+.priority-checkbox:checked+label::after {
+  opacity: 1;
+}
+
+/* Стили для контейнера фильтра назначения */
+.assignment-filter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.assignment-filter {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 15px;
+}
+
+.assignment-filter select {
+  width: 100%;
+  height: 30px;
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.pagination-container div.pagination-button {
+  padding: 0 10px;
+  margin: 0 7px;
+  cursor: pointer;
+  border: 1px solid #b5b5b5;
+  border-radius: 5px;
+  background-color: #ffffff;
+  color: #757575;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 30px;
+}
+
+.pagination-container div.pagination-button:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.pagination-container div.pagination-button.active {
+  background-color: #2196F3;
+  color: #ffffff;
+}
+
+.search-panel-results-container {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+/* Стили для контейнера поиска */
+.tasks-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-type {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px 0 0 5px;
+  background-color: white;
+  font-size: 14px;
+  color: #333;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 200px;
+}
+
+.tasks-search-input {
+  width: 100%;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 0 5px 5px 0;
+  font-size: 14px;
+}
+
+.tasks-search-reset {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+  font-size: 12px;
+}
+
+.tasks-search-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  margin: 0 0 0 8px;
+  color: white;
+  background-color: #c8c8c8;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.tasks-search-button:hover {
+  background-color: #1976d2;
+}
+
+.search-results-container {
+  position: absolute;
+  top: 40px;
+  width: 420px;
+}
+
+.search-results-list {
+  list-style: none;
+  color: #333;
+  font-size: 14px;
+}
+
+.search-task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px;
+  border-bottom: 1px solid #e7e7e7;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.search-task-item:hover {
+  background-color: #e7e7e7;
+}
+
+.search-task-item:active {
+  background-color: #d7d7d7;
+}
+
+.search-task-id {
+  width: 170px;
+  margin: 0 15px 0 0;
+  text-wrap: nowrap;
+}
+
+.search-task-details {
+  white-space: nowrap;       
+  overflow: hidden;          
+  text-overflow: ellipsis;    
+}
+
+.search-task-status {
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  color: white;
+  line-height: 20px;
+  margin: 0 7px 0 0;
+  border-radius: 50%;
+}
+
+.filter-indicator-container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.tasks-filter-indicator {
+  display: flex;
+  display: none;
+  position: relative;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #dfdfdf;
+  width: fit-content;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.applied-filters-indicator {
+  margin-right: 8px;
+}
+
+.applied-filters-indicator i {
+  margin-right: 4px;
+  color:  #999;
+}
+
+.filters-applied-text {
+  color: #555;
+}
+
+
+.reset-filters-cross {
+  position: absolute;
+  top: -2px;
+  right: 4px;
+  color: #999;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.reset-filters-cross:hover {
+  color: #f44336;
+}
+
+#sidebar-sort {
+  width: 170px;
+  height: 30px;
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.sort-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort-direction {
+  width: 20px;
+  height: 20px;
+}
+
+.sort-direction img {
+  width: 100%;
+  height: 100%;
+  filter: brightness(250%);
+}
+
+
+
+
+

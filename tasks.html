@@ -22,154 +22,197 @@
     </script>
   </head>
 
-  <body>
-    <nav class="sidebar">
-      <div class="back-to-main">
-        <a href="/Maintenance_P/main.html" class="back-button">
-          <i class="fas fa-arrow-left"></i>
-          <span>Back to Main Menu</span>
-        </a>
-      </div>
-      <div class="tasksuser-profile-container">
-        <div class="header-container">
-          <div class="user-profile-account">
-            <div class="profile-user-info">
-              <div class="avatar-container">
-                <span id="userAvatar">👤</span>
-              </div>
-              <div class="user-details">
-                <span id="userName"></span>
-              </div>
-              <button style="display: none" id="logoutButton">
-                <span class="logout-icon">↪</span>
-                <span class="logout-text">Logout</span>
-              </button>
+<body>
+  <nav class="sidebar">
+    <div class="back-to-main">
+      <a href="/Maintenance_P/main.html" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Main Menu</span>
+      </a>
+    </div>
+    <div class="tasksuser-profile-container">
+      <div class="header-container">
+        <div class="user-profile-account">
+          <div class="profile-user-info">
+            <div class="avatar-container">
+              <span id="userAvatar">👤</span>
             </div>
+            <div class="user-details">
+                <span id="userName"></span>
+            </div>
+            <button style="display: none;" id="logoutButton">
+              <span class="logout-icon">↪</span>
+              <span class="logout-text">Logout</span>
+            </button>
           </div>
         </div>
       </div>
-      <ul class="nav-menu">
-        <li class="nav-item" data-page="filter">
-          <i class="fas fa-filter"></i>
-          <span>Filter</span>
-          <i class="fas fa-chevron-right submenu-arrow"></i>
-        </li>
-        <ul class="submenu-items">
-          <li class="submenu-item">By Date</li>
-          <li class="submenu-item">By Status</li>
-          <li class="submenu-item">By Priority</li>
-          <li class="submenu-item">By Assignment</li>
-          <li class="submenu-item">By Sender</li>
-          <li class="submenu-item">By Location</li>
-        </ul>
-        <li class="nav-item" data-page="sort">
-          <i class="fas fa-sort"></i>
-          <span>Sort</span>
-          <i class="fas fa-chevron-right submenu-arrow"></i>
-        </li>
-        <ul class="submenu-items">
-          <li class="submenu-item">By Sort</li>
-        </ul>
-        <li class="nav-item" data-page="materials">
-          <i class="fas fa-boxes"></i>
-          <span>Supplies</span>
-          <div class="cart-button-mini small" id="cartButtonMini">
-            <i class="fas fa-shopping-cart"></i>
-            <span class="cart-badge-mini" id="cartBadgeMini">0</span>
-          </div>
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item" data-page="filter">
+        <i class="fas fa-filter"></i>
+        <span>Filter</span>
+        <i class="fas fa-chevron-right submenu-arrow"></i>
+      </li>
+      <ul class="submenu-items">
+        <li class="submenu-item">By Date</li>
+        <li class="submenu-item">By Status</li>
+        <li class="submenu-item">By Priority</li>
+        <li class="submenu-item">By Assignment</li>
+      </ul>
+      <li class="nav-item" data-page="sort">
+        <i class="fas fa-sort"></i>
+        <span>Sort</span>
+        <i class="fas fa-chevron-right submenu-arrow"></i>
+      </li>
+      <ul style="padding: 0;" class="submenu-items">
+        <li class="submenu-item">
+          <div class="sort-container">
+            <div class="sort-direction"><img src="images/order.png" alt="sort-direction"></div>
+          <select id="sidebar-sort">
+            <option value="date">by Date</option>
+            <option value="status">by Status</option>
+            <option value="priority">by Priority</option>
+            <option value="assignment">by Assignment</option>
+          </select>
         </li>
       </ul>
-      <div class="submenu" id="inspections-submenu">
-        <div class="submenu-header">
-          <button class="back-button">
-            <i class="fas fa-arrow-left"></i>
-            <span>Back</span>
-          </button>
-          <span>Inspections</span>
+      <li class="nav-item" data-page="materials">
+        <i class="fas fa-boxes"></i>
+        <span>Supplies</span>
+        <div class="cart-button-mini small" id="cartButtonMini">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge-mini" id="cartBadgeMini">0</span>
         </div>
-        <ul class="submenu-items">
-          <li class="submenu-item" data-tab="safety">
-            <i class="fas fa-shield-alt"></i>
-            <span>Safety Inspections</span>
-          </li>
-          <li class="submenu-item" data-tab="maintenance">
-            <i class="fas fa-tools"></i>
-            <span>Maintenance Inspections</span>
-          </li>
-          <li class="submenu-item" data-tab="environmental">
-            <i class="fas fa-leaf"></i>
-            <span>Environmental Inspections</span>
-          </li>
-          <li class="submenu-item" data-tab="fire">
-            <i class="fas fa-fire-extinguisher"></i>
-            <span>Fire Safety Inspections</span>
-          </li>
-        </ul>
+      </li>
+    </ul>
+    <div class="submenu" id="inspections-submenu">
+      <div class="submenu-header">
+        <button class="back-button">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back</span>
+        </button>
+        <span>Inspections</span>
       </div>
-    </nav>
+      <ul class="submenu-items">
+        <li class="submenu-item" data-tab="safety">
+          <i class="fas fa-shield-alt"></i>
+          <span>Safety Inspections</span>
+        </li>
+        <li class="submenu-item" data-tab="maintenance">
+          <i class="fas fa-tools"></i>
+          <span>Maintenance Inspections</span>
+        </li>
+        <li class="submenu-item" data-tab="environmental">
+          <i class="fas fa-leaf"></i>
+          <span>Environmental Inspections</span>
+        </li>
+        <li class="submenu-item" data-tab="fire">
+          <i class="fas fa-fire-extinguisher"></i>
+          <span>Fire Safety Inspections</span>
+        </li>
+      </ul>
+    </div>
+  </nav>
 
-    <div class="main-content">
-      <header>
-        <h1>Maintenance Tasks</h1>
-        <div class="current-time">
-          <span id="dallasTime"></span>
+  <div class="main-content">
+    <header>
+      <h1>Maintenance Tasks</h1>
+      <div class="current-time">
+        <!--<span id="dallasTime"></span>-->
+      </div>
+      <div class="search-panel-results-container">
+        <div class="tasks-search-container">
+          <select class="search-type">
+            <option value="id">ID</option>
+            <option value="details">Details</option>
+          </select>
+          <div class="search-input-wrapper">
+            <input type="text" class="tasks-search-input" placeholder="Search...">
+            <span class="tasks-search-reset">✕</span>
+          </div>
+          <button class="tasks-search-button">
+            <i class="fas fa-search"></i>
+          </button>
         </div>
-        <div class="date-filter">
-          <button id="todayTasks" class="active">Today</button>
-          <button id="allTasks">All Tasks</button>
-          <input type="date" id="dateFilter" />
+        <div class="search-results-container">
+          <div class="search-results-list" id="searchResultsList">
+            <!-- Результаты поиска -->
+          </div>
         </div>
-      </header>
-      <div class="container">
-        <main>
-          <div class="alert-tasks-container">
-            <div class="alert-tasks">
-              <div class="alert-tasks-list" id="notCompletedTasksList">
-                <div class="alert-tasks-list-header">
-                  <img src="images/alert.png" alt="alert" />
-                  <p>Incomplete tasks found for the last week</p>
-                  <div id="displayNotCompletedTasksButton">&#10095;</div>
-                </div>
-                <!-- Tasks will be added here dynamically -->
+      </div>
+    </header>
+    <div class="container">
+      <main>
+        <div class="alert-tasks-container">
+          <div class="alert-tasks">
+            <div class="alert-tasks-list" id="notCompletedTasksList">
+              <div class="alert-tasks-list-header">
+                <img src="images/alert.png" alt="alert" />
+                <p>Incomplete tasks found for the last week</p>
+                <div id="displayNotCompletedTasksButton">&#10095;</div>
               </div>
-            </div>
-            <div id="closeAlertTasks">&#10006;</div>
-          </div>
-          <div class="tasks-container">
-            <div class="tasks-list" id="tasksList">
-              <!-- Tasks will be added here dynamically -->
+              <!-- Задачи будут добавляться здесь динамически -->
             </div>
           </div>
-        </main>
+          <div id="closeAlertTasks">&#10006;</div>
+        </div>
 
-        <div class="task-stats">
-          <div class="stat-item">
-            <span class="stat-label">Total Tasks:</span>
-            <span id="totalTasks" class="stat-value">0</span>
+        <div class="filter-indicator-container">
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-by-date" class="applied-filters-indicator">
+              <i class="fas fa-filter"></i>
+              <span id="filter-indicator-by-date-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-by-date" class="reset-filters-cross">&times;</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Completed:</span>
-            <span id="completedTasks" class="stat-value">0</span>
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-by-status" class="applied-filters-indicator">
+              <i class="fas fa-filter"></i>
+              <span id="filter-indicator-by-status-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-by-status" class="reset-filters-cross">&times;</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Pending:</span>
-            <span id="pendingTasks" class="stat-value">0</span>
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-by-priority" class="applied-filters-indicator">
+              <i class="fas fa-filter"></i>
+              <span id="filter-indicator-by-priority-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-by-priority" class="reset-filters-cross">&times;</span>
+          </div>
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-by-assignment" class="applied-filters-indicator">
+              <i class="fas fa-filter"></i>
+              <span id="filter-indicator-by-assignment-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-by-assignment" class="reset-filters-cross">&times;</span>
           </div>
         </div>
-        <div class="task-stats">
-          <div class="stat-item">
-            <span class="stat-label">Total Tasks:</span>
-            <span id="totalTasks" class="stat-value">0</span>
+
+        <div class="tasks-container">
+          <div class="tasks-list" id="tasksList">
+            <!-- Задачи будут добавляться здесь динамически -->
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Completed:</span>
-            <span id="completedTasks" class="stat-value">0</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Pending:</span>
-            <span id="pendingTasks" class="stat-value">0</span>
-          </div>
+          <div class="pagination-container"></div>
         </div>
+      </main>
+
+
+      <div class="task-stats">
+        <div class="stat-item">
+          <span class="stat-label">Total Tasks:</span>
+          <span id="totalTasks" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Completed:</span>
+          <span id="completedTasks" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Pending:</span>
+          <span id="pendingTasks" class="stat-value">0</span>
+        </div>
+      </div>
+
 
         <div class="nav-links">
           <a href="main.html" class="back-button">Back to Main</a>
@@ -226,148 +269,147 @@
             <img src="images/order.png" alt="Order Asc" />
           </button>
 
-          <div class="sort-list">
-            <div class="sort-list-item">
-              <label for="sort-date">Sort by </label>
-              <select id="sort-date">
-                <option value="Date">Date</option>
-                <option value="Status">Status</option>
-                <option value="Priority">Priority</option>
-                <option value="Assigned">Assigned</option>
-              </select>
-            </div>
+        <div class="sort-list">
+          <div class="sort-list-item">
+            <label for="sort-date">Sort by </label>
+            <select id="sort-date">
+              <option value="Date">Date</option>
+              <option value="Status">Status</option>
+              <option value="Priority">Priority</option>
+              <option value="Assigned">Assigned</option>
+            </select>
           </div>
         </div>
       </div>
-      <div id="searchButton" class="search-button">
-        <input
-          type="text"
-          id="searchInput"
-          class="search-input"
-          placeholder="Search..."
-        />
-        <img src="images/search.png" alt="Search" />
-      </div>
     </div>
-    <div class="main-dashboard">
-      <div class="user-dashboard">
-        <span class="close-button">×</span>
-        <div class="settings-icon">
-          <img id="settingsIcon" src="images/00settings.png" alt="Settings" />
-        </div>
+    <div id="searchButton" class="search-button">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+      <img src="images/search.png" alt="Search" />
+    </div>
+  </div>
+  <div class="main-dashboard">
+    <div class="user-dashboard">
+      <span class="close-button">×</span>
+      <div class="settings-icon">
+        <img id="settingsIcon" src="images/00settings.png" alt="Settings" />
+      </div>
 
-        <div class="user-profile">
-          <div class="user-photo">
-            <div class="user-photo-container">
-              <img src="#" />
-            </div>
-            <div class="change-photo" id="changePhotoButton">&#128247;</div>
+      <div class="user-profile">
+        <div class="user-photo">
+          <div class="user-photo-container">
+            <img src="#" />
           </div>
-          <div class="profile-user-info">
-            <h2 id="dashboardUserName"></h2>
-            <p id="dashboardUserEmail"></p>
-            <!-- Добавьте другие данные о пользователе здесь -->
+          <div class="change-photo" id="changePhotoButton">&#128247;</div>
+        </div>
+        <div class="profile-user-info">
+          <h2 id="dashboardUserName"></h2>
+          <p id="dashboardUserEmail"></p>
+          <!-- Добавьте другие данные о пользователе здесь -->
+        </div>
+      </div>
+      <div class="user-tasks">
+        <div class="menu-header">
+          <div id="userTasks" class="menu-header-item">
+            <h3 id="TasksListHeader"></h3>
+          </div>
+          <div id="events" class="menu-header-item">
+            <h3>Events</h3>
           </div>
         </div>
-        <div class="user-tasks">
-          <div class="menu-header">
-            <div id="userTasks" class="menu-header-item">
-              <h3 id="TasksListHeader"></h3>
-            </div>
-            <div id="events" class="menu-header-item"><h3>Events</h3></div>
-          </div>
-          <div class="info-content"></div>
-        </div>
-        <div class="loading-overlay" id="loadingOverlay"></div>
-        <div class="loading-indicator" id="loadingIndicator"></div>
+        <div class="info-content"></div>
       </div>
+      <div class="loading-overlay" id="loadingOverlay"></div>
+      <div class="loading-indicator" id="loadingIndicator"></div>
     </div>
-    <div class="overlay" id="overlay"></div>
+  </div>
+  <div class="overlay" id="overlay"></div>
 
-    <!-- Модальное окно для загрузки фотографии -->
-    <div class="modal" id="photoModal">
-      <div class="modal-content">
-        <span class="close-modal" id="closeModalButton">×</span>
-        <h2>Upload photo</h2>
-        <div class="drop-area" id="dropArea">
-          <span id="fileName">Drag and drop or click to select a file</span>
-          <input type="file" id="photoInput" accept="image/*" hidden />
-        </div>
-        <button id="uploadPhotoButton">Confirm</button>
+  <!-- Модальное окно для загрузки фотографии -->
+  <div class="modal" id="photoModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModalButton">×</span>
+      <h2>Upload photo</h2>
+      <div class="drop-area" id="dropArea">
+        <span id="fileName">Drag and drop or click to select a file</span>
+        <input type="file" id="photoInput" accept="image/*" hidden />
       </div>
+      <button id="uploadPhotoButton">Confirm</button>
     </div>
-    <div class="settings-modal" id="settingsModal">
-      <div class="settings-modal-content">
-        <span class="settings-close">&times;</span>
-        <h2>Profile Settings</h2>
-        <div class="settings-form-group">
-          <label for="settingsEmail">Email:</label>
-          <input type="email" id="settingsEmail" disabled />
-        </div>
-        <div class="settings-form-group">
-          <label for="settingsFullName">Full Name:</label>
-          <input type="text" id="settingsFullName" />
-        </div>
-        <div class="settings-form-group">
-          <label for="settingsDepartment">Department:</label>
-          <select id="settingsDepartment">
-            <option value="teaching">Teaching Staff</option>
-            <option value="admin">Administration</option>
-            <option value="support">Support Staff</option>
-            <option value="parents">Parents Club</option>
-          </select>
-        </div>
-        <div class="settings-form-group">
-          <label for="settingsBuilding">Building:</label>
-          <select id="settingsBuilding">
-            <option value="westWing">West Wing</option>
-            <option value="southWing">South Wing</option>
-            <option value="northWing">North Wing</option>
-            <option value="upperSchool">Upper School</option>
-            <option value="GFB">GFB</option>
-            <option value="WLFA">WLFA</option>
-            <option value="Administration">Administration</option>
-          </select>
-        </div>
-        <div class="settings-form-group">
-          <label for="settingsRoom">Room:</label>
-          <select id="settingsRoom"></select>
-        </div>
-        <div class="settings-form-group">
-          <label for="settingsStaffType">Staff Type:</label>
-          <select id="settingsStaffType">
-            <option value="mainTeacher">Main Teacher</option>
-            <option value="assistant">Teaching Assistant</option>
-          </select>
-        </div>
-        <button class="settings-save-btn">Save Changes</button>
+  </div>
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-modal-content">
+      <span class="settings-close">&times;</span>
+      <h2>Profile Settings</h2>
+      <div class="settings-form-group">
+        <label for="settingsEmail">Email:</label>
+        <input type="email" id="settingsEmail" disabled />
       </div>
+      <div class="settings-form-group">
+        <label for="settingsFullName">Full Name:</label>
+        <input type="text" id="settingsFullName" />
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsDepartment">Department:</label>
+        <select id="settingsDepartment">
+          <option value="teaching">Teaching Staff</option>
+          <option value="admin">Administration</option>
+          <option value="support">Support Staff</option>
+          <option value="parents">Parents Club</option>
+        </select>
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsBuilding">Building:</label>
+        <select id="settingsBuilding">
+          <option value="westWing">West Wing</option>
+          <option value="southWing">South Wing</option>
+          <option value="northWing">North Wing</option>
+          <option value="upperSchool">Upper School</option>
+          <option value="GFB">GFB</option>
+          <option value="WLFA">WLFA</option>
+          <option value="Administration">Administration</option>
+        </select>
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsRoom">Room:</label>
+        <select id="settingsRoom"></select>
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsStaffType">Staff Type:</label>
+        <select id="settingsStaffType">
+          <option value="mainTeacher">Main Teacher</option>
+          <option value="assistant">Teaching Assistant</option>
+        </select>
+      </div>
+      <button class="settings-save-btn">Save Changes</button>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
-    <script src="database.js"></script>
-    <script src="auth.js"></script>
-    <script src="dateUtils.js"></script>
-    <script src="tasks.js"></script>
-    <script src="materials.js"></script>
-    <script src="user-profile.js"></script>
-    <script>
-      // Update time every second
-      function updateDallasTime() {
-        const timeElement = document.getElementById("dallasTime");
-        timeElement.textContent = getDallasDateTime();
-      }
-
-      setInterval(updateDallasTime, 1000);
-      updateDallasTime(); // Initial update
-    </script>
-
-    <!-- Helper panel -->
+  </div>
+    <!-- Вспомогательная панель -->
     <div class="helper-panel">
       <div class="helper-panel-close">&times;</div>
-      <h3 class="helper-panel-title">Help</h3>
+      <h3 class="helper-panel-title">Справка</h3>
       <div class="helper-panel-content">
-        <!-- Content will be populated dynamically -->
+        <!-- Содержимое будет заполняться динамически -->
       </div>
     </div>
-  </body>
+
+  <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
+  <script src="database.js"></script>
+  <script src="auth.js"></script>
+  <script src="dateUtils.js"></script>
+  <script src="tasks.js"></script>
+  <script src="materials.js"></script>
+  <script src="user-profile.js"></script>
+  <script>
+    // Обновление времени каждую секунду
+    function updateDallasTime() {
+      const timeElement = document.getElementById("dallasTime");
+      timeElement.textContent = getDallasDateTime();
+    }
+
+    setInterval(updateDallasTime, 1000);
+    updateDallasTime(); // Первоначальное обновление
+  </script>
+  
+</body>
+
 </html>

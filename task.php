@@ -3,9 +3,30 @@ date_default_timezone_set('America/Chicago');
 header("Cache-Control: max-age=604800, public");
 header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
 
+// Отключаем прямой вывод ошибок, чтобы они не попадали в JSON-ответ
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_error.log');
+
+// Перехватываем фатальные ошибки
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE])) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Fatal PHP Error: ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line']
+        ]);
+        exit;
+    }
+});
+
 // Папка для сохранения загруженных файлов
 $uploadDir = "uploads/";
 $miniDir = "uploads/mini/";
+
+error_log("task.php: ");
 
 // Проверяем существование директорий и создаем их при необходимости
 if (!file_exists($uploadDir)) {
@@ -46,7 +67,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';  // Пустой пароль для XAMPP
+$password = 'root';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -480,29 +501,35 @@ if ($action === 'addTask') {
         echo json_encode($newTasks); // Возвращаем новые задания
     }
 } elseif ($action === 'getNotCompletedTasksForLastWeek') {
+    // Обязательно устанавливаем заголовок
+    header('Content-Type: application/json; charset=utf-8');
+    
     $currentDate = $_POST['currentDate'];
     $date = new DateTime($currentDate);
     $date->modify('-7 days');
     $previousDate = $date->format('Y-m-d');
 
-    error_log("previousDate: " . $previousDate);
-
     global $conn;
 
     try {
-        // Check if upload directory is writable
         $uploadDir = __DIR__ . '/uploads';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
         
         if (!is_writable($uploadDir)) {
-            error_log("Upload directory is not writable: " . $uploadDir);
             // Continue execution even if directory is not writable
+        } else {
+        }
+
+        // Проверяем подключение к базе данных
+        if ($conn->connect_error) {
+            throw new Exception("Database connection error: " . $conn->connect_error);
         }
 
         // Изменяем запрос, чтобы исключить задания за сегодняшний день
         $query = "SELECT * FROM tasks WHERE status != 'Completed' AND date >= ? AND date < ?";
+        
         $stmt = $conn->prepare($query);
 
         if (!$stmt) {
@@ -510,11 +537,16 @@ if ($action === 'addTask') {
         }
 
         $stmt->bind_param('ss', $previousDate, $currentDate);
+        
         if (!$stmt->execute()) {
             throw new Exception("Ошибка выполнения запроса: " . $stmt->error);
         }
 
         $result = $stmt->get_result();
+        if (!$result) {
+            throw new Exception("Ошибка получения результатов: " . $stmt->error);
+        }
+        
         $tasks = $result->fetch_all(MYSQLI_ASSOC);
 
         echo json_encode(['success' => true, 'data' => $tasks]);
@@ -522,6 +554,294 @@ if ($action === 'addTask') {
         error_log("Error in getNotCompletedTasksForLastWeek: " . $e->getMessage());
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
+} elseif ($action === 'getTasksByPeriod') {
+    $fromDate = $_POST['fromDate'];
+    $toDate = $_POST['toDate'];
+
+    $stmt = $conn->prepare("SELECT * FROM tasks WHERE date >= ? AND date <= ?");
+    $stmt->bind_param("ss", $fromDate, $toDate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);
+    echo json_encode(['success' => true, 'data' => $tasks]);
+    $stmt->close();
+} elseif ($action === 'getTasksWithFiltering') {
+    // Извлекаем параметры запроса
+    $filtersJson = $_POST['filters'] ?? '{}';
+    $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
+    $limit = isset($_POST['limit']) ? (int)$_POST['limit'] : 10;
+
+    // Вычисляем смещение для LIMIT в SQL
+    $offset = ($page - 1) * $limit;
+    
+    // Декодируем фильтры
+    $filters = json_decode($filtersJson, true);
+    
+    // Базовый запрос
+    $baseQuery = "SELECT * FROM tasks";
+    $countQuery = "SELECT COUNT(*) as total FROM tasks";
+    $whereConditions = [];
+    $params = [];
+    $types = "";
+
+    $sort = $filters['sort'];
+    $sortDirection = $sort['direction'];
+    $sortBy = $sort['by'];
+
+    $search = $filters['search'];
+    $searchValue = $search['value'];
+    $searchType = $search['type'];
+
+    if(!empty($searchValue) && !empty($searchType)) {
+        if($searchType === 'id') {
+            $whereConditions[] = "request_id LIKE ?";
+            $params[] = "%" . $searchValue . "%";
+            $types .= "s";
+        } elseif($searchType === 'details') {
+            $whereConditions[] = "details LIKE ?";
+            $params[] = "%" . $searchValue . "%";
+            $types .= "s";
+        }
+    } else {  
+
+    // Применяем фильтры
+    // 1. Фильтр по дате
+    if (!empty($filters['byDate']['date']) && $filters['byDate']['period']['last'] === 'Custom') {
+        $whereConditions[] = "DATE(date) = ?";
+        $params[] = $filters['byDate']['date'];
+        $types .= "s";
+    } elseif (!empty($filters['byDate']['period']['custom']['from']) && !empty($filters['byDate']['period']['custom']['to']) && $filters['byDate']['period']['last'] === 'Custom') {
+        $whereConditions[] = "date >= ? AND date <= ?";
+        $params[] = $filters['byDate']['period']['custom']['from'];
+        $params[] = $filters['byDate']['period']['custom']['to'];
+        $types .= "ss";
+    } elseif (!empty($filters['byDate']['period']['last']) && $filters['byDate']['period']['last'] !== 'Custom') {
+        // Добавляем обработку предопределенных периодов
+        $currentDate = date('Y-m-d');
+        $fromDate = "";
+        
+        switch ($filters['byDate']['period']['last']) {
+            case 'lastWeek':
+                $fromDate = date('Y-m-d', strtotime('-7 days'));
+                break;
+            case 'lastMonth':
+                $fromDate = date('Y-m-d', strtotime('-1 month'));
+                break;
+            case 'last3Months':
+                $fromDate = date('Y-m-d', strtotime('-3 months'));
+                break;
+            case 'lastYear':
+                $fromDate = date('Y-m-d', strtotime('-1 year'));
+                break;
+        }
+        
+        if (!empty($fromDate)) {
+            $whereConditions[] = "date >= ? AND date <= ?";
+            $params[] = $fromDate;
+            $params[] = $currentDate;
+            $types .= "ss";
+        }
+    }
+    
+    // 2. Фильтр по статусу
+    if (!empty($filters['byStatus']['status']) && is_array($filters['byStatus']['status'])) {
+        $statusPlaceholders = implode(',', array_fill(0, count($filters['byStatus']['status']), '?'));
+        $whereConditions[] = "status IN (" . $statusPlaceholders . ")";
+        
+        foreach ($filters['byStatus']['status'] as $status) {
+            $params[] = $status;
+            $types .= "s";
+        }
+    }
+    
+    // 3. Фильтр по приоритету
+    if (!empty($filters['byPriority']['priority']) && is_array($filters['byPriority']['priority'])) {
+        $priorityPlaceholders = implode(',', array_fill(0, count($filters['byPriority']['priority']), '?'));
+        $whereConditions[] = "priority IN (" . $priorityPlaceholders . ")";
+        
+        foreach ($filters['byPriority']['priority'] as $priority) {
+            $params[] = $priority;
+            $types .= "s";
+        }
+    }
+    
+    // 4. Фильтр по назначениям
+    if (!empty($filters['byAssignment']['assignment']) && $filters['byAssignment']['assignment'] !== 'All') {
+        if ($filters['byAssignment']['assignment'] === 'Yes') {
+            $whereConditions[] = "assigned_to IS NOT NULL AND assigned_to != ''";
+        } elseif ($filters['byAssignment']['assignment'] === 'No') {
+            $whereConditions[] = "(assigned_to IS NULL OR assigned_to = '')";
+        }
+    }
+    
+    }
+
+    // Объединяем условия WHERE
+    if (!empty($whereConditions)) {
+        $baseQuery .= " WHERE " . implode(" AND ", $whereConditions);
+        $countQuery .= " WHERE " . implode(" AND ", $whereConditions);
+    }
+    
+    // Определяем поле для сортировки на основе значения $sortBy
+    $sortField = '';
+    switch ($sortBy) {
+        case 'date':
+            $sortField = 'timestamp'; // Сортировка по дате добавления
+            break;
+        case 'status':
+            $sortField = 'status'; // Сортировка по статусу
+            break;
+        case 'priority':
+            $sortField = 'priority'; // Сортировка по приоритету
+            break;
+        case 'assignment':
+            $sortField = 'assigned_to'; // Сортировка по назначению
+            break;
+        default:
+            $sortField = 'timestamp'; // По умолчанию сортируем по дате
+    }
+
+    // Проверяем корректность направления сортировки
+    $sortDirection = strtoupper($sortDirection) === 'ASC' ? 'ASC' : 'DESC';
+
+    error_log("getTasksWithFiltering: sortField: " . $sortField);
+    error_log("getTasksWithFiltering: sortDirection: " . $sortDirection);
+    // Формируем динамический ORDER BY на основе переменных
+    $baseQuery .= " ORDER BY $sortField $sortDirection";
+    
+    // Добавляем пагинацию
+    $baseQuery .= " LIMIT ? OFFSET ?";
+    $params[] = $limit;
+    $params[] = $offset;
+    $types .= "ii";
+    
+
+    // Выполняем запрос для получения общего количества задач
+    $countStmt = $conn->prepare($countQuery);
+
+    error_log("getTasksWithFiltering: baseQuery: " . $baseQuery);
+    error_log("getTasksWithFiltering: countQuery: " . $countQuery);
+    error_log("getTasksWithFiltering: params: " . json_encode($params));
+    error_log("getTasksWithFiltering: types: " . $types);
+    error_log("getTasksWithFiltering: countStmt выполнен");
+
+    if (!empty($params) && !empty($types)) {
+        // Создаем копии параметров для запроса подсчета (без limit и offset)
+        $countParams = array_slice($params, 0, count($params) - 2);
+        $countTypes = substr($types, 0, strlen($types) - 2);
+        
+        $countStmt->bind_param($countTypes, ...$countParams);
+    }
+    
+    $countStmt->execute();
+    $totalResult = $countStmt->get_result()->fetch_assoc();
+    $totalTasks = $totalResult['total'];
+    $totalPages = ceil($totalTasks / $limit);
+    
+    // Выполняем основной запрос для получения данных с пагинацией
+    $stmt = $conn->prepare($baseQuery);
+    
+    if (!empty($params) && !empty($types)) {
+        // Привязываем параметры только если они есть
+        $stmt->bind_param($types, ...$params);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);
+    
+    // Декодируем JSON-поля
+    foreach ($tasks as &$task) {
+        if (isset($task['comments'])) {
+            $task['comments'] = json_decode($task['comments'], true);
+        }
+        if (isset($task['media'])) {
+            $task['media'] = json_decode($task['media'], true);
+        }
+    }
+    
+    echo json_encode([
+        'success' => true, 
+        'data' => $tasks,
+        'pagination' => [
+            'totalTasks' => (int)$totalTasks,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages
+        ]
+    ]);
+    
+    $stmt->close();
+    $countStmt->close();
+} elseif ($action === 'searchTasksToDropdownList') {
+    // Получаем параметры поиска
+    $searchType = $_POST['searchType'] ?? '';
+    $searchValue = $_POST['searchValue'] ?? '';
+    
+    // Проверяем наличие обязательных параметров
+    if (empty($searchType) || empty($searchValue)) {
+        echo json_encode([
+            'success' => false, 
+            'message' => 'Missing required parameters'
+        ]);
+        exit;
+    }
+    
+    // Базовый запрос
+    $query = "SELECT request_id, details, status FROM tasks";
+    $whereClause = "";
+    $params = [];
+    $types = "";
+    
+    if ($searchType === 'id') {
+        $whereClause = "WHERE request_id LIKE ?";
+        $params[] = "%" . $searchValue . "%";
+        $types .= "s";
+    } else if ($searchType === 'details') {
+        $whereClause = "WHERE details LIKE ?";
+        $params[] = "%" . $searchValue . "%";
+        $types .= "s";
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid search type'
+        ]);
+        exit;
+    }
+    
+    $query .= " " . $whereClause . " ORDER BY timestamp DESC LIMIT 5";
+    
+    $stmt = $conn->prepare($query);
+    
+    if (!$stmt) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'SQL prepare error: ' . $conn->error
+        ]);
+        exit;
+    }
+    
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    
+    if (!$stmt->execute()) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'SQL execute error: ' . $stmt->error
+        ]);
+        exit;
+    }
+    
+    $result = $stmt->get_result();
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);
+    
+    echo json_encode([
+        'success' => true,
+        'data' => $tasks
+    ]);
+    
+    $stmt->close();
 }
 
 $conn->close();
