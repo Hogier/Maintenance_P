@@ -43,10 +43,28 @@ async function loginUser(email, password) {
   }
 }
 
-// Функция проверки авторизации
+// Функция проверки авторизации обычного пользователя
 function checkUserAuth() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
   return user && user.role === "user";
+}
+
+// Функция проверки авторизации администратора
+function checkAdminAuth() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  return user && user.role === "admin";
+}
+
+// Функция проверки авторизации службы поддержки
+function checkSupportAuth() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  return user && user.role === "support";
+}
+
+// Функция проверки роли пользователя
+function getUserRole() {
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  return user ? user.role : null;
 }
 
 // Функция выхода

@@ -51,10 +51,12 @@
         <div class="menu-item maintenance-staff">
           <h2>Maintenance Staff Portal</h2>
           <p>Access maintenance tasks and manage requests</p>
-          <a href="tasks.html" class="menu-button staff-button">Staff Login</a>
+          <a href="tasks.html" class="menu-button staff-button"
+            >Access Portal</a
+          >
         </div>
 
-        <div class="menu-item event-portal">
+        <div class="menu-item">
           <h2>Event Request Form</h2>
           <p>View and schedule school events</p>
           <a href="events.html" class="menu-button event-button"
@@ -237,18 +239,13 @@
           <label for="settingsRoom">Room:</label>
           <select id="settingsRoom"></select>
         </div>
-        <div class="settings-form-group">
-          <label for="settingsStaffType">Staff Type:</label>
-          <select id="settingsStaffType">
-            <option value="mainTeacher">Main Teacher</option>
-            <option value="assistant">Teaching Assistant</option>
-          </select>
-        </div>
         <button class="settings-save-btn">Save Changes</button>
       </div>
     </div>
     <script src="database.js"></script>
     <script src="dateUtils.js"></script>
     <script src="user-profile.js"></script>
+    <script src="authUser.js"></script>
+    <script src="role-access.js"></script>
   </body>
 </html>

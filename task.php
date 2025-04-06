@@ -18,34 +18,26 @@ if (!file_exists($miniDir)) {
 // Проверяем права доступа
 if (!is_writable($uploadDir)) {
     error_log("Upload directory is not writable: " . $uploadDir);
-    // Продолжаем выполнение, хотя загрузка файлов может не работать
+    // Изменено: Останавливаем выполнение если директория не доступна для записи
+    echo json_encode([
+        'success' => false,
+        'message' => 'Upload directory is not writable'
+    ]);
+    exit;
 } else {
     error_log("Upload directory is writable: " . $uploadDir);
 }
 
 if (!is_writable($miniDir)) {
     error_log("Mini directory is not writable: " . $miniDir);
-    // Продолжаем выполнение, хотя миниатюры могут не создаваться
+    // Изменено: Останавливаем выполнение если директория не доступна для записи
+    echo json_encode([
+        'success' => false,
+        'message' => 'Mini directory is not writable'
+    ]);
+    exit;
 } else {
     error_log("Mini directory is writable: " . $miniDir);
-}
-
-// Проверка прав доступа только при загрузке файлов
-if ($action === 'addTask' || $action === 'uploadFile') {
-    if (!is_writable($uploadDir)) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Upload directory is not writable'
-        ]);
-        exit;
-    }
-    if (!is_writable($miniDir)) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Mini directory is not writable'
-        ]);
-        exit;
-    }
 }
 
 // Разрешенные типы файлов
@@ -68,6 +60,23 @@ $action = $_POST['action'] ?? '';
 header('Content-Type: application/json');
 
 if ($action === 'addTask') {
+    // Улучшенная отладка для файлов
+    error_log("Received addTask request with the following data:");
+    error_log("POST data: " . json_encode($_POST));
+    
+    if (isset($_FILES['media'])) {
+        error_log("Files data: " . json_encode([
+            'count' => count($_FILES['media']['name']),
+            'names' => $_FILES['media']['name'],
+            'types' => $_FILES['media']['type'],
+            'tmp_names' => $_FILES['media']['tmp_name'],
+            'errors' => $_FILES['media']['error'],
+            'sizes' => $_FILES['media']['size'],
+        ]));
+    } else {
+        error_log("No files received in the request");
+    }
+    
     // Проверка и обработка загруженных файлов
     $mediaFiles = [];
     if (isset($_FILES['media']) && !empty($_FILES['media']['name'][0])) {
@@ -75,10 +84,32 @@ if ($action === 'addTask') {
             if (!empty($tmpName)) {
                 $fileType = $_FILES['media']['type'][$key];
                 $fileSize = $_FILES['media']['size'][$key];
+                $fileName = $_FILES['media']['name'][$key];
+                $fileError = $_FILES['media']['error'][$key];
+                
+                error_log("Processing file: $fileName, type: $fileType, size: $fileSize, error: $fileError");
+
+                // Проверка ошибок при загрузке
+                if ($fileError !== UPLOAD_ERR_OK) {
+                    $errorMessage = match($fileError) {
+                        UPLOAD_ERR_INI_SIZE => "The uploaded file exceeds the upload_max_filesize directive in php.ini",
+                        UPLOAD_ERR_FORM_SIZE => "The uploaded file exceeds the MAX_FILE_SIZE directive in the HTML form",
+                        UPLOAD_ERR_PARTIAL => "The uploaded file was only partially uploaded",
+                        UPLOAD_ERR_NO_FILE => "No file was uploaded",
+                        UPLOAD_ERR_NO_TMP_DIR => "Missing a temporary folder",
+                        UPLOAD_ERR_CANT_WRITE => "Failed to write file to disk",
+                        UPLOAD_ERR_EXTENSION => "A PHP extension stopped the file upload",
+                        default => "Unknown upload error"
+                    };
+                    error_log("File upload error: $errorMessage");
+                    echo json_encode(['success' => false, 'message' => "Error uploading file $fileName: $errorMessage"]);
+                    exit;
+                }
 
                 // Проверка типа файла
                 if (!in_array($fileType, $allowedTypes)) {
-                    echo json_encode(['success' => false, 'message' => 'Invalid file type']);
+                    error_log("Invalid file type: $fileType. Allowed types: " . implode(', ', $allowedTypes));
+                    echo json_encode(['success' => false, 'message' => "Invalid file type: $fileType"]);
                     exit;
                 }
 
@@ -86,6 +117,7 @@ if ($action === 'addTask') {
                 if (($fileType === 'image/jpeg' || $fileType === 'image/png') && $fileSize > 30 * 1024 * 1024 ||
                     ($fileType === 'video/mp4') && $fileSize > 200 * 1024 * 1024 ||
                     ($fileType === 'audio/mpeg' || $fileType === 'audio/mp3') && $fileSize > 100 * 1024 * 1024) {
+                    error_log("File size exceeds limit: $fileSize bytes");
                     echo json_encode(['success' => false, 'message' => 'File size exceeds limit']);
                     exit;
                 }
@@ -94,9 +126,13 @@ if ($action === 'addTask') {
                 $fileName = uniqid() . '_' . $originalFileName;
                 $filePath = $uploadDir . $fileName;
 
-                // Сохранение изображения с качеством 70%
+                error_log("Attempting to move uploaded file from $tmpName to $filePath");
+                
+                // Сохранение файла
                 if (move_uploaded_file($tmpName, $filePath)) {
+                    error_log("File uploaded successfully: $filePath");
                     $mediaFiles[] = $fileName;
+                    
                     if (strpos($fileType, 'image') !== false) {
                         // Сжатие изображения без потерь
                         compressImage($filePath, $filePath, 70);
@@ -105,28 +141,37 @@ if ($action === 'addTask') {
                         $miniFileName = 'mini_' . $fileName;
                         $miniFilePath = $miniDir . $miniFileName;
 
-                        createMiniImage($filePath, $miniFilePath, 135, 50);
+                        error_log("Creating mini image: $miniFilePath");
+                        if (createMiniImage($filePath, $miniFilePath, 135, 50)) {
+                            error_log("Mini image created successfully");
+                        } else {
+                            error_log("Failed to create mini image");
+                        }
                     }
+                } else {
+                    $lastError = error_get_last();
+                    error_log("Failed to move uploaded file. PHP Error: " . ($lastError ? json_encode($lastError) : 'Unknown error'));
+                    echo json_encode(['success' => false, 'message' => 'Failed to save uploaded file']);
+                    exit;
                 }
             }
         }
+    } else {
+        error_log("No media files to process");
     }
 
     // Преобразование timestamp в нужный формат
     $timestamp = date('Y-m-d H:i:s', strtotime($_POST['timestamp']));
 
-    // Инициализация commentCount
-    $commentCount = 0;
-
     // Сохранение данных в базу данных
-    $stmt = $conn->prepare("INSERT INTO tasks (request_id, building, room, staff, priority, details, timestamp, status, media, submittedBy, date, commentCount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO tasks (request_id, building, room, staff, priority, details, timestamp, status, media, submittedBy, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     if ($stmt === false) {
         echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
         exit;
     }
 
     $stmt->bind_param(
-        "sssssssssssi", 
+        "sssssssssss", 
         $_POST['requestId'],
         $_POST['building'],
         $_POST['room'],
@@ -137,8 +182,7 @@ if ($action === 'addTask') {
         $_POST['status'],
         json_encode($mediaFiles),
         $_POST['submittedBy'],
-        $_POST['date'],
-        $commentCount
+        $_POST['date']
     );
 
     if ($stmt->execute()) {
@@ -155,7 +199,18 @@ if ($action === 'addTask') {
     // Преобразование JSON-строк в массивы
     foreach ($tasks as &$task) {
         if (isset($task['comments'])) {
-            $task['comments'] = json_decode($task['comments'],true);
+            // Получаем комментарии из task_comments вместо декодирования JSON
+            $taskId = $task['request_id'];
+            $commentStmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
+            if ($commentStmt) {
+                $commentStmt->bind_param("s", $taskId);
+                $commentStmt->execute();
+                $commentResult = $commentStmt->get_result();
+                $task['comments'] = $commentResult->fetch_all(MYSQLI_ASSOC);
+                $commentStmt->close();
+            } else {
+                $task['comments'] = [];
+            }
         }
         if (isset($task['media'])) {
             $task['media'] = json_decode($task['media'], true);
@@ -308,100 +363,6 @@ if ($action === 'addTask') {
     $tasks = $result->fetch_all(MYSQLI_ASSOC);
 
     echo json_encode(['success' => true, 'data' => $tasks]);
-
-} elseif ($action === 'addComment') {
-    $requestId = $_POST['requestId'] ?? '';
-    $commentText = $_POST['comment'] ?? '';
-    $staffName = $_POST['staffName'] ?? '';
-    $timestamp = $_POST['timestamp'] ?? '';
-
-    if (!$requestId || !$commentText || !$staffName || !$timestamp) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Missing required parameters'
-        ]);
-        exit;
-    }
-
-    // Получаем текущие комментарии
-    $stmt = $conn->prepare("SELECT comments FROM tasks WHERE request_id = ?");
-    if (!$stmt) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'SQL prepare error: ' . $conn->error
-        ]);
-        exit;
-    }
-
-    $stmt->bind_param("s", $requestId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $task = $result->fetch_assoc();
-
-    if ($task) {
-        $comments = json_decode($task['comments'], true);
-        if (!is_array($comments)) {
-            $comments = [];
-        }
-        
-        $newComment = [
-            'text' => $commentText,
-            'staffName' => $staffName,
-            'timestamp' => $timestamp
-        ];
-        $comments[] = $newComment;
-
-        $stmt = $conn->prepare("UPDATE tasks SET comments = ?, commentCount = commentCount + 1 WHERE request_id = ?");
-        if (!$stmt) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'SQL prepare error: ' . $conn->error
-            ]);
-            exit;
-        }
-
-        $stmt->bind_param("ss", json_encode($comments), $requestId);
-
-        if ($stmt->execute()) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Comment added successfully'
-            ]);
-        } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Error adding comment: ' . $stmt->error
-            ]);
-        }
-    } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Task not found'
-        ]);
-    }
-    $stmt->close();
-} elseif ($action === 'getComments') {
-    $requestId = $_POST['requestId'] ?? '';
-
-    $stmt = $conn->prepare("SELECT comments FROM tasks WHERE request_id = ?");
-    $stmt->bind_param("s", $requestId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $task = $result->fetch_assoc();
-
-    if ($task) {
-        $comments = json_decode($task['comments'], true) ?? [];
-        echo json_encode([
-            'success' => true,
-            'comments' => $comments
-        ]);
-    } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Task not found'
-        ]);
-    }
-    $stmt->close();
 } elseif ($action === 'getTasksByDate') {
     $date = $_POST['date'];
 
@@ -437,7 +398,18 @@ if ($action === 'addTask') {
     // Преобразование JSON-строк в массивы
     foreach ($tasks as &$task) {
         if (isset($task['comments'])) {
-            $task['comments'] = json_decode($task['comments'], true);
+            // Получаем комментарии из task_comments вместо декодирования JSON
+            $taskId = $task['request_id'];
+            $commentStmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
+            if ($commentStmt) {
+                $commentStmt->bind_param("s", $taskId);
+                $commentStmt->execute();
+                $commentResult = $commentStmt->get_result();
+                $task['comments'] = $commentResult->fetch_all(MYSQLI_ASSOC);
+                $commentStmt->close();
+            } else {
+                $task['comments'] = [];
+            }
         }
         if (isset($task['media'])) {
             $task['media'] = json_decode($task['media'], true);
@@ -491,7 +463,18 @@ if ($action === 'addTask') {
     } else {
         // Декодируем JSON поля comments и media
         foreach ($newTasks as &$task) {
-            $task['comments'] = json_decode($task['comments'], true);
+            // Получаем комментарии из task_comments вместо декодирования JSON
+            $taskId = $task['request_id'];
+            $commentStmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
+            if ($commentStmt) {
+                $commentStmt->bind_param("s", $taskId);
+                $commentStmt->execute();
+                $commentResult = $commentStmt->get_result();
+                $task['comments'] = $commentResult->fetch_all(MYSQLI_ASSOC);
+                $commentStmt->close();
+            } else {
+                $task['comments'] = [];
+            }
             $task['media'] = json_decode($task['media'], true);
         }
         echo json_encode($newTasks); // Возвращаем новые задания

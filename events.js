@@ -26,73 +26,37 @@ function showCommentNotification(comment) {
   const headerElement = notificationElement.querySelector("h3");
   const textElement = notificationElement.querySelector("p");
 
-  headerElement.textContent = comment.author;
+  // Добавляем фото пользователя, если оно есть
+  let authorContent = comment.author;
+  if (comment.userPhotoUrl) {
+    // Создаем структуру с фото и именем пользователя
+    headerElement.innerHTML = `
+      <img class="notification-user-photo" src="${comment.userPhotoUrl}" alt="${comment.author}" onerror="this.src='/Maintenance_P/users/img/user.png';">
+      <span>${comment.author}</span>
+    `;
+  } else {
+    // Если нет фото, просто устанавливаем текст
+    headerElement.innerHTML = `<span>${comment.author}</span>`;
+  }
+
   textElement.textContent = comment.text;
   const eventDate = comment.eventDate;
 
-  notificationElement.addEventListener("click", function () {
-    console.log("eventDate: ", eventDate);
-    console.log("selectedDate: ", selectedDate);
+  // Проверяем, отображается ли уже уведомление
+  const isShowing = notificationElement.classList.contains("show");
 
-    const parts = eventDate.split(", ");
-    const year = parseInt(parts[1]);
-    const dateParts = parts[0].split(" ");
-    const day = parseInt(dateParts[1]);
+  // Показываем уведомление, если оно не отображается
+  if (!isShowing) {
+    notificationElement.classList.add("show");
+  }
 
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    const monthIndex = months.indexOf(dateParts[0]);
+  // Воспроизведем звук нового сообщения
+  playNewMessageSound();
 
-    const parsedDate = new Date(year, monthIndex, day);
-    console.log("parsedDate: ", parsedDate);
-
-    selectedDate = parsedDate;
-
-    try {
-      updateCalendar();
-      updateEventsList();
-
-      // Автоматически раскрываем только первое событие в списке
-      setTimeout(() => {
-        // Получаем только первую кнопку toggle-details
-        const firstToggleButton = document.querySelector(".toggle-details");
-        if (firstToggleButton) {
-          // Находим блок деталей для этой кнопки
-          const eventItem = firstToggleButton.closest(".event-item");
-          const details = eventItem.querySelector(".event-details");
-
-          details.classList.remove("hidden");
-          firstToggleButton.textContent = "Hide Details";
-          firstToggleButton.classList.add("active");
-
-          setTimeout(() => {
-            eventItem.scrollIntoView({ behavior: "smooth", block: "end" });
-          }, 100);
-        }
-      }, 100);
-    } catch (error) {
-      console.error("Error updating calendar or events list:", error);
-    }
-    notificationElement.classList.remove("show");
-  });
-
-  notificationElement.classList.add("show");
-
+  // Устанавливаем таймер для автоматического закрытия
   setTimeout(() => {
     notificationElement.classList.remove("show");
-  }, 10000);
+  }, 6000); // Уведомление исчезнет через 6 секунд
 }
 
 eventsWS.onmessage = function (e) {
@@ -112,6 +76,16 @@ eventsWS.onmessage = function (e) {
       );
       if (comment.author != currentUserName) {
         showCommentNotification(comment);
+        // Если комментарий адресован текущему открытому событию, добавляем его в список
+        const openedEventElement = document.querySelector(
+          '.event-item[style*="display: block"]'
+        );
+        if (openedEventElement) {
+          const eventId = openedEventElement.getAttribute("data-event-id");
+          if (eventId === comment.eventId) {
+            addEventComment(eventId, comment);
+          }
+        }
       }
     }
   } catch (error) {
@@ -933,7 +907,75 @@ function playNewMessageSound() {
   });
 }
 
-// Функция для форматирования даты и времени создания события
+// Функция для получения URL фото пользователя
+async function getUserPhotoUrl(username) {
+  try {
+    // Пытаемся получить информацию о пользователе из localStorage
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    // Создаем FormData для запроса
+    const formData = new FormData();
+    formData.append("action", "getUserPhoto");
+
+    // Если запрашиваем фото текущего пользователя
+    if (
+      !username ||
+      (currentUser &&
+        (username === currentUser.fullName ||
+          username === currentUser.username))
+    ) {
+      formData.append("role", currentUser.role);
+
+      if (
+        currentUser.role === "user" ||
+        currentUser.role === "admin" ||
+        currentUser.role === "support"
+      ) {
+        formData.append("email", currentUser.email);
+      } else if (currentUser.role === "maintenance") {
+        formData.append("username", currentUser.username);
+      }
+    } else {
+      // Если запрашиваем фото другого пользователя, используем имя пользователя
+      // По умолчанию считаем, что это обычный пользователь, если не удалось определить
+      formData.append("role", "user");
+      formData.append("username", username);
+    }
+
+    const response = await fetch("php/user-profile.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      const photoFileName = data.photo === "nophoto" ? "user.png" : data.photo;
+      // Определяем путь к фото в зависимости от роли
+      let photoPath;
+
+      if (
+        formData.get("role") === "user" ||
+        formData.get("role") === "admin" ||
+        formData.get("role") === "support"
+      ) {
+        photoPath = `/Maintenance_P/users/img/${photoFileName}`;
+      } else {
+        photoPath = `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
+      }
+
+      return photoPath;
+    } else {
+      console.error("Ошибка получения фото:", data.message);
+      return `/Maintenance_P/users/img/user.png`;
+    }
+  } catch (error) {
+    console.error("Ошибка получения фото:", error);
+    return `/Maintenance_P/users/img/user.png`;
+  }
+}
+
+// Функция форматирования даты создания события
 function formatCreationDate(dateTimeString) {
   if (!dateTimeString) return "Unknown date";
 
@@ -1366,14 +1408,24 @@ function createEventElement(event) {
                             currentUser &&
                             currentUser.fullName === comment.author;
 
+                          // Используем userPhotoUrl из комментария, если доступно
+                          const userPhotoUrl =
+                            comment.userPhotoUrl ||
+                            `/Maintenance_P/users/img/user.png`;
+
                           return `
                             <div class="comment-item" data-comment-id="${
                               comment.id
                             }">
                                 <div class="comment-header">
-                                    <span class="comment-author">${
-                                      comment.author
-                                    }</span>
+                                    <div class="comment-author-container">
+                                        <img class="comment-user-photo" src="${userPhotoUrl}" alt="${
+                            comment.author
+                          }" onerror="this.src='/Maintenance_P/users/img/user.png';">
+                                        <span class="comment-author">${
+                                          comment.author
+                                        }</span>
+                                    </div>
                                     <span class="comment-date">${formatDate(
                                       comment.date
                                     )}</span>
@@ -1565,12 +1617,16 @@ async function addComment(event, eventId) {
     // Сохраняем исходную дату для локального форматирования
     const localDate = now;
 
+    // Получаем URL фотографии пользователя
+    const userPhotoUrl = await getUserPhotoUrl(author);
+
     // Создаем объект с данными комментария
     const commentData = {
       eventId: eventId,
       text: commentText,
       author: author,
       date: serverDateStr,
+      userPhotoUrl: userPhotoUrl, // Добавляем URL фото
     };
 
     // Отправляем запрос на сервер
@@ -1607,6 +1663,7 @@ async function addComment(event, eventId) {
       text: commentText,
       author: author,
       date: serverDateStr,
+      userPhotoUrl: userPhotoUrl,
     };
 
     currentEvent.comments.push(newComment);
@@ -1640,7 +1697,10 @@ async function addComment(event, eventId) {
         commentElement.setAttribute("data-comment-id", result.commentId);
         commentElement.innerHTML = `
           <div class="comment-header">
-            <span class="comment-author">${author}</span>
+            <div class="comment-author-container">
+              <img class="comment-user-photo" src="${userPhotoUrl}" alt="${author}" onerror="this.src='/Maintenance_P/users/img/user.png';">
+              <span class="comment-author">${author}</span>
+            </div>
             <span class="comment-date">${formattedDate}</span>
             <div class="comment-actions">
               <button class="comment-edit" onclick="editComment(event, '${eventId}', '${result.commentId}')">
@@ -1979,16 +2039,6 @@ async function updateEventApproval(eventId, approvalStatus) {
 
 async function addEventComment(eventId, comment) {
   try {
-    const response = await fetch("events_db.php", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(result.message || "Failed to add comment");
-    }
-
     // Находим событие в массиве
     const currentEvent = events.find((e) => String(e.id) === String(eventId));
     if (!currentEvent) throw new Error("Event not found");
@@ -1998,17 +2048,22 @@ async function addEventComment(eventId, comment) {
       currentEvent.comments = [];
     }
 
+    const commentText = comment.text;
+    const author = comment.author;
+    const serverDateStr = comment.date;
+    const userPhotoUrl =
+      comment.userPhotoUrl || "/Maintenance_P/users/img/user.png";
+
+    // Создаем объект нового комментария
     const newComment = {
-      id: result.commentId,
+      id: comment.id,
       text: commentText,
       author: author,
       date: serverDateStr,
+      userPhotoUrl: userPhotoUrl,
     };
 
     currentEvent.comments.push(newComment);
-
-    // Очищаем поле ввода
-    commentInput.value = "";
 
     // Обновляем отображение комментариев в DOM
     const eventElement = document.querySelector(
@@ -2019,7 +2074,9 @@ async function addEventComment(eventId, comment) {
       const commentsList = eventElement.querySelector(".comments-list");
 
       if (commentsList) {
-        // Используем форматированную дату напрямую, а не через formatDate
+        // Преобразуем серверную дату в локальную
+        const localDate = new Date(serverDateStr.replace(" ", "T"));
+        // Форматируем дату
         const formattedDate = localDate.toLocaleString("en-US", {
           timeZone: "America/Chicago",
           month: "long",
@@ -2033,16 +2090,19 @@ async function addEventComment(eventId, comment) {
         // Создаем элемент нового комментария
         const commentElement = document.createElement("div");
         commentElement.className = "comment-item";
-        commentElement.setAttribute("data-comment-id", result.commentId);
+        commentElement.setAttribute("data-comment-id", comment.id);
         commentElement.innerHTML = `
           <div class="comment-header">
-            <span class="comment-author">${author}</span>
+            <div class="comment-author-container">
+              <img class="comment-user-photo" src="${userPhotoUrl}" alt="${author}" onerror="this.src='/Maintenance_P/users/img/user.png';">
+              <span class="comment-author">${author}</span>
+            </div>
             <span class="comment-date">${formattedDate}</span>
             <div class="comment-actions">
-              <button class="comment-edit" onclick="editComment(event, '${eventId}', '${result.commentId}')">
+              <button class="comment-edit" onclick="editComment(event, '${eventId}', '${comment.id}')">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="comment-delete" onclick="deleteComment(event, '${eventId}', '${result.commentId}')">
+              <button class="comment-delete" onclick="deleteComment(event, '${eventId}', '${comment.id}')">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -2062,11 +2122,8 @@ async function addEventComment(eventId, comment) {
         }
       }
     }
-
-    showNotification("Comment added successfully");
   } catch (error) {
-    console.error("Error adding comment:", error);
-    showNotification("Failed to add comment: " + error.message, "error");
+    console.error("Error adding event comment:", error);
   }
 }
 

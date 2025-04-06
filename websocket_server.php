@@ -63,7 +63,39 @@ $ws_worker->onMessage = function($connection, $data) {
             
             $stmt->close();
         }
-    } else {
+    } 
+    else if ($message && isset($message['action']) && $message['action'] === 'updateComments') {
+        $taskId = $message['taskId'] ?? '';
+        $comment = $message['comment'] ?? '';
+        $staffName = $message['staffName'] ?? '';
+        $timestamp = $message['timestamp'] ?? '';
+        $photoUrl = $message['photoUrl'] ?? '';
+        
+        // Добавляем комментарий в базу данных task_comments
+        if (!empty($taskId) && !empty($comment) && !empty($staffName)) {
+            $stmt = $conn->prepare("INSERT INTO task_comments (task_id, staff_name, text, timestamp, photo_url) VALUES (?, ?, ?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param("sssss", $taskId, $staffName, $comment, $timestamp, $photoUrl);
+                $stmt->execute();
+                $stmt->close();
+            }
+        }
+        
+        // Отправляем сообщение всем клиентам
+        global $ws_worker;
+        foreach($ws_worker->connections as $clientConnection) {
+            $clientConnection->send(json_encode([
+                'action' => 'updateComments',
+                'message' => [
+                    'request_id' => $taskId,
+                    'comment' => $comment,
+                    'staffName' => $staffName,
+                    'timestamp' => $timestamp
+                ]
+            ]));
+        }
+    }
+    else {
         $connection->send(json_encode([
             'type' => 'error',
             'message' => 'Invalid message format or action'
