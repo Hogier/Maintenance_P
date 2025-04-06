@@ -26,7 +26,7 @@
               <span id="userAvatar">👤</span>
             </div>
             <div class="user-details">
-                <span id="userName"></span>
+              <span id="userName"></span>
             </div>
             <button style="display: none;" id="logoutButton">
               <span class="logout-icon">↪</span>
@@ -53,8 +53,17 @@
         <span>Sort</span>
         <i class="fas fa-chevron-right submenu-arrow"></i>
       </li>
-      <ul class="submenu-items">
-        <li class="submenu-item">By Sort</li>
+      <ul style="padding: 0;" class="submenu-items">
+        <li class="submenu-item">
+          <div class="sort-container">
+            <div class="sort-direction"><img src="images/order.png" alt="sort-direction"></div>
+          <select id="sidebar-sort">
+            <option value="date">by Date</option>
+            <option value="status">by Status</option>
+            <option value="priority">by Priority</option>
+            <option value="assignment">by Assignment</option>
+          </select>
+        </li>
       </ul>
       <li class="nav-item" data-page="materials">
         <i class="fas fa-box"></i>
@@ -96,19 +105,24 @@
       <div class="current-time">
         <!--<span id="dallasTime"></span>-->
       </div>
-      <div class="date-filter">
+      <div class="search-panel-results-container">
         <div class="tasks-search-container">
           <select class="search-type">
-            <option value="ID">ID</option>
-            <option value="Details">Details</option>
+            <option value="id">ID</option>
+            <option value="details">Details</option>
           </select>
           <div class="search-input-wrapper">
-            <input type="search" class="tasks-search-input" placeholder="Search...">
+            <input type="text" class="tasks-search-input" placeholder="Search...">
             <span class="tasks-search-reset">✕</span>
           </div>
           <button class="tasks-search-button">
             <i class="fas fa-search"></i>
           </button>
+        </div>
+        <div class="search-results-container">
+          <div class="search-results-list" id="searchResultsList">
+            <!-- Результаты поиска -->
+          </div>
         </div>
       </div>
     </header>
@@ -127,8 +141,38 @@
           </div>
           <div id="closeAlertTasks">&#10006;</div>
         </div>
-        
-        
+
+        <div class="filter-indicator-container">
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-by-date" class="applied-filters-indicator">
+              <i class="fas fa-filter"></i>
+              <span id="filter-indicator-by-date-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-by-date" class="reset-filters-cross">&times;</span>
+          </div>
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-by-status" class="applied-filters-indicator">
+              <i class="fas fa-filter"></i>
+              <span id="filter-indicator-by-status-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-by-status" class="reset-filters-cross">&times;</span>
+          </div>
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-by-priority" class="applied-filters-indicator">
+              <i class="fas fa-filter"></i>
+              <span id="filter-indicator-by-priority-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-by-priority" class="reset-filters-cross">&times;</span>
+          </div>
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-by-assignment" class="applied-filters-indicator">
+              <i class="fas fa-filter"></i>
+              <span id="filter-indicator-by-assignment-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-by-assignment" class="reset-filters-cross">&times;</span>
+          </div>
+        </div>
+
         <div class="tasks-container">
           <div class="tasks-list" id="tasksList">
             <!-- Задачи будут добавляться здесь динамически -->
@@ -159,7 +203,7 @@
       </div>
     </div>
   </div>
-  
+
 
   <div id="actionContainer" class="action-container">
     <div id="filterButton" class="filter-button">
@@ -224,12 +268,7 @@
       </div>
     </div>
     <div id="searchButton" class="search-button">
-      <input
-        type="text"
-        id="searchInput"
-        class="search-input"
-        placeholder="Search..."
-      />
+      <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
       <img src="images/search.png" alt="Search" />
     </div>
   </div>
@@ -258,7 +297,9 @@
           <div id="userTasks" class="menu-header-item">
             <h3 id="TasksListHeader"></h3>
           </div>
-          <div id="events" class="menu-header-item"><h3>Events</h3></div>
+          <div id="events" class="menu-header-item">
+            <h3>Events</h3>
+          </div>
         </div>
         <div class="info-content"></div>
       </div>
@@ -327,14 +368,14 @@
       <button class="settings-save-btn">Save Changes</button>
     </div>
   </div>
-    <!-- Вспомогательная панель -->
-    <div class="helper-panel">
-      <div class="helper-panel-close">&times;</div>
-      <h3 class="helper-panel-title">Справка</h3>
-      <div class="helper-panel-content">
-        <!-- Содержимое будет заполняться динамически -->
-      </div>
+  <!-- Вспомогательная панель -->
+  <div class="helper-panel">
+    <div class="helper-panel-close">&times;</div>
+    <h3 class="helper-panel-title">Справка</h3>
+    <div class="helper-panel-content">
+      <!-- Содержимое будет заполняться динамически -->
     </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
   <script src="database.js"></script>
   <script src="auth.js"></script>
@@ -343,15 +384,15 @@
   <script src="user-profile.js"></script>
   <script>
     // Обновление времени каждую секунду
-   /* function updateDallasTime() {
-      const timeElement = document.getElementById("dallasTime");
-      timeElement.textContent = getDallasDateTime();
-    }
-
-    setInterval(updateDallasTime, 1000);
-    updateDallasTime(); // Первоначальное обновление */
+    /* function updateDallasTime() {
+       const timeElement = document.getElementById("dallasTime");
+       timeElement.textContent = getDallasDateTime();
+     }
+ 
+     setInterval(updateDallasTime, 1000);
+     updateDallasTime(); // Первоначальное обновление */
   </script>
-  
+
 
 </body>
 

@@ -600,7 +600,27 @@ if ($action === 'addTask') {
     $whereConditions = [];
     $params = [];
     $types = "";
-    
+
+    $sort = $filters['sort'];
+    $sortDirection = $sort['direction'];
+    $sortBy = $sort['by'];
+
+    $search = $filters['search'];
+    $searchValue = $search['value'];
+    $searchType = $search['type'];
+
+    if(!empty($searchValue) && !empty($searchType)) {
+        if($searchType === 'id') {
+            $whereConditions[] = "request_id LIKE ?";
+            $params[] = "%" . $searchValue . "%";
+            $types .= "s";
+        } elseif($searchType === 'details') {
+            $whereConditions[] = "details LIKE ?";
+            $params[] = "%" . $searchValue . "%";
+            $types .= "s";
+        }
+    } else {  
+
     // Применяем фильтры
     // 1. Фильтр по дате
     if (!empty($filters['byDate']['date']) && $filters['byDate']['period']['last'] === 'Custom') {
@@ -671,14 +691,40 @@ if ($action === 'addTask') {
         }
     }
     
+    }
+
     // Объединяем условия WHERE
     if (!empty($whereConditions)) {
         $baseQuery .= " WHERE " . implode(" AND ", $whereConditions);
         $countQuery .= " WHERE " . implode(" AND ", $whereConditions);
     }
     
-    // Добавляем сортировку (по умолчанию по дате создания)
-    $baseQuery .= " ORDER BY timestamp DESC";
+    // Определяем поле для сортировки на основе значения $sortBy
+    $sortField = '';
+    switch ($sortBy) {
+        case 'date':
+            $sortField = 'timestamp'; // Сортировка по дате добавления
+            break;
+        case 'status':
+            $sortField = 'status'; // Сортировка по статусу
+            break;
+        case 'priority':
+            $sortField = 'priority'; // Сортировка по приоритету
+            break;
+        case 'assignment':
+            $sortField = 'assigned_to'; // Сортировка по назначению
+            break;
+        default:
+            $sortField = 'timestamp'; // По умолчанию сортируем по дате
+    }
+
+    // Проверяем корректность направления сортировки
+    $sortDirection = strtoupper($sortDirection) === 'ASC' ? 'ASC' : 'DESC';
+
+    error_log("getTasksWithFiltering: sortField: " . $sortField);
+    error_log("getTasksWithFiltering: sortDirection: " . $sortDirection);
+    // Формируем динамический ORDER BY на основе переменных
+    $baseQuery .= " ORDER BY $sortField $sortDirection";
     
     // Добавляем пагинацию
     $baseQuery .= " LIMIT ? OFFSET ?";
@@ -744,6 +790,75 @@ if ($action === 'addTask') {
     
     $stmt->close();
     $countStmt->close();
+} elseif ($action === 'searchTasksToDropdownList') {
+    // Получаем параметры поиска
+    $searchType = $_POST['searchType'] ?? '';
+    $searchValue = $_POST['searchValue'] ?? '';
+    
+    // Проверяем наличие обязательных параметров
+    if (empty($searchType) || empty($searchValue)) {
+        echo json_encode([
+            'success' => false, 
+            'message' => 'Missing required parameters'
+        ]);
+        exit;
+    }
+    
+    // Базовый запрос
+    $query = "SELECT request_id, details, status FROM tasks";
+    $whereClause = "";
+    $params = [];
+    $types = "";
+    
+    if ($searchType === 'id') {
+        $whereClause = "WHERE request_id LIKE ?";
+        $params[] = "%" . $searchValue . "%";
+        $types .= "s";
+    } else if ($searchType === 'details') {
+        $whereClause = "WHERE details LIKE ?";
+        $params[] = "%" . $searchValue . "%";
+        $types .= "s";
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid search type'
+        ]);
+        exit;
+    }
+    
+    $query .= " " . $whereClause . " ORDER BY timestamp DESC LIMIT 5";
+    
+    $stmt = $conn->prepare($query);
+    
+    if (!$stmt) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'SQL prepare error: ' . $conn->error
+        ]);
+        exit;
+    }
+    
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    
+    if (!$stmt->execute()) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'SQL execute error: ' . $stmt->error
+        ]);
+        exit;
+    }
+    
+    $result = $stmt->get_result();
+    $tasks = $result->fetch_all(MYSQLI_ASSOC);
+    
+    echo json_encode([
+        'success' => true,
+        'data' => $tasks
+    ]);
+    
+    $stmt->close();
 }
 
 $conn->close();

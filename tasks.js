@@ -50,13 +50,14 @@ let filters = {
   byAssignment: {
     assignment: "All",
   },
-};
-
-let sort = {
-  byDate: "desc",
-  byStatus: "asc",
-  byPriority: "asc",
-  byAssignment: "asc",
+  search: {
+    value: "",
+    type: "id",
+  },
+  sort: {
+    by: "date",
+    direction: "DESC"
+  },
 };
 
 let currentPage = 1;
@@ -110,9 +111,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
- 
-  // Добавим обработчик выхода
-  //document.getElementById("logoutBtn").addEventListener("click", logout);
 });
 
 //////////////////////////////////ОСНОВНЫЕ ФУНКЦИИ////////////////////////////
@@ -2146,6 +2144,8 @@ document.querySelector('.helper-panel-content').addEventListener('change', async
   const filteredObj = await getTasksWithFilteringSortingPagination(filters, currentPage, limitTasksInPage);
   await updateTasksList(filteredObj.data);
   updatePagination(filteredObj.pagination);
+  updateFilterIndicators();
+  initializeFilterResetButtons();
   console.log("filteredObj: ", filteredObj);
 });
 
@@ -2307,3 +2307,362 @@ function updatePagination(pagination) {
     });
   }
 }
+
+function updateFilterIndicators() {
+  // Проверяем и обновляем индикатор фильтра даты
+  const dateIndicator = document.querySelector('.tasks-filter-indicator:nth-child(1)');
+  const dateText = document.getElementById('filter-indicator-by-date-text');
+  
+  // Индикатор фильтра даты
+  if (filters.byDate.date) {
+    // Дата выбрана
+    const formattedDate = new Date(filters.byDate.date).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+    dateText.textContent = `Date: ${formattedDate}`;
+    dateIndicator.style.display = 'flex';
+  } else if (filters.byDate.period.last && filters.byDate.period.last !== "lastWeek") {
+    // Период выбран
+    let periodText = "";
+    switch(filters.byDate.period.last) {
+      case "lastWeek": periodText = "Last week"; break;
+      case "lastMonth": periodText = "Last month"; break;
+      case "last3Months": periodText = "Last 3 months"; break;
+      case "lastYear": periodText = "Last year"; break;
+    }
+    dateText.textContent = `Period: ${periodText}`;
+    dateIndicator.style.display = 'flex';
+  } else if (filters.byDate.period.custom.from && filters.byDate.period.custom.to) {
+    // Пользовательский период выбран
+    const fromDate = new Date(filters.byDate.period.custom.from).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric'
+    });
+    const toDate = new Date(filters.byDate.period.custom.to).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric'
+    });
+    dateText.textContent = `Period: ${fromDate} - ${toDate}`;
+    dateIndicator.style.display = 'flex';
+  } else {
+    // Нет фильтра даты
+    dateIndicator.style.display = 'none';
+  }
+  
+  // Индикатор фильтра статуса
+  const statusIndicator = document.querySelector('.tasks-filter-indicator:nth-child(2)');
+  const statusText = document.getElementById('filter-indicator-by-status-text');
+  
+  if (filters.byStatus.status && filters.byStatus.status.length > 0) {
+    statusText.textContent = `Status: ${filters.byStatus.status.join(', ')}`;
+    statusIndicator.style.display = 'flex';
+  } else {
+    statusIndicator.style.display = 'none';
+  }
+  
+  // Индикатор фильтра приоритета
+  const priorityIndicator = document.querySelector('.tasks-filter-indicator:nth-child(3)');
+  const priorityText = document.getElementById('filter-indicator-by-priority-text');
+  
+  if (filters.byPriority.priority && filters.byPriority.priority.length > 0) {
+    priorityText.textContent = `Priority: ${filters.byPriority.priority.join(', ')}`;
+    priorityIndicator.style.display = 'flex';
+  } else {
+    priorityIndicator.style.display = 'none';
+  }
+  
+  // Индикатор фильтра назначения
+  const assignmentIndicator = document.querySelector('.tasks-filter-indicator:nth-child(4)');
+  const assignmentText = document.getElementById('filter-indicator-by-assignment-text');
+  
+  if (filters.byAssignment.assignment && filters.byAssignment.assignment !== "All") {
+    assignmentText.textContent = `Assignment: ${filters.byAssignment.assignment}`;
+    assignmentIndicator.style.display = 'flex';
+  } else {
+    assignmentIndicator.style.display = 'none';
+  }
+}
+
+
+// Функция для добавления обработчиков событий для кнопок сброса фильтров
+function initializeFilterResetButtons() {
+  // Обработчик для сброса фильтра даты
+  document.getElementById('reset-filter-indicator-by-date').addEventListener('click', async function() {
+    // Сброс фильтра даты на значения по умолчанию
+    filters.byDate = {
+      date: null,
+      period: {
+        last: "lastWeek",  // Значение по умолчанию
+        custom: {
+          from: null,
+          to: null
+        }
+      }
+    };
+    
+    // Обновление элемента выбора даты в интерфейсе, если он есть
+    if (document.getElementById('filter-date')) {
+      document.getElementById('filter-date').value = "lastWeek";
+    }
+    
+    // Скрываем индикатор
+    this.parentElement.style.display = 'none';
+    
+    // Применяем обновленные фильтры
+    const filteredObj = await getTasksWithFilteringSortingPagination(filters);
+    await updateTasksList(filteredObj.data);
+    updatePagination(filteredObj.pagination);
+  });
+  
+  // Обработчик для сброса фильтра статуса
+  document.getElementById('reset-filter-indicator-by-status').addEventListener('click', async function() {
+    // Сброс фильтра статуса на значения по умолчанию
+    filters.byStatus = {
+      status: []  // Пустой массив означает "все статусы"
+    };
+    
+    // Обновление элемента выбора статуса в интерфейсе, если он есть
+    if (document.getElementById('filter-status')) {
+      document.getElementById('filter-status').value = "All";
+    }
+    
+    // Сбрасываем состояние чекбоксов в панели фильтров статуса, если они есть
+    const statusCheckboxes = document.querySelectorAll('.status-checkbox');
+    statusCheckboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    
+    // Скрываем индикатор
+    this.parentElement.style.display = 'none';
+    
+    // Применяем обновленные фильтры
+    const filteredObj = await getTasksWithFilteringSortingPagination(filters);
+    await updateTasksList(filteredObj.data);
+    updatePagination(filteredObj.pagination);
+  });
+  
+  // Обработчик для сброса фильтра приоритета
+  document.getElementById('reset-filter-indicator-by-priority').addEventListener('click', async function() {
+    // Сброс фильтра приоритета на значения по умолчанию
+    filters.byPriority = {
+      priority: []  // Пустой массив означает "все приоритеты"
+    };
+    
+    // Обновление элемента выбора приоритета в интерфейсе, если он есть
+    if (document.getElementById('filter-priority')) {
+      document.getElementById('filter-priority').value = "All";
+    }
+    
+    // Сбрасываем состояние чекбоксов в панели фильтров приоритета, если они есть
+    const priorityCheckboxes = document.querySelectorAll('.priority-checkbox');
+    priorityCheckboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    
+    // Скрываем индикатор
+    this.parentElement.style.display = 'none';
+    
+    // Применяем обновленные фильтры
+    const filteredObj = await getTasksWithFilteringSortingPagination(filters);
+    await updateTasksList(filteredObj.data);
+    updatePagination(filteredObj.pagination);
+  });
+  
+  // Обработчик для сброса фильтра назначения
+  document.getElementById('reset-filter-indicator-by-assignment').addEventListener('click', async function() {
+    // Сброс фильтра назначения на значения по умолчанию
+    filters.byAssignment = {
+      assignment: "All"  // Значение по умолчанию
+    };
+    
+    // Обновление элемента выбора назначения в интерфейсе, если он есть
+    if (document.getElementById('filter-assigned')) {
+      document.getElementById('filter-assigned').value = "All";
+    }
+    
+    // Скрываем индикатор
+    this.parentElement.style.display = 'none';
+    
+    // Применяем обновленные фильтры
+    const filteredObj = await getTasksWithFilteringSortingPagination(filters);
+    await updateTasksList(filteredObj.data);
+    updatePagination(filteredObj.pagination);
+  });
+}
+
+let searchAbortController = null;
+let searchDebounceTimer = null;
+
+async function searchTasksToDropdownList(type, value) {
+  if (searchAbortController) {
+    searchAbortController.abort();
+    console.log("Предыдущий поисковый запрос отменен");
+  }
+  
+  searchAbortController = new AbortController();
+  const signal = searchAbortController.signal;
+  
+  try {
+    clearTimeout(searchDebounceTimer);
+    
+    return new Promise((resolve) => {
+      searchDebounceTimer = setTimeout(async () => {
+        try {
+          // Выполняем запрос с сигналом для возможности отмены
+          const response = await fetch("task.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              action: "searchTasksToDropdownList",
+              searchType: type,
+              searchValue: value
+            }),
+            signal
+          });
+          
+          const result = await response.json();
+          
+          if (!result.success) {
+            throw new Error(result.message);
+          }
+          
+          resolve(result.data);
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            console.log('Поисковый запрос был отменен из-за нового ввода');
+            resolve([]); 
+          } else {
+            console.error("Ошибка при поиске задач:", error);
+            resolve([]);
+          }
+        }
+      }, 300); 
+    });
+  } catch (error) {
+    console.error("Ошибка при поиске задач:", error);
+    return [];
+  }
+}
+
+const searchTypeElement = document.querySelector('.search-type');
+const searchInputElement = document.querySelector('.tasks-search-input');
+const searchResultsList = document.querySelector('#searchResultsList');
+const searchResetButton = document.querySelector('.tasks-search-reset');
+const searchButton = document.querySelector('.tasks-search-button');
+
+async function showDropdownSearchList() {
+  const searchValue = searchInputElement.value.toLowerCase().trim();
+  const searchType = searchTypeElement.value;
+  console.log(searchType, searchValue);
+  
+  if(searchValue === '') {
+    searchResultsList.innerHTML = '';
+    return;
+  }
+  const searchedTasks = await searchTasksToDropdownList(searchType, searchValue);
+  console.log(searchedTasks);
+
+  searchResultsList.innerHTML = '';
+  if (searchedTasks.length > 0) {
+    searchedTasks.forEach(task => {
+      const taskItem = document.createElement('div');
+      const taskStatusCut = task.status.split(' ')
+                             .map(word => word.charAt(0))
+                             .join('')
+                             .toUpperCase();
+      taskItem.className = 'search-task-item';
+      if(searchType === 'id') {
+        const regex = new RegExp(searchValue, 'gi');
+        const highlightedId = task.request_id.replace(regex, match => 
+          `<span style="background-color: yellow; font-weight: bold;">${match}</span>`
+        );
+        
+        taskItem.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <div class="search-task-status" style="background-color: ${taskStatusCut === 'C' ? '#17cb1f' : taskStatusCut === 'IP' ? '#e1d400' : '#ff5647'};">${taskStatusCut}</div>
+            <div class="search-task-id">${highlightedId}</div>
+        </div>
+            <div class="search-task-details">${task.details}</div>
+      `;
+      } else if(searchType === 'details') {
+        const regex = new RegExp(searchValue, 'gi');
+        const highlightedDetails = task.details.replace(regex, match => 
+          `<span style="background-color: yellow; font-weight: bold;">${match}</span>`
+        );
+        taskItem.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <div class="search-task-status" style="background-color: ${taskStatusCut === 'C' ? '#17cb1f' : taskStatusCut === 'IP' ? '#e1d400' : '#ff5647'};">${taskStatusCut}</div>
+            <div class="search-task-id">${task.request_id}</div> 
+        </div>
+            <div class="search-task-details">${highlightedDetails}</div>
+      `;
+      }
+      searchResultsList.appendChild(taskItem);
+    });
+  } else {
+    const noTaskItem = document.createElement('div');
+    noTaskItem.className = 'search-task-item';
+    noTaskItem.innerHTML = '<div class="no-tasks">No tasks found</div>';
+    searchResultsList.appendChild(noTaskItem);
+  }
+}
+
+searchInputElement.addEventListener('input', async function() {
+  await showDropdownSearchList();
+});
+
+searchTypeElement.addEventListener('change', async function() {
+  await showDropdownSearchList();
+});
+
+searchResetButton.addEventListener('click', function() {
+  searchInputElement.value = '';
+  searchResultsList.innerHTML = '';
+});
+
+
+searchButton.addEventListener('click', async function() {
+  const searchValue = searchInputElement.value.toLowerCase().trim();
+  const searchType = searchTypeElement.value;
+  console.log(searchType, searchValue);
+  if(searchValue === '') {
+    searchResultsList.innerHTML = '';
+    return;
+  }
+  filters.search.value = searchValue;
+  filters.search.type = searchType;
+
+  filters.byDate.date = "";
+  filters.byDate.period.last = "lastWeek";
+  filters.byDate.period.custom.from = "";
+  filters.byDate.period.custom.to = "";
+  filters.byStatus.status = [];
+  filters.byPriority.priority = [];
+  filters.byAssignment.assignment = "All";
+
+  currentPage = 1;
+  const searchedTasks = await getTasksWithFilteringSortingPagination(filters);
+  
+  searchResultsList.innerHTML = '';
+  searchInputElement.value = '';
+  filters.search.value = '';
+
+  await updateTasksList(searchedTasks.data);
+  updatePagination(searchedTasks.pagination);
+
+});
+
+document.getElementById('sidebar-sort').addEventListener('change', async function() {
+  const selectedValue = this.value;
+  filters.sort.by = selectedValue;
+  const sortedTasks = await getTasksWithFilteringSortingPagination(filters);
+  await updateTasksList(sortedTasks.data);
+  updatePagination(sortedTasks.pagination);
+});
+
+document.getElementById('sort-direction').addEventListener('click', async function() {
+  filters.sort.direction = filters.sort.direction === 'ASC' ? 'DESC' : 'ASC';
+  const sortedTasks = await getTasksWithFilteringSortingPagination(filters);
+  await updateTasksList(sortedTasks.data);
+  updatePagination(sortedTasks.pagination);
+});
