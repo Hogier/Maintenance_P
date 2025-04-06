@@ -21,3 +21,12 @@ Stack trace:
 #4 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(561): Workerman\Worker::forkWorkers()
 #5 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\websocket_server.php(80): Workerman\Worker::runAll()
 #6 {main}
+2025-04-04 12:25:29 pid:1 Error: Call to a member function bind_param() on bool in C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\php\ws\websocket_server.php:45
+Stack trace:
+#0 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Connection\TcpConnection.php(653): {closure}()
+#1 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Events\Select.php(311): Workerman\Connection\TcpConnection->baseRead()
+#2 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(1569): Workerman\Events\Select->loop()
+#3 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(1486): Workerman\Worker::forkWorkersForWindows()
+#4 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\vendor\workerman\workerman\Worker.php(561): Workerman\Worker::forkWorkers()
+#5 C:\OpenServer\domains\MaintenanceP.ua\Maintenance_P\php\ws\websocket_server.php(155): Workerman\Worker::runAll()
+#6 {main}
