@@ -717,8 +717,6 @@ h1 {
 
 .clock,
 .refuse-clock {
-.clock,
-.refuse-clock {
   width: 15px;
   height: 15px;
   border-radius: 50%;
@@ -752,18 +750,12 @@ h1 {
 .minute-hand,
 .refuse-hour-hand,
 .refuse-minute-hand {
-.hour-hand,
-.minute-hand,
-.refuse-hour-hand,
-.refuse-minute-hand {
   position: absolute;
   transform-origin: bottom center;
   bottom: 50%;
   left: 50%;
 }
 
-.hour-hand,
-.refuse-hour-hand {
 .hour-hand,
 .refuse-hour-hand {
   width: 1px;
@@ -775,8 +767,6 @@ h1 {
 
 .minute-hand,
 .refuse-minute-hand {
-.minute-hand,
-.refuse-minute-hand {
   width: 1px;
   height: 6px;
   transform: translateX(-50%) rotate(90deg);
@@ -786,13 +776,9 @@ h1 {
 
 .hour-hand,
 .minute-hand {
-.hour-hand,
-.minute-hand {
   background-color: hwb(0 100% 0%);
 }
 
-.refuse-hour-hand,
-.refuse-minute-hand {
 .refuse-hour-hand,
 .refuse-minute-hand {
   background-color: #ff5445fc;
@@ -913,8 +899,6 @@ h1 {
 
 .discussion-toggle-clock,
 .status-clock {
-.discussion-toggle-clock,
-.status-clock {
   display: inline-block;
   position: relative;
   width: 18px;
@@ -927,10 +911,6 @@ h1 {
   transition: opacity 0.3s ease, border 0.3s ease;
 }
 
-.discussion-toggle-clock .hour-hand,
-.status-clock .hour-hand,
-.discussion-toggle-clock .minute-hand,
-.status-clock .minute-hand {
 .discussion-toggle-clock .hour-hand,
 .status-clock .hour-hand,
 .discussion-toggle-clock .minute-hand,
@@ -951,8 +931,6 @@ h1 {
   transform: rotate(90deg);
 }
 
-.discussion-toggle-clock .minute-hand,
-.status-clock .minute-hand {
 .discussion-toggle-clock .minute-hand,
 .status-clock .minute-hand {
   width: 2px;
