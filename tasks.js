@@ -1,6 +1,6 @@
 function checkAuth() {
   const user = JSON.parse(localStorage.getItem("currentUser"));
-  if (user.role === "maintenance") {
+  if (user && (user.role === "admin" || user.role === "support")) {
     return true;
   }
   return false;
@@ -10,7 +10,7 @@ console.log("checkAuth: ", checkAuth());
 console.log("START TASKS.JS");
 
 if (!checkAuth()) {
-  window.location.href = "login.html";
+  window.location.href = "loginUser.html?redirect=tasks.html";
 }
 
 // Добавим отображение имени авторизованного сотрудника
@@ -225,8 +225,9 @@ async function createTaskElement(task) {
       <div class="task-details task-details-${task.priority}">${task.details}
       <div class="task-location">
         <div class="task-location-icon">📍</div>
-        <div class="task-location-text">${task.building} - ${task.room
-    } (Staff: ${task.staff})</div>
+        <div class="task-location-text">${task.building} - ${
+    task.room
+  } (Staff: ${task.staff})</div>
       </div>
       </div>
       <div class="task-meta-container">
@@ -235,8 +236,9 @@ async function createTaskElement(task) {
         </div>
       </div>
       <div class="task-action-container">
-        ${!task.assigned_to
-      ? `<div class="assign-container">
+        ${
+          !task.assigned_to
+            ? `<div class="assign-container">
 
                  <div class="assign-btn" data-task-id="${task.request_id}">Assign to Me
                    <div class="clock">
@@ -248,17 +250,20 @@ async function createTaskElement(task) {
                    Assigned to You
                  </div>
                </div>`
-      : `<div class="assigned-to">Assigned to: ${task.assigned_to}</div>`
-    }
+            : `<div class="assigned-to">Assigned to: ${task.assigned_to}</div>`
+        }
         <div class="task-status">
           Status: 
           <select class="status-select" data-task-id="${task.request_id}">
-            <option value="Pending" ${task.status === "Pending" ? "selected" : ""
-    }>Pending</option>
-            <option value="In Progress" ${task.status === "In Progress" ? "selected" : ""
-    }>In Progress</option>
-            <option value="Completed" ${task.status === "Completed" ? "selected" : ""
-    }>Completed</option>
+            <option value="Pending" ${
+              task.status === "Pending" ? "selected" : ""
+            }>Pending</option>
+            <option value="In Progress" ${
+              task.status === "In Progress" ? "selected" : ""
+            }>In Progress</option>
+            <option value="Completed" ${
+              task.status === "Completed" ? "selected" : ""
+            }>Completed</option>
           </select>
           <div class="status-clock">
             <div class="hour-hand"></div>
@@ -279,8 +284,9 @@ async function createTaskElement(task) {
         <div class="comments-list"></div>
         <div class="comment-input-container">
           <input type="text" class="comment-input" placeholder="Add a comment...">
-          <button class="comment-btn" data-task-id="${task.request_id
-    }">Send</button>
+          <button class="comment-btn" data-task-id="${
+            task.request_id
+          }">Send</button>
         </div>
       </div>
     </div>
@@ -350,7 +356,10 @@ async function createTaskElement(task) {
         );
         console.log("deltaComments: ", deltaComments);
 
-        if (data.action === "updateComments" && data.taskId === task.request_id) {
+        if (
+          data.action === "updateComments" &&
+          data.taskId === task.request_id
+        ) {
           await updateComments(task, commentsContainer, isFirstLoad);
           isFirstLoad = false;
 
@@ -501,7 +510,8 @@ async function createTaskElement(task) {
     const showedPageWithTodayTasks =
       tasksCurrentFilter === "today" ||
       tasksCurrentFilter === "all" ||
-      (tasksCurrentFilter === "custom" && currentDateString === getDallasDate());
+      (tasksCurrentFilter === "custom" &&
+        currentDateString === getDallasDate());
 
     if (showedPageWithTodayTasks && window.scrollY < 100) {
       newTaskNotification.style.display = "none";
@@ -555,7 +565,7 @@ async function createTaskElement(task) {
       const taskId = this.dataset.taskId;
       console.log("Assigning task:", taskId);
       const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (user && user.role === "maintenance") {
+      if (user && (user.role === "admin" || user.role === "support")) {
         let clock = this.querySelector(".clock");
 
         // Если часы не найдены, создаем их заново
@@ -640,7 +650,7 @@ async function createTaskElement(task) {
       if (commentText) {
         try {
           const user = JSON.parse(localStorage.getItem("currentUser"));
-          if (!user || user.role !== "maintenance") {
+          if (!user || (user.role !== "admin" && user.role !== "support")) {
             throw new Error("Unauthorized");
           }
 
@@ -670,7 +680,7 @@ async function createTaskElement(task) {
         if (commentText) {
           try {
             const user = JSON.parse(localStorage.getItem("currentUser"));
-            if (!user || user.role !== "maintenance") {
+            if (!user || (user.role !== "admin" && user.role !== "support")) {
               throw new Error("Unauthorized");
             }
 
@@ -708,22 +718,16 @@ async function createTaskElement(task) {
         taskStatusDiv.classList.add("status-in-progress");
       } else if (this.value === "Completed") {
         taskStatusDiv.classList.add("status-completed");
-
-        // Проверяем, находится ли задание в блоке notCompletedTasksList
       }
 
       await changeTaskStatusOnServer(taskId, this.value);
       const taskElement = this.closest(".task-item");
       const parentList = taskElement.closest("#notCompletedTasksList");
       if (parentList && this.value === "Completed") {
-
         setTimeout(() => {
-          //askElement.classList.add("collapse");
+          taskElement.classList.add("collapse");
           setTimeout(() => {
             updateAlertTasksListHeight(taskElement);
-            //taskElement.remove();
-          }, 800);
-        }, 1000);
           }, 800);
         }, 1000);
       }
@@ -779,9 +783,9 @@ async function createMediaSection(task) {
       if (isImage) {
         mediaHtml += `
           <div class="media-item" onclick="showMediaFullscreen('${mediaFile.url.replace(
-          "uploads/mini/mini_",
-          "uploads/"
-        )}', 'image')">
+            "uploads/mini/mini_",
+            "uploads/"
+          )}', 'image')">
             <img src="${mediaFile.url}" alt="${mediaFile.name}">
             <span class="media-name">${mediaFile.name}</span>
           </div>
@@ -843,41 +847,57 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
     const isScrolledToBottom =
       Math.abs(
         commentsContainer.scrollHeight -
-        commentsContainer.scrollTop -
-        commentsContainer.clientHeight
+          commentsContainer.scrollTop -
+          commentsContainer.clientHeight
       ) < 1;
 
-    const newCommentsHtml = allComments
-      .map((comment) => {
-        const isLocal = localComments[task.request_id]?.some(
-          (localComment) => localComment.timestamp === comment.timestamp
-        );
-        const statusClass = isLocal ? "status-local" : "status-server";
+    const commentsHTML = [];
 
-        return `
-        <div class="comment">
+    for (const comment of allComments) {
+      const isLocal = localComments[task.request_id]?.some(
+        (localComment) => localComment.timestamp === comment.timestamp
+      );
+      const statusClass = isLocal ? "status-local" : "status-server";
+
+      // Используем photo_url из комментария, если он есть, иначе получаем его
+      const userPhotoUrl =
+        comment.photo_url || (await db.getUserPhotoUrl(comment.staffName));
+
+      commentsHTML.push(`
+        <div class="comment" data-comment-id="${comment.id || ""}">
           <div class="comment-header">
-            <span class="comment-author">
-              <i class="fas fa-user"></i> ${comment.staffName}
-              ${comment.staffName === task.assigned_to ? " (Assigned)" : ""}
-            </span>
-            <span class="comment-time" data-timestamp="${comment.timestamp
-          }">${formatDate(comment.timestamp)} <span class="${statusClass}">${isLocal ? "&#128337;" : "&#10003;"
-          }</span></span>
+            <div class="comment-author-container">
+              <img class="comment-user-photo" src="${userPhotoUrl}" alt="${
+        comment.staffName
+      }" onerror="this.src='/Maintenance_P/users/img/user.png';">
+              <span class="comment-author">
+                ${comment.staffName}
+                ${comment.staffName === task.assigned_to ? " (Assigned)" : ""}
+              </span>
+            </div>
+            <span class="comment-time" data-timestamp="${
+              comment.timestamp
+            }">${formatDate(comment.timestamp)} <span class="${statusClass}">${
+        isLocal ? "&#128337;" : "&#10003;"
+      }</span></span>
           </div>
           <div class="comment-text">${comment.text}</div>
-          ${comment.staffName === currentUser.fullName
-            ? `
+          ${
+            comment.staffName === currentUser.fullName
+              ? `
             <div class="comment-delete">
-            <i class="fas fa-trash" title="delete" onclick="deleteComment('${task.request_id}', '${comment.timestamp}')"></i>
+            <i class="fas fa-trash" title="delete" onclick="deleteComment('${
+              task.request_id
+            }', '${comment.id || comment.timestamp}')"></i>
             </div>
           `
-            : ""
+              : ""
           }
         </div>
-      `;
-      })
-      .join("");
+      `);
+    }
+
+    const newCommentsHtml = commentsHTML.join("");
 
     if (newCommentsHtml) {
       deltaComments = allComments.length - commentsContainer.children.length;
@@ -910,7 +930,24 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
 }
 
 async function handleAddComment(taskId, commentText, userFullName) {
-  const timestamp = new Date().toISOString();
+  // Create a properly formatted timestamp (YYYY-MM-DD HH:MM:SS format for MySQL)
+  const now = new Date();
+  const formattedTimestamp =
+    now.getFullYear() +
+    "-" +
+    String(now.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(now.getDate()).padStart(2, "0") +
+    " " +
+    String(now.getHours()).padStart(2, "0") +
+    ":" +
+    String(now.getMinutes()).padStart(2, "0") +
+    ":" +
+    String(now.getSeconds()).padStart(2, "0");
+
+  // Keep ISO format for display
+  const timestamp = now.toISOString();
+
   const newComment = { staffName: userFullName, text: commentText, timestamp };
 
   // Сохраняем новый комментарий в локальном состоянии
@@ -918,6 +955,9 @@ async function handleAddComment(taskId, commentText, userFullName) {
     localComments[taskId] = [];
   }
   localComments[taskId].push(newComment);
+
+  // Get user photo URL
+  const userPhotoUrl = await db.getUserPhotoUrl(userFullName);
 
   // Отображаем новый комментарий сразу
   const commentsContainer = document.querySelector(
@@ -930,9 +970,10 @@ async function handleAddComment(taskId, commentText, userFullName) {
   console.log("Создание мгновенного комментария");
   newCommentElement.innerHTML = `
     <div class="comment-header">
-      <span class="comment-author">
-        <i class="fas fa-user"></i> ${userFullName}
-      </span>
+      <div class="comment-author-container">
+        <img class="comment-user-photo" src="${userPhotoUrl}" alt="${userFullName}" onerror="this.src='/Maintenance_P/users/img/user.png';">
+        <span class="comment-author">${userFullName}</span>
+      </div>
       <span class="comment-time" data-timestamp="${timestamp}">${formatDate(
     new Date()
   )} <span class="status-local">&#128337;</span></span>
@@ -949,16 +990,19 @@ async function handleAddComment(taskId, commentText, userFullName) {
   commentsContainer.scrollTop = commentsContainer.scrollHeight;
 
   try {
-    // Используем существующую функцию для добавления комментария на сервер
+    // Используем существующую функцию для добавления комментария на сервер с фото URL
     const success = await db.addComment(taskId, commentText, userFullName);
     console.log("Отправка комментария на сервер handleAddComment()");
-    tasksWS.send(JSON.stringify({
-      action: "updateComments",
-      taskId: taskId,
-      comment: commentText,
-      staffName: userFullName,
-      timestamp: timestamp
-    }));
+    tasksWS.send(
+      JSON.stringify({
+        action: "updateComments",
+        taskId: taskId,
+        comment: commentText,
+        staffName: userFullName,
+        timestamp: formattedTimestamp,
+        photoUrl: userPhotoUrl,
+      })
+    );
     if (success) {
       // Удаляем комментарий из локального состояния после успешной отправки
       localComments[taskId] = localComments[taskId].filter(
@@ -975,7 +1019,23 @@ async function handleAddComment(taskId, commentText, userFullName) {
       // Добавляем иконку удаления
       const deleteIcon = document.createElement("div");
       deleteIcon.className = "comment-delete";
-      deleteIcon.innerHTML = `<i class="fas fa-trash" title="delete" onclick="deleteComment('${taskId}', '${timestamp}')"></i>`;
+
+      // Получаем свежие комментарии, чтобы найти ID нового комментария
+      const freshComments = await db.fetchComments(taskId);
+      const newCommentFromServer = freshComments.find(
+        (comment) =>
+          comment.timestamp === timestamp ||
+          new Date(comment.timestamp).getTime() -
+            new Date(timestamp).getTime() <
+            1000
+      );
+
+      const commentId = newCommentFromServer
+        ? newCommentFromServer.id
+        : timestamp;
+      newCommentElement.dataset.commentId = commentId;
+
+      deleteIcon.innerHTML = `<i class="fas fa-trash" title="delete" onclick="deleteComment('${taskId}', '${commentId}')"></i>`;
       newCommentElement.appendChild(deleteIcon);
     } else {
       throw new Error("Failed to add comment");
@@ -1010,7 +1070,6 @@ async function addNewTasksToPage(tasks) {
 
 // Добавляем элемент для уведомления о новых задачах
 
-
 // Создаем WebSocket соединение
 const tasksWS = new WebSocket("ws://localhost:2346");
 
@@ -1029,8 +1088,7 @@ window.onload = function () {
   ws.onclose = function () {
     console.log("Соединение закрыто");
   };
-}
-
+};
 
 // При получении сообщения
 tasksWS.onmessage = async function (e) {
@@ -1048,7 +1106,8 @@ tasksWS.onmessage = async function (e) {
     const showedPageWithTodayTasks =
       tasksCurrentFilter === "today" ||
       tasksCurrentFilter === "all" ||
-      (tasksCurrentFilter === "custom" && currentDateString === getDallasDate());
+      (tasksCurrentFilter === "custom" &&
+        currentDateString === getDallasDate());
 
     if (newTasks && showedPageWithTodayTasks) {
       await addNewTasksToPage(newTasks);
@@ -1063,7 +1122,6 @@ tasksWS.onmessage = async function (e) {
       newTaskNotification.style.display = "block";
       playNewTaskSound();
     }
-
   } catch (error) {
     console.error("Ошибка парсинга JSON:", error);
     console.log("Полученные данные:", e.data);
@@ -1155,15 +1213,13 @@ window.showMediaFullscreen = function (src, type) {
   document.body.appendChild(fullscreen);
 };
 
-window.deleteComment = async function (requestId, timestamp) {
+window.deleteComment = async function (taskId, commentId) {
   if (confirm("Вы уверены, что хотите удалить этот комментарий?")) {
     try {
-      // Найдите соответствующий элемент комментария
-      const commentElement = document
-        .querySelector(
-          `.task-item[data-task-id="${requestId}"] .comment-time[data-timestamp="${timestamp}"]`
-        )
-        .closest(".comment");
+      // Находим соответствующий элемент комментария по data-comment-id
+      const commentElement = document.querySelector(
+        `.task-item[data-task-id="${taskId}"] .comment[data-comment-id="${commentId}"]`
+      );
 
       if (commentElement) {
         // Заменяем значок мусорки на значок часов
@@ -1171,7 +1227,7 @@ window.deleteComment = async function (requestId, timestamp) {
         deleteIcon.classList.remove("fa-trash");
         deleteIcon.classList.add("fa-clock");
 
-        const success = await db.deleteCommentFromServer(requestId, timestamp);
+        const success = await db.deleteCommentFromServer(taskId, commentId);
         if (success) {
           commentElement.remove(); // Удаляем элемент комментария из DOM
         } else {
@@ -1181,7 +1237,7 @@ window.deleteComment = async function (requestId, timestamp) {
           alert("Ошибка при удалении комментария.");
         }
       } else {
-        console.error(`Comment element with timestamp ${timestamp} not found.`);
+        console.error(`Comment element with ID ${commentId} not found.`);
       }
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -1661,9 +1717,6 @@ async function getUrlOfMediaFilesByTaskId(taskId) {
   return result.data;
 }
 
-
-
-
 let notCompletedTasks = (async () => {
   const tasks = await getNotCompletedTasksForLastWeek();
   console.log("getNotCompletedTasksForLastWeek: ", tasks);
@@ -1682,7 +1735,7 @@ function updateAlertTasksListHeight(taskElement) {
   if (alertTasksList.querySelectorAll(".task-item").length === 1) {
     alertTasks.style.height = alertTasks.scrollHeight + "px";
     //taskElement.classList.add("collapse");
-    setTimeout(() => {
+
     setTimeout(() => {
       alertTasks.style.height = "0";
       closeAlertTasks.classList.remove("exist-tasks");
@@ -1705,109 +1758,180 @@ function updateAlertTasksListHeight(taskElement) {
     }, 650);
   }
   //alertTasks.style.transition = "height 0.5s ease-in-out, opacity 0.5s ease-in-out";
-
 }
 
 ////////////// HELPER PANEL //////////////
 
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', function () {
+document.querySelectorAll(".nav-item").forEach((item) => {
+  item.addEventListener("click", function () {
     // Находим подменю, связанное с текущим элементом навигации
     const submenu = this.nextElementSibling;
 
     // Если есть подменю и оно имеет класс submenu-items
-    if (submenu && submenu.classList.contains('submenu-items')) {
+    if (submenu && submenu.classList.contains("submenu-items")) {
       // Переключаем состояние (показать/скрыть)
-      if (submenu.style.display === 'block') {
-        submenu.style.display = 'none';
-        this.classList.remove('active');
+      if (submenu.style.display === "block") {
+        submenu.style.display = "none";
+        this.classList.remove("active");
       } else {
-        submenu.style.display = 'block';
-        this.classList.add('active');
+        submenu.style.display = "block";
+        this.classList.add("active");
       }
     } else {
       // Если нет подменю, просто переключаем класс активности
-      this.classList.toggle('active');
+      this.classList.toggle("active");
     }
   });
 });
 
 // Код для вспомогательной панели
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
   // Данные для вспомогательной панели
   const helperTitles = {
-    'By Date': {
-      title: 'Filter by Date'
+    "By Date": {
+      title: "Filter by Date",
     },
-    'By Status': {
-      title: 'Filter by Status'
+    "By Status": {
+      title: "Filter by Status",
     },
-    'By Priority': {
-      title: 'Filter by Priority'
+    "By Priority": {
+      title: "Filter by Priority",
     },
-    'By Assignment': {
-      title: 'Filter by Assignment'
+    "By Assignment": {
+      title: "Filter by Assignment",
     },
-    'By Sender': {
-      title: 'Filter by Sender'
+    "By Sender": {
+      title: "Filter by Sender",
     },
-    'By Location': {
-      title: 'Filter by Location'
+    "By Location": {
+      title: "Filter by Location",
     },
-    'By Sort': {
-      title: 'Sorting'
-    }
+    "By Sort": {
+      title: "Sorting",
+    },
   };
 
   // Добавляем класс has-helper к элементам подменю, для которых есть справка
-  document.querySelectorAll('.submenu-item').forEach(item => {
+  document.querySelectorAll(".submenu-item").forEach((item) => {
     const itemText = item.textContent.trim();
     if (helperTitles[itemText]) {
-      item.classList.add('has-helper');
+      item.classList.add("has-helper");
     }
   });
 
-  const helperPanel = document.querySelector('.helper-panel');
-  const helperTitle = helperPanel.querySelector('.helper-panel-title');
-  const helperContent = helperPanel.querySelector('.helper-panel-content');
+  const helperPanel = document.querySelector(".helper-panel");
+  const helperTitle = helperPanel.querySelector(".helper-panel-title");
+  const helperContent = helperPanel.querySelector(".helper-panel-content");
   let activeItem = null;
 
   // Показываем панель при наведении на элемент подменю
-  document.querySelectorAll('.submenu-item').forEach(item => {
-    item.addEventListener('mouseenter', function () {
+  document.querySelectorAll(".submenu-item").forEach((item) => {
+    item.addEventListener("mouseenter", function () {
       const itemText = this.textContent.trim();
       if (helperTitles[itemText]) {
         activeItem = this;
         helperTitle.textContent = helperTitles[itemText].title;
         helperContent.textContent = helperTitles[itemText].content;
-        helperPanel.classList.add('visible');
+        helperPanel.classList.add("visible");
       }
     });
   });
 
   // Закрываем панель при клике на кнопку закрытия
-  helperPanel.querySelector('.helper-panel-close').addEventListener('click', function () {
-    helperPanel.classList.remove('visible');
-    activeItem = null;
-  });
+  helperPanel
+    .querySelector(".helper-panel-close")
+    .addEventListener("click", function () {
+      helperPanel.classList.remove("visible");
+      activeItem = null;
+    });
 
   // Закрываем панель при клике вне панели
-  document.addEventListener('click', function (event) {
+  document.addEventListener("click", function (event) {
     // Получаем ссылку на боковую панель
-    const sidebar = document.querySelector('.sidebar');
+    const sidebar = document.querySelector(".sidebar");
 
     // Проверяем: если панель видима И клик не внутри панели И клик не внутри сайдбара И клик не на активном элементе
-    if (helperPanel.classList.contains('visible') &&
+    if (
+      helperPanel.classList.contains("visible") &&
       !helperPanel.contains(event.target) &&
       !sidebar.contains(event.target) &&
-      (!activeItem || !activeItem.contains(event.target))) {
-      helperPanel.classList.remove('visible');
+      (!activeItem || !activeItem.contains(event.target))
+    ) {
+      helperPanel.classList.remove("visible");
       activeItem = null;
     }
   });
 
   // Предотвращаем скрытие панели при клике внутри нее
-  helperPanel.addEventListener('click', function (event) {
+  helperPanel.addEventListener("click", function (event) {
     event.stopPropagation();
   });
 });
+
+// Функция для получения URL фото пользователя
+async function getUserPhotoUrl(username) {
+  try {
+    // Пытаемся получить информацию о пользователе из localStorage
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+    // Создаем FormData для запроса
+    const formData = new FormData();
+    formData.append("action", "getUserPhoto");
+
+    // Если запрашиваем фото текущего пользователя
+    if (
+      !username ||
+      (currentUser &&
+        (username === currentUser.fullName ||
+          username === currentUser.username))
+    ) {
+      formData.append("role", currentUser.role);
+
+      if (
+        currentUser.role === "user" ||
+        currentUser.role === "admin" ||
+        currentUser.role === "support"
+      ) {
+        formData.append("email", currentUser.email);
+      } else if (currentUser.role === "maintenance") {
+        formData.append("username", currentUser.username);
+      }
+    } else {
+      // Если запрашиваем фото другого пользователя, используем имя пользователя
+      // По умолчанию считаем, что это обычный пользователь, если не удалось определить
+      formData.append("role", "user");
+      formData.append("username", username);
+    }
+
+    const response = await fetch("php/user-profile.php", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      const photoFileName = data.photo === "nophoto" ? "user.png" : data.photo;
+      // Определяем путь к фото в зависимости от роли
+      let photoPath;
+
+      if (
+        formData.get("role") === "user" ||
+        formData.get("role") === "admin" ||
+        formData.get("role") === "support"
+      ) {
+        photoPath = `/Maintenance_P/users/img/${photoFileName}`;
+      } else {
+        photoPath = `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
+      }
+
+      return photoPath;
+    } else {
+      console.error("Ошибка получения фото:", data.message);
+      return `/Maintenance_P/users/img/user.png`;
+    }
+  } catch (error) {
+    console.error("Ошибка получения фото:", error);
+    return `/Maintenance_P/users/img/user.png`;
+  }
+}

@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Material Cards Example (Fixed)</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link rel="stylesheet" href="materials.css" />
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      header {
+        margin-bottom: 30px;
+      }
+      h1 {
+        color: #2c3e50;
+      }
+      .materials-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .cart-summary {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .cart-summary h3 {
+        margin-top: 0;
+        color: #2c3e50;
+      }
+      .cart-items-list {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .cart-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+      }
+      .cart-item:last-child {
+        border-bottom: none;
+      }
+      .remove-item {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+      .remove-item:hover {
+        background-color: #c0392b;
+      }
+      .checkout-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 15px;
+        width: 100%;
+      }
+      .checkout-btn:hover {
+        background-color: #218838;
+      }
+      .checkout-btn:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px;
+        border-radius: 4px;
+        background-color: #3498db;
+        color: white;
+        z-index: 1000;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      .notification.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      .notification.success {
+        background-color: #2ecc71;
+      }
+      .notification.error {
+        background-color: #e74c3c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Maintenance Materials</h1>
+        <div class="materials-header">
+          <div class="filter-group">
+            <label for="materialCategory">Category:</label>
+            <select id="materialCategory">
+              <option value="">All categories</option>
+              <option value="cleaning">Cleaning supplies</option>
+              <option value="paper">Paper products</option>
+              <option value="kitchen">Kitchen items</option>
+              <option value="laundry">Laundry products</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="cart-button" id="openCartBtn">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-badge" id="cartBadge">0</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="materials-grid" id="materialsGrid">
+        <!-- Paper Products Card -->
+        <div class="material-category-card">
+          <div class="category-header">
+            <h3>Paper Products</h3>
+            <span class="category-label">Paper products</span>
+          </div>
+          <div class="category-items">
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Toilet Paper</div>
+                <div class="material-item-description">
+                  Standard toilet paper rolls
+                </div>
+              </div>
+              <div class="material-item-unit">Unit: rolls</div>
+              <div class="quantity-control" data-id="1">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="1"
+                data-name="Toilet Paper"
+                data-unit="rolls"
+              >
+                Add to Cart
+              </button>
+            </div>
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Paper Towels</div>
+                <div class="material-item-description">
+                  Kitchen paper towels
+                </div>
+              </div>
+              <div class="material-item-unit">Unit: rolls</div>
+              <div class="quantity-control" data-id="2">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="2"
+                data-name="Paper Towels"
+                data-unit="rolls"
+              >
+                Add to Cart
+              </button>
+            </div>
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Facial Tissues</div>
+                <div class="material-item-description">Facial tissue boxes</div>
+              </div>
+              <div class="material-item-unit">Unit: boxes</div>
+              <div class="quantity-control" data-id="8">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="8"
+                data-name="Facial Tissues"
+                data-unit="boxes"
+              >
+                Add to Cart
+              </button>
+            </div>
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Paper Napkins</div>
+                <div class="material-item-description">
+                  Paper napkins for dining
+                </div>
+              </div>
+              <div class="material-item-unit">Unit: packs</div>
+              <div class="quantity-control" data-id="9">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="9"
+                data-name="Paper Napkins"
+                data-unit="packs"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cleaning Supplies Card -->
+        <div class="material-category-card">
+          <div class="category-header">
+            <h3>Cleaning Supplies</h3>
+            <span class="category-label">Cleaning supplies</span>
+          </div>
+          <div class="category-items">
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Hand Soap</div>
+                <div class="material-item-description">Bathroom hand soap</div>
+              </div>
+              <div class="material-item-unit">Unit: bottles</div>
+              <div class="quantity-control" data-id="3">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="3"
+                data-name="Hand Soap"
+                data-unit="bottles"
+              >
+                Add to Cart
+              </button>
+            </div>
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Disinfectant Spray</div>
+                <div class="material-item-description">
+                  Surface disinfectant spray
+                </div>
+              </div>
+              <div class="material-item-unit">Unit: bottles</div>
+              <div class="quantity-control" data-id="6">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="6"
+                data-name="Disinfectant Spray"
+                data-unit="bottles"
+              >
+                Add to Cart
+              </button>
+            </div>
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Hand Sanitizer</div>
+                <div class="material-item-description">
+                  Alcohol-based hand sanitizer
+                </div>
+              </div>
+              <div class="material-item-unit">Unit: bottles</div>
+              <div class="quantity-control" data-id="7">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="7"
+                data-name="Hand Sanitizer"
+                data-unit="bottles"
+              >
+                Add to Cart
+              </button>
+            </div>
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Whiteboard Cleaner</div>
+                <div class="material-item-description">
+                  Whiteboard cleaning solution
+                </div>
+              </div>
+              <div class="material-item-unit">Unit: bottles</div>
+              <div class="quantity-control" data-id="10">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="10"
+                data-name="Whiteboard Cleaner"
+                data-unit="bottles"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kitchen Items Card -->
+        <div class="material-category-card">
+          <div class="category-header">
+            <h3>Kitchen Items</h3>
+            <span class="category-label">Kitchen items</span>
+          </div>
+          <div class="category-items">
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Dish Soap</div>
+                <div class="material-item-description">Dishwashing liquid</div>
+              </div>
+              <div class="material-item-unit">Unit: bottles</div>
+              <div class="quantity-control" data-id="4">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="4"
+                data-name="Dish Soap"
+                data-unit="bottles"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Laundry Products Card -->
+        <div class="material-category-card">
+          <div class="category-header">
+            <h3>Laundry Products</h3>
+            <span class="category-label">Laundry products</span>
+          </div>
+          <div class="category-items">
+            <div class="material-item">
+              <div class="material-item-details">
+                <div class="material-item-name">Laundry Detergent</div>
+                <div class="material-item-description">
+                  Standard laundry detergent
+                </div>
+              </div>
+              <div class="material-item-unit">Unit: boxes</div>
+              <div class="quantity-control" data-id="5">
+                <button
+                  type="button"
+                  class="quantity-btn decrease"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="0"
+                  min="0"
+                  max="99"
+                />
+                <button
+                  type="button"
+                  class="quantity-btn increase"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                class="add-to-cart-btn"
+                data-id="5"
+                data-name="Laundry Detergent"
+                data-unit="boxes"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-summary">
+        <h3>Cart Items</h3>
+        <div class="cart-items-list" id="cartItemsList">
+          <div class="empty-cart">Your cart is empty</div>
+        </div>
+        <button type="button" class="checkout-btn" id="checkoutBtn" disabled>
+          Checkout
+        </button>
+      </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize cart
+        let cart = [];
+
+        // Handle quantity buttons
+        document.querySelectorAll(".quantity-btn").forEach((button) => {
+          button.addEventListener("click", function () {
+            const container = this.closest(".quantity-control");
+            const input = container.querySelector(".quantity-input");
+            const currentValue = parseInt(input.value) || 0;
+
+            if (this.classList.contains("decrease") && currentValue > 0) {
+              input.value = currentValue - 1;
+            } else if (this.classList.contains("increase")) {
+              input.value = currentValue + 1;
+            }
+          });
+        });
+
+        // Handle add to cart buttons
+        document.querySelectorAll(".add-to-cart-btn").forEach((button) => {
+          button.addEventListener("click", function () {
+            const id = this.getAttribute("data-id");
+            const name = this.getAttribute("data-name");
+            const unit = this.getAttribute("data-unit");
+            const quantityInput =
+              this.closest(".material-item").querySelector(".quantity-input");
+            const quantity = parseInt(quantityInput.value) || 0;
+
+            if (quantity > 0) {
+              addToCart(id, name, unit, quantity);
+              quantityInput.value = 0;
+              showNotification(
+                `Added ${quantity} ${unit} of ${name} to cart`,
+                "success"
+              );
+            } else {
+              showNotification(
+                "Please select a quantity greater than 0",
+                "error"
+              );
+            }
+          });
+        });
+
+        // Add to cart function
+        function addToCart(id, name, unit, quantity) {
+          // Преобразуем id в число для гарантии правильного сравнения
+          const numericId = parseInt(id);
+
+          // Ищем существующий элемент по числовому id
+          const existingItem = cart.find(
+            (item) => parseInt(item.id) === numericId
+          );
+
+          if (existingItem) {
+            existingItem.quantity += quantity;
+          } else {
+            cart.push({
+              id: numericId,
+              name,
+              unit,
+              quantity,
+            });
+          }
+
+          updateCartUI();
+        }
+
+        // Update cart UI
+        function updateCartUI() {
+          const cartBadge = document.getElementById("cartBadge");
+          const cartItemsList = document.getElementById("cartItemsList");
+          const checkoutBtn = document.getElementById("checkoutBtn");
+
+          // Update badge
+          const totalItems = cart.reduce(
+            (total, item) => total + item.quantity,
+            0
+          );
+          cartBadge.textContent = totalItems;
+
+          // Update cart items list
+          if (cart.length === 0) {
+            cartItemsList.innerHTML =
+              '<div class="empty-cart">Your cart is empty</div>';
+            checkoutBtn.disabled = true;
+          } else {
+            let html = "";
+            cart.forEach((item) => {
+              html += `
+                <div class="cart-item">
+                    <div>${item.name} (${item.quantity} ${item.unit})</div>
+                    <button type="button" class="remove-item" data-id="${item.id}">✕</button>
+                </div>
+              `;
+            });
+            cartItemsList.innerHTML = html;
+            checkoutBtn.disabled = false;
+          }
+        }
+
+        // Use event delegation for the remove buttons
+        document
+          .getElementById("cartItemsList")
+          .addEventListener("click", function (e) {
+            if (e.target.classList.contains("remove-item")) {
+              const id = e.target.getAttribute("data-id");
+              if (id) {
+                removeFromCart(id);
+              }
+            }
+          });
+
+        // Remove from cart
+        function removeFromCart(id) {
+          // Преобразуем id в число для гарантии правильного сравнения
+          const numericId = parseInt(id);
+          const itemToRemove = cart.find(
+            (item) => parseInt(item.id) === numericId
+          );
+
+          if (itemToRemove) {
+            showNotification(
+              `Removed ${itemToRemove.name} from cart`,
+              "success"
+            );
+            cart = cart.filter((item) => parseInt(item.id) !== numericId);
+            updateCartUI();
+          }
+        }
+
+        // Show notification
+        function showNotification(message, type = "info") {
+          const notification = document.getElementById("notification");
+          notification.textContent = message;
+          notification.className = "notification"; // Reset classes
+
+          // Add type class
+          notification.classList.add(type);
+
+          // Show notification
+          setTimeout(() => {
+            notification.classList.add("show");
+          }, 10);
+
+          // Hide after 3 seconds
+          setTimeout(() => {
+            notification.classList.remove("show");
+          }, 3000);
+        }
+
+        // Initialize cart UI
+        updateCartUI();
+
+        // Checkout button
+        document
+          .getElementById("checkoutBtn")
+          .addEventListener("click", function () {
+            if (cart.length > 0) {
+              showNotification("Order submitted successfully!", "success");
+              cart = [];
+              updateCartUI();
+            }
+          });
+
+        // Filter by category
+        document
+          .getElementById("materialCategory")
+          .addEventListener("change", function () {
+            const category = this.value;
+            const cards = document.querySelectorAll(".material-category-card");
+
+            if (category === "") {
+              // Show all cards
+              cards.forEach((card) => {
+                card.style.display = "block";
+              });
+            } else {
+              // Filter cards
+              cards.forEach((card) => {
+                const categoryLabel = card
+                  .querySelector(".category-label")
+                  .textContent.toLowerCase();
+
+                if (categoryLabel.includes(category)) {
+                  card.style.display = "block";
+                } else {
+                  card.style.display = "none";
+                }
+              });
+            }
+          });
+      });
+    </script>
+  </body>
+</html>

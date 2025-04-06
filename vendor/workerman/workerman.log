@@ -69,3 +69,62 @@ Stack trace:
 #7 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(155): Workerman\Worker::runAll()
 #8 {main}
 2025-04-04 01:01:49 pid:3817 worker[none:3824] exit with status 13
+2025-04-04 03:28:15 pid:15975 mysqli_sql_exception: Connection was killed in /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php:44
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(44): mysqli->prepare('SELECT request_...')
+#1 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Connection/TcpConnection.php(653): {closure}(Object(Workerman\Connection\TcpConnection), '{"action":"getU...')
+#2 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Events/Select.php(311): Workerman\Connection\TcpConnection->baseRead(Resource id #53)
+#3 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1719): Workerman\Events\Select->loop()
+#4 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1510): Workerman\Worker::forkOneWorkerForLinux(Object(Workerman\Worker))
+#5 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1484): Workerman\Worker::forkWorkersForLinux()
+#6 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1869): Workerman\Worker::forkWorkers()
+#7 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1805): Workerman\Worker::monitorWorkersForLinux()
+#8 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(563): Workerman\Worker::monitorWorkers()
+#9 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(155): Workerman\Worker::runAll()
+#10 {main}
+2025-04-04 03:28:15 pid:3817 worker[none:15975] exit with status 13
+2025-04-04 03:31:11 pid:15953 mysqli_sql_exception: Connection was killed in /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php:44
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(44): mysqli->prepare('SELECT request_...')
+#1 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Connection/TcpConnection.php(653): {closure}(Object(Workerman\Connection\TcpConnection), '{"action":"getU...')
+#2 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Events/Select.php(311): Workerman\Connection\TcpConnection->baseRead(Resource id #48)
+#3 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1719): Workerman\Events\Select->loop()
+#4 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1510): Workerman\Worker::forkOneWorkerForLinux(Object(Workerman\Worker))
+#5 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1484): Workerman\Worker::forkWorkersForLinux()
+#6 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1869): Workerman\Worker::forkWorkers()
+#7 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1805): Workerman\Worker::monitorWorkersForLinux()
+#8 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(563): Workerman\Worker::monitorWorkers()
+#9 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(155): Workerman\Worker::runAll()
+#10 {main}
+2025-04-04 03:31:11 pid:3817 worker[none:15953] exit with status 13
+2025-04-04 03:31:18 pid:16002 mysqli_sql_exception: Connection was killed in /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php:44
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(44): mysqli->prepare('SELECT request_...')
+#1 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Connection/TcpConnection.php(653): {closure}(Object(Workerman\Connection\TcpConnection), '{"action":"getU...')
+#2 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Events/Select.php(311): Workerman\Connection\TcpConnection->baseRead(Resource id #44)
+#3 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1719): Workerman\Events\Select->loop()
+#4 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1510): Workerman\Worker::forkOneWorkerForLinux(Object(Workerman\Worker))
+#5 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1484): Workerman\Worker::forkWorkersForLinux()
+#6 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1869): Workerman\Worker::forkWorkers()
+#7 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1805): Workerman\Worker::monitorWorkersForLinux()
+#8 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(563): Workerman\Worker::monitorWorkers()
+#9 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(155): Workerman\Worker::runAll()
+#10 {main}
+2025-04-04 03:31:18 pid:3817 worker[none:16002] exit with status 13
+2025-04-04 03:39:22 pid:17362 mysqli_sql_exception: Connection was killed in /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php:44
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(44): mysqli->prepare('SELECT request_...')
+#1 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Connection/TcpConnection.php(653): {closure}(Object(Workerman\Connection\TcpConnection), '{"action":"getU...')
+#2 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Events/Select.php(311): Workerman\Connection\TcpConnection->baseRead(Resource id #56)
+#3 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1719): Workerman\Events\Select->loop()
+#4 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1510): Workerman\Worker::forkOneWorkerForLinux(Object(Workerman\Worker))
+#5 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1484): Workerman\Worker::forkWorkersForLinux()
+#6 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1869): Workerman\Worker::forkWorkers()
+#7 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(1805): Workerman\Worker::monitorWorkersForLinux()
+#8 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/vendor/workerman/workerman/Worker.php(563): Workerman\Worker::monitorWorkers()
+#9 /Applications/XAMPP/xamppfiles/htdocs/Maintenance_P/php/ws/websocket_server.php(155): Workerman\Worker::runAll()
+#10 {main}
+2025-04-04 03:39:22 pid:3817 worker[none:17362] exit with status 13
+2025-04-05 03:37:08 pid:3817 Workerman[websocket_server.php] stopping ...
+2025-04-05 03:37:08 pid:3817 worker[none:40156] exit with status 13
+2025-04-05 03:37:08 pid:3817 Workerman[websocket_server.php] has been stopped

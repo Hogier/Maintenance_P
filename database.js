@@ -287,7 +287,18 @@ class Database {
   // Добавим метод для сохранения медиафайлов
   async addTaskWithMedia(taskData, files) {
     try {
-      await this.waitForDB();
+      console.log("Calling addTaskWithMedia with data:", taskData);
+      console.log("Files count:", files.length);
+
+      if (files.length > 0) {
+        // Log first file details for debugging
+        console.log("First file info:", {
+          name: files[0].name,
+          type: files[0].type,
+          size: files[0].size,
+        });
+      }
+
       //    taskData.date = new Date(taskData.timestamp).toISOString().split("T")[0];
       taskData.date = formatDateFromTimestamp(taskData.timestamp);
       console.log("addTaskWithMedia timestamp: ", taskData.timestamp);
@@ -307,19 +318,38 @@ class Database {
       }
 
       if (files.length > 0) {
+        // Explicitly iterate through files to make sure they're all appended
         for (let i = 0; i < files.length; i++) {
+          console.log(
+            `Appending file ${i + 1}/${files.length}: ${files[i].name}`
+          );
           formData.append("media[]", files[i]);
         }
       } else {
         console.warn("No files selected for upload.");
       }
 
+      // Log FormData contents for debugging
+      console.log("FormData entries:");
+      for (let pair of formData.entries()) {
+        if (pair[0] === "media[]") {
+          console.log(
+            `${pair[0]}: File ${pair[1].name}, type: ${pair[1].type}, size: ${pair[1].size}`
+          );
+        } else {
+          console.log(`${pair[0]}: ${pair[1]}`);
+        }
+      }
+
+      console.log("Sending request to task.php");
       const response = await fetch("task.php", {
         method: "POST",
         body: formData,
       });
 
       const text = await response.text();
+      console.log("Response from task.php:", text);
+
       let result;
       try {
         result = JSON.parse(text);
@@ -431,46 +461,71 @@ class Database {
     }
   }
   async addComment(requestId, comment, staffName) {
-    const response = await fetch("task.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        action: "addComment",
-        requestId: requestId,
-        comment: comment,
-        staffName: staffName,
-        timestamp: new Date().toISOString().slice(0, 19).replace("T", " "),
-      }),
-    });
-
-    const text = await response.text();
     try {
-      const result = JSON.parse(text);
-      if (result.success) {
-        console.log("Comment added successfully:", result.message);
-        return true;
-      } else {
-        console.error("Error adding comment:", result.message);
+      // Получаем URL фотографии пользователя
+      const userPhotoUrl = await this.getUserPhotoUrl(staffName);
+
+      // Create a properly formatted timestamp (YYYY-MM-DD HH:MM:SS)
+      const now = new Date();
+      const formattedTimestamp =
+        now.getFullYear() +
+        "-" +
+        String(now.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(now.getDate()).padStart(2, "0") +
+        " " +
+        String(now.getHours()).padStart(2, "0") +
+        ":" +
+        String(now.getMinutes()).padStart(2, "0") +
+        ":" +
+        String(now.getSeconds()).padStart(2, "0");
+
+      const response = await fetch("comments.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          action: "addComment",
+          taskId: requestId,
+          commentText: comment,
+          staffName: staffName,
+          timestamp: formattedTimestamp,
+          photoUrl: userPhotoUrl,
+        }),
+      });
+
+      const text = await response.text();
+      try {
+        console.log("Comment response:", text);
+        const result = JSON.parse(text);
+        if (result.success) {
+          console.log("Comment added successfully:", result.message);
+          return true;
+        } else {
+          console.error("Error adding comment:", result.message);
+          return false;
+        }
+      } catch (e) {
+        console.error("Invalid JSON response:", text);
         return false;
       }
-    } catch (e) {
-      console.error("Invalid JSON response:", text);
+    } catch (error) {
+      console.error("Error adding comment:", error);
       return false;
     }
   }
 
   async fetchComments(taskId) {
     try {
-      const response = await fetch("task.php", {
+      const response = await fetch("comments.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
           action: "getComments",
-          requestId: taskId,
+          taskId: taskId,
         }),
       });
 
@@ -487,17 +542,17 @@ class Database {
     }
   }
 
-  async deleteCommentFromServer(requestId, timestamp) {
+  async deleteCommentFromServer(taskId, commentId) {
     try {
-      const response = await fetch("database.php", {
+      const response = await fetch("comments.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
           action: "deleteComment",
-          requestId: requestId,
-          timestamp: timestamp,
+          taskId: taskId,
+          commentId: commentId,
         }),
       });
 
@@ -512,6 +567,75 @@ class Database {
     } catch (error) {
       console.error("Error deleting comment from server:", error);
       return false;
+    }
+  }
+
+  // Метод для получения URL фотографии пользователя
+  async getUserPhotoUrl(username) {
+    try {
+      // Пытаемся получить информацию о пользователе из localStorage
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+      // Создаем FormData для запроса
+      const formData = new FormData();
+      formData.append("action", "getUserPhoto");
+
+      // Если запрашиваем фото текущего пользователя
+      if (
+        !username ||
+        (currentUser &&
+          (username === currentUser.fullName ||
+            username === currentUser.username))
+      ) {
+        formData.append("role", currentUser.role);
+
+        if (
+          currentUser.role === "user" ||
+          currentUser.role === "admin" ||
+          currentUser.role === "support"
+        ) {
+          formData.append("email", currentUser.email);
+        } else if (currentUser.role === "maintenance") {
+          formData.append("username", currentUser.username);
+        }
+      } else {
+        // Если запрашиваем фото другого пользователя, используем имя пользователя
+        // По умолчанию считаем, что это обычный пользователь, если не удалось определить
+        formData.append("role", "user");
+        formData.append("username", username);
+      }
+
+      const response = await fetch("php/user-profile.php", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const photoFileName =
+          data.photo === "nophoto" ? "user.png" : data.photo;
+        // Определяем путь к фото в зависимости от роли
+        let photoPath;
+
+        if (
+          formData.get("role") === "user" ||
+          formData.get("role") === "admin" ||
+          formData.get("role") === "support"
+        ) {
+          photoPath = `/Maintenance_P/users/img/${photoFileName}`;
+        } else {
+          photoPath = `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
+        }
+
+        return photoPath;
+      } else {
+        console.error("Ошибка получения фото:", data.message);
+        return `/Maintenance_P/users/img/user.png`;
+      }
+    } catch (error) {
+      console.error("Ошибка получения фото:", error);
+      return `/Maintenance_P/users/img/user.png`;
     }
   }
   /*
@@ -548,9 +672,34 @@ async getTasksByDate(date) {
 const db = new Database();
 
 function formatDateFromTimestamp(timestamp) {
-  // Разбиваем строку на части
-  const [month, day, year] = timestamp.split(",")[0].split("/");
+  try {
+    console.log("Форматирование timestamp:", timestamp);
 
-  // Форматируем дату в нужный формат
-  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    // Проверяем формат
+    if (timestamp.includes("-") && timestamp.includes(":")) {
+      // Уже в формате YYYY-MM-DD HH:MM:SS
+      // Просто извлекаем дату (первые 10 символов)
+      return timestamp.substring(0, 10);
+    } else if (timestamp.includes("/") && timestamp.includes(",")) {
+      // Старый формат MM/DD/YYYY, HH:MM:SS
+      const [month, day, year] = timestamp.split(",")[0].split("/");
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    } else {
+      // Если формат неизвестен, возвращаем текущую дату
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      console.warn("Неизвестный формат даты:", timestamp);
+      return `${year}-${month}-${day}`;
+    }
+  } catch (error) {
+    console.error("Ошибка при форматировании даты:", error);
+    // Возвращаем текущую дату в случае ошибки
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 }
