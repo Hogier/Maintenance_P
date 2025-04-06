@@ -57,7 +57,31 @@
                 })
               );
               alert("Login successful!");
-              window.location.href = "request.html";
+
+              // Redirect based on user role and redirect parameter
+              function getRedirectUrl() {
+                // Проверяем, есть ли параметр redirect в URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectPage = urlParams.get("redirect");
+
+                // Если есть параметр redirect, возвращаем его значение
+                if (redirectPage) {
+                  return redirectPage;
+                }
+
+                // Иначе используем логику перенаправления на основе роли
+                const user = JSON.parse(localStorage.getItem("currentUser"));
+                if (user.role === "admin") {
+                  return "main.html";
+                } else if (user.role === "support") {
+                  return "tasks.html";
+                } else {
+                  return "request.html";
+                }
+              }
+
+              const redirectUrl = getRedirectUrl();
+              window.location.href = redirectUrl;
             } else {
               document.getElementById("errorMessage").textContent =
                 "Invalid email or password";

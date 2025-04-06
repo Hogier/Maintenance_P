@@ -1,14 +1,135 @@
 import MobileNav from "./mobileNav.js";
+import checkPortalAccess from "./authGuard.js";
 
 class PortalManager {
   constructor() {
-    this.currentPage = "dashboard";
-    this.init();
+    // Check user access before initializing the portal
+    if (checkPortalAccess()) {
+      this.currentPage = "dashboard";
+      this.init();
+    }
   }
 
   init() {
     this.bindEvents();
     this.loadDefaultPage();
+    this.initNewOrdersCounter();
+  }
+
+  // Метод для инициализации счетчика новых заказов
+  initNewOrdersCounter() {
+    this.updateNewOrdersCount();
+
+    // Обновляем счетчик каждую минуту
+    this.orderBadgeInterval = setInterval(() => {
+      this.updateNewOrdersCount();
+    }, 60000);
+  }
+
+  // Получение и обновление количества новых заказов
+  updateNewOrdersCount() {
+    const formData = new FormData();
+    formData.append("action", "getNewOrdersCount");
+
+    const apiUrl =
+      window.location.origin +
+      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+
+    fetch(apiUrl, {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.text())
+      .then((text) => {
+        console.log("Raw API response:", text);
+
+        // Более надежная обработка возможных сконкатенированных JSON-ответов
+        try {
+          // Попробуем найти все корректные JSON-объекты в ответе
+          const result = this.extractLastValidJson(text);
+
+          if (result && result.success && typeof result.count === "number") {
+            this.updateOrdersBadge(result.count);
+            return;
+          }
+
+          // Запасной вариант: регулярное выражение
+          if (text.includes('"success":true') && text.includes('"count":')) {
+            const match = text.match(/"count":(\d+)/);
+            if (match && match[1]) {
+              this.updateOrdersBadge(parseInt(match[1]));
+              return;
+            }
+          }
+
+          console.warn("Could not extract order count from API response");
+        } catch (e) {
+          console.error("Error processing API response:", e);
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating new orders count:", error);
+      });
+  }
+
+  // Вспомогательный метод для извлечения последнего валидного JSON из ответа
+  extractLastValidJson(text) {
+    if (!text) return null;
+
+    // Проверим, может это простой, валидный JSON
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      // Продолжим, если простой парсинг не сработал
+    }
+
+    // Ищем все возможные JSON-объекты в ответе
+    let jsonObjects = [];
+    let depth = 0;
+    let startPos = -1;
+
+    // Сканируем строку побайтово
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === "{") {
+        if (depth === 0) {
+          startPos = i;
+        }
+        depth++;
+      } else if (text[i] === "}") {
+        depth--;
+        if (depth === 0 && startPos !== -1) {
+          // Нашли потенциальный JSON-объект
+          const slice = text.substring(startPos, i + 1);
+          try {
+            const parsed = JSON.parse(slice);
+            jsonObjects.push(parsed);
+          } catch (e) {
+            // Игнорируем невалидные объекты
+          }
+          startPos = -1;
+        }
+      }
+    }
+
+    // Возвращаем последний валидный объект, если есть
+    return jsonObjects.length > 0 ? jsonObjects[jsonObjects.length - 1] : null;
+  }
+
+  // Обновление значка на кнопке
+  updateOrdersBadge(count) {
+    const badgeElement = document.querySelector(
+      "#newOrdersBadge .cart-badge-mini"
+    );
+    if (badgeElement) {
+      badgeElement.textContent = count;
+
+      // Отображаем или скрываем значок в зависимости от наличия новых заказов
+      if (count > 0) {
+        badgeElement.style.display = "flex";
+      } else {
+        badgeElement.style.display = "none";
+      }
+    }
   }
 
   bindEvents() {
@@ -51,6 +172,15 @@ class PortalManager {
         this.changePage("dashboard");
       });
     });
+
+    // Notification badge click handler
+    const notificationBadge = document.getElementById("newOrdersBadge");
+    if (notificationBadge) {
+      notificationBadge.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent the parent nav-item click event
+        this.changePage("supplies");
+      });
+    }
   }
 
   toggleSubmenu(page) {
@@ -153,3 +283,6 @@ const portalManager = new PortalManager();
 
 // Initialize mobile navigation
 const mobileNav = new MobileNav();
+
+// Make portalManager available globally
+window.portalManager = portalManager;

@@ -1,14 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="tasks.css" />
-  <link rel="stylesheet" href="user-profile.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-  <title>Maintenance Tasks</title>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="tasks.css" />
+    <link rel="stylesheet" href="user-profile.css" />
+    <link rel="stylesheet" href="materials.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <title>Maintenance Tasks</title>
+    <script>
+      // Initialize user ID from localStorage when the document loads
+      document.addEventListener("DOMContentLoaded", function () {
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (currentUser && currentUser.id) {
+          document.body.setAttribute("data-user-id", currentUser.id);
+        }
+      });
+    </script>
+  </head>
 
 <body>
   <nav class="sidebar">
@@ -26,7 +38,7 @@
               <span id="userAvatar">👤</span>
             </div>
             <div class="user-details">
-              <span id="userName"></span>
+                <span id="userName"></span>
             </div>
             <button style="display: none;" id="logoutButton">
               <span class="logout-icon">↪</span>
@@ -66,8 +78,12 @@
         </li>
       </ul>
       <li class="nav-item" data-page="materials">
-        <i class="fas fa-box"></i>
-        <span>Materials</span>
+        <i class="fas fa-boxes"></i>
+        <span>Supplies</span>
+        <div class="cart-button-mini small" id="cartButtonMini">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge-mini" id="cartBadgeMini">0</span>
+        </div>
       </li>
     </ul>
     <div class="submenu" id="inspections-submenu">
@@ -198,61 +214,60 @@
       </div>
 
 
-      <div class="nav-links">
-        <a href="main.html" class="back-button">Back to Main</a>
-      </div>
-    </div>
-  </div>
-
-
-  <div id="actionContainer" class="action-container">
-    <div id="filterButton" class="filter-button">
-      <img src="images/filter.png" alt="Filter" />
-      <div class="filters-list">
-        <div class="filters-list-item">
-          <label for="filter-date">Date</label>
-          <select id="filter-date">
-            <option value="lastWeek">Last week</option>
-            <option value="lastMonth">Last Month</option>
-            <option value="last3Months">Last 3 Months</option>
-            <option value="lastYear">Last Year</option>
-          </select>
-        </div>
-        <div class="filters-list-item">
-          <label for="filter-status">Status</label>
-          <select id="filter-status">
-            <option value="All">All</option>
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-        <div class="filters-list-item">
-          <label for="filter-priority">Priority</label>
-          <select id="filter-priority">
-            <option value="All">All</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
-          </select>
-        </div>
-        <div class="filters-list-item">
-          <label for="filter-assigned">Assigned</label>
-          <select id="filter-assigned">
-            <option value="All">All</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
+        <div class="nav-links">
+          <a href="main.html" class="back-button">Back to Main</a>
         </div>
       </div>
     </div>
-    <div id="sortButton" class="sort-button">
-      <img src="images/sort.png" alt="Sort" />
-      <div class="sort-all-tools">
-        <button id="orderButton" class="order">
-          <img src="images/order.png" alt="Order Asc" />
-        </button>
+
+    <div id="actionContainer" class="action-container">
+      <div id="filterButton" class="filter-button">
+        <img src="images/filter.png" alt="Filter" />
+        <div class="filters-list">
+          <div class="filters-list-item">
+            <label for="filter-date">Date</label>
+            <select id="filter-date">
+              <option value="lastWeek">Last week</option>
+              <option value="lastMonth">Last Month</option>
+              <option value="last3Months">Last 3 Months</option>
+              <option value="lastYear">Last Year</option>
+            </select>
+          </div>
+          <div class="filters-list-item">
+            <label for="filter-status">Status</label>
+            <select id="filter-status">
+              <option value="All">All</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="filters-list-item">
+            <label for="filter-priority">Priority</label>
+            <select id="filter-priority">
+              <option value="All">All</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="filters-list-item">
+            <label for="filter-assigned">Assigned</label>
+            <select id="filter-assigned">
+              <option value="All">All</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="sortButton" class="sort-button">
+        <img src="images/sort.png" alt="Sort" />
+        <div class="sort-all-tools">
+          <button id="orderButton" class="order">
+            <img src="images/order.png" alt="Order Asc" />
+          </button>
 
         <div class="sort-list">
           <div class="sort-list-item">
@@ -368,32 +383,33 @@
       <button class="settings-save-btn">Save Changes</button>
     </div>
   </div>
-  <!-- Вспомогательная панель -->
-  <div class="helper-panel">
-    <div class="helper-panel-close">&times;</div>
-    <h3 class="helper-panel-title">Справка</h3>
-    <div class="helper-panel-content">
-      <!-- Содержимое будет заполняться динамически -->
+    <!-- Вспомогательная панель -->
+    <div class="helper-panel">
+      <div class="helper-panel-close">&times;</div>
+      <h3 class="helper-panel-title">Справка</h3>
+      <div class="helper-panel-content">
+        <!-- Содержимое будет заполняться динамически -->
+      </div>
     </div>
-  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
   <script src="database.js"></script>
   <script src="auth.js"></script>
   <script src="dateUtils.js"></script>
   <script src="tasks.js"></script>
+  <script src="materials.js"></script>
   <script src="user-profile.js"></script>
   <script>
     // Обновление времени каждую секунду
-    /* function updateDallasTime() {
-       const timeElement = document.getElementById("dallasTime");
-       timeElement.textContent = getDallasDateTime();
-     }
- 
-     setInterval(updateDallasTime, 1000);
-     updateDallasTime(); // Первоначальное обновление */
+    function updateDallasTime() {
+      const timeElement = document.getElementById("dallasTime");
+      timeElement.textContent = getDallasDateTime();
+    }
+
+    setInterval(updateDallasTime, 1000);
+    updateDallasTime(); // Первоначальное обновление
   </script>
-
-
+  
 </body>
 
 </html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тест API подрядчиков</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f5f5f5;
+        white-space: pre;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Тестирование API подрядчиков</h1>
+
+    <form id="contractorForm">
+      <div class="form-group">
+        <label for="company_name">Название компании (обязательно):</label>
+        <input type="text" id="company_name" name="company_name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="business_type">Тип бизнеса (обязательно):</label>
+        <input type="text" id="business_type" name="business_type" required />
+      </div>
+
+      <div class="form-group">
+        <label for="location">Местоположение:</label>
+        <input type="text" id="location" name="location" />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Телефон:</label>
+        <input type="text" id="phone" name="phone" />
+      </div>
+
+      <div class="form-group">
+        <label for="website">Веб-сайт:</label>
+        <input type="text" id="website" name="website" />
+      </div>
+
+      <div class="form-group">
+        <label for="rating">Рейтинг (0-5):</label>
+        <input
+          type="number"
+          id="rating"
+          name="rating"
+          min="0"
+          max="5"
+          value="0"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Примечания:</label>
+        <textarea id="notes" name="notes" rows="4"></textarea>
+      </div>
+
+      <button type="submit">Добавить подрядчика</button>
+    </form>
+
+    <h2>Ответ от API:</h2>
+    <div id="result">Здесь будет результат...</div>
+
+    <script>
+      document
+        .getElementById("contractorForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          // Собираем данные формы
+          const formData = {
+            company_name: document.getElementById("company_name").value,
+            business_type: document.getElementById("business_type").value,
+            location: document.getElementById("location").value,
+            email: document.getElementById("email").value,
+            phone: document.getElementById("phone").value,
+            website: document.getElementById("website").value,
+            rating: parseInt(document.getElementById("rating").value),
+            notes: document.getElementById("notes").value,
+          };
+
+          // Вывод для отладки
+          console.log("Отправляемые данные:", formData);
+
+          // Отправляем запрос к API
+          fetch(
+            "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/index.php?resource=contractors",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formData),
+            }
+          )
+            .then((response) => {
+              // Сначала получаем статус и заголовки
+              console.log("Статус ответа:", response.status);
+              console.log("Заголовки ответа:", response.headers);
+              // Затем возвращаем данные как JSON
+              return response.json();
+            })
+            .then((data) => {
+              console.log("Данные ответа:", data);
+              document.getElementById("result").textContent = JSON.stringify(
+                data,
+                null,
+                2
+              );
+            })
+            .catch((error) => {
+              console.error("Ошибка:", error);
+              document.getElementById("result").textContent =
+                "Ошибка: " + error.message;
+            });
+        });
+    </script>
+  </body>
+</html>

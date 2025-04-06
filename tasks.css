@@ -21,6 +21,8 @@ body {
 .main-content {
   margin-left: 250px;
   position: relative;
+  margin-left: 250px;
+  position: relative;
 }
 
 .container {
@@ -154,8 +156,7 @@ h1 {
 
 .task-location,
 .task-priority {
-  margin: 0;
-  /* Убираем внешние отступы */
+  margin: 0; /* Убираем внешние отступы */
 }
 
 .task-location {
@@ -209,12 +210,12 @@ h1 {
   display: inline-block;
   margin: 0px 0;
   /*box-shadow: inset 0px -2px 4px rgba(0, 0, 0, 0.10);*/
+  /*box-shadow: inset 0px -2px 4px rgba(0, 0, 0, 0.10);*/
   text-shadow: 1px 1px 1px rgb(0 0 0 / 37%);
   z-index: 99;
   position: relative;
   top: -13px;
   left: 5px;
-
 }
 
 .priority-low {
@@ -338,7 +339,6 @@ h1 {
   border-radius: 0 0 8px 8px;
 }
 
-
 .status-select option[value="Pending"] {
   background-color: #ff5445fc;
   color: white;
@@ -391,7 +391,6 @@ h1 {
   font-size: 14px;
   transform: scale(1);
   transition: transform 0.3s, top 0.3s ease-out;
-
 }
 
 .assign-btn:hover {
@@ -421,7 +420,6 @@ h1 {
   transition: top 0.3s ease-out;
 }
 
-
 .task-comments {
   margin-top: 0px;
   padding-top: 0px;
@@ -439,7 +437,7 @@ h1 {
   margin-bottom: 12px;
   border-radius: 8px;
   border-left: 3px solid #2196f3;
-  transition: background-color 0.42s cubic-bezier(.78, .01, .35, .51);
+  transition: background-color 0.42s cubic-bezier(0.78, 0.01, 0.35, 0.51);
 }
 
 .comment.new {
@@ -457,12 +455,26 @@ h1 {
   margin-bottom: 8px;
 }
 
+.comment-author-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-user-photo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
 .comment-author {
   font-weight: bold;
   color: #2196f3;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .comment-author i {
@@ -534,7 +546,6 @@ h1 {
   border: 1px solid #eee;
 }
 
-
 .task-media h4 {
   margin: 0 0 10px 0;
   color: #333;
@@ -577,6 +588,7 @@ h1 {
   padding: 5px;
   border-radius: 4px;
   border: 1px solid #ddd;
+  grid-column: span 2;
   grid-column: span 2;
 }
 
@@ -705,6 +717,8 @@ h1 {
 
 .clock,
 .refuse-clock {
+.clock,
+.refuse-clock {
   width: 15px;
   height: 15px;
   border-radius: 50%;
@@ -738,12 +752,18 @@ h1 {
 .minute-hand,
 .refuse-hour-hand,
 .refuse-minute-hand {
+.hour-hand,
+.minute-hand,
+.refuse-hour-hand,
+.refuse-minute-hand {
   position: absolute;
   transform-origin: bottom center;
   bottom: 50%;
   left: 50%;
 }
 
+.hour-hand,
+.refuse-hour-hand {
 .hour-hand,
 .refuse-hour-hand {
   width: 1px;
@@ -755,6 +775,8 @@ h1 {
 
 .minute-hand,
 .refuse-minute-hand {
+.minute-hand,
+.refuse-minute-hand {
   width: 1px;
   height: 6px;
   transform: translateX(-50%) rotate(90deg);
@@ -764,9 +786,13 @@ h1 {
 
 .hour-hand,
 .minute-hand {
+.hour-hand,
+.minute-hand {
   background-color: hwb(0 100% 0%);
 }
 
+.refuse-hour-hand,
+.refuse-minute-hand {
 .refuse-hour-hand,
 .refuse-minute-hand {
   background-color: #ff5445fc;
@@ -826,9 +852,8 @@ h1 {
   background: #ff5445fc;
 }
 
-
 .status-in-progress {
-  background: #e1d400
+  background: #e1d400;
 }
 
 .status-completed {
@@ -846,6 +871,9 @@ h1 {
   border-radius: 5px;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -885,6 +913,8 @@ h1 {
 
 .discussion-toggle-clock,
 .status-clock {
+.discussion-toggle-clock,
+.status-clock {
   display: inline-block;
   position: relative;
   width: 18px;
@@ -897,6 +927,10 @@ h1 {
   transition: opacity 0.3s ease, border 0.3s ease;
 }
 
+.discussion-toggle-clock .hour-hand,
+.status-clock .hour-hand,
+.discussion-toggle-clock .minute-hand,
+.status-clock .minute-hand {
 .discussion-toggle-clock .hour-hand,
 .status-clock .hour-hand,
 .discussion-toggle-clock .minute-hand,
@@ -917,6 +951,8 @@ h1 {
   transform: rotate(90deg);
 }
 
+.discussion-toggle-clock .minute-hand,
+.status-clock .minute-hand {
 .discussion-toggle-clock .minute-hand,
 .status-clock .minute-hand {
   width: 2px;
@@ -977,8 +1013,21 @@ h1 {
   cursor: pointer;
   transition: opacity 0.3s ease;
   display: none;
+  left: 20px;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #bf83ff, #2196f3);
+  color: white;
+  font-size: 35px;
+  text-align: center;
+  line-height: 70px;
+  border-radius: 30%;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  display: none;
 }
-
 
 .counterNewCommentNotification {
   position: fixed;
@@ -1062,12 +1111,10 @@ h1 {
   margin-bottom: 30px;
 }
 
-
 .alert-tasks-list {
   min-height: 54px;
   transition: 0.3s ease-in-out;
 }
-
 
 .alert-tasks-list-header {
   width: 100%;
@@ -1140,7 +1187,6 @@ h1 {
   opacity: 0;
   transition: max-height 0.6s linear, opacity 0.5s linear;
   /*cubic-bezier(0,1.33,.61,.79)*/
-
 }
 
 /* Sidebar Styles */

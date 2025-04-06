@@ -244,6 +244,7 @@ try {
         author VARCHAR(255) NOT NULL,
         text TEXT NOT NULL,
         created_at DATETIME NOT NULL,
+        userPhotoUrl VARCHAR(255) NULL,
         FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
 
@@ -301,7 +302,7 @@ try {
                     phone, alcuinContact, attendees,
                     podium, monitors, laptop, ipad, microphones,
                     speaker, avAssistance, security, buildingAccess, otherConsiderations,
-                    status, createdBy, createdAt, setupImages,
+                    status, approved, approvedBy, approvedAt, createdBy, createdAt, setupImages,
                     tables6ft, tables8ft, tablesRound,
                     tables6ftCount, tables8ftCount, tablesRoundCount,
                     tablecloth_color, chairs_count, chairs_needed, tables_needed
@@ -315,21 +316,33 @@ try {
                 $events = [];
                 while ($row = $result->fetch_assoc()) {
                     // Получаем комментарии для каждого события
-                    $commentStmt = $conn->prepare("SELECT * FROM event_comments WHERE event_id = ? ORDER BY created_at ASC");
-                    $commentStmt->bind_param('i', $row['id']);
-                    $commentStmt->execute();
-                    $commentResult = $commentStmt->get_result();
+                    $current_event_id = $row['id']; // Store event ID for logging
+                    debug_log("Fetching comments for event ID: " . $current_event_id);
+
+                    $commentsQuery = "SELECT id, event_id, author, text, created_at, userPhotoUrl FROM event_comments WHERE event_id = ? ORDER BY created_at ASC";
+                    $commentsStmt = $conn->prepare($commentsQuery);
+                    
+                    if (!$commentsStmt) {
+                        throw new Exception('Failed to prepare comments statement: ' . $conn->error);
+                    }
+
+                    $commentsStmt->bind_param('i', $current_event_id);
+                    $commentsStmt->execute();
+                    $commentsResult = $commentsStmt->get_result();
                     
                     $comments = [];
-                    while ($commentRow = $commentResult->fetch_assoc()) {
+                    while ($commentRow = $commentsResult->fetch_assoc()) {
                         $comments[] = [
                             'id' => $commentRow['id'],
                             'author' => $commentRow['author'],
                             'text' => $commentRow['text'],
-                            'date' => $commentRow['created_at']
+                            'date' => $commentRow['created_at'],
+                            'userPhotoUrl' => $commentRow['userPhotoUrl']
                         ];
                     }
-                    $commentStmt->close();
+                    // Log how many comments were found for this event
+                    debug_log("Found " . count($comments) . " comments for event ID: " . $current_event_id);
+                    $commentsStmt->close();
 
                     // Удаляем обработку устаревших полей
                     $eventData = $row;
@@ -497,26 +510,46 @@ try {
                 throw new Exception('Missing required comment fields');
             }
 
+            // Получаем URL фото пользователя, если оно есть
+            $userPhotoUrl = isset($commentData['userPhotoUrl']) ? $commentData['userPhotoUrl'] : null;
+
             // Подготавливаем и выполняем запрос для добавления комментария
-            $stmt = $conn->prepare("INSERT INTO event_comments (event_id, author, text, created_at) VALUES (?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO event_comments (event_id, author, text, created_at, userPhotoUrl) VALUES (?, ?, ?, ?, ?)");
             if (!$stmt) {
                 throw new Exception('Failed to prepare comment statement: ' . $conn->error);
             }
 
             // Преобразуем дату в формат MySQL
             $date = date('Y-m-d H:i:s', strtotime($commentData['date']));
+            debug_log("Preparing to insert comment", ['data' => $commentData, 'prepared_date' => $date]); // Log data before binding
 
-            if (!$stmt->bind_param('isss', 
+            if (!$stmt->bind_param('issss', 
                 $commentData['eventId'],
                 $commentData['author'],
                 $commentData['text'],
-                $date
+                $date,
+                $userPhotoUrl
             )) {
                 throw new Exception('Failed to bind comment parameters: ' . $stmt->error);
             }
 
+            debug_log("Attempting to execute comment insert..."); // Log before execution
             if (!$stmt->execute()) {
-                throw new Exception('Failed to add comment: ' . $stmt->error);
+                // Log the specific SQL error
+                $sqlError = $stmt->error;
+                debug_log("Failed to add comment - SQL Error", ['error' => $sqlError]);
+                throw new Exception('Failed to add comment: ' . $sqlError);
+            }
+            // Log affected rows immediately after execute
+            $affected_rows = $conn->affected_rows;
+            debug_log("Comment insert executed. Affected rows: " . $affected_rows); 
+
+            // Check if affected_rows is as expected
+            if ($affected_rows < 1) {
+                 // Even if execute returned true, no rows were inserted. Log this specific case.
+                 debug_log("Execute returned true, but affected_rows is not 1. Insert likely failed silently.", ['affected_rows' => $affected_rows]);
+                 // Optionally, throw an exception here too, as the insert didn't behave as expected.
+                 // throw new Exception('Comment insertion failed silently (affected_rows: ' . $affected_rows . ')');
             }
 
             $commentId = $conn->insert_id;
@@ -558,7 +591,8 @@ try {
                     'id' => $row['id'],
                     'author' => $row['author'],
                     'text' => $row['text'],
-                    'date' => $row['created_at']
+                    'date' => $row['created_at'],
+                    'userPhotoUrl' => $row['userPhotoUrl']
                 ];
             }
 

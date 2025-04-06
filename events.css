@@ -759,6 +759,8 @@ body {
   font-size: 14px;
   z-index: 1000;
   animation: slideIn 0.3s ease-out;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 .notification.success {
@@ -1120,11 +1122,11 @@ body {
 
 /* Специфические стили для разных типов кнопок */
 .action-button.print {
-  background: linear-gradient(145deg, #059669, #047857);
+  background-color: #059669;
 }
 
 .action-button.print:hover {
-  background: linear-gradient(145deg, #047857, #036c4e);
+  background-color: #026046;
 }
 
 .action-button.edit {
@@ -1141,6 +1143,15 @@ body {
 
 .action-button.delete:hover {
   background: linear-gradient(145deg, #dc2626, #b91c1c);
+}
+
+.email-btn {
+  background-color: #0284c7;
+  color: white;
+}
+
+.email-btn:hover {
+  background-color: #0369a1;
 }
 
 /* Контейнер для кнопок */
@@ -1580,25 +1591,33 @@ input[type="date"]:invalid::before {
 .comment-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
   align-items: center;
-  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.comment-author-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-user-photo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+  flex-shrink: 0;
 }
 
 .comment-author {
-  font-weight: 600;
+  font-weight: bold;
   color: #1e293b;
-  display: flex;
-  align-items: center;
 }
 
 .comment-author::before {
-  content: "\f007";
-  font-family: "Font Awesome 5 Free";
-  margin-right: 6px;
-  color: #4b5563;
-  font-size: 12px;
-  opacity: 0.7;
+  content: "";
+  display: none;
 }
 
 .comment-date {
@@ -1606,6 +1625,7 @@ input[type="date"]:invalid::before {
   font-size: 0.85rem;
   display: flex;
   align-items: center;
+  white-space: nowrap;
 }
 
 .comment-date::before {
@@ -1632,7 +1652,7 @@ input[type="date"]:invalid::before {
 .comment-actions {
   display: flex;
   gap: 5px;
-  margin-left: auto;
+  margin-left: 8px;
 }
 
 .comment-edit,
@@ -1793,11 +1813,11 @@ input[type="date"]:invalid::before {
 }
 
 .print-btn {
-  background: linear-gradient(145deg, #059669, #047857);
+  background-color: #059669;
 }
 
 .print-btn:hover {
-  background: linear-gradient(145deg, #047857, #036c4e);
+  background-color: #026046;
 }
 
 .edit-btn {
@@ -2132,37 +2152,38 @@ input[type="date"]:invalid::before {
 
 .new-comment-notification h3 {
   margin: 0 0 10px 0;
-  color: #1e293b;
-  font-size: 1.1rem;
+  font-size: 16px;
   font-weight: 600;
-  padding-right: 20px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.new-comment-notification h3 span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-user-photo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+  flex-shrink: 0;
 }
 
 .new-comment-notification p {
   margin: 0;
-  color: #475569;
-  font-size: 0.95rem;
+  font-size: 14px;
   line-height: 1.5;
-  max-height: 3em; /* Высота ограничена 2 строками (1.5 × 2 = 3em) */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Добавляет "..." в конце обрезанного текста */
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* Для WebKit/Blink браузеров */
-  -webkit-box-orient: vertical;
-}
-
-.new-comment-notification p::-webkit-scrollbar {
-  width: 4px;
-}
-
-.new-comment-notification p::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 2px;
-}
-
-.new-comment-notification p::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 2px;
+  max-height: 80px;
+  overflow-y: auto;
+  padding-right: 5px;
+  color: #475569;
+  word-break: break-word;
 }
 
 #closeNotificationButton {
