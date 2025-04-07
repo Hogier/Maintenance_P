@@ -32,9 +32,7 @@ if ($action === 'addUserPhoto') {
     $role = $_POST['role'] ?? '';
     if ($role === 'user' || $role === 'admin' || $role === 'support') {
         $email = $_POST['email'] ?? '';
-    } else if ($role === 'maintenance') {
-        $username = $_POST['username'] ?? '';
-    }
+    } 
 
     // Логирование входных данных
     error_log("Action: $action, Role: $role, Email: $email, Username: $username");
@@ -80,10 +78,7 @@ if ($action === 'addUserPhoto') {
         if ($role === 'user' || $role === 'admin' || $role === 'support') {
             $targetDir = $rootPath . '/users/img/';
             $miniDir = $rootPath . '/users/mini/';
-        } else if ($role === 'maintenance') {
-            $targetDir = $rootPath . '/maintenance_staff/img/';
-            $miniDir = $rootPath . '/maintenance_staff/mini/';
-        }
+        } 
         $targetFile = $targetDir . $fileName;
         $miniFile = $miniDir . 'mini_' . $fileName;
 
@@ -172,10 +167,7 @@ if ($action === 'addUserPhoto') {
             if ($role === 'user' || $role === 'admin' || $role === 'support') {
                 $stmt = $conn->prepare("UPDATE users SET photo = ? WHERE email = ?");
                 $stmt->bind_param('ss', $fileName, $email);
-            } else if ($role === 'maintenance') {
-                $stmt = $conn->prepare("UPDATE maintenance_staff SET photo = ? WHERE username = ?");
-                $stmt->bind_param('ss', $fileName, $username);
-            }
+            } 
             if (!$stmt->execute()) {
                 throw new Exception('Ошибка обновления базы данных: ' . $stmt->error);
             }
@@ -216,11 +208,7 @@ elseif ($action === 'getUserPhoto') {
                 $stmt = $conn->prepare("SELECT photo FROM users WHERE fullName = ? OR username = ?");
                 $stmt->bind_param('ss', $username, $username);
             }
-        } else if ($role === 'maintenance') {
-            // Для maintenance staff ищем по username
-            $stmt = $conn->prepare("SELECT photo FROM maintenance_staff WHERE username = ?");
-            $stmt->bind_param('s', $username);
-        }
+        } 
         
         if (isset($stmt)) {
             $stmt->execute();
@@ -278,25 +266,35 @@ elseif ($action === 'getUserPhoto') {
     }
 } 
 
-/////// ФУНКЦИИ получения заданий для роли "USER" //////
+/////// ФУНКЦИИ получения заданий  //////
 
 elseif ($action === 'getUserTasksForLastWeek') {
     $staff = $_POST['staff'] ?? '';
     $role = $_POST['role'] ?? '';
     $currentDate = $_POST['currentDate'] ?? '';
 
+    error_log("Action: $action, Staff: $staff, Role: $role, Current Date: $currentDate");
     if ($staff && $currentDate && $role) {
         try {
             if ($role === 'user') {
                 $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND timestamp >= DATE_SUB(?, INTERVAL 1 WEEK)");
-            } else if ($role === 'maintenance') {
+            } else if ($role === 'support') {
                 $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE assigned_to = ? AND timestamp >= DATE_SUB(?, INTERVAL 1 WEEK)");
+            } else if ($role === 'admin') {
+                error_log("Admin role detected");
+                $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE timestamp >= DATE_SUB(?, INTERVAL 1 WEEK)");
             }
             if (!$stmt) {
                 throw new Exception("Prepare failed: " . $conn->error);
             }
             
-            $stmt->bind_param('ss', $staff, $currentDate);
+            if($role === 'user') {
+                $stmt->bind_param('ss', $staff, $currentDate);
+            } else if($role === 'support') {
+                $stmt->bind_param('ss', $staff, $currentDate);
+            } else if($role === 'admin') {
+                $stmt->bind_param('s', $currentDate);
+            }
             if (!$stmt->execute()) {
                 throw new Exception("Execute failed: " . $stmt->error);
             }
@@ -324,8 +322,11 @@ elseif ($action === 'getUserTasksForLastWeek') {
     if ($staff && $currentDate && $role) {
         if ($role === 'user') {
             $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 1 MONTH)");
-        } else if ($role === 'maintenance') {
+        } else if ($role === 'support') {
             $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE assigned_to = ? AND date >= DATE_SUB(?, INTERVAL 1 MONTH)");
+        }
+        else if ($role === 'admin') {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE date >= DATE_SUB(?, INTERVAL 1 MONTH)");
         }
         $stmt->bind_param('ss', $staff, $currentDate);
         $stmt->execute();
@@ -345,8 +346,10 @@ elseif ($action === 'getUserTasksForLastWeek') {
     if ($staff && $currentDate && $role) {
         if ($role === 'user') {
             $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 3 MONTH)");
-        } else if ($role === 'maintenance') {
+        } else if ($role === 'support') {
             $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE assigned_to = ? AND date >= DATE_SUB(?, INTERVAL 3 MONTH)");
+        } else if ($role === 'admin') {
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE date >= DATE_SUB(?, INTERVAL 3 MONTH)");
         }
         $stmt->bind_param('ss', $staff, $currentDate);
         $stmt->execute();
@@ -366,8 +369,11 @@ elseif ($action === 'getUserTasksForLastWeek') {
     if ($staff && $currentDate && $role) {
         if ($role === 'user') {
             $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE staff = ? AND date >= DATE_SUB(?, INTERVAL 1 YEAR)");
-        } else if ($role === 'maintenance') {
+        } else if ($role === 'support') {
             $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE assigned_to = ? AND date >= DATE_SUB(?, INTERVAL 1 YEAR)");
+        } else if ($role === 'admin') {
+
+            $stmt = $conn->prepare("SELECT request_id, priority, details, timestamp, status, assigned_to, assigned_at FROM tasks WHERE date >= DATE_SUB(?, INTERVAL 1 YEAR)");
         }
         $stmt->bind_param('ss', $staff, $currentDate);
         $stmt->execute();

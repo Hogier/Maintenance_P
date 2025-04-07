@@ -167,6 +167,9 @@ function loadMaterialsContent() {
   const mainContent = document.querySelector(".main-content main");
   if (!mainContent) return;
 
+  // Сохраняем оригинальное содержимое перед заменой
+  const originalContent = mainContent.innerHTML;
+
   // Display loading indicator
   mainContent.innerHTML =
     '<div class="loading-indicator">Loading materials...</div>';
@@ -178,6 +181,12 @@ function loadMaterialsContent() {
 
   // Create page structure with materials
   const materialsHTML = `
+  
+              <div class="back-to-tasks">
+                <button id="backToTasksBtn" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Back to Tasks
+                </button>
+            </div>
         <div class="materials-content">
             <div class="materials-header">
                 <h2>Supplies</h2>
@@ -221,6 +230,8 @@ function loadMaterialsContent() {
                   isCollapsed ? " collapsed" : ""
                 }" id="ordersList"></div>
             </div>
+            
+
         </div>
     `;
 
@@ -241,6 +252,30 @@ function loadMaterialsContent() {
 
   // Initialize toggle for orders list
   initOrdersToggle();
+  
+  // Добавляем обработчик для новой кнопки возврата
+  document.getElementById("backToTasksBtn").addEventListener("click", function() {
+    // Восстанавливаем оригинальное содержимое
+    mainContent.innerHTML = originalContent;
+    
+    // Повторно инициализируем нужные скрипты для задач
+    reInitializeTasksPage();
+  });
+}
+
+// Функция для повторной инициализации страницы задач
+function reInitializeTasksPage() {
+  // Здесь вызываем необходимые функции для инициализации страницы задач
+  // Например, если у вас есть функции для загрузки задач, статистики и т.д.
+  if (typeof getTasks === 'function') {
+    getTasks();
+  }
+  
+  if (typeof updateStatistics === 'function') {
+    updateStatistics();
+  }
+  
+  // Можно также вызвать другие функции, необходимые для правильной работы страницы задач
 }
 
 // Initialize orders toggle functionality

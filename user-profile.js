@@ -460,9 +460,6 @@ async function displayUserTasks() {
       searchValue = "";
     }
 
-    console.log("tasks", tasks);
-    console.log("currentFilter", currentFilter);
-
     if (currentFilter.status !== "All") {
       console.log("filter status", currentFilter.status);
       tasks = tasks.filter((task) => task.status === currentFilter.status);
@@ -484,10 +481,8 @@ async function displayUserTasks() {
 
     if (currentSort.sortOrder === "dec") {
       if (currentSort.sortBy === "Date") {
-        console.log("sort by date");
         tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       } else if (currentSort.sortBy === "Priority") {
-        console.log("sort by priority");
         const priorityOrder = {
           low: 1,
           medium: 2,
@@ -541,8 +536,6 @@ async function displayUserTasks() {
         });
       }
     }
-
-    console.log("filtered tasks", tasks);
     // Очищаем содержимое контейнера
     infoContent.innerHTML = "";
 
@@ -574,7 +567,7 @@ async function displayUserTasks() {
                 <span class="profile-task-status-text">Request</span> <div class="status-container-wrapper" data-task-id="${
                   task.request_id
                 }"><span class="${
-        user.role === "maintenance"
+        user.role === "support"
           ? "status-container-maintenance"
           : "status-container"
       } ${task.status
@@ -583,7 +576,7 @@ async function displayUserTasks() {
         task.status
       )};">${task.status}</span>
                 ${
-                  user.role === "maintenance"
+                  user.role === "support"
                     ? generateStatusEditMarkup(task.status)
                     : ""
                 }
@@ -619,7 +612,7 @@ async function displayUserTasks() {
         ".profile-task-status .status-container-wrapper span"
       );
       spanStatus.addEventListener("click", function (e) {
-        if (user.role === "maintenance") {
+        if (user.role === "support") {
           e.stopPropagation();
           this.classList.toggle(
             `${this.textContent.toLowerCase().replace(/\s+/g, "-")}-active`
@@ -801,8 +794,6 @@ async function addUserPhotoToServer(file) {
     currentUser.role === "support"
   ) {
     formData.append("email", currentUser.email);
-  } else if (currentUser.role === "maintenance") {
-    formData.append("username", currentUser.username);
   }
 
   try {
@@ -858,8 +849,6 @@ async function getUserPhotoFromServer() {
     currentUser.role === "support"
   ) {
     formData.append("email", currentUser.email);
-  } else if (currentUser.role === "maintenance") {
-    formData.append("username", currentUser.username);
   }
 
   return fetch("php/user-profile.php", {
@@ -905,11 +894,8 @@ async function loadUserPhoto() {
       currentUser.role === "support"
         ? `/Maintenance_P/users/img/${photoFileName}`
         : `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
-    console.log(avatarContainer);
-
     // Добавляем проверку и выводим значение backgroundImage
     if (avatarContainer) {
-      console.log("Background Image URL:", avatarContainer.style);
     } else {
       console.error("avatarContainer не найден");
     }
@@ -1132,6 +1118,7 @@ async function getUserTasksForLastMonth() {
       formData.append("action", "getUserTasksForLastMonth");
       formData.append("role", user.role);
       formData.append("staff", user.fullName);
+      formData.append("email", user.email);
 
       const currentDate = new Date().toLocaleDateString("en-CA", {
         timeZone: "America/Chicago",
@@ -1173,6 +1160,8 @@ async function getUserTasksForLast3Months() {
       formData.append("action", "getUserTasksForLast3Months");
       formData.append("role", user.role);
       formData.append("staff", user.fullName);
+      formData.append("email", user.email);
+
 
       const currentDate = new Date().toLocaleDateString("en-CA", {
         timeZone: "America/Chicago",
@@ -1214,6 +1203,7 @@ async function getUserTasksForLastYear() {
       formData.append("action", "getUserTasksForLastYear");
       formData.append("role", user.role);
       formData.append("staff", user.fullName);
+      formData.append("email", user.email);
 
       const currentDate = new Date().toLocaleDateString("en-CA", {
         timeZone: "America/Chicago",
@@ -1361,7 +1351,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 ////// ФУНКЦИИ ЗАПРОСОВ НА СЕРВЕР ДЛЯ РОЛИ "МАINTENANCE" //////
-
+/*
 async function getMaintenanceSettingsInfo(username) {
   try {
     const formData = new FormData();
@@ -1385,7 +1375,7 @@ async function getMaintenanceSettingsInfo(username) {
     return null;
   }
 }
-
+*/
 /*
 - Подключить   getMaintenanceSettingsInfo(username) 
 

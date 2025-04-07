@@ -1520,35 +1520,6 @@ h1 {
   text-align: center;
 }
 
-.task-date-divider {
-  display: flex;
-  color: #b8b8b8;
-  align-items: center;
-  text-align: center;
-  margin: 25px 0;
-}
-
-.task-date-divider::before,
-.task-date-divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #b8b8b8;
-  ;
-}
-
-.task-date-label {
-  padding: 0 10px;
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-  background: none;
-  box-shadow: none;
-}
-
-#tasksList .task-date-divider:first-of-type {
-  margin-top: 5px;
-}
-
 /* Стили для контейнера фильтра статусов */
 .status-filter-container {
   display: flex;
@@ -2002,6 +1973,67 @@ h1 {
   filter: brightness(250%);
 }
 
+
+
+.task-date-divider,
+.task-priority-divider,
+.task-status-divider,
+.task-assignment-divider {
+  display: flex;
+  color: #b8b8b8;
+  align-items: center;
+  text-align: center;
+  margin: 25px 0;
+}
+
+.task-date-divider::before,
+.task-date-divider::after,
+.task-priority-divider::before,
+.task-priority-divider::after,
+.task-status-divider::before,
+.task-status-divider::after,
+.task-assignment-divider::before,
+.task-assignment-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #b8b8b8;
+  ;
+}
+/*
+.task-date-label {
+  padding: 0 10px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  background: none;
+  box-shadow: none;
+}
+*/
+
+#tasksList .task-date-divider:first-of-type ,
+#tasksList .task-priority-divider:first-of-type ,
+#tasksList .task-status-divider:first-of-type ,
+#tasksList .task-assignment-divider:first-of-type {
+  margin-top: 5px;
+}
+
+/* Общие стили для всех разделителей */
+.task-date-divider,
+.task-priority-divider,
+.task-status-divider,
+.task-assignment-divider {
+  position: relative;
+  text-align: center;
+  margin: 20px 0;
+  height: 20px;
+}
+
+/* Стили для метки группы */
+.task-group-label {
+  position: relative;
+  padding: 0 10px;
+  color: #535353;
+}
 
 
 

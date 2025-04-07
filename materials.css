@@ -1146,3 +1146,29 @@
 .toggle-orders-btn.pulse-attention:hover {
   animation: none;
 }
+
+.back-to-tasks {
+  text-align: center;
+}
+
+.back-to-tasks .back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.back-to-tasks .back-button:hover {
+  background-color: #0b7dda;
+}
+
+.back-to-tasks .back-button i {
+  margin-right: 8px;
+}

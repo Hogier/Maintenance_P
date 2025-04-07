@@ -204,13 +204,18 @@
           <span id="totalTasks" class="stat-value">0</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">Completed:</span>
-          <span id="completedTasks" class="stat-value">0</span>
-        </div>
-        <div class="stat-item">
           <span class="stat-label">Pending:</span>
           <span id="pendingTasks" class="stat-value">0</span>
         </div>
+        <div class="stat-item">
+          <span class="stat-label">In Progress:</span>
+          <span id="inProgressTasks" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Completed:</span>
+          <span id="completedTasks" class="stat-value">0</span>
+        </div>
+
       </div>
 
 
@@ -406,7 +411,7 @@
       timeElement.textContent = getDallasDateTime();
     }
 
-    setInterval(updateDallasTime, 1000);
+   // setInterval(updateDallasTime, 1000);
     updateDallasTime(); // Первоначальное обновление
   </script>
   

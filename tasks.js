@@ -60,6 +60,13 @@ let filters = {
   },
 };
 
+let tasksStatistics = {
+  totalTasks: 0,
+  pendingTasks: 0,
+  inProgressTasks: 0,
+  completedTasks: 0
+};
+
 let currentPage = 1;
 let limitTasksInPage = 10;
 
@@ -127,6 +134,102 @@ async function getTasks() {
   }
 }
 
+// Группируем задачи в зависимости от выбранного фильтра сортировки
+function groupTasksByFilter(tasks, filterBy) {
+  const tasksByGroup = {};
+  
+  tasks.forEach(task => {
+    let groupKey;
+    
+    // Определяем ключ группировки в зависимости от фильтра
+    switch (filterBy) {
+      case "date":
+        // Группировка по дате, как в оригинальном коде
+        groupKey = new Date(task.timestamp).toLocaleDateString('ru-RU');
+        break;
+      
+      case "priority":
+        // Группировка по приоритету
+        groupKey = task.priority || "unknown";
+        break;
+      
+      case "status":
+        // Группировка по статусу
+        groupKey = task.status || "unknown";
+        break;
+      
+      case "assignment":
+        // Группировка по назначению
+        groupKey = task.assigned_to ? "assigned" : "unassigned";
+        break;
+        
+      default:
+        // По умолчанию группируем по дате
+        groupKey = new Date(task.timestamp).toLocaleDateString('ru-RU');
+    }
+    
+    if (!tasksByGroup[groupKey]) {
+      tasksByGroup[groupKey] = [];
+    }
+    tasksByGroup[groupKey].push(task);
+  });
+  
+  return tasksByGroup;
+}
+
+// Получаем название группы для отображения
+function getGroupDisplayName(groupKey, filterBy) {
+  switch (filterBy) {
+    case "date":
+      return formatDisplayDate(groupKey);
+      
+    case "priority":
+      // Форматируем название приоритета для отображения
+      const priorityNames = {
+        "urgent": "Urgent Priority",
+        "high": "High Priority",
+        "medium": "Medium Priority",
+        "low": "Low Priority",
+        "unknown": "Unknown Priority"
+      };
+      return priorityNames[groupKey.toLowerCase()] || groupKey;
+      
+    case "status":
+      // Форматируем название статуса
+      const statusNames = {
+        "Pending": "Pending Tasks",
+        "In Progress": "Tasks In Progress",
+        "Completed": "Completed Tasks",
+        "unknown": "Unknown Status"
+      };
+      return statusNames[groupKey] || groupKey;
+      
+    case "assignment":
+      // Форматируем название назначения
+      return groupKey === "assigned" ? "Assigned Tasks" : "Unassigned Tasks";
+      
+    default:
+      return groupKey;
+  }
+}
+
+// Получаем класс для разделителя в зависимости от фильтра
+function getDividerClass(filterBy) {
+  switch (filterBy) {
+    case "date":
+      return "task-date-divider";
+    case "priority":
+      return "task-priority-divider";
+    case "status":
+      return "task-status-divider";
+    case "assignment":
+      return "task-assignment-divider";
+    default:
+      return "task-divider";
+  }
+}
+
+// Основной код обновления списка задач
 async function updateTasksList(tasks) {
   try {
     if (updateIndicator) {
@@ -144,61 +247,49 @@ async function updateTasksList(tasks) {
       newTasksContainer.innerHTML =
         '<div class="no-tasks">No tasks found</div>';
     } else {
-      // Сортируем задания по дате (от новых к старым)
-      tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      // Определяем текущий тип сортировки
+      const currentSortBy = filters.sort.by || "date";
       
-      // Группируем задания по дате
-      const tasksByDate = {};
-      tasks.forEach(task => {
-        // Получаем только дату (без времени)
-        const taskDate = new Date(task.timestamp).toLocaleDateString('ru-RU');
-        if (!tasksByDate[taskDate]) {
-          tasksByDate[taskDate] = [];
-        }
-        tasksByDate[taskDate].push(task);
-      });
-
-      // Создаем элементы и добавляем их в контейнер с разделителями
-      const dates = Object.keys(tasksByDate);
+      // Группируем задачи по соответствующему фильтру
+      const tasksByGroup = groupTasksByFilter(tasks, currentSortBy);
       
-      for (let i = 0; i < dates.length; i++) {
-        const currentDate = dates[i];
-        const tasksForDate = tasksByDate[currentDate];
+      // Получаем ключи групп и сортируем их соответствующим образом
+      let groupKeys = Object.keys(tasksByGroup);
+      
+      // Сортируем ключи в зависимости от типа фильтра
+      if (currentSortBy === "priority") {
+        // Сортировка приоритетов в логическом порядке
+        const priorityOrder = { "urgent": 0, "high": 1, "medium": 2, "low": 3, "unknown": 4 };
+        groupKeys.sort((a, b) => priorityOrder[a.toLowerCase()] - priorityOrder[b.toLowerCase()]);
+      } else if (currentSortBy === "status") {
+        // Сортировка статусов в логическом порядке
+        const statusOrder = { "Pending": 0, "In Progress": 1, "Completed": 2, "unknown": 3 };
+        groupKeys.sort((a, b) => statusOrder[a] - statusOrder[b]);
+      }
+      
+      // Добавляем разделители и задачи в контейнер
+      for (let i = 0; i < groupKeys.length; i++) {
+        const currentGroupKey = groupKeys[i];
+        const tasksInGroup = tasksByGroup[currentGroupKey];
         
-        // Добавляем разделитель с датой (кроме первой группы)
-        if (i > 0) {
-          const dateDivider = document.createElement("div");
-          dateDivider.className = "task-date-divider";
-          
-          const dateLabel = document.createElement("span");
-          dateLabel.className = "task-date-label";
-          dateLabel.textContent = formatDisplayDate(currentDate);
-          
-          dateDivider.appendChild(dateLabel);
-          newTasksContainer.appendChild(dateDivider);
+        // Добавляем разделитель с названием группы
+        const divider = document.createElement("div");
+        divider.className = getDividerClass(currentSortBy);
+        
+        const groupLabel = document.createElement("span");
+        groupLabel.className = "task-group-label";
+        groupLabel.textContent = getGroupDisplayName(currentGroupKey, currentSortBy);
+        
+        divider.appendChild(groupLabel);
+        newTasksContainer.appendChild(divider);
+        
+        // Добавляем задачи этой группы
+        for (const task of tasksInGroup) {
+          const taskElement = await createTaskElement(task);
+          if (taskElement) {
+            newTasksContainer.appendChild(taskElement);
+          }
         }
-        
-        // Добавляем задания для текущей даты
-        const taskElements = await Promise.all(
-          tasksForDate.map((task) => createTaskElement(task))
-        );
-        
-        // Если это первая группа, добавляем разделитель перед группой
-        if (i === 0) {
-          const dateDivider = document.createElement("div");
-          dateDivider.className = "task-date-divider";
-          
-          const dateLabel = document.createElement("span");
-          dateLabel.className = "task-date-label";
-          dateLabel.textContent = formatDisplayDate(currentDate);
-          
-          dateDivider.appendChild(dateLabel);
-          newTasksContainer.appendChild(dateDivider);
-        }
-        
-        taskElements.forEach((element) => {
-          newTasksContainer.appendChild(element);
-        });
       }
     }
 
@@ -217,8 +308,6 @@ async function updateTasksList(tasks) {
         newTasksContainer.style.opacity = "1";
       }, 50);
     }, 300);
-
-    updateStatistics(tasks);
   } catch (error) {
     console.error("Error updating tasks list:", error);
   } finally {
@@ -1333,15 +1422,11 @@ window.deleteComment = async function (taskId, commentId) {
 ////////////////////////////////КЛИЕНТСКИЕ ФУНКЦИИ////////////////////////////
 
 // Функция обновления статистики
-function updateStatistics(tasks) {
-  const total = tasks.length;
-  const completed = tasks.filter((t) => t.status === "Completed").length;
-  const pending = tasks.filter((t) => t.status === "Pending").length;
-  const inProgress = tasks.filter((t) => t.status === "In Progress").length;
-
-  document.getElementById("totalTasks").textContent = total;
-  document.getElementById("completedTasks").textContent = completed;
-  document.getElementById("pendingTasks").textContent = pending + inProgress;
+function updateStatistics(totalTasks, statistics) {
+    document.getElementById('totalTasks').textContent = totalTasks || 0;
+    document.getElementById('pendingTasks').textContent = (statistics && statistics['pending']) || 0;
+    document.getElementById('inProgressTasks').textContent = (statistics && statistics['inProgress']) || 0;
+    document.getElementById('completedTasks').textContent = (statistics && statistics['completed']) || 0;
 }
 
 // Функция для фильтрации задач по дате
@@ -1401,6 +1486,7 @@ async function displayNotCompletedTasks() {
 
   //notCompletedTasksList.innerHTML = "";
   let serverTasks = await getNotCompletedTasksForLastWeek();
+
 
   if (serverTasks.length > 0) {
     serverTasks.forEach(async (task) => {
@@ -1759,6 +1845,12 @@ async function getNotCompletedTasksForLastWeek() {
     let result;
     try {
       result = JSON.parse(rawResponse);
+
+      result.data.forEach(task => {
+        if (task.media && typeof task.media === 'string') {
+          task.media = JSON.parse(task.media);
+        }
+      });
     } catch (jsonError) {
       console.error('Ошибка парсинга JSON:', jsonError);
       throw new Error(`Неверный формат ответа сервера: ${rawResponse.substring(0, 100)}...`);
@@ -2077,9 +2169,7 @@ async function getUserPhotoUrl(username) {
         currentUser.role === "support"
       ) {
         formData.append("email", currentUser.email);
-      } else if (currentUser.role === "maintenance") {
-        formData.append("username", currentUser.username);
-      }
+      } 
     } else {
       // Если запрашиваем фото другого пользователя, используем имя пользователя
       // По умолчанию считаем, что это обычный пользователь, если не удалось определить
@@ -2374,7 +2464,7 @@ async function getTasksWithFilteringSortingPagination(filters, page = currentPag
       }),
       signal
     });
-    
+    console.log("filters: ", filters);
     const result = await response.json();
     
     if (!result.success) {
@@ -2388,6 +2478,8 @@ async function getTasksWithFilteringSortingPagination(filters, page = currentPag
     if (result.pagination && result.pagination.page > 0) {
       currentPage = result.pagination.page;
     }
+    console.log("result.statistics: ", result.statistics);
+    updateStatistics(result.pagination.totalTasks, result.statistics);
 
     return {data: result.data, pagination: result.pagination};
   } catch (error) {
@@ -2442,10 +2534,14 @@ function updateFilterIndicators() {
   
   // Индикатор фильтра даты
   if (filters.byDate.date) {
-    // Дата выбрана
-    const formattedDate = new Date(filters.byDate.date).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric'
+
+    
+    const { DateTime } = luxon;
+    const dallasDate = DateTime.fromISO(filters.byDate.date, { zone: 'America/Chicago' });
+    const formattedDate = dallasDate.toLocaleString({ 
+      year: 'numeric', month: 'long', day: 'numeric' 
     });
+
     dateText.textContent = `Date: ${formattedDate}`;
     dateIndicator.style.display = 'flex';
   } else if (filters.byDate.period.last && filters.byDate.period.last !== "lastWeek") {
@@ -2787,9 +2883,11 @@ document.getElementById('sidebar-sort').addEventListener('change', async functio
   updatePagination(sortedTasks.pagination);
 });
 
-document.getElementById('sort-direction').addEventListener('click', async function() {
+document.querySelector('.sort-direction').addEventListener('click', async function() {
   filters.sort.direction = filters.sort.direction === 'ASC' ? 'DESC' : 'ASC';
+  console.log("filters.sort.direction", filters.sort.direction);
   const sortedTasks = await getTasksWithFilteringSortingPagination(filters);
   await updateTasksList(sortedTasks.data);
   updatePagination(sortedTasks.pagination);
 });
+

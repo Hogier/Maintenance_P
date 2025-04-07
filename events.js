@@ -932,9 +932,7 @@ async function getUserPhotoUrl(username) {
         currentUser.role === "support"
       ) {
         formData.append("email", currentUser.email);
-      } else if (currentUser.role === "maintenance") {
-        formData.append("username", currentUser.username);
-      }
+      } 
     } else {
       // Если запрашиваем фото другого пользователя, используем имя пользователя
       // По умолчанию считаем, что это обычный пользователь, если не удалось определить
