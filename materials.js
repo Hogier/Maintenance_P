@@ -13,6 +13,29 @@ function initMaterialsModule() {
   // Update the UI in the menu to use Supplies instead of Materials
   updateMenuStyles();
 
+  // Устанавливаем обработчики для скрытия/отображения панели статистики
+  setupTaskStatsVisibility();
+
+  // Установка начального состояния элементов фильтра и сортировки
+  setupFilterSortVisibility();
+
+  // Проверяем, какой раздел активен и скрываем/отображаем статистику соответственно
+  const activeMenuItem = document.querySelector(".nav-item.active");
+  if (
+    activeMenuItem &&
+    activeMenuItem.getAttribute("data-page") === "materials"
+  ) {
+    // Если активен раздел Supplies, скрываем статистику
+    hideTaskStatistics();
+    // И скрываем элементы фильтра и сортировки
+    hideFilterSortElements();
+  } else {
+    // Иначе показываем статистику
+    showTaskStatistics();
+    // И показываем элементы фильтра и сортировки
+    showFilterSortElements();
+  }
+
   // Check if we have a materials grid on the page
   const materialsGrid = document.getElementById("materialsGrid");
   if (materialsGrid) {
@@ -37,6 +60,12 @@ function initMaterialsModule() {
     );
 
     if (materialsMenuItem) {
+      // Скрываем панель статистики при клике на пункт меню Supplies
+      hideTaskStatistics();
+
+      // Скрываем элементы фильтра и сортировки при переходе на страницу Supplies
+      hideFilterSortElements();
+
       // If the click was on the mini cart button, open the cart modal without loading materials
       const cartButtonMini = e.target.closest("#cartButtonMini");
 
@@ -47,6 +76,14 @@ function initMaterialsModule() {
         // Otherwise load the materials page
         loadMaterialsContent();
       }
+    }
+
+    // Если кликнули на пункт Tasks, показываем элементы фильтра и сортировки
+    const tasksMenuItem = e.target.closest('.nav-item[data-page="tasks"]');
+
+    if (tasksMenuItem) {
+      // Показываем элементы фильтра и сортировки при переходе на страницу Tasks
+      showFilterSortElements();
     }
   });
 
@@ -241,6 +278,9 @@ function loadMaterialsContent() {
 
   // Initialize toggle for orders list
   initOrdersToggle();
+
+  // Скрываем панель статистики
+  hideTaskStatistics();
 }
 
 // Initialize orders toggle functionality
@@ -807,12 +847,22 @@ function displaySearchResults(materials) {
                     <div class="search-result-category">${getCategoryName(
                       material.category
                     )}</div>
+                    <div class="search-result-unit">Unit: ${material.unit}</div>
                 </div>
-                <button class="search-result-add" data-id="${
-                  material.id
-                }" data-name="${material.name}" data-unit="${material.unit}">
-                    <i class="fas fa-plus"></i>
-                </button>
+                <div class="search-result-actions">
+                    <div class="search-quantity-control">
+                        <button class="search-quantity-btn search-decrease" aria-label="Decrease quantity">-</button>
+                        <input type="number" class="search-quantity-input" value="1" min="1" max="99">
+                        <button class="search-quantity-btn search-increase" aria-label="Increase quantity">+</button>
+                    </div>
+                    <button class="search-result-add" data-id="${
+                      material.id
+                    }" data-name="${material.name}" data-unit="${
+      material.unit
+    }">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
         `;
   });
@@ -822,27 +872,67 @@ function displaySearchResults(materials) {
 
   // Add event handlers for search results
   searchResults.querySelectorAll(".search-result-item").forEach((item) => {
-    item.addEventListener("click", function () {
-      // Scroll to the material card in the grid
-      const materialId = this.dataset.id;
-      const materialCard = document.querySelector(
-        `.material-card .add-to-cart-btn[data-id="${materialId}"]`
-      );
+    const materialId = item.dataset.id;
 
-      if (materialCard) {
-        const card = materialCard.closest(".material-card");
-        if (card) {
-          card.scrollIntoView({ behavior: "smooth", block: "center" });
-          card.classList.add("highlight");
-          setTimeout(() => {
-            card.classList.remove("highlight");
-          }, 2000);
+    // Обработка клика по элементу (исключаем клики по элементам управления количеством и кнопке добавления)
+    item.addEventListener("click", function (e) {
+      // Проверяем, что клик не на элементах управления или на кнопке добавления
+      if (
+        !e.target.closest(".search-quantity-control") &&
+        !e.target.closest(".search-result-add")
+      ) {
+        // Scroll to the material card in the grid
+        const materialCard = document.querySelector(
+          `.material-item .add-to-cart-btn[data-id="${materialId}"]`
+        );
+
+        if (materialCard) {
+          const card = materialCard.closest(".material-item");
+          if (card) {
+            card.scrollIntoView({ behavior: "smooth", block: "center" });
+            card.classList.add("highlight");
+            setTimeout(() => {
+              card.classList.remove("highlight");
+            }, 2000);
+          }
         }
-      }
 
-      // Clear search results
-      searchResults.innerHTML = "";
-      searchResults.style.display = "none";
+        // Clear search results
+        searchResults.innerHTML = "";
+        searchResults.style.display = "none";
+      }
+    });
+  });
+
+  // Обработчики кнопок количества
+  searchResults.querySelectorAll(".search-quantity-btn").forEach((btn) => {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation(); // Предотвращаем всплытие события клика
+
+      const container = this.closest(".search-quantity-control");
+      const input = container.querySelector(".search-quantity-input");
+      const currentValue = parseInt(input.value) || 1;
+
+      if (this.classList.contains("search-decrease") && currentValue > 1) {
+        input.value = currentValue - 1;
+      } else if (this.classList.contains("search-increase")) {
+        input.value = currentValue + 1;
+      }
+    });
+  });
+
+  // Предотвращаем закрытие поисковых результатов при взаимодействии с полем ввода количества
+  searchResults.querySelectorAll(".search-quantity-input").forEach((input) => {
+    input.addEventListener("click", function (e) {
+      e.stopPropagation();
+    });
+
+    input.addEventListener("input", function (e) {
+      // Проверяем и корректируем значение
+      let value = parseInt(this.value) || 1;
+      if (value < 1) value = 1;
+      if (value > 99) value = 99;
+      this.value = value;
     });
   });
 
@@ -854,7 +944,12 @@ function displaySearchResults(materials) {
       const id = parseInt(this.dataset.id);
       const name = this.dataset.name;
       const unit = this.dataset.unit;
-      const quantity = 1; // Default quantity when adding from search
+
+      // Получаем введенное количество из input
+      const quantityInput = this.closest(".search-result-item").querySelector(
+        ".search-quantity-input"
+      );
+      const quantity = parseInt(quantityInput.value) || 1;
 
       addToCart(id, name, unit, quantity);
       showNotification(
@@ -1602,6 +1697,9 @@ function displayUserOrders(orders) {
       approved: "status-approved",
       rejected: "status-rejected",
       delivered: "status-delivered",
+      processing: "status-processing", // Добавляем для синхронизации с Inspections
+      completed: "status-completed", // Добавляем для синхронизации с Inspections
+      cancelled: "status-cancelled", // Добавляем для синхронизации с Inspections
     };
 
     return classes[status] || "";
@@ -1614,6 +1712,9 @@ function displayUserOrders(orders) {
       approved: "Approved",
       rejected: "Rejected",
       delivered: "Delivered",
+      processing: "Processing", // Добавляем для синхронизации с Inspections
+      completed: "Completed", // Добавляем для синхронизации с Inspections
+      cancelled: "Cancelled", // Добавляем для синхронизации с Inspections
     };
 
     return labels[status] || status;
@@ -2354,6 +2455,323 @@ function updateMenuStyles() {
   if (menuIcon && menuIcon.classList.contains("fa-box")) {
     menuIcon.classList.remove("fa-box");
     menuIcon.classList.add("fa-boxes");
+  }
+
+  // Убедимся, что пункт меню Maintenance Tasks есть на всех страницах
+  ensureMaintenanceTasksMenuItem();
+}
+
+// Функция для добавления пункта меню Maintenance Tasks, если он отсутствует
+function ensureMaintenanceTasksMenuItem() {
+  const navMenu = document.querySelector(".nav-menu");
+  if (!navMenu) return;
+
+  // Проверяем, существует ли уже пункт меню Maintenance Tasks
+  const tasksMenuItem = navMenu.querySelector('.nav-item[data-page="tasks"]');
+
+  // Если пункт меню не существует, создаем его
+  if (!tasksMenuItem) {
+    const newTasksMenuItem = document.createElement("li");
+    newTasksMenuItem.className = "nav-item";
+    newTasksMenuItem.setAttribute("data-page", "tasks");
+    newTasksMenuItem.innerHTML = `
+      <i class="fas fa-tasks"></i>
+      <span>Maintenance Tasks</span>
+    `;
+
+    // Добавляем обработчик клика
+    newTasksMenuItem.addEventListener("click", function () {
+      showTaskStatistics();
+      window.location.href = "tasks.html";
+    });
+
+    // Вставляем в начало списка навигации
+    const firstMenuItem = navMenu.querySelector("li:first-child");
+    navMenu.insertBefore(newTasksMenuItem, firstMenuItem);
+  }
+}
+
+// Функция для скрытия панели статистики при загрузке раздела Supplies
+function hideTaskStatistics() {
+  const taskStats = document.querySelector(".task-stats");
+  if (taskStats) {
+    // Скрываем панель статистики с анимацией
+    taskStats.classList.add("hidden");
+
+    // После завершения анимации скрываем элемент полностью
+    setTimeout(() => {
+      taskStats.style.display = "none";
+    }, 300);
+  }
+}
+
+// Функция для отображения панели статистики при переходе на другие разделы
+function showTaskStatistics() {
+  const taskStats = document.querySelector(".task-stats");
+  if (taskStats) {
+    // Сначала отображаем элемент
+    taskStats.style.display = "";
+
+    // Даем браузеру время обработать изменение display
+    setTimeout(() => {
+      // Затем удаляем класс hidden для анимации появления
+      taskStats.classList.remove("hidden");
+    }, 10);
+  }
+}
+
+// Настраиваем обработчики для скрытия/отображения панели статистики при переключении между разделами
+function setupTaskStatsVisibility() {
+  // Проверяем, не установлен ли уже обработчик
+  if (window.taskStatsVisibilitySetup) return;
+
+  // Находим пункт меню Supplies
+  const suppliesMenuItem = document.querySelector(
+    '.nav-item[data-page="materials"]'
+  );
+
+  // Находим пункт меню Maintenance Tasks
+  const tasksMenuItem = document.querySelector('.nav-item[data-page="tasks"]');
+
+  // Находим все остальные пункты меню
+  const otherMenuItems = document.querySelectorAll(
+    '.nav-item:not([data-page="materials"])'
+  );
+
+  // Добавляем обработчик клика на пункт меню Supplies для скрытия панели
+  if (suppliesMenuItem) {
+    suppliesMenuItem.addEventListener("click", function () {
+      hideTaskStatistics();
+    });
+  }
+
+  // Добавляем обработчик клика на пункт меню Maintenance Tasks для отображения панели и перехода на страницу задач
+  if (tasksMenuItem) {
+    tasksMenuItem.addEventListener("click", function () {
+      showTaskStatistics();
+      window.location.href = "tasks.html";
+    });
+  }
+
+  // Добавляем обработчики для остальных пунктов меню для отображения панели
+  otherMenuItems.forEach((item) => {
+    item.addEventListener("click", function () {
+      showTaskStatistics();
+    });
+  });
+
+  // Отмечаем, что обработчики уже установлены
+  window.taskStatsVisibilitySetup = true;
+}
+
+// Функция для скрытия элементов фильтра и сортировки
+function hideFilterSortElements() {
+  // Ищем контейнер подменю
+  const tasksSubmenuSection = document.querySelector(".tasks-submenu-section");
+
+  // Сохраняем текущее состояние в localStorage
+  localStorage.setItem("activeSection", "materials");
+
+  if (tasksSubmenuSection) {
+    // Измеряем текущую высоту
+    const sectionHeight = tasksSubmenuSection.scrollHeight;
+
+    // Устанавливаем фиксированную высоту для анимации
+    tasksSubmenuSection.style.maxHeight = sectionHeight + "px";
+    tasksSubmenuSection.style.overflow = "hidden";
+    tasksSubmenuSection.style.transition =
+      "opacity 0.5s ease, max-height 0.5s ease";
+
+    // Начинаем анимацию скрытия
+    setTimeout(() => {
+      tasksSubmenuSection.style.opacity = "0.7";
+      tasksSubmenuSection.style.maxHeight = sectionHeight * 0.7 + "px";
+
+      setTimeout(() => {
+        tasksSubmenuSection.style.opacity = "0.3";
+        tasksSubmenuSection.style.maxHeight = sectionHeight * 0.3 + "px";
+
+        setTimeout(() => {
+          tasksSubmenuSection.style.opacity = "0";
+          tasksSubmenuSection.style.maxHeight = "0";
+
+          // Окончательно скрываем после завершения анимации
+          setTimeout(() => {
+            tasksSubmenuSection.style.display = "none";
+            console.log("Tasks submenu section fully hidden");
+          }, 200);
+        }, 150);
+      }, 150);
+    }, 10);
+  } else {
+    // Используем старый способ, если новый контейнер не найден
+    const filterNavItem = document.querySelector('[data-page="filter"]');
+    const sortNavItem = document.querySelector('[data-page="sort"]');
+    const filterSubmenu = filterNavItem?.nextElementSibling;
+    const sortSubmenu = sortNavItem?.nextElementSibling;
+
+    // Сначала скрываем подменю с анимацией
+    if (filterSubmenu) {
+      const filterSubmenuHeight = filterSubmenu.scrollHeight;
+      filterSubmenu.style.height = filterSubmenuHeight + "px";
+      filterSubmenu.style.overflow = "hidden";
+      filterSubmenu.style.transition = "opacity 0.4s ease, height 0.4s ease";
+
+      setTimeout(() => {
+        filterSubmenu.style.height = filterSubmenu.scrollHeight + "px";
+        filterSubmenu.style.opacity = "1";
+
+        setTimeout(() => {
+          filterSubmenu.style.height = "";
+          filterSubmenu.style.overflow = "";
+        }, 400);
+      }, 50);
+    }
+
+    if (sortSubmenu) {
+      sortSubmenu.style.display = "";
+      sortSubmenu.style.height = "0";
+      sortSubmenu.style.opacity = "0";
+      sortSubmenu.style.transition = "opacity 0.4s ease, height 0.4s ease";
+
+      setTimeout(() => {
+        sortSubmenu.style.height = sortSubmenu.scrollHeight + "px";
+        sortSubmenu.style.opacity = "1";
+
+        setTimeout(() => {
+          sortSubmenu.style.height = "";
+          sortSubmenu.style.overflow = "";
+        }, 400);
+      }, 200);
+    }
+  }
+}
+
+// Добавляем проверку и установку начального состояния элементов фильтра и сортировки
+function setupFilterSortVisibility() {
+  // Проверяем локальное хранилище на активный раздел
+  const activeSection = localStorage.getItem("activeSection") || "tasks";
+  console.log("Initial active section for filter/sort:", activeSection);
+
+  if (activeSection === "materials") {
+    hideFilterSortElements();
+  } else {
+    showFilterSortElements();
+  }
+}
+
+// Функция для отображения элементов фильтра и сортировки
+function showFilterSortElements() {
+  // Ищем контейнер подменю
+  const tasksSubmenuSection = document.querySelector(".tasks-submenu-section");
+
+  // Сохраняем текущее состояние в localStorage
+  localStorage.setItem("activeSection", "tasks");
+
+  if (tasksSubmenuSection) {
+    // Сначала показываем элемент с нулевой прозрачностью
+    tasksSubmenuSection.style.opacity = "0";
+    tasksSubmenuSection.style.transition =
+      "opacity 0.5s ease, max-height 0.5s ease";
+    tasksSubmenuSection.style.display = "";
+    tasksSubmenuSection.style.maxHeight = "0";
+    tasksSubmenuSection.style.overflow = "hidden";
+
+    // Запускаем анимацию появления с небольшой задержкой
+    setTimeout(() => {
+      const sectionHeight = tasksSubmenuSection.scrollHeight;
+      tasksSubmenuSection.style.maxHeight = sectionHeight + "px";
+      tasksSubmenuSection.style.opacity = "0.3";
+
+      // Вторая фаза анимации
+      setTimeout(() => {
+        tasksSubmenuSection.style.opacity = "0.7";
+
+        // Финальная фаза анимации
+        setTimeout(() => {
+          tasksSubmenuSection.style.opacity = "1";
+          tasksSubmenuSection.style.maxHeight = "none";
+          tasksSubmenuSection.style.overflow = "";
+          console.log("Tasks submenu section fully shown");
+        }, 150);
+      }, 150);
+    }, 10);
+  } else {
+    // Используем старый способ, если новый контейнер не найден
+    const filterNavItem = document.querySelector('[data-page="filter"]');
+    const sortNavItem = document.querySelector('[data-page="sort"]');
+    const filterSubmenu = filterNavItem?.nextElementSibling;
+    const sortSubmenu = sortNavItem?.nextElementSibling;
+
+    if (filterNavItem) {
+      filterNavItem.style.display = "";
+      filterNavItem.style.height = "0";
+      filterNavItem.style.opacity = "0";
+      filterNavItem.style.transition = "opacity 0.5s ease, height 0.5s ease";
+
+      setTimeout(() => {
+        filterNavItem.style.height = filterNavItem.scrollHeight + "px";
+        filterNavItem.style.opacity = "0.5";
+
+        setTimeout(() => {
+          filterNavItem.style.height = "";
+          filterNavItem.style.opacity = "1";
+          filterNavItem.style.overflow = "";
+        }, 250);
+      }, 10);
+    }
+
+    if (sortNavItem) {
+      sortNavItem.style.display = "";
+      sortNavItem.style.height = "0";
+      sortNavItem.style.opacity = "0";
+      sortNavItem.style.transition = "opacity 0.5s ease, height 0.5s ease";
+
+      setTimeout(() => {
+        sortNavItem.style.height = sortNavItem.scrollHeight + "px";
+        sortNavItem.style.opacity = "0.5";
+
+        setTimeout(() => {
+          sortNavItem.style.height = "";
+          sortNavItem.style.opacity = "1";
+          sortNavItem.style.overflow = "";
+        }, 250);
+      }, 150); // Небольшая задержка относительно filter для эффекта каскада
+    }
+
+    if (filterSubmenu) {
+      filterSubmenu.style.display = "";
+      filterSubmenu.style.height = "0";
+      filterSubmenu.style.opacity = "0";
+      filterSubmenu.style.transition = "opacity 0.4s ease, height 0.4s ease";
+
+      setTimeout(() => {
+        filterSubmenu.style.height = filterSubmenu.scrollHeight + "px";
+        filterSubmenu.style.opacity = "1";
+
+        setTimeout(() => {
+          filterSubmenu.style.height = "";
+          filterSubmenu.style.overflow = "";
+        }, 400);
+      }, 50);
+    }
+
+    if (sortSubmenu) {
+      sortSubmenu.style.display = "";
+      sortSubmenu.style.height = "0";
+      sortSubmenu.style.opacity = "0";
+      sortSubmenu.style.transition = "opacity 0.4s ease, height 0.4s ease";
+
+      setTimeout(() => {
+        sortSubmenu.style.height = sortSubmenu.scrollHeight + "px";
+        sortSubmenu.style.opacity = "1";
+
+        setTimeout(() => {
+          sortSubmenu.style.height = "";
+          sortSubmenu.style.overflow = "";
+        }, 400);
+      }, 200);
+    }
   }
 }
 

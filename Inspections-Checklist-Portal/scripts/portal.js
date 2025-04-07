@@ -11,9 +11,20 @@ class PortalManager {
   }
 
   init() {
-    this.bindEvents();
-    this.loadDefaultPage();
     this.initNewOrdersCounter();
+    this.bindEvents();
+
+    // Проверяем, была ли сохранена текущая страница в sessionStorage
+    const savedPage = sessionStorage.getItem("currentPage");
+    if (savedPage) {
+      this.currentPage = savedPage;
+      this.changePage(savedPage);
+    } else {
+      this.loadDefaultPage();
+    }
+
+    // Инициализация видимости элементов фильтрации и сортировки
+    this.updateFilterSortVisibility(this.currentPage);
   }
 
   // Метод для инициализации счетчика новых заказов
@@ -137,6 +148,8 @@ class PortalManager {
     document.querySelectorAll(".nav-item").forEach((item) => {
       item.addEventListener("click", () => {
         const page = item.getAttribute("data-page");
+        console.log("Clicked on nav-item with data-page:", page);
+
         if (page === "inspections") {
           // First switch to dashboard
           this.changePage("dashboard");
@@ -194,6 +207,8 @@ class PortalManager {
   }
 
   async changePage(page, tab = null) {
+    console.log("changePage called with page:", page);
+
     // Update active menu item
     document.querySelectorAll(".nav-item").forEach((item) => {
       item.classList.remove("active");
@@ -222,7 +237,14 @@ class PortalManager {
       }
     }
 
+    // Управление видимостью элементов Filter и Sort
+    this.updateFilterSortVisibility(page);
+
     this.currentPage = page;
+    console.log("Current page updated to:", this.currentPage);
+
+    // Сохраняем текущую страницу в sessionStorage для восстановления при перезагрузке
+    sessionStorage.setItem("currentPage", page);
 
     // Close submenus if they're open
     if (page !== "inspections" && page !== "construction") {
@@ -275,6 +297,238 @@ class PortalManager {
 
   updateActiveMenuItem(page) {
     // Implementation of updateActiveMenuItem method
+  }
+
+  // Добавим выделенный метод для управления видимостью элементов фильтра и сортировки
+  updateFilterSortVisibility(page) {
+    console.log("updateFilterSortVisibility called with page:", page);
+
+    // Проверяем наличие нового контейнера tasks-submenu-section
+    const tasksSubmenuSection = document.querySelector(
+      ".tasks-submenu-section"
+    );
+
+    if (tasksSubmenuSection) {
+      // Используем новый контейнер, если он существует
+      if (page === "tasks") {
+        console.log("Showing tasks-submenu-section for tasks page");
+
+        // Подготавливаем элемент к анимации
+        tasksSubmenuSection.style.opacity = "0";
+        tasksSubmenuSection.style.maxHeight = "0";
+        tasksSubmenuSection.style.overflow = "hidden";
+        tasksSubmenuSection.style.display = "";
+
+        // Даем браузеру время для отрисовки текущего состояния
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            // Плавная анимация появления
+            tasksSubmenuSection.style.transition =
+              "opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+            const sectionHeight = tasksSubmenuSection.scrollHeight;
+            tasksSubmenuSection.style.maxHeight = sectionHeight + "px";
+            tasksSubmenuSection.style.opacity = "1";
+
+            // После завершения анимации устанавливаем нормальное состояние
+            setTimeout(() => {
+              tasksSubmenuSection.style.maxHeight = "none";
+              tasksSubmenuSection.style.overflow = "";
+            }, 500);
+          });
+        });
+      } else {
+        console.log("Hiding tasks-submenu-section for page:", page);
+
+        // Измеряем текущую высоту перед началом анимации
+        const sectionHeight = tasksSubmenuSection.scrollHeight;
+        tasksSubmenuSection.style.maxHeight = sectionHeight + "px";
+        tasksSubmenuSection.style.overflow = "hidden";
+
+        // Даем браузеру время для отрисовки текущего состояния
+        requestAnimationFrame(() => {
+          // Устанавливаем переход и запускаем анимацию исчезновения
+          tasksSubmenuSection.style.transition =
+            "opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+          tasksSubmenuSection.style.opacity = "0";
+          tasksSubmenuSection.style.maxHeight = "0";
+
+          // После завершения анимации скрываем элемент полностью
+          setTimeout(() => {
+            tasksSubmenuSection.style.display = "none";
+          }, 500);
+        });
+      }
+    } else {
+      // Используем старый способ, если новый контейнер не найден
+      const filterNavItem = document.querySelector('[data-page="filter"]');
+      const sortNavItem = document.querySelector('[data-page="sort"]');
+      const filterSubmenu = filterNavItem?.nextElementSibling;
+      const sortSubmenu = sortNavItem?.nextElementSibling;
+
+      console.log("Elements found:", {
+        filterNavItem: !!filterNavItem,
+        sortNavItem: !!sortNavItem,
+        filterSubmenu: !!filterSubmenu,
+        sortSubmenu: !!sortSubmenu,
+      });
+
+      if (page === "tasks") {
+        console.log("Showing filter and sort elements for tasks page");
+        // Показываем элементы для страницы Maintenance Tasks с анимацией
+        if (filterNavItem) {
+          filterNavItem.style.display = "";
+          filterNavItem.style.height = "0";
+          filterNavItem.style.opacity = "0";
+
+          requestAnimationFrame(() => {
+            filterNavItem.style.transition =
+              "opacity 0.5s ease, height 0.5s ease";
+            filterNavItem.style.height = filterNavItem.scrollHeight + "px";
+            filterNavItem.style.opacity = "1";
+
+            setTimeout(() => {
+              filterNavItem.style.height = "";
+              filterNavItem.style.overflow = "";
+            }, 500);
+          });
+        }
+
+        if (sortNavItem) {
+          sortNavItem.style.display = "";
+          sortNavItem.style.height = "0";
+          sortNavItem.style.opacity = "0";
+
+          // Добавляем небольшую задержку для каскадного эффекта
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              sortNavItem.style.transition =
+                "opacity 0.5s ease, height 0.5s ease";
+              sortNavItem.style.height = sortNavItem.scrollHeight + "px";
+              sortNavItem.style.opacity = "1";
+
+              setTimeout(() => {
+                sortNavItem.style.height = "";
+                sortNavItem.style.overflow = "";
+              }, 500);
+            });
+          }, 150);
+        }
+
+        if (filterSubmenu) {
+          filterSubmenu.style.display = "";
+          filterSubmenu.style.height = "0";
+          filterSubmenu.style.opacity = "0";
+
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              filterSubmenu.style.transition =
+                "opacity 0.4s ease, height 0.4s ease";
+              filterSubmenu.style.height = filterSubmenu.scrollHeight + "px";
+              filterSubmenu.style.opacity = "1";
+
+              setTimeout(() => {
+                filterSubmenu.style.height = "";
+                filterSubmenu.style.overflow = "";
+              }, 400);
+            });
+          }, 50);
+        }
+
+        if (sortSubmenu) {
+          sortSubmenu.style.display = "";
+          sortSubmenu.style.height = "0";
+          sortSubmenu.style.opacity = "0";
+
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              sortSubmenu.style.transition =
+                "opacity 0.4s ease, height 0.4s ease";
+              sortSubmenu.style.height = sortSubmenu.scrollHeight + "px";
+              sortSubmenu.style.opacity = "1";
+
+              setTimeout(() => {
+                sortSubmenu.style.height = "";
+                sortSubmenu.style.overflow = "";
+              }, 400);
+            });
+          }, 200);
+        }
+      } else {
+        console.log("Hiding filter and sort elements for page:", page);
+        // Скрываем элементы для всех остальных страниц с анимацией
+        if (filterNavItem) {
+          const filterHeight = filterNavItem.scrollHeight;
+          filterNavItem.style.height = filterHeight + "px";
+          filterNavItem.style.overflow = "hidden";
+
+          requestAnimationFrame(() => {
+            filterNavItem.style.transition =
+              "opacity 0.5s ease, height 0.5s ease";
+            filterNavItem.style.opacity = "0";
+            filterNavItem.style.height = "0";
+
+            setTimeout(() => {
+              filterNavItem.style.display = "none";
+              console.log("Filter element hidden with display:none");
+            }, 500);
+          });
+        }
+
+        if (sortNavItem) {
+          const sortHeight = sortNavItem.scrollHeight;
+          sortNavItem.style.height = sortHeight + "px";
+          sortNavItem.style.overflow = "hidden";
+
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              sortNavItem.style.transition =
+                "opacity 0.5s ease, height 0.5s ease";
+              sortNavItem.style.opacity = "0";
+              sortNavItem.style.height = "0";
+
+              setTimeout(() => {
+                sortNavItem.style.display = "none";
+                console.log("Sort element hidden with display:none");
+              }, 500);
+            });
+          }, 100);
+        }
+
+        if (filterSubmenu) {
+          const filterSubmenuHeight = filterSubmenu.scrollHeight;
+          filterSubmenu.style.height = filterSubmenuHeight + "px";
+          filterSubmenu.style.overflow = "hidden";
+
+          requestAnimationFrame(() => {
+            filterSubmenu.style.transition =
+              "opacity 0.4s ease, height 0.4s ease";
+            filterSubmenu.style.opacity = "0";
+            filterSubmenu.style.height = "0";
+
+            setTimeout(() => {
+              filterSubmenu.style.display = "none";
+            }, 400);
+          });
+        }
+
+        if (sortSubmenu) {
+          const sortSubmenuHeight = sortSubmenu.scrollHeight;
+          sortSubmenu.style.height = sortSubmenuHeight + "px";
+          sortSubmenu.style.overflow = "hidden";
+
+          requestAnimationFrame(() => {
+            sortSubmenu.style.transition =
+              "opacity 0.4s ease, height 0.4s ease";
+            sortSubmenu.style.opacity = "0";
+            sortSubmenu.style.height = "0";
+
+            setTimeout(() => {
+              sortSubmenu.style.display = "none";
+            }, 400);
+          });
+        }
+      }
+    }
   }
 }
 

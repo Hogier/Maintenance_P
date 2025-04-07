@@ -249,18 +249,63 @@ class SuppliesAPI {
     // Update supply order status
     public function updateSupplyOrderStatus($orderId, $status) {
         try {
+            // Start transaction
+            $this->conn->begin_transaction();
+            
+            // Update status in supply_orders table
             $stmt = $this->conn->prepare("UPDATE supply_orders SET status = ? WHERE id = ?");
             $stmt->bind_param('si', $status, $orderId);
             $stmt->execute();
             
             if ($stmt->affected_rows === 0) {
+                // Roll back transaction
+                $this->conn->rollback();
                 return ['success' => false, 'message' => 'Supply order not found or status not changed'];
             }
             
+            // Get the original_order_id from the supply_orders table
+            $orderStmt = $this->conn->prepare("SELECT original_order_id FROM supply_orders WHERE id = ?");
+            $orderStmt->bind_param('i', $orderId);
+            $orderStmt->execute();
+            $result = $orderStmt->get_result();
+            $orderData = $result->fetch_assoc();
+            
+            if ($orderData && isset($orderData['original_order_id'])) {
+                $originalOrderId = $orderData['original_order_id'];
+                
+                // Map status from supplies to materials status
+                $materialStatus = $this->mapStatusToMaterialsStatus($status);
+                
+                // Update status in the original material_orders table
+                $updateOriginalStmt = $this->conn->prepare("UPDATE material_orders SET status = ? WHERE id = ?");
+                $updateOriginalStmt->bind_param('si', $materialStatus, $originalOrderId);
+                $updateOriginalStmt->execute();
+                
+                error_log("Updated original order #$originalOrderId status to $materialStatus");
+            }
+            
+            // Commit transaction
+            $this->conn->commit();
+            
             return ['success' => true, 'message' => 'Supply order status updated successfully'];
         } catch (Exception $e) {
+            // Roll back transaction on error
+            $this->conn->rollback();
+            error_log("Error updating supply order status: " . $e->getMessage());
             return ['success' => false, 'message' => 'Error updating supply order status: ' . $e->getMessage()];
         }
+    }
+    
+    // Map status from supplies to materials module
+    private function mapStatusToMaterialsStatus($suppliesStatus) {
+        $statusMap = [
+            'pending' => 'pending',
+            'processing' => 'approved', // Processing in supplies = approved in materials
+            'completed' => 'delivered',  // Completed in supplies = delivered in materials
+            'cancelled' => 'rejected'    // Cancelled in supplies = rejected in materials
+        ];
+        
+        return isset($statusMap[$suppliesStatus]) ? $statusMap[$suppliesStatus] : 'pending';
     }
     
     // Get receipts for a specific order

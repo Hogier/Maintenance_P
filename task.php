@@ -67,7 +67,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = 'root';  // Пустой пароль для XAMPP
+$password = '';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -548,6 +548,28 @@ if ($action === 'addTask') {
         }
         
         $tasks = $result->fetch_all(MYSQLI_ASSOC);
+        
+        // Преобразование JSON-строк в массивы для медиафайлов
+        foreach ($tasks as &$task) {
+            if (isset($task['media'])) {
+                $task['media'] = json_decode($task['media'], true);
+            }
+            
+            if (isset($task['comments'])) {
+                // Получаем комментарии из task_comments вместо декодирования JSON
+                $taskId = $task['request_id'];
+                $commentStmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
+                if ($commentStmt) {
+                    $commentStmt->bind_param("s", $taskId);
+                    $commentStmt->execute();
+                    $commentResult = $commentStmt->get_result();
+                    $task['comments'] = $commentResult->fetch_all(MYSQLI_ASSOC);
+                    $commentStmt->close();
+                } else {
+                    $task['comments'] = [];
+                }
+            }
+        }
 
         echo json_encode(['success' => true, 'data' => $tasks]);
     } catch (Exception $e) {
