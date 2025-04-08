@@ -13,11 +13,14 @@ function initMaterialsModule() {
   // Update the UI in the menu to use Supplies instead of Materials
   updateMenuStyles();
 
-  // Устанавливаем обработчики для скрытия/отображения панели статистики
-  setupTaskStatsVisibility();
+  // Если функции доступны из tasks.js, используем их, иначе используем версии из этого файла
+  if (typeof setupTaskStatsVisibility === "function") {
+    // Устанавливаем обработчики для скрытия/отображения панели статистики
+    setupTaskStatsVisibility();
 
-  // Установка начального состояния элементов фильтра и сортировки
-  setupFilterSortVisibility();
+    // Установка начального состояния элементов фильтра и сортировки
+    setupFilterSortVisibility();
+  }
 
   // Проверяем, какой раздел активен и скрываем/отображаем статистику соответственно
   const activeMenuItem = document.querySelector(".nav-item.active");
@@ -26,14 +29,18 @@ function initMaterialsModule() {
     activeMenuItem.getAttribute("data-page") === "materials"
   ) {
     // Если активен раздел Supplies, скрываем статистику
-    hideTaskStatistics();
-    // И скрываем элементы фильтра и сортировки
-    hideFilterSortElements();
+    if (typeof hideTaskStatistics === "function") {
+      hideTaskStatistics();
+      // И скрываем элементы фильтра и сортировки
+      hideFilterSortElements();
+    }
   } else {
     // Иначе показываем статистику
-    showTaskStatistics();
-    // И показываем элементы фильтра и сортировки
-    showFilterSortElements();
+    if (typeof showTaskStatistics === "function") {
+      showTaskStatistics();
+      // И показываем элементы фильтра и сортировки
+      showFilterSortElements();
+    }
   }
 
   // Check if we have a materials grid on the page
@@ -61,10 +68,12 @@ function initMaterialsModule() {
 
     if (materialsMenuItem) {
       // Скрываем панель статистики при клике на пункт меню Supplies
-      hideTaskStatistics();
+      if (typeof hideTaskStatistics === "function") {
+        hideTaskStatistics();
 
-      // Скрываем элементы фильтра и сортировки при переходе на страницу Supplies
-      hideFilterSortElements();
+        // Скрываем элементы фильтра и сортировки при переходе на страницу Supplies
+        hideFilterSortElements();
+      }
 
       // If the click was on the mini cart button, open the cart modal without loading materials
       const cartButtonMini = e.target.closest("#cartButtonMini");
@@ -83,7 +92,9 @@ function initMaterialsModule() {
 
     if (tasksMenuItem) {
       // Показываем элементы фильтра и сортировки при переходе на страницу Tasks
-      showFilterSortElements();
+      if (typeof showFilterSortElements === "function") {
+        showFilterSortElements();
+      }
     }
   });
 
@@ -2440,12 +2451,12 @@ function deleteMaterial(materialId, materialName) {
 
 // Update menu styles to use correct icon and name
 function updateMenuStyles() {
-  // Обновляем текст меню с Materials на Supplies
-  const menuItem = document.querySelector(
+  // Обновляем текст и иконку
+  const menuText = document.querySelector(
     '.nav-item[data-page="materials"] span'
   );
-  if (menuItem && menuItem.textContent === "Materials") {
-    menuItem.textContent = "Supplies";
+  if (menuText && menuText.textContent === "Materials") {
+    menuText.textContent = "Supplies";
   }
 
   // Обновляем иконку
@@ -2457,8 +2468,10 @@ function updateMenuStyles() {
     menuIcon.classList.add("fa-boxes");
   }
 
-  // Убедимся, что пункт меню Maintenance Tasks есть на всех страницах
-  ensureMaintenanceTasksMenuItem();
+  // Используем функцию из tasks.js, если она доступна
+  if (typeof ensureMaintenanceTasksMenuItem === "function") {
+    ensureMaintenanceTasksMenuItem();
+  }
 }
 
 // Функция для добавления пункта меню Maintenance Tasks, если он отсутствует

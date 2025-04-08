@@ -938,32 +938,32 @@ export default class SuppliesManager {
       }
 
       itemsTableHTML = `
-        <table class="items-table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Quantity</th>
-              <th>Unit</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${
-              itemsArray.length > 0
-                ? itemsArray
-                    .map(
-                      (item) => `
-                <tr>
-                  <td>${item.name}</td>
-                  <td>${item.quantity}</td>
-                  <td>${item.unit}</td>
-                </tr>
-              `
-                    )
-                    .join("")
-                : '<tr><td colspan="3">No items</td></tr>'
-            }
-          </tbody>
-        </table>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                itemsArray.length > 0
+                  ? itemsArray
+                      .map(
+                        (item) => `
+                  <tr>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.unit}</td>
+                  </tr>
+                `
+                      )
+                      .join("")
+                  : '<tr><td colspan="3">No items</td></tr>'
+              }
+            </tbody>
+          </table>
       `;
     }
 

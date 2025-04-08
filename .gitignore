@@ -1,0 +1,43 @@
+# Media directories
+uploads/
+temp_files/
+images/
+sound/
+
+# Common media file extensions
+*.mp3
+*.mp4
+*.avi
+*.mov
+*.wav
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+
+# Log files
+*.log
+debug.log
+error.log
+php_error.log
+verify_debug.log
+
+# System files
+.DS_Store
+.vscode/
+
+# Temporary files
+*.bak
+*.backup
+*.tmp
+*.temp 

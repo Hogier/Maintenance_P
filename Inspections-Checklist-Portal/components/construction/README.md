@@ -43,7 +43,7 @@ components/construction/
    $host = 'localhost';
    $dbname = 'maintenancedb';
    $user = 'root';
-   $password = 'root';
+   $password = '';
    ```
 
 2. Создайте требуемые таблицы, выполнив скрипт:

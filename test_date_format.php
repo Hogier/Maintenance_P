@@ -11,7 +11,7 @@ echo "<h1>MySQL Timestamp Format Testing</h1>";
 // Database connection
 $host = 'localhost';
 $user = 'root';
-$password = 'root';
+$password = '';
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);

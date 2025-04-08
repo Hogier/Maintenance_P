@@ -83,7 +83,6 @@ h1::after {
   border-radius: 3px;
 }
 
-
 .date-filter {
   display: flex;
   gap: 10px;
@@ -204,6 +203,7 @@ h1::after {
   white-space: pre-wrap;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  padding-bottom: 25px;
 }
 
 .task-details strong,
@@ -246,6 +246,10 @@ h1::after {
   border-radius: 12px;
   max-width: 50%;
   box-shadow: inset 0px -2px 4px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-location:before {
@@ -262,6 +266,7 @@ h1::after {
 .task-location-icon {
   margin: 0 6px 0 4px;
   font-size: 14px;
+  flex-shrink: 0;
 }
 
 /*
@@ -508,6 +513,90 @@ h1::after {
 
   .container {
     padding-bottom: 50px;
+  }
+
+  .task-location {
+    max-width: 80%;
+    font-size: 11px;
+    padding: 4px 6px;
+    bottom: -16px;
+    right: 10px;
+  }
+
+  .task-location-text {
+    max-width: calc(100% - 24px); /* Allow space for icon */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .task-location-icon {
+    font-size: 12px;
+    margin: 0 4px 0 2px;
+  }
+
+  .assign-container {
+    width: 130px;
+    height: 32px;
+  }
+
+  .assign-btn {
+    width: 130px;
+    height: 32px;
+    font-size: 12px;
+    line-height: 22px;
+  }
+
+  .assigned-to-you-btn {
+    width: 130px;
+    height: 32px;
+    font-size: 12px;
+    line-height: 32px;
+  }
+
+  .task-meta-container {
+    flex-wrap: wrap;
+  }
+
+  .task-action-container {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .task-details {
+    padding-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .task-location {
+    max-width: 90%;
+    font-size: 10px;
+    padding: 3px 5px;
+    right: 5px;
+  }
+
+  .assign-container {
+    width: 110px;
+    height: 30px;
+  }
+
+  .assign-btn {
+    width: 110px;
+    height: 30px;
+    font-size: 11px;
+    line-height: 20px;
+  }
+
+  .assigned-to-you-btn {
+    width: 110px;
+    height: 30px;
+    font-size: 11px;
+    line-height: 30px;
+  }
+
+  .task-details {
+    padding-bottom: 18px;
   }
 }
 
@@ -1199,9 +1288,11 @@ h1::after {
 
 .task-action-container {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
-  margin: 16px 0 16px 0;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .status-check {
@@ -2257,160 +2348,3 @@ h1::after {
     transform: translateY(0);
   }
 }
-
-/* Стили для контейнера подменю Filter и Sort */
-.tasks-submenu-section {
-  margin-left: 15px;
-  margin-top: 5px;
-  margin-bottom: 10px;
-  border-left: 1px solid rgba(180, 180, 180, 0.2);
-  padding-left: 5px;
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: opacity, max-height;
-  transform-origin: top center;
-}
-
-/* Обновляем стили для смещения Filter и Sort вправо в меню */
-.tasks-submenu-section .nav-item[data-page="filter"],
-.tasks-submenu-section .nav-item[data-page="sort"] {
-  padding-left: 25px;
-  position: relative;
-  font-size: 0.95em;
-  opacity: 0.9;
-  margin-top: 3px;
-  margin-bottom: 3px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  margin-right: 8px;
-  transition: all 0.4s ease;
-  transform-origin: left center;
-}
-
-.tasks-submenu-section .nav-item[data-page="filter"]::before,
-.tasks-submenu-section .nav-item[data-page="sort"]::before {
-  content: "⤷";
-  position: absolute;
-  left: 10px;
-  color: #888;
-  font-size: 14px;
-  transition: color 0.3s ease;
-}
-
-/* Убираем лишние границы, так как теперь у нас есть общий контейнер */
-.nav-item[data-page="tasks"] + .tasks-submenu-section,
-.tasks-submenu-section .nav-item[data-page="filter"] + .submenu-items,
-.tasks-submenu-section
-  .nav-item[data-page="filter"]
-  + .submenu-items
-  + .nav-item[data-page="sort"],
-.tasks-submenu-section .nav-item[data-page="sort"] + .submenu-items {
-  border-left: none;
-  margin-left: 0;
-}
-
-/* Смещаем подменю для этих элементов вправо */
-.tasks-submenu-section .submenu-items {
-  padding-left: 35px;
-  margin-top: -5px;
-  margin-bottom: 5px;
-  font-size: 0.9em;
-  background-color: rgba(0, 0, 0, 0.03);
-  border-radius: 4px;
-  margin-right: 8px;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  transition: all 0.4s ease;
-  will-change: opacity, height;
-  transform-origin: top center;
-}
-
-/* Функция для скрытия/показа всего контейнера подменю */
-.tasks-submenu-section.hidden {
-  display: none;
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-}
-
-/* Для плавной анимации подменю */
-.submenu-items {
-  transition: all 0.4s ease;
-  will-change: opacity, height;
-}
-
-/* Улучшаем стили hover-эффектов для лучшего взаимодействия */
-.tasks-submenu-section .nav-item[data-page="filter"]:hover,
-.tasks-submenu-section .nav-item[data-page="sort"]:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  transform: translateX(2px);
-}
-
-.tasks-submenu-section .nav-item[data-page="filter"]:hover::before,
-.tasks-submenu-section .nav-item[data-page="sort"]:hover::before {
-  color: #666;
-}
-
-
-
-
-.task-date-divider,
-.task-priority-divider,
-.task-status-divider,
-.task-assignment-divider {
-  display: flex;
-  color: #b8b8b8;
-  align-items: center;
-  text-align: center;
-  margin: 25px 0;
-}
-
-.task-date-divider::before,
-.task-date-divider::after,
-.task-priority-divider::before,
-.task-priority-divider::after,
-.task-status-divider::before,
-.task-status-divider::after,
-.task-assignment-divider::before,
-.task-assignment-divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #b8b8b8;
-  ;
-}
-/*
-.task-date-label {
-  padding: 0 10px;
-  font-size: 14px;
-  color: #666;
-  font-weight: 500;
-  background: none;
-  box-shadow: none;
-}
-*/
-
-#tasksList .task-date-divider:first-of-type ,
-#tasksList .task-priority-divider:first-of-type ,
-#tasksList .task-status-divider:first-of-type ,
-#tasksList .task-assignment-divider:first-of-type {
-  margin-top: 5px;
-}
-
-/* Общие стили для всех разделителей */
-.task-date-divider,
-.task-priority-divider,
-.task-status-divider,
-.task-assignment-divider {
-  position: relative;
-  text-align: center;
-  margin: 20px 0;
-  height: 20px;
-}
-
-/* Стили для метки группы */
-.task-group-label {
-  position: relative;
-  padding: 0 10px;
-  color: #535353;
-}
-
-

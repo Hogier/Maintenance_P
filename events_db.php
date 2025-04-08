@@ -165,7 +165,7 @@ try {
     // Параметры подключения к базе данных
     $host = 'localhost';
     $user = 'root';     // Пользователь MySQL
-    $password = 'root';     // Пароль для MySQL
+    $password = '';     // Пароль для MySQL
     $database = 'maintenancedb';
 
     // Подключение к базе данных

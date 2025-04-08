@@ -14,7 +14,7 @@ echo "<h1>Тестирование системы комментариев</h1>"
 // Параметры подключения к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = 'root';
+$password = '';
 $database = 'maintenancedb';
 
 // Подключение к базе данных
