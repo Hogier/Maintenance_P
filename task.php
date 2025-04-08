@@ -273,6 +273,21 @@ if ($action === 'addTask') {
             'message' => 'fullFile not found'
         ]);
     }
+}  elseif ($action === 'getUrlOfMediaFilesByTaskId') {
+    $taskId = $_POST['taskId'];
+    $stmt = $conn->prepare("SELECT media FROM tasks WHERE request_id = ?");
+    $stmt->bind_param("s", $taskId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $task = $result->fetch_assoc();
+    
+    if (isset($task['media'])) {
+        $media = json_decode($task['media'], true);
+        echo json_encode(['success' => true, 'data' => $media]);
+    } else {
+        // Возвращаем пустой массив с success => true
+        echo json_encode(['success' => true, 'data' => []]);
+    }
 } elseif ($action === 'getUrlOfMediaFilesByTaskId') {
     $taskId = $_POST['taskId'];
     $stmt = $conn->prepare("SELECT media FROM tasks WHERE request_id = ?");
@@ -288,7 +303,7 @@ if ($action === 'addTask') {
         // Возвращаем пустой массив с success => true
         echo json_encode(['success' => true, 'data' => []]);
     }
-} elseif ($action === 'getMINIMediaFile') {
+}elseif ($action === 'getMINIMediaFile') {
     error_log("Начало выполнения действия 'getMINIMediaFile'");
     $fileName = $_POST['fileName'];
     $uploadDir = 'uploads/mini/';
@@ -323,7 +338,7 @@ if ($action === 'addTask') {
             'message' => 'miniFile not found'
         ]);
     }
-} elseif ($action === 'assignTask') {
+}  elseif ($action === 'assignTask') {
     $requestId = $_POST['requestId'] ?? '';
     $assignedTo = $_POST['assignedTo'] ?? '';
     $assignedAt = $_POST['assignedAt'] ?? '';
@@ -419,6 +434,18 @@ if ($action === 'addTask') {
     // Преобразование JSON-строк в массивы
     foreach ($tasks as &$task) {
         if (isset($task['comments'])) {
+            // Получаем комментарии из task_comments вместо декодирования JSON
+            $taskId = $task['request_id'];
+            $commentStmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
+            if ($commentStmt) {
+                $commentStmt->bind_param("s", $taskId);
+                $commentStmt->execute();
+                $commentResult = $commentStmt->get_result();
+                $task['comments'] = $commentResult->fetch_all(MYSQLI_ASSOC);
+                $commentStmt->close();
+            } else {
+                $task['comments'] = [];
+            }
             // Получаем комментарии из task_comments вместо декодирования JSON
             $taskId = $task['request_id'];
             $commentStmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
@@ -548,28 +575,6 @@ if ($action === 'addTask') {
         }
         
         $tasks = $result->fetch_all(MYSQLI_ASSOC);
-        
-        // Преобразование JSON-строк в массивы для медиафайлов
-        foreach ($tasks as &$task) {
-            if (isset($task['media'])) {
-                $task['media'] = json_decode($task['media'], true);
-            }
-            
-            if (isset($task['comments'])) {
-                // Получаем комментарии из task_comments вместо декодирования JSON
-                $taskId = $task['request_id'];
-                $commentStmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
-                if ($commentStmt) {
-                    $commentStmt->bind_param("s", $taskId);
-                    $commentStmt->execute();
-                    $commentResult = $commentStmt->get_result();
-                    $task['comments'] = $commentResult->fetch_all(MYSQLI_ASSOC);
-                    $commentStmt->close();
-                } else {
-                    $task['comments'] = [];
-                }
-            }
-        }
 
         echo json_encode(['success' => true, 'data' => $tasks]);
     } catch (Exception $e) {
@@ -588,18 +593,15 @@ if ($action === 'addTask') {
     echo json_encode(['success' => true, 'data' => $tasks]);
     $stmt->close();
 } elseif ($action === 'getTasksWithFiltering') {
-    // Извлекаем параметры запроса
+
     $filtersJson = $_POST['filters'] ?? '{}';
     $page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
     $limit = isset($_POST['limit']) ? (int)$_POST['limit'] : 10;
 
-    // Вычисляем смещение для LIMIT в SQL
     $offset = ($page - 1) * $limit;
     
-    // Декодируем фильтры
     $filters = json_decode($filtersJson, true);
     
-    // Базовый запрос
     $baseQuery = "SELECT * FROM tasks";
     $countQuery = "SELECT COUNT(*) as total FROM tasks";
     $whereConditions = [];
@@ -613,6 +615,8 @@ if ($action === 'addTask') {
     $search = $filters['search'];
     $searchValue = $search['value'];
     $searchType = $search['type'];
+
+    $totalTasksByStatus = [];
 
     if(!empty($searchValue) && !empty($searchType)) {
         if($searchType === 'id') {
@@ -638,7 +642,6 @@ if ($action === 'addTask') {
         $params[] = $filters['byDate']['period']['custom']['to'];
         $types .= "ss";
     } elseif (!empty($filters['byDate']['period']['last']) && $filters['byDate']['period']['last'] !== 'Custom') {
-        // Добавляем обработку предопределенных периодов
         $currentDate = date('Y-m-d');
         $fromDate = "";
         
@@ -698,7 +701,6 @@ if ($action === 'addTask') {
     
     }
 
-    // Объединяем условия WHERE
     if (!empty($whereConditions)) {
         $baseQuery .= " WHERE " . implode(" AND ", $whereConditions);
         $countQuery .= " WHERE " . implode(" AND ", $whereConditions);
@@ -714,7 +716,8 @@ if ($action === 'addTask') {
             $sortField = 'status'; // Сортировка по статусу
             break;
         case 'priority':
-            $sortField = 'priority'; // Сортировка по приоритету
+            // Для приоритета используем специальную сортировку вместо прямой
+            $sortField = 'priority'; 
             break;
         case 'assignment':
             $sortField = 'assigned_to'; // Сортировка по назначению
@@ -723,29 +726,67 @@ if ($action === 'addTask') {
             $sortField = 'timestamp'; // По умолчанию сортируем по дате
     }
 
-    // Проверяем корректность направления сортировки
     $sortDirection = strtoupper($sortDirection) === 'ASC' ? 'ASC' : 'DESC';
 
     error_log("getTasksWithFiltering: sortField: " . $sortField);
     error_log("getTasksWithFiltering: sortDirection: " . $sortDirection);
-    // Формируем динамический ORDER BY на основе переменных
-    $baseQuery .= " ORDER BY $sortField $sortDirection";
+    if ( $sortField === 'priority') {
+        if ($sortDirection === 'DESC') {
+            $baseQuery .= " ORDER BY 
+  CASE priority 
+    WHEN 'urgent' THEN 1 
+    WHEN 'high' THEN 2 
+    WHEN 'medium' THEN 3 
+    WHEN 'low' THEN 4 
+    ELSE 5 
+  END";
+        } else {
+            $baseQuery .= " ORDER BY CASE priority WHEN 'low' THEN 1 WHEN 'medium' THEN 2 WHEN 'high' THEN 3 WHEN 'urgent' THEN 4 ELSE 5 END";
+        }
+    } elseif ($sortField === 'status') {
+        if ($sortDirection === 'DESC') {
+            $baseQuery .= " ORDER BY CASE status WHEN 'Completed' THEN 1 WHEN 'In Progress' THEN 2 WHEN 'Pending' THEN 3 ELSE 4 END";
+        } else {
+            $baseQuery .= " ORDER BY CASE status WHEN 'Pending' THEN 1 WHEN 'In Progress' THEN 2 WHEN 'Completed' THEN 3 ELSE 4 END";
+        }
+    } else {
+        $baseQuery .= " ORDER BY $sortField $sortDirection";
+    }
     
-    // Добавляем пагинацию
     $baseQuery .= " LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
     $types .= "ii";
     
 
-    // Выполняем запрос для получения общего количества задач
     $countStmt = $conn->prepare($countQuery);
 
-    error_log("getTasksWithFiltering: baseQuery: " . $baseQuery);
-    error_log("getTasksWithFiltering: countQuery: " . $countQuery);
-    error_log("getTasksWithFiltering: params: " . json_encode($params));
-    error_log("getTasksWithFiltering: types: " . $types);
-    error_log("getTasksWithFiltering: countStmt выполнен");
+    $statisticsQuery = "SELECT status, COUNT(*) as count FROM tasks";
+    if (!empty($whereConditions)) {
+        $statisticsQuery .= " WHERE " . implode(" AND ", $whereConditions);
+    }
+    $statisticsQuery .= " GROUP BY status";
+
+    $statisticsStmt = $conn->prepare($statisticsQuery);
+
+    error_log("STMT getTasksWithFiltering: statisticsQuery: " . $statisticsQuery);
+    if (!empty($params) && !empty($types)) {
+        // Используем копии параметров без limit и offset
+        $statisticsParams = array_slice($params, 0, count($params) - 2);
+        $statisticsTypes = substr($types, 0, strlen($types) - 2);
+        
+        if (!empty($statisticsParams)) {
+            $statisticsStmt->bind_param($statisticsTypes, ...$statisticsParams);
+        }
+    }
+
+    $statisticsStmt->execute();
+    $statisticsResult = $statisticsStmt->get_result();
+    $totalTasksByStatus = [];
+    while ($row = $statisticsResult->fetch_assoc()) {
+        $totalTasksByStatus[$row['status']] = (int)$row['count'];
+    }
+    $statisticsStmt->close();
 
     if (!empty($params) && !empty($types)) {
         // Создаем копии параметров для запроса подсчета (без limit и offset)
@@ -759,20 +800,20 @@ if ($action === 'addTask') {
     $totalResult = $countStmt->get_result()->fetch_assoc();
     $totalTasks = $totalResult['total'];
     $totalPages = ceil($totalTasks / $limit);
-    
-    // Выполняем основной запрос для получения данных с пагинацией
+
     $stmt = $conn->prepare($baseQuery);
     
+    error_log("STMT getTasksWithFiltering: baseQuery: " . $baseQuery);
+    
     if (!empty($params) && !empty($types)) {
-        // Привязываем параметры только если они есть
         $stmt->bind_param($types, ...$params);
     }
     
     $stmt->execute();
     $result = $stmt->get_result();
+
     $tasks = $result->fetch_all(MYSQLI_ASSOC);
-    
-    // Декодируем JSON-поля
+    error_log("STMT getTasksWithFiltering: tasks: " . json_encode($tasks));
     foreach ($tasks as &$task) {
         if (isset($task['comments'])) {
             $task['comments'] = json_decode($task['comments'], true);
@@ -782,6 +823,8 @@ if ($action === 'addTask') {
         }
     }
     
+    error_log("STMT getTasksWithFiltering: totalTasksByStatus: " . json_encode($totalTasksByStatus));
+
     echo json_encode([
         'success' => true, 
         'data' => $tasks,
@@ -790,6 +833,11 @@ if ($action === 'addTask') {
             'page' => $page,
             'limit' => $limit,
             'totalPages' => $totalPages
+        ],
+        'statistics' => [
+            'completed' => (int)$totalTasksByStatus['Completed'],
+            'inProgress' => (int)$totalTasksByStatus['In Progress'],
+            'pending' => (int)$totalTasksByStatus['Pending']
         ]
     ]);
     

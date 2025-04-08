@@ -33,7 +33,7 @@ const authorizedStaff = [
 // Проверка авторизации и роли
 function checkAuth() {
   const loggedInUser = JSON.parse(localStorage.getItem("currentUser"));
-  if (!loggedInUser || loggedInUser.role !== "maintenance") {
+  if (!loggedInUser || loggedInUser.role !== "support") {
     window.location.href = "login.html";
     return false;
   }
