@@ -67,7 +67,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';  // Пустой пароль для XAMPP
+$password = 'root';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -288,22 +288,7 @@ if ($action === 'addTask') {
         // Возвращаем пустой массив с success => true
         echo json_encode(['success' => true, 'data' => []]);
     }
-} elseif ($action === 'getUrlOfMediaFilesByTaskId') {
-    $taskId = $_POST['taskId'];
-    $stmt = $conn->prepare("SELECT media FROM tasks WHERE request_id = ?");
-    $stmt->bind_param("s", $taskId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $task = $result->fetch_assoc();
-    
-    if (isset($task['media'])) {
-        $media = json_decode($task['media'], true);
-        echo json_encode(['success' => true, 'data' => $media]);
-    } else {
-        // Возвращаем пустой массив с success => true
-        echo json_encode(['success' => true, 'data' => []]);
-    }
-}elseif ($action === 'getMINIMediaFile') {
+} elseif ($action === 'getMINIMediaFile') {
     error_log("Начало выполнения действия 'getMINIMediaFile'");
     $fileName = $_POST['fileName'];
     $uploadDir = 'uploads/mini/';
@@ -628,7 +613,7 @@ if ($action === 'addTask') {
             $params[] = "%" . $searchValue . "%";
             $types .= "s";
         }
-    } else {  
+    }  
 
     // Применяем фильтры
     // 1. Фильтр по дате
@@ -699,7 +684,7 @@ if ($action === 'addTask') {
         }
     }
     
-    }
+    
 
     if (!empty($whereConditions)) {
         $baseQuery .= " WHERE " . implode(" AND ", $whereConditions);

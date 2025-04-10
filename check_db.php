@@ -8,7 +8,7 @@ echo "<h1>Database Structure Check</h1>";
 // Database connection
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 try {

@@ -11,7 +11,7 @@ echo "<h1>Tasks and Comments Tables Check</h1>";
 // Database connection
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
