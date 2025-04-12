@@ -1,5 +1,0 @@
-2025-04-01 01:20:34 - Delete file API accessed. Method: DELETE, File ID: 8
-2025-04-01 01:20:34 - Starting transaction for file ID: 8
-2025-04-01 01:20:34 - Error: File not found with ID: 8
-2025-04-01 01:20:34 - Transaction rolled back due to error
-2025-04-01 01:20:34 - Error: File not found

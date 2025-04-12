@@ -60,12 +60,11 @@ let filters = {
   },
 };
 
-
 let tasksStatistics = {
   totalTasks: 0,
   pendingTasks: 0,
   inProgressTasks: 0,
-  completedTasks: 0
+  completedTasks: 0,
 };
 
 let currentPage = 1;
@@ -136,43 +135,43 @@ async function getTasks() {
 // Группируем задачи в зависимости от выбранного фильтра сортировки
 function groupTasksByFilter(tasks, filterBy) {
   const tasksByGroup = {};
-  
-  tasks.forEach(task => {
+
+  tasks.forEach((task) => {
     let groupKey;
-    
+
     // Определяем ключ группировки в зависимости от фильтра
     switch (filterBy) {
       case "date":
         // Группировка по дате, как в оригинальном коде
-        groupKey = new Date(task.timestamp).toLocaleDateString('ru-RU');
+        groupKey = new Date(task.timestamp).toLocaleDateString("ru-RU");
         break;
-      
+
       case "priority":
         // Группировка по приоритету
         groupKey = task.priority || "unknown";
         break;
-      
+
       case "status":
         // Группировка по статусу
         groupKey = task.status || "unknown";
         break;
-      
+
       case "assignment":
         // Группировка по назначению
         groupKey = task.assigned_to ? "assigned" : "unassigned";
         break;
-        
+
       default:
         // По умолчанию группируем по дате
-        groupKey = new Date(task.timestamp).toLocaleDateString('ru-RU');
+        groupKey = new Date(task.timestamp).toLocaleDateString("ru-RU");
     }
-    
+
     if (!tasksByGroup[groupKey]) {
       tasksByGroup[groupKey] = [];
     }
     tasksByGroup[groupKey].push(task);
   });
-  
+
   return tasksByGroup;
 }
 
@@ -181,32 +180,32 @@ function getGroupDisplayName(groupKey, filterBy) {
   switch (filterBy) {
     case "date":
       return formatDisplayDate(groupKey);
-      
+
     case "priority":
       // Форматируем название приоритета для отображения
       const priorityNames = {
-        "urgent": "Urgent Priority",
-        "high": "High Priority",
-        "medium": "Medium Priority",
-        "low": "Low Priority",
-        "unknown": "Unknown Priority"
+        urgent: "Urgent Priority",
+        high: "High Priority",
+        medium: "Medium Priority",
+        low: "Low Priority",
+        unknown: "Unknown Priority",
       };
       return priorityNames[groupKey.toLowerCase()] || groupKey;
-      
+
     case "status":
       // Форматируем название статуса
       const statusNames = {
-        "Pending": "Pending Tasks",
+        Pending: "Pending Tasks",
         "In Progress": "Tasks In Progress",
-        "Completed": "Completed Tasks",
-        "unknown": "Unknown Status"
+        Completed: "Completed Tasks",
+        unknown: "Unknown Status",
       };
       return statusNames[groupKey] || groupKey;
-      
+
     case "assignment":
       // Форматируем название назначения
       return groupKey === "assigned" ? "Assigned Tasks" : "Unassigned Tasks";
-      
+
     default:
       return groupKey;
   }
@@ -248,40 +247,57 @@ async function updateTasksList(tasks) {
     } else {
       // Определяем текущий тип сортировки
       const currentSortBy = filters.sort.by || "date";
-      
+
       // Группируем задачи по соответствующему фильтру
       const tasksByGroup = groupTasksByFilter(tasks, currentSortBy);
-      
+
       // Получаем ключи групп и сортируем их соответствующим образом
       let groupKeys = Object.keys(tasksByGroup);
-      
+
       // Сортируем ключи в зависимости от типа фильтра
       if (currentSortBy === "priority") {
         // Сортировка приоритетов в логическом порядке
-        const priorityOrder = { "urgent": 0, "high": 1, "medium": 2, "low": 3, "unknown": 4 };
-        groupKeys.sort((a, b) => priorityOrder[a.toLowerCase()] - priorityOrder[b.toLowerCase()]);
+        const priorityOrder = {
+          urgent: 0,
+          high: 1,
+          medium: 2,
+          low: 3,
+          unknown: 4,
+        };
+        groupKeys.sort(
+          (a, b) =>
+            priorityOrder[a.toLowerCase()] - priorityOrder[b.toLowerCase()]
+        );
       } else if (currentSortBy === "status") {
         // Сортировка статусов в логическом порядке
-        const statusOrder = { "Pending": 0, "In Progress": 1, "Completed": 2, "unknown": 3 };
+        const statusOrder = {
+          Pending: 0,
+          "In Progress": 1,
+          Completed: 2,
+          unknown: 3,
+        };
         groupKeys.sort((a, b) => statusOrder[a] - statusOrder[b]);
       }
-      
+
       // Добавляем разделители и задачи в контейнер
       for (let i = 0; i < groupKeys.length; i++) {
         const currentGroupKey = groupKeys[i];
         const tasksInGroup = tasksByGroup[currentGroupKey];
-        
+
         // Добавляем разделитель с названием группы
         const divider = document.createElement("div");
         divider.className = getDividerClass(currentSortBy);
-        
+
         const groupLabel = document.createElement("span");
         groupLabel.className = "task-group-label";
-        groupLabel.textContent = getGroupDisplayName(currentGroupKey, currentSortBy);
-        
+        groupLabel.textContent = getGroupDisplayName(
+          currentGroupKey,
+          currentSortBy
+        );
+
         divider.appendChild(groupLabel);
         newTasksContainer.appendChild(divider);
-        
+
         // Добавляем задачи этой группы
         for (const task of tasksInGroup) {
           const taskElement = await createTaskElement(task);
@@ -522,15 +538,11 @@ async function createTaskElement(task) {
 
       console.log("Прослушка на комментарии");
 
-      tasksWS.onmessage = async function (e) {
-        const action = JSON.parse(e.data).action;
-        const data = JSON.parse(e.data).message;
-        console.log("tasksWS.onmessage : ");
-        console.log(data);
-
+      // Заменяем tasksWS.onmessage на подписку к wsClient
+      const commentHandler = async function (data) {
         if (
-          action === "updateComments" &&
-          data.request_id === task.request_id
+          data.action === "updateComments" &&
+          data.taskId === task.request_id
         ) {
           await updateComments(task, commentsContainer, isFirstLoad);
           isFirstLoad = false;
@@ -579,57 +591,18 @@ async function createTaskElement(task) {
         }
       };
 
-      /*commentsUpdateInterval = setInterval(async () => {
-        isFirstLoad = false;
+      // Сохраняем ссылку на обработчик, чтобы отписаться при закрытии
+      task.commentHandler = commentHandler;
 
-        let deltaComments = await updateComments(
-          task,
-          commentsContainer,
-          isFirstLoad
-        );
-        let hasNewComments = false;
-        if (deltaComments > 0) {
-          hasNewComments = true;
-        } else {
-          hasNewComments = false;
-        }
-
-        const commentsRect = commentsContainer.getBoundingClientRect();
-        const isCommentsVisible =
-          commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
-
-        if (
-          !showNewCommentNotification &&
-          hasNewComments &&
-          !isCommentsVisible
-        ) {
-          showNewCommentNotification = true;
-          newCommentsPosition.push(commentsRect.top + window.scrollY);
-        }
-        if (showNewCommentNotification) {
-          newCommentNotification.style.display = "block";
-        }
-
-        const notifications = document.querySelectorAll(
-          ".new-comment-notification[style='display: block;']"
-        );
-        if (notifications.length > 1) {
-          console.log(
-            "Внутри ИНТЕРВАЛА условие + notifications.length: ",
-            notifications.length
-          );
-          counterNewCommentNotification.textContent = notifications.length;
-          counterNewCommentNotification.style.display = "block";
-        } else {
-          console.log(
-            "Внутри ИНТЕРВАЛА условие - notifications.length: ",
-            notifications.length
-          );
-          counterNewCommentNotification.style.display = "none";
-        }
-      }, 3500);*/
+      // Подписываемся на сообщения updateComments
+      window.wsClient.subscribe("updateComments", commentHandler);
     } else {
       //clearInterval(commentsUpdateInterval);
+      // Unsubscribe from WebSocket messages when closing comments
+      if (task.commentHandler) {
+        window.wsClient.unsubscribe("updateComments", task.commentHandler);
+        task.commentHandler = null;
+      }
       newCommentNotification.style.display = "none"; // Скрываем уведомление при закрытии
     }
     openComments = !openComments;
@@ -1108,6 +1081,21 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
 }
 
 async function handleAddComment(taskId, commentText, userFullName) {
+  if (!commentText || commentText.trim() === "") {
+    return;
+  }
+
+  // Формируем запрос для сервера
+  const data = {
+    taskId: taskId,
+    commentText: commentText,
+    userFullName: userFullName,
+    action: "addComment",
+  };
+
+  // Отправляем через общий клиент вместо tasksWS
+  window.wsClient.send(data);
+
   // Create a properly formatted timestamp (YYYY-MM-DD HH:MM:SS format for MySQL)
   const now = new Date();
   const formattedTimestamp =
@@ -1171,16 +1159,17 @@ async function handleAddComment(taskId, commentText, userFullName) {
     // Используем существующую функцию для добавления комментария на сервер с фото URL
     const success = await db.addComment(taskId, commentText, userFullName);
     console.log("Отправка комментария на сервер handleAddComment()");
-    tasksWS.send(
-      JSON.stringify({
-        action: "updateComments",
-        taskId: taskId,
-        comment: commentText,
-        staffName: userFullName,
-        timestamp: formattedTimestamp,
-        photoUrl: userPhotoUrl,
-      })
-    );
+
+    // Используем общий клиент вместо tasksWS
+    window.wsClient.send({
+      action: "updateComments",
+      taskId: taskId,
+      comment: commentText,
+      staffName: userFullName,
+      timestamp: formattedTimestamp,
+      photoUrl: userPhotoUrl,
+    });
+
     if (success) {
       // Удаляем комментарий из локального состояния после успешной отправки
       localComments[taskId] = localComments[taskId].filter(
@@ -1249,91 +1238,80 @@ async function addNewTasksToPage(tasks) {
 // Добавляем элемент для уведомления о новых задачах
 
 // Создаем WebSocket соединение
-const tasksWS = new WebSocket("ws://localhost:2346");
+// const tasksWS = new WebSocket("ws://localhost:2346");
 
 window.onload = function () {
   // При открытии соединения
-  tasksWS.onopen = function () {
-    console.log("Подключено к WebSocket серверу");
-  };
-
+  // tasksWS.onopen = function () {
+  //   console.log("Подключено к WebSocket серверу");
+  // };
   // При ошибке
-  ws.onerror = function (e) {
-    console.error("WebSocket ошибка: " + e.message);
-  };
-
+  // ws.onerror = function (e) {
+  //   console.error("WebSocket ошибка: " + e.message);
+  // };
   // При закрытии соединения
-  ws.onclose = function () {
-    console.log("Соединение закрыто");
-  };
+  // ws.onclose = function () {
+  //   console.log("Соединение закрыто");
+  // };
 };
 
-tasksWS.onmessage = async function (e) {
-  try {
-    const newTasks = [JSON.parse(e.data).message];
-    const mediaFiles = await getUrlOfMediaFilesByTaskId(newTasks[0].request_id);
-    newTasks[0].media = mediaFiles;
-    console.log("newTasks: ", newTasks);
+// Регистрируем обработчик для сообщений типа "tasks"
+if (window.wsClient) {
+  window.wsClient.subscribe("tasks", async function (data) {
+    try {
+      console.log("Received tasks message:", data);
 
-    const currentDateString = currentDate.toLocaleString("en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-    const showedPageWithTodayTasks =
-      tasksCurrentFilter === "today" ||
-      tasksCurrentFilter === "all" ||
-      (tasksCurrentFilter === "custom" &&
-        currentDateString === getDallasDate());
+      // Check if data.message exists and has the right structure
+      if (!data || !data.message) {
+        console.error("Invalid data format received for tasks:", data);
+        return;
+      }
 
-    if (newTasks && showedPageWithTodayTasks) {
-      await addNewTasksToPage(newTasks);
-      clientTasks = [...newTasks, ...clientTasks];
-      clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const newTasks = [data.message];
+
+      // Check if request_id exists before using it
+      if (!newTasks[0] || !newTasks[0].request_id) {
+        console.error("Task data missing request_id:", newTasks[0]);
+        return;
+      }
+
+      const mediaFiles = await getUrlOfMediaFilesByTaskId(
+        newTasks[0].request_id
+      );
+      newTasks[0].media = mediaFiles;
+      console.log("newTasks: ", newTasks);
+
+      const currentDateString = currentDate.toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      const showedPageWithTodayTasks =
+        tasksCurrentFilter === "today" ||
+        tasksCurrentFilter === "all" ||
+        (tasksCurrentFilter === "custom" &&
+          currentDateString === getDallasDate());
+
+      if (newTasks && showedPageWithTodayTasks) {
+        await addNewTasksToPage(newTasks);
+        clientTasks = [...newTasks, ...clientTasks];
+        clientTasks.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+      }
+
+      if (newTasks && newTasks.length > 0) {
+        counterNewTaskNotification = newTasks.length;
+        alertIcon.textContent =
+          counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
+        newTaskNotification.style.display = "block";
+        playNewTaskSound();
+      }
+    } catch (error) {
+      console.error("Ошибка обработки сообщения tasks:", error);
     }
-
-    if (newTasks && newTasks.length > 0) {
-      counterNewTaskNotification = newTasks.length;
-      alertIcon.textContent =
-        counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
-      newTaskNotification.style.display = "block";
-      playNewTaskSound();
-    }
-  } catch (error) {
-    console.error("Ошибка парсинга JSON:", error);
-    console.log("Полученные данные:", e.data);
-  }
-};
-
-/*
-setInterval(async () => {
-const newTasks = await checkNewTasksInServer();
-
-const currentDateString = currentDate.toLocaleString("en-US", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-const showedPageWithTodayTasks =
-  tasksCurrentFilter === "today" ||
-  tasksCurrentFilter === "all" ||
-  (tasksCurrentFilter === "custom" && currentDateString === getDallasDate());
-
-if (newTasks && showedPageWithTodayTasks) {
-  await addNewTasksToPage(newTasks);
-  clientTasks = [...newTasks, ...clientTasks];
-  clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  });
 }
-
-if (newTasks && newTasks.length > 0) {
-  counterNewTaskNotification = newTasks.length;
-  alertIcon.textContent =
-    counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
-  newTaskNotification.style.display = "block";
-  playNewTaskSound();
-}
-}, 7000);
-*/
 
 // Добавляем обработчик клика для скрытия уведомления
 newTaskNotification.addEventListener("click", async () => {
@@ -2451,25 +2429,29 @@ document.querySelector('.helper-panel-content').addEventListener('click', async 
 
 let currentAbortController = null;
 
-async function getTasksWithFilteringSortingPagination(filters, page = currentPage, limit = limitTasksInPage) {
+async function getTasksWithFilteringSortingPagination(
+  filters,
+  page = currentPage,
+  limit = limitTasksInPage
+) {
   try {
-
+    // Remove the local currentAbortController declaration
     page = page < 1 ? 1 : page;
-    
+
     if (currentAbortController) {
       currentAbortController.abort();
       console.log("Предыдущий запрос отменен");
     }
-    
+
     currentAbortController = new AbortController();
     const signal = currentAbortController.signal;
-    
+
     // Показываем индикатор обновления
     if (updateIndicator) {
       updateIndicator.style.display = "block";
       updateIndicator.style.opacity = "1";
     }
-    
+
     // Отправляем запрос с параметрами фильтрации и пагинации
     const response = await fetch("task.php", {
       method: "POST",
@@ -2482,17 +2464,23 @@ async function getTasksWithFilteringSortingPagination(filters, page = currentPag
         page: page,
         limit: limit,
       }),
-      signal
+      signal,
     });
     console.log("filters: ", filters);
     const result = await response.json();
-    
+
     if (!result.success) {
       throw new Error(result.message);
     }
 
-    console.log("getTasksWithFilteringSortingPagination result.data: ", result.data);
-    console.log("getTasksWithFilteringSortingPagination result.pagination: ", result.pagination);
+    console.log(
+      "getTasksWithFilteringSortingPagination result.data: ",
+      result.data
+    );
+    console.log(
+      "getTasksWithFilteringSortingPagination result.pagination: ",
+      result.pagination
+    );
 
     // Здесь добавляем проверку перед установкой currentPage
     if (result.pagination && result.pagination.page > 0) {
@@ -2501,17 +2489,25 @@ async function getTasksWithFilteringSortingPagination(filters, page = currentPag
     console.log("result.statistics: ", result.statistics);
     updateStatistics(result.pagination.totalTasks, result.statistics);
 
-    return {data: result.data, pagination: result.pagination};
+    return { data: result.data, pagination: result.pagination };
   } catch (error) {
     // Проверяем, была ли ошибка вызвана отменой запроса
-    if (error.name === 'AbortError') {
-      console.log('Запрос был отменен');
+    if (error.name === "AbortError") {
+      console.log("Запрос был отменен");
       // Не показываем ошибку пользователю, это ожидаемое поведение
       return { data: [], pagination: {} };
     }
-    
+
     console.error("Ошибка при получении заданий:", error);
-    return { data: [], pagination: { currentPage: currentPage, totalPages: 1, totalTasks: 0, limit: limitTasksInPage } };
+    return {
+      data: [],
+      pagination: {
+        currentPage: currentPage,
+        totalPages: 1,
+        totalTasks: 0,
+        limit: limitTasksInPage,
+      },
+    };
   } finally {
     // Скрываем индикатор обновления только если это не отмененный запрос
     if (updateIndicator && currentAbortController.signal.aborted === false) {
@@ -2524,23 +2520,29 @@ async function getTasksWithFilteringSortingPagination(filters, page = currentPag
 }
 
 function updatePagination(pagination) {
-  const paginationContainer = document.querySelector('.pagination-container');
-  paginationContainer.innerHTML = '';
+  const paginationContainer = document.querySelector(".pagination-container");
+  paginationContainer.innerHTML = "";
   for (let i = 1; i <= pagination.totalPages; i++) {
-    const paginationButton = document.createElement('div');
+    const paginationButton = document.createElement("div");
     if (i === pagination.page) {
-      paginationButton.classList.add('pagination-button', 'active');
+      paginationButton.classList.add("pagination-button", "active");
     } else {
-      paginationButton.classList.add('pagination-button');
+      paginationButton.classList.add("pagination-button");
     }
     paginationButton.textContent = i;
     paginationContainer.appendChild(paginationButton);
 
-    paginationButton.addEventListener('click', async () => {
+    paginationButton.addEventListener("click", async () => {
       currentPage = i;
-      document.querySelector('.pagination-container div.active').classList.remove('active');
-      paginationButton.classList.add('active');
-      const filteredObj = await getTasksWithFilteringSortingPagination(filters, currentPage, limitTasksInPage);
+      document
+        .querySelector(".pagination-container div.active")
+        .classList.remove("active");
+      paginationButton.classList.add("active");
+      const filteredObj = await getTasksWithFilteringSortingPagination(
+        filters,
+        currentPage,
+        limitTasksInPage
+      );
       await updateTasksList(filteredObj.data);
       updatePagination(filteredObj.pagination);
     });
@@ -2960,21 +2962,25 @@ searchButton.addEventListener("click", async function () {
   updatePagination(searchedTasks.pagination);
 });
 
-document.getElementById('sidebar-sort').addEventListener('change', async function() {
-  const selectedValue = this.value;
-  filters.sort.by = selectedValue;
-  const sortedTasks = await getTasksWithFilteringSortingPagination(filters);
-  await updateTasksList(sortedTasks.data);
-  updatePagination(sortedTasks.pagination);
-});
+document
+  .getElementById("sidebar-sort")
+  .addEventListener("change", async function () {
+    const selectedValue = this.value;
+    filters.sort.by = selectedValue;
+    const sortedTasks = await getTasksWithFilteringSortingPagination(filters);
+    await updateTasksList(sortedTasks.data);
+    updatePagination(sortedTasks.pagination);
+  });
 
-document.querySelector('.sort-direction').addEventListener('click', async function() {
-  filters.sort.direction = filters.sort.direction === 'ASC' ? 'DESC' : 'ASC';
-  console.log("filters.sort.direction", filters.sort.direction);
-  const sortedTasks = await getTasksWithFilteringSortingPagination(filters);
-  await updateTasksList(sortedTasks.data);
-  updatePagination(sortedTasks.pagination);
-});
+document
+  .querySelector(".sort-direction")
+  .addEventListener("click", async function () {
+    filters.sort.direction = filters.sort.direction === "ASC" ? "DESC" : "ASC";
+    console.log("filters.sort.direction", filters.sort.direction);
+    const sortedTasks = await getTasksWithFilteringSortingPagination(filters);
+    await updateTasksList(sortedTasks.data);
+    updatePagination(sortedTasks.pagination);
+  });
 
 // Функция для обновления статистики задач с анимацией
 function updateTaskStats(tasks) {
@@ -3012,3 +3018,39 @@ function animateStatUpdate(element, newValue) {
     }, 1000);
   }, 300);
 }
+
+// Удаляем старый WebSocket-код и заменяем на использование общего клиента
+document.addEventListener("DOMContentLoaded", function () {
+  // Подписываемся на сообщения о задачах
+  window.wsClient.subscribe("taskUpdate", function (data) {
+    if (data.taskId) {
+      updateTaskStatus(data.taskId, data.status);
+    }
+  });
+
+  window.wsClient.subscribe("taskComment", function (data) {
+    if (data.taskId) {
+      addCommentToTask(data.taskId, data.comment);
+    }
+  });
+
+  // Функция для отправки обновления статуса задачи
+  function sendTaskStatusUpdate(taskId, status) {
+    window.wsClient.send({
+      type: "updateTaskStatus",
+      taskId: taskId,
+      status: status,
+    });
+  }
+
+  // Функция для отправки комментария к задаче
+  function sendTaskComment(taskId, comment) {
+    window.wsClient.send({
+      type: "addTaskComment",
+      taskId: taskId,
+      comment: comment,
+    });
+  }
+
+  // ... existing code ...
+});
