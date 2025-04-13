@@ -284,13 +284,18 @@ class PortalManager {
   }
 
   initializeComponents() {
-    // Initialize construction manager if container exists
+    // Initialize construction manager if container exists and manager doesn't already exist
     const constructionContainer = document.querySelector(
       "#construction-container"
     );
-    if (constructionContainer) {
+    if (constructionContainer && !window.constructionManager) {
+      console.log("Creating new ConstructionManager instance");
       window.constructionManager = new ConstructionManager(
         constructionContainer
+      );
+    } else if (window.constructionManager) {
+      console.log(
+        "ConstructionManager already exists, skipping initialization"
       );
     }
   }

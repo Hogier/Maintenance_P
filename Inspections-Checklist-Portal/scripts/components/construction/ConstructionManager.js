@@ -6,25 +6,11 @@ export default class ConstructionManager {
     this.futureProjects = [];
     this.activeTab = "contractors";
     this.handleRating = this.handleRating.bind(this);
-    this.handleProjectSubmit = this.handleProjectSubmit.bind(this); // Привязываем метод к текущему экземпляру
-    this.uploadProjectFiles = this.uploadProjectFiles.bind(this); // Привязываем метод загрузки файлов
     this.filters = {
       contractors: {
         search: "",
         businessType: "all",
         rating: "all",
-      },
-      currentProjects: {
-        search: "",
-        location: "",
-        status: "all",
-        date: "all",
-      },
-      futureProjects: {
-        search: "",
-        location: "",
-        priority: "all",
-        date: "all",
       },
     };
     this.init();
@@ -46,59 +32,13 @@ export default class ConstructionManager {
     // Создаем модальное окно для превью, если его нет
     this.ensurePreviewModalExists();
 
-    // Проверяем наличие шаблонов для проектов
-    this.checkTemplates();
-
     // Загружаем данные и инициализируем компоненты
     this.loadData().then(() => {
       // Инициализация всех компонентов
       this.initDatepickers();
-      this.initNavigation();
       this.initEventListeners();
       this.renderActiveSection();
     });
-  }
-
-  // Метод для проверки наличия шаблонов
-  checkTemplates() {
-    const currentProjectTemplate = this.container.querySelector(
-      "#current-project-card-template"
-    );
-    const futureProjectTemplate = this.container.querySelector(
-      "#future-project-card-template"
-    );
-
-    if (!currentProjectTemplate) {
-      console.error(
-        "Current project card template not found. Some functionality may not work."
-      );
-    }
-
-    if (!futureProjectTemplate) {
-      console.error(
-        "Future project card template not found. Some functionality may not work."
-      );
-    }
-
-    // Проверяем наличие контейнеров для списков проектов
-    const currentProjectsList = this.container.querySelector(
-      "#current-projects-list"
-    );
-    const futureProjectsList = this.container.querySelector(
-      "#future-projects-list"
-    );
-
-    if (!currentProjectsList) {
-      console.error(
-        "Current projects list container not found. Projects will not be displayed."
-      );
-    }
-
-    if (!futureProjectsList) {
-      console.error(
-        "Future projects list container not found. Projects will not be displayed."
-      );
-    }
   }
 
   // Метод для создания модального окна для предпросмотра изображений
@@ -299,52 +239,52 @@ export default class ConstructionManager {
         .migrated-files-group {
           border-left: 3px solid #0088cc;
           padding-left: 10px;
-          margin-bottom: 20px;
+          margin-bottom: 5px; /* Reduced margin */
           overflow: visible;
-          transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+          /* Removed transition properties related to collapsing individual sections */
         }
         
         .from-future-title {
           color: #0088cc;
           font-weight: bold;
-          margin-bottom: 10px;
-          display: none;
+          margin-bottom: 5px; /* Reduced margin */
+          display: block; /* Keep it potentially visible if needed elsewhere, though likely removed by JS */
         }
         
         .migrated-separator {
           height: 1px;
           background-color: #ddd;
-          margin: 20px 0;
+          margin: 10px 0; /* Reduced margin */
           transition: margin 0.3s ease;
         }
         
         .current-files-title {
           color: #4CAF50;
           font-weight: bold;
-          margin-bottom: 10px;
+          margin-bottom: 5px; /* Reduced margin */
         }
         
         .migrated-files {
-          margin-bottom: 15px;
+          margin-bottom: 5px; /* Reduced margin */
           position: relative;
         }
         
         .from-future-flag {
           color: #0088cc;
-        font-size: 12px;
+          font-size: 12px;
           font-weight: bold;
+          margin-left: 8px; /* Ensure some space from the title */
         }
         
         .migrated-header {
-          margin-bottom: 8px;
-          margin-top: 5px;
+          /* Removed specific margins, rely on group margins */
         }
         
         .migrated-files-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 10px;
+          margin-bottom: 5px; /* Reduced margin */
         }
       `;
       document.head.appendChild(styleSheet);
@@ -353,12 +293,11 @@ export default class ConstructionManager {
     console.log(`Added styles for migrated project ${projectId}`);
   }
 
-  // Метод для инициализации datepicker для полей даты
+  // Метод инициализации календарей для полей даты
   initDatepickers() {
-    // Проверяем, доступен ли Flatpickr
-    if (typeof flatpickr !== "function") {
-      console.log("Loading flatpickr...");
-      // Загружаем CSS
+    // Проверяем, доступен ли flatpickr
+    if (typeof flatpickr === "undefined") {
+      // Загружаем CSS без вывода предупреждения
       const linkElem = document.createElement("link");
       linkElem.rel = "stylesheet";
       linkElem.href =
@@ -366,105 +305,92 @@ export default class ConstructionManager {
       document.head.appendChild(linkElem);
 
       // Загружаем JavaScript
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/flatpickr";
-      script.onload = () => {
+      const scriptElem = document.createElement("script");
+      scriptElem.src = "https://cdn.jsdelivr.net/npm/flatpickr";
+      scriptElem.onload = () => {
         console.log("Flatpickr loaded successfully");
-        // После загрузки библиотеки инициализируем календари для дат
-        this.initDateInputs();
+        // После загрузки библиотеки инициализируем календари для открытых форм
+        const currentProjectModal = this.container.querySelector(
+          "#current-project-modal"
+        );
+        const futureProjectModal = this.container.querySelector(
+          "#future-project-modal"
+        );
+
+        if (
+          currentProjectModal &&
+          currentProjectModal.classList.contains("active")
+        ) {
+          const form = currentProjectModal.querySelector("form");
+          this.initFormDatepickers(form);
+        }
+
+        if (
+          futureProjectModal &&
+          futureProjectModal.classList.contains("active")
+        ) {
+          const form = futureProjectModal.querySelector("form");
+          this.initFormDatepickers(form);
+        }
       };
-      document.head.appendChild(script);
+      scriptElem.onerror = (err) => {
+        console.error("Failed to load Flatpickr:", err);
+      };
+      document.head.appendChild(scriptElem);
       return;
     }
 
-    this.initDateInputs();
+    // Настройки для календаря
+    const dateConfig = {
+      dateFormat: "m-d-y", // Формат MM-DD-YY
+      allowInput: true, // Позволяет ручной ввод даты
+      disableMobile: false, // Использовать нативный календарь на мобильных устройствах
+      static: true, // Предотвращает исчезновение календаря при клике вне его
+      onChange: (selectedDates, dateStr) => {
+        // При изменении даты можно добавить дополнительную логику
+        console.log("Выбрана дата:", dateStr);
+      },
+    };
+
+    // При первичной инициализации календари не нужны,
+    // они будут инициализированы при открытии модальных окон
   }
 
-  // Вспомогательный метод для инициализации полей даты
-  initDateInputs() {
-    const dateInputs = this.container.querySelectorAll(
+  // Инициализация календарей для конкретной формы
+  initFormDatepickers(form) {
+    // Находим все поля для ввода даты
+    const dateInputs = form.querySelectorAll(
       'input[name="startDate"], input[name="endDate"], input[name="lastUpdate"]'
     );
+    if (dateInputs.length === 0) return;
 
+    // Проверяем, что flatpickr доступен
+    if (typeof flatpickr === "undefined") {
+      // Если библиотека еще не загружена, пробуем еще раз через небольшую задержку
+      setTimeout(() => this.initFormDatepickers(form), 500);
+      return;
+    }
+
+    // Настройки для календаря
+    const dateConfig = {
+      dateFormat: "m-d-y", // Формат MM-DD-YY
+      allowInput: true, // Позволяет ручной ввод даты
+      disableMobile: false, // Использовать нативный календарь на мобильных устройствах
+      static: true, // Предотвращает исчезновение календаря при клике вне его
+    };
+
+    // Инициализируем календарь для каждого поля
     dateInputs.forEach((input) => {
-      // Удаляем существующие экземпляры flatpickr
+      // Удаляем существующий экземпляр flatpickr, если он уже был инициализирован
       if (input._flatpickr) {
         input._flatpickr.destroy();
       }
 
-      // Инициализируем flatpickr с правильными настройками
-      flatpickr(input, {
-        dateFormat: "m/d/Y",
-        allowInput: true,
-        disableMobile: true,
-        appendTo: input.parentNode, // Убедимся, что календарь отображается в контексте формы
-      });
-
-      console.log(`Initialized datepicker for ${input.name}`);
-    });
-  }
-
-  initNavigation() {
-    // Находим все навигационные вкладки
-    const navItems = this.container.querySelectorAll(".tab");
-
-    // Добавляем обработчики событий для каждой вкладки
-    navItems.forEach((item) => {
-      item.addEventListener("click", (e) => {
-        const targetSection = e.currentTarget.dataset.section;
-
-        // Удаляем активный класс со всех вкладок и секций
-        this.container.querySelectorAll(".tab").forEach((tab) => {
-          tab.classList.remove("active");
-        });
-        this.container
-          .querySelectorAll(".construction-section")
-          .forEach((section) => {
-            section.classList.remove("active");
-          });
-
-        // Добавляем активный класс к выбранной вкладке и секции
-        e.currentTarget.classList.add("active");
-        this.container
-          .querySelector(`#${targetSection}`)
-          .classList.add("active");
-
-        // Обновляем заголовок в зависимости от выбранной секции
-        const sectionTitle = this.container.querySelector("#section-title");
-        if (sectionTitle) {
-          sectionTitle.textContent =
-            targetSection === "contractors-section"
-              ? "Contractors"
-              : targetSection === "current-projects-section"
-              ? "Current Projects"
-              : "Future Projects";
-        }
-
-        // Показываем соответствующие фильтры
-        this.container.querySelectorAll(".filter-group").forEach((group) => {
-          group.style.display = "none";
-        });
-
-        // Показываем фильтры для активной секции
-        const filterGroup = this.container.querySelector(
-          `#${targetSection.replace("-section", "-filters")}`
-        );
-        if (filterGroup) {
-          filterGroup.style.display = "flex";
-        }
-
-        // Вызываем обработчик изменения секции
-        this.onSectionChange(targetSection);
-      });
+      // Создаем новый экземпляр
+      flatpickr(input, dateConfig);
     });
 
-    // Устанавливаем начальную активную секцию
-    const activeTab =
-      this.container.querySelector(".tab.active") ||
-      this.container.querySelector(".tab");
-    if (activeTab) {
-      activeTab.click();
-    }
+    console.log(`Initialized ${dateInputs.length} date pickers in form`);
   }
 
   initEventListeners() {
@@ -504,260 +430,29 @@ export default class ConstructionManager {
         this.handleContractorSubmit(e);
       });
 
-    // Добавляем обработчик для формы сотрудников
     this.container
       .querySelector("#employee-form")
       ?.addEventListener("submit", (e) => {
         this.handleEmployeeSubmit(e);
       });
 
-    // Обработчики для форм проектов
-    const currentProjectForm = this.container.querySelector(
-      "#current-project-form"
-    );
-    if (currentProjectForm) {
-      currentProjectForm.addEventListener("submit", this.handleProjectSubmit);
-    }
+    this.container
+      .querySelector("#current-project-form")
+      ?.addEventListener("submit", (e) => {
+        this.handleProjectSubmit(e);
+      });
 
-    const futureProjectForm = this.container.querySelector(
-      "#future-project-form"
-    );
-    if (futureProjectForm) {
-      futureProjectForm.addEventListener("submit", this.handleProjectSubmit);
-    }
+    this.container
+      .querySelector("#future-project-form")
+      ?.addEventListener("submit", (e) => {
+        this.handleProjectSubmit(e);
+      });
 
     // Обработчики для фильтров
     this.setupSearchFilters();
 
     // Обработчики для рейтинга
     this.setupRatingHandlers();
-
-    // Добавляем обработчики для загрузки файлов
-    this.initFileUploadHandlers();
-  }
-
-  initFileUploadHandlers() {
-    // Обработчики для текущего проекта
-    this.initFileUploadSection("photos", "photo");
-    this.initFileUploadSection("documents", "document");
-    this.initFileUploadSection("reports", "report");
-
-    // Обработчики для будущего проекта
-    this.initFileUploadSection("future-documents", "document");
-    this.initFileUploadSection("future-specifications", "specification");
-  }
-
-  initFileUploadSection(inputId, fileType) {
-    const input = this.container.querySelector(`#${inputId}`);
-    const previewContainer = this.container.querySelector(
-      `#${inputId}-preview`
-    );
-    const progressContainer = input
-      .closest(".form-group")
-      .querySelector(".upload-progress");
-    const progressBar = progressContainer.querySelector(".progress-bar-fill");
-    const progressText = progressContainer.querySelector(".progress-text");
-
-    if (!input || !previewContainer) return;
-
-    // Обработчик изменения input
-    input.addEventListener("change", (e) => {
-      this.handleFileSelection(
-        e.target.files,
-        fileType,
-        previewContainer,
-        progressContainer,
-        progressBar,
-        progressText
-      );
-    });
-
-    // Обработчики drag-and-drop
-    const dropZone = input.closest(".file-upload-container");
-    if (dropZone) {
-      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-        dropZone.addEventListener(eventName, (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        });
-      });
-
-      ["dragenter", "dragover"].forEach((eventName) => {
-        dropZone.addEventListener(eventName, () => {
-          dropZone.classList.add("drag-over");
-        });
-      });
-
-      ["dragleave", "drop"].forEach((eventName) => {
-        dropZone.addEventListener(eventName, () => {
-          dropZone.classList.remove("drag-over");
-        });
-      });
-
-      dropZone.addEventListener("drop", (e) => {
-        const files = e.dataTransfer.files;
-        this.handleFileSelection(
-          files,
-          fileType,
-          previewContainer,
-          progressContainer,
-          progressBar,
-          progressText
-        );
-      });
-    }
-  }
-
-  handleFileSelection(
-    files,
-    fileType,
-    previewContainer,
-    progressContainer,
-    progressBar,
-    progressText
-  ) {
-    if (!files || files.length === 0) return;
-
-    // Show progress bar
-    progressContainer.classList.add("active");
-
-    // Get existing previews if any, otherwise create new array
-    const existingPreviews =
-      previewContainer.querySelectorAll(".file-preview-item");
-    const previews = [];
-
-    // First add any existing previews that were already processed
-    if (existingPreviews && existingPreviews.length > 0) {
-      existingPreviews.forEach((item) => {
-        if (item.dataset.fileObject) {
-          previews.push(JSON.parse(item.dataset.fileObject));
-        }
-      });
-    }
-
-    // Process each file
-    Array.from(files).forEach((file, index) => {
-      // Create preview object
-      const preview = {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        file: file,
-        category: fileType,
-      };
-
-      // Add to previews array
-      previews.push(preview);
-
-      // If it's an image, create preview
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          preview.data = e.target.result;
-          this.updateFilePreviews(previewContainer, previews);
-          this.updateProgress(
-            progressBar,
-            progressText,
-            index + 1,
-            files.length
-          );
-        };
-        reader.readAsDataURL(file);
-      } else {
-        // For non-images, just update preview
-        this.updateFilePreviews(previewContainer, previews);
-        this.updateProgress(progressBar, progressText, index + 1, files.length);
-      }
-    });
-  }
-
-  updateFilePreviews(container, previews) {
-    if (!container || !Array.isArray(previews)) return;
-
-    // Clear existing previews
-    container.innerHTML = "";
-
-    // Add new previews
-    previews.forEach((preview) => {
-      const previewItem = document.createElement("div");
-      previewItem.className = "file-preview-item";
-      previewItem.dataset.fileType = preview.category;
-      previewItem.dataset.fileName = preview.name;
-      previewItem.dataset.mimeType = preview.type;
-
-      // Store file data in a data attribute for later retrieval
-      previewItem.dataset.fileObject = JSON.stringify({
-        name: preview.name,
-        type: preview.type,
-        size: preview.size,
-        category: preview.category,
-        data: preview.data,
-      });
-
-      // Create preview content based on file type
-      if (preview.type.startsWith("image/")) {
-        const img = document.createElement("img");
-        img.src =
-          preview.data ||
-          (preview.file ? URL.createObjectURL(preview.file) : "");
-        img.alt = preview.name;
-        previewItem.appendChild(img);
-      } else {
-        const icon = document.createElement("i");
-        icon.className = this.getFileIconClass(preview.type);
-        previewItem.appendChild(icon);
-      }
-
-      // Add file info
-      const info = document.createElement("div");
-      info.className = "file-info";
-      info.innerHTML = `
-            <span class="file-name">${preview.name}</span>
-            <span class="file-size">${this.formatFileSize(preview.size)}</span>
-        `;
-      previewItem.appendChild(info);
-
-      // Add remove button
-      const removeBtn = document.createElement("button");
-      removeBtn.className = "remove-file";
-      removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-      previewItem.appendChild(removeBtn);
-
-      container.appendChild(previewItem);
-    });
-
-    // Bind events to new preview items
-    this.bindFilePreviewEvents(container);
-  }
-
-  getFileIconClass(mimeType) {
-    if (mimeType.startsWith("image/")) return "fas fa-image";
-    if (mimeType === "application/pdf") return "fas fa-file-pdf";
-    if (mimeType.includes("word")) return "fas fa-file-word";
-    if (mimeType.includes("excel") || mimeType.includes("spreadsheet"))
-      return "fas fa-file-excel";
-    return "fas fa-file";
-  }
-
-  formatFileSize(bytes) {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  }
-
-  updateProgress(progressBar, progressText, current, total) {
-    const percentage = (current / total) * 100;
-    progressBar.style.width = `${percentage}%`;
-    progressText.textContent = `Uploading: ${Math.round(percentage)}%`;
-
-    if (current === total) {
-      setTimeout(() => {
-        progressBar.style.width = "0%";
-        progressText.textContent = "Uploading: 0%";
-      }, 1000);
-    }
   }
 
   onSectionChange(sectionId) {
@@ -809,11 +504,15 @@ export default class ConstructionManager {
   }
 
   switchTab(tab) {
+    console.log(`ConstructionManager switching to tab: ${tab}`);
+    // Remove active class from all content sections within the construction container
     this.container
-      .querySelectorAll(".construction-section")
-      .forEach((s) => s.classList.remove("active"));
+      .querySelectorAll(".construction-section") // Target only sections within this manager's container
+      .forEach((section) => {
+        section.classList.remove("active");
+      });
 
-    // Update section title
+    // Update section title (find title within the container)
     const sectionTitle = this.container.querySelector("#section-title");
     if (sectionTitle) {
       sectionTitle.textContent =
@@ -822,33 +521,33 @@ export default class ConstructionManager {
           : tab === "current-projects"
           ? "Current Projects"
           : "Future Projects";
+    } else {
+      console.warn(
+        "Section title element (#section-title) not found within construction container."
+      );
     }
 
-    // Show appropriate section
-    this.container.querySelector(`#${tab}-section`).classList.add("active");
+    // Show appropriate content section within the container
+    const activeSection = this.container.querySelector(`#${tab}-section`);
+    if (activeSection) {
+      activeSection.classList.add("active");
+    } else {
+      console.warn(
+        `Content section for tab #${tab}-section not found within construction container.`
+      );
+    }
 
-    // Update filters visibility
+    // Update filters visibility - only for contractors
     const contractorsFilters = this.container.querySelector(
       "#contractors-filters"
     );
-    const currentProjectsFilters = this.container.querySelector(
-      "#current-projects-filters"
-    );
-    const futureProjectsFilters = this.container.querySelector(
-      "#future-projects-filters"
-    );
-
     if (contractorsFilters) {
       contractorsFilters.style.display =
         tab === "contractors" ? "flex" : "none";
-    }
-    if (currentProjectsFilters) {
-      currentProjectsFilters.style.display =
-        tab === "current-projects" ? "flex" : "none";
-    }
-    if (futureProjectsFilters) {
-      futureProjectsFilters.style.display =
-        tab === "future-projects" ? "flex" : "none";
+    } else {
+      console.warn(
+        "Contractors filter group (#contractors-filters) not found within construction container."
+      );
     }
 
     // Update add buttons visibility
@@ -872,8 +571,11 @@ export default class ConstructionManager {
         tab === "future-projects" ? "block" : "none";
     }
 
-    this.activeTab = tab;
-    this.renderActiveSection();
+    this.activeTab = tab; // Keep track of the active tab internally
+    // Maybe call renderActiveSection() or specific rendering if needed after switch
+    if (tab === "contractors") this.renderContractors();
+    if (tab === "current-projects") this.renderProjects("current");
+    if (tab === "future-projects") this.renderProjects("future");
 
     // Update project statistics when switching to project tabs
     if (tab === "current-projects") {
@@ -899,66 +601,92 @@ export default class ConstructionManager {
 
   // Методы для работы с подрядчиками
   async loadContractors() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+    // Определяем URL API
+    const apiUrl = "/Maintenance_P/backend/construction/contractors_api.php";
+    // Возможно, стоит вынести URL в конфигурацию или константы
 
-      const result = await response.json();
-      if (result.success) {
-        // Convert API format to client format
-        this.contractors = result.data.map((contractor) => {
-          return {
-            id: parseInt(contractor.id),
-            companyName: contractor.company_name,
-            businessType: contractor.business_type,
-            location: contractor.location || "",
-            email: contractor.email || "",
-            phone: contractor.phone || "",
-            rating: parseInt(contractor.rating) || 0,
-            contactPerson: contractor.contact_person
-              ? {
-                  id: parseInt(contractor.contact_person.id),
-                  name: contractor.contact_person.name,
-                  position: contractor.contact_person.position || "",
-                  phone: contractor.contact_person.phone || "",
-                  email: contractor.contact_person.email || "",
-                }
-              : {
-                  name: "None",
-                  position: "",
-                  phone: "",
-                  email: "",
-                },
-            employees: contractor.employees
-              ? contractor.employees.map((emp) => ({
-                  id: parseInt(emp.id),
-                  fullName: emp.name,
-                  position: emp.position || "",
-                  phone: emp.phone || "",
-                  email: emp.email || "",
-                }))
-              : [],
-          };
-        });
+    try {
+      console.log("ConstructionManager: Fetching contractors from API...");
+      const response = await fetch(apiUrl);
+
+      if (!response.ok) {
+        // Если ответ сервера не OK (например, 404, 500)
+        console.error(
+          `Error fetching contractors: ${response.status} ${response.statusText}`
+        );
+        // Попробуем прочитать тело ошибки, если оно есть
+        const errorData = await response.json().catch(() => null);
+        console.error("Error data:", errorData);
+        // Отображаем ошибку пользователю (или используем дефолтные данные)
+        this.contractors = []; // Показываем пустой список при ошибке
       } else {
-        console.error("Failed to load contractors:", result.message);
-        // Fallback to empty array
-        this.contractors = [];
+        // Если ответ OK, парсим JSON
+        this.contractors = await response.json();
+        console.log(
+          "ConstructionManager: Contractors loaded successfully:",
+          this.contractors
+        );
+
+        // Загружаем сотрудников для каждого контрактора
+        for (const contractor of this.contractors) {
+          contractor.employees = await this.loadEmployeesForContractor(
+            contractor.id
+          );
+        }
       }
     } catch (error) {
-      console.error("Error loading contractors:", error);
-      // Fallback to empty array on error
-      this.contractors = [];
+      // Обрабатываем ошибки сети или другие ошибки fetch
+      console.error("Error during fetch contractors:", error);
+      this.contractors = []; // Показываем пустой список при ошибке
+    }
+
+    // Вызываем рендер после загрузки (или ошибки)
+    this.renderContractors();
+    // Важно: нужно убедиться, что renderContractors вызывается после loadContractors
+    // Возможно, его вызов нужно перенести из init() сюда или в loadData()
+  }
+
+  async loadEmployeesForContractor(contractorId) {
+    try {
+      const response = await fetch(
+        `/Maintenance_P/backend/construction/contractor_employees_api.php?contractor_id=${contractorId}`
+      );
+      if (!response.ok) {
+        console.error(
+          `Error fetching employees for contractor ${contractorId}: ${response.status}`
+        );
+        return [];
+      }
+      const employees = await response.json();
+      // Преобразуем поля из snake_case в camelCase для совместимости с существующим кодом
+      return employees.map((emp) => ({
+        id: emp.id,
+        fullName: emp.full_name,
+        position: emp.position,
+        phone: emp.phone || "",
+        contractorId: emp.contractor_id,
+      }));
+    } catch (error) {
+      console.error(
+        `Error fetching employees for contractor ${contractorId}:`,
+        error
+      );
+      return [];
     }
   }
 
   renderContractors() {
     const container = this.container.querySelector("#contractors-list");
     if (!container) return;
+
+    // Добавим проверку, что this.contractors это массив
+    if (!Array.isArray(this.contractors)) {
+      console.error(
+        "renderContractors: this.contractors is not an array!",
+        this.contractors
+      );
+      this.contractors = []; // Устанавливаем пустой массив, чтобы избежать дальнейших ошибок
+    }
 
     if (this.contractors.length === 0) {
       container.innerHTML = `
@@ -971,82 +699,116 @@ export default class ConstructionManager {
       return;
     }
 
+    console.log("Rendering contractors:", this.contractors);
+
     container.innerHTML = this.contractors
-      .map(
-        (contractor) => `
-      <div class="contractor-card" data-id="${contractor.id}">
-        <div class="contractor-header">
-          <h3>${contractor.companyName}</h3>
-          <div class="contractor-rating">
-            ${this.generateRatingStars(contractor.rating)}
-          </div>
-        </div>
-        <div class="contractor-info">
-          <div class="info-item">
-            <i class="fas fa-briefcase"></i>
-            <span>${contractor.businessType}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-location-dot"></i>
-            <span>${contractor.location}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.email}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.phone}</span>
-          </div>
-        </div>
-        <div class="contact-person-info">
-          <h4>Contact Person</h4>
-          <div class="info-item">
-            <i class="fas fa-user"></i>
-            <span>${contractor.contactPerson.name}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-id-badge"></i>
-            <span>${contractor.contactPerson.position}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.contactPerson.phone}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.contactPerson.email}</span>
-          </div>
-        </div>
-        <div class="contractor-employees">
-          <h4>Employees (${contractor.employees.length})</h4>
-          <div class="employees-list">
-            ${this.renderEmployeesList(contractor.employees)}
-          </div>
-          <button class="btn-secondary add-employee" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-user-plus"></i> Add Employee
-          </button>
-        </div>
-        <div class="contractor-actions">
-          <button class="btn-action edit" data-contractor-id="${contractor.id}">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-action delete" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    `
-      )
+      .map((contractor) => {
+        // Добавим проверку на сам объект contractor и его свойства
+        if (!contractor) {
+          console.error(
+            "renderContractors: Encountered null/undefined contractor in array"
+          );
+          return "";
+        }
+
+        // Проверим все необходимые поля и установим значения по умолчанию
+        const companyName =
+          contractor.company_name || contractor.companyName || "N/A";
+        const businessType =
+          contractor.business_type || contractor.businessType || "N/A";
+        const location = contractor.location || "N/A"; // Делаем явную проверку на location
+        const email = contractor.email || "N/A";
+        const phone = contractor.phone || "N/A";
+        const rating = parseInt(contractor.rating) || 0;
+        const contactPersonName = contractor.contact_person || "N/A";
+        const contactPersonPosition =
+          contractor.contact_person_position || "N/A"; // Проверяем и получаем position
+        const contactPersonPhone = phone; // Используем основной телефон
+        const contactPersonEmail = email; // Используем основной email
+        const employees = contractor.employees || [];
+
+        // В API нет поля employees
+
+        return `
+            <div class="contractor-card" data-id="${contractor.id}">
+                <div class="contractor-header">
+                <h3>${companyName}</h3>
+                <div class="contractor-rating">
+                    ${this.generateRatingStars(rating)}
+                </div>
+                </div>
+                <div class="contractor-info">
+                <div class="info-item">
+                    <i class="fas fa-briefcase"></i>
+                    <span>${businessType}</span> <!-- Используем исправленную переменную -->
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-location-dot"></i>
+                    <span>${location}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>${email}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <span>${phone}</span>
+                </div>
+                </div>
+                <div class="contact-person-info">
+                <h4>Contact Person</h4>
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <span>${contactPersonName}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-id-badge"></i>
+                    <span>${contactPersonPosition}</span> <!-- Отображаем заглушку N/A -->
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <span>${contactPersonPhone}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>${contactPersonEmail}</span>
+                </div>
+                </div>
+                <div class="contractor-employees">
+                <h4>Employees (${employees.length})</h4>
+                <div class="employees-list">
+                    ${this.renderEmployeesList(employees)}
+                </div>
+                <button class="btn-secondary add-employee" data-contractor-id="${
+                  contractor.id
+                }">
+                    <i class="fas fa-user-plus"></i> Add Employee
+                </button>
+                </div>
+                <div class="contractor-actions">
+                <button class="btn-action edit" data-contractor-id="${
+                  contractor.id
+                }">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-action delete" data-contractor-id="${
+                  contractor.id
+                }">
+                    <i class="fas fa-trash"></i>
+                </button>
+                </div>
+            </div>
+            `;
+      })
       .join("");
 
     // Добавляем обработчики событий после рендеринга
     this.bindEmployeeEvents();
+    this.bindContractorEvents(); // Выделяем логику обработчиков в отдельный метод для реиспользования
+  }
 
+  // Выделяем обработчики кнопок в отдельный метод
+  bindContractorEvents() {
     // Add event handlers for contractor edit and delete buttons
     this.container
       .querySelectorAll(".contractor-actions .btn-action.edit")
@@ -1054,11 +816,14 @@ export default class ConstructionManager {
         button.addEventListener("click", (e) => {
           e.stopPropagation();
           const contractorId = parseInt(button.dataset.contractorId);
+          console.log("Edit button clicked for contractor ID:", contractorId);
           const contractor = this.contractors.find(
             (c) => c.id === contractorId
           );
           if (contractor) {
             this.showContractorModal(contractor);
+          } else {
+            console.error("Contractor not found for ID:", contractorId);
           }
         });
       });
@@ -1075,6 +840,10 @@ export default class ConstructionManager {
   }
 
   renderEmployeesList(employees) {
+    if (!employees || employees.length === 0) {
+      return '<div class="no-employees">No employees yet</div>';
+    }
+
     return employees
       .map(
         (employee) => `
@@ -1170,684 +939,457 @@ export default class ConstructionManager {
     }
   }
 
-  deleteEmployee(contractorId, employeeId) {
+  async deleteEmployee(contractorId, employeeId) {
     if (confirm("Are you sure you want to delete this employee?")) {
-      const contractor = this.contractors.find((c) => c.id === contractorId);
-      if (contractor) {
-        contractor.employees = contractor.employees.filter(
-          (e) => e.id !== employeeId
+      try {
+        const response = await fetch(
+          `/Maintenance_P/backend/construction/contractor_employees_api.php?id=${employeeId}`,
+          {
+            method: "DELETE",
+          }
         );
-        this.renderContractors();
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to delete employee");
+        }
+
+        // Получаем результат операции
+        const result = await response.json().catch(() => ({}));
+        console.log("Employee deleted successfully:", result);
+
+        // Обновляем локальный список сотрудников
+        const contractor = this.contractors.find((c) => c.id === contractorId);
+        if (contractor) {
+          // Обновляем список сотрудников с API
+          contractor.employees = await this.loadEmployeesForContractor(
+            contractorId
+          );
+          // Перерисовываем карточки подрядчиков
+          this.renderContractors();
+        }
+      } catch (error) {
+        console.error("Error deleting employee:", error);
+        alert(
+          "An error occurred while deleting the employee. Please try again."
+        );
       }
     }
   }
 
-  handleEmployeeSubmit(e) {
+  async handleEmployeeSubmit(e) {
     e.preventDefault();
     const form = e.target;
     const contractorId = parseInt(form.elements.contractorId.value);
     const employeeData = {
-      fullName: form.elements.fullName.value,
+      contractor_id: contractorId,
+      full_name: form.elements.fullName.value,
       position: form.elements.position.value,
-      phone: form.elements.phone.value,
+      phone: form.elements.phone.value || "",
     };
 
-    if (form.dataset.employeeId) {
-      // Редактирование существующего сотрудника
-      const employeeId = parseInt(form.dataset.employeeId);
-      this.updateEmployee(contractorId, employeeId, employeeData);
-    } else {
-      // Добавление нового сотрудника
-      this.addEmployeeToContractor(contractorId, employeeData);
+    try {
+      if (form.dataset.employeeId) {
+        // Редактирование существующего сотрудника
+        const employeeId = parseInt(form.dataset.employeeId);
+        await this.updateEmployee(employeeId, employeeData);
+      } else {
+        // Добавление нового сотрудника
+        await this.addEmployeeToContractor(employeeData);
+      }
+
+      // Перезагружаем список сотрудников для данного контрактора
+      const contractor = this.contractors.find((c) => c.id === contractorId);
+      if (contractor) {
+        contractor.employees = await this.loadEmployeesForContractor(
+          contractorId
+        );
+        this.renderContractors();
+      }
+    } catch (error) {
+      console.error("Error handling employee submission:", error);
+      alert("An error occurred while saving employee data. Please try again.");
     }
 
     this.closeModals();
   }
 
-  addEmployeeToContractor(contractorId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      // First add to local data structure for immediate feedback
-      data.id = Date.now(); // Temporary ID
-      contractor.employees.push(data);
-
-      // Prepare data for API
-      const existingEmployees = contractor.employees.filter(
-        (e) => e.id !== data.id
-      );
-
-      const apiData = {
-        company_name: contractor.companyName,
-        business_type: contractor.businessType,
-        location: contractor.location,
-        email: contractor.email,
-        phone: contractor.phone,
-        rating: contractor.rating,
-        notes: contractor.notes || "",
-        employees: [
-          ...existingEmployees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: 0,
-          })),
-          // Add new employee
-          {
-            name: data.fullName,
-            position: data.position || "",
-            phone: data.phone || "",
-            email: data.email || "",
-            is_primary_contact: 0,
-          },
-        ],
-      };
-
-      // Используем правильный URL API
-      fetch(
-        `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
+  async addEmployeeToContractor(data) {
+    try {
+      const response = await fetch(
+        "/Maintenance_P/backend/construction/contractor_employees_api.php",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(apiData),
+          body: JSON.stringify(data),
         }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((responseData) => {
-          if (responseData.success) {
-            // Обновляем данные о сотрудниках из ответа API
-            if (responseData.data && responseData.data.employees) {
-              // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-              const updatedContractor = this.contractors.find(
-                (c) => c.id === contractorId
-              );
-              if (updatedContractor) {
-                // Преобразуем сотрудников из формата API в формат UI
-                updatedContractor.employees = responseData.data.employees.map(
-                  (emp) => ({
-                    id: parseInt(emp.id),
-                    fullName: emp.name,
-                    position: emp.position || "",
-                    phone: emp.phone || "",
-                    email: emp.email || "",
-                  })
-                );
-              }
-            }
+      );
 
-            // Перерисовываем UI для отображения обновленных данных
-            this.renderContractors();
-          } else {
-            console.error("Error adding employee:", responseData.message);
-            alert("Failed to add employee: " + responseData.message);
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          }
-        })
-        .catch((error) => {
-          console.error("Error adding employee:", error);
-          alert("Failed to add employee. Please try again.");
-          // Обновляем данные с сервера в случае ошибки
-          this.loadContractors().then(() => this.renderContractors());
-        });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add employee");
+      }
 
-      // Render immediately for responsive UI
-      this.renderContractors();
+      return await response.json();
+    } catch (error) {
+      console.error("Error adding employee:", error);
+      throw error;
     }
   }
 
-  updateEmployee(contractorId, employeeId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const index = contractor.employees.findIndex((e) => e.id === employeeId);
-      if (index !== -1) {
-        // Update local data first
-        contractor.employees[index] = {
-          ...contractor.employees[index],
-          ...data,
-        };
+  async updateEmployee(employeeId, data) {
+    try {
+      const response = await fetch(
+        `/Maintenance_P/backend/construction/contractor_employees_api.php?id=${employeeId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
-        // Prepare data for API
-        const apiData = {
-          company_name: contractor.companyName,
-          business_type: contractor.businessType,
-          location: contractor.location,
-          email: contractor.email,
-          phone: contractor.phone,
-          rating: contractor.rating,
-          notes: contractor.notes || "",
-          employees: contractor.employees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: e.isPrimaryContact ? 1 : 0,
-          })),
-        };
-
-        // Используем правильный URL API
-        fetch(
-          `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(apiData),
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((responseData) => {
-            if (responseData.success) {
-              // Обновляем данные о сотрудниках из ответа API
-              if (responseData.data && responseData.data.employees) {
-                // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-                const updatedContractor = this.contractors.find(
-                  (c) => c.id === contractorId
-                );
-                if (updatedContractor) {
-                  // Преобразуем сотрудников из формата API в формат UI
-                  updatedContractor.employees = responseData.data.employees.map(
-                    (emp) => ({
-                      id: parseInt(emp.id),
-                      fullName: emp.name,
-                      position: emp.position || "",
-                      phone: emp.phone || "",
-                      email: emp.email || "",
-                    })
-                  );
-                }
-              }
-
-              // Перерисовываем UI для отображения обновленных данных
-              this.renderContractors();
-            } else {
-              console.error("Error updating employee:", responseData.message);
-              alert("Failed to update employee: " + responseData.message);
-              // Обновляем данные с сервера в случае ошибки
-              this.loadContractors().then(() => this.renderContractors());
-            }
-          })
-          .catch((error) => {
-            console.error("Error updating employee:", error);
-            alert("Failed to update employee. Please try again.");
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          });
-
-        // Render immediately for UI feedback
-        this.renderContractors();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update employee");
       }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating employee:", error);
+      throw error;
     }
   }
 
   // Методы для работы с проектами
   async loadCurrentProjects() {
+    // TODO: Implement filtering/status checking if backend returns all projects
     try {
       const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=current"
+        "/Maintenance_P/backend/construction/projects_api.php"
+      ); // Полный путь до API
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const projects = await response.json();
+      console.log("Raw projects data from backend:", projects);
+
+      // Filter for projects that are considered 'current' (e.g., based on status)
+      // Example: Assuming 'current' projects are those with status 'in-progress', 'on-hold', 'completed'
+      this.currentProjects = Array.isArray(projects)
+        ? projects.filter((p) =>
+            ["in-progress", "on-hold", "completed"].includes(p.status)
+          )
+        : [];
+      console.log(
+        "Current Projects loaded from backend:",
+        this.currentProjects
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.currentProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          progress: project.progress,
-          actualCost: project.actual_cost,
-          lastUpdate: project.last_update,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading current projects:", data.message);
-        this.currentProjects = [];
-      }
+      this.currentProjects.forEach((project) =>
+        this.ensureFileStructures(project, "current")
+      );
+      // this.renderProjects("current"); // Rendering is usually called after all data is loaded in init or switchTab
     } catch (error) {
       console.error("Error loading current projects:", error);
-      this.currentProjects = [];
+      this.currentProjects = []; // Reset on error
+      // Optionally show an error message to the user
     }
   }
 
   async loadFutureProjects() {
+    // TODO: Implement filtering/status checking if backend returns all projects
     try {
       const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=future"
-      );
-
+        "/Maintenance_P/backend/construction/projects_api.php"
+      ); // Полный путь до API
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const projects = await response.json();
+      console.log("Raw projects data from backend:", projects);
 
-      const data = await response.json();
+      // Filter for projects that are considered 'future' (e.g., based on status)
+      // Example: Assuming 'future' projects are those with status 'planned', 'pending' or similar
+      this.futureProjects = Array.isArray(projects)
+        ? projects.filter(
+            (p) => !["in-progress", "on-hold", "completed"].includes(p.status)
+          )
+        : []; // Adjust statuses as needed
+      console.log("Future Projects loaded from backend:", this.futureProjects);
 
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.futureProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          budget: project.budget,
-          priority: project.priority,
-          description: project.description,
-          objectives: project.objectives,
-          risks: project.risks,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading future projects:", data.message);
-        this.futureProjects = [];
-      }
+      this.futureProjects.forEach((project) =>
+        this.ensureFileStructures(project, "future")
+      );
+      // this.renderProjects("future"); // Rendering is usually called after all data is loaded in init or switchTab
     } catch (error) {
       console.error("Error loading future projects:", error);
-      this.futureProjects = [];
+      this.futureProjects = []; // Reset on error
+      // Optionally show an error message to the user
     }
   }
 
-  // Метод для организации файлов проекта по категориям
-  organizeProjectFiles(project) {
-    if (!project) return project;
-    if (!project.files) {
-      project.files = [];
+  renderProjects(type, projectsToRender = null) {
+    const projects =
+      projectsToRender ||
+      (type === "current" ? this.currentProjects : this.futureProjects);
+    const container = this.container.querySelector(`#${type}-projects-list`);
+
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (!projects || projects.length === 0) {
+      container.innerHTML = `
+        <div class="no-results">
+          <i class="fas fa-search"></i>
+          <p>No projects found</p>
+        </div>
+      `;
+
+      // Update statistics even if no projects are found
+      this.updateProjectStatistics(type);
+      return;
     }
 
-    if (!Array.isArray(project.files)) {
-      console.error("Files is not an array:", project.files);
-      project.files = [];
+    console.log(`Rendering ${projects.length} ${type} projects:`, projects);
+
+    projects.forEach((project) => {
+      console.log(`Rendering project:`, project);
+
+      // Ищем подрядчика учитывая разные форматы ID
+      const contractorId = project.contractorId || project.contractor_id;
+      console.log(`Looking for contractor with ID: ${contractorId}`);
+
+      let contractor = null;
+      if (contractorId) {
+        contractor = this.contractors.find((c) => c.id == contractorId);
+        console.log(`Found contractor:`, contractor);
+      }
+
+      const template = this.container.querySelector(
+        `#${type}-project-card-template`
+      );
+      const card = template.content.cloneNode(true);
+
+      // Set project ID
+      card.querySelector(".project-card").dataset.id = project.id;
+
+      // Set project name and status
+      // Используем любое доступное поле для имени проекта
+      const projectName =
+        project.name ||
+        project.project_name ||
+        project.title ||
+        "Unnamed Project";
+      card.querySelector(".project-name").textContent = projectName;
+
+      const statusSelect = card.querySelector(".status-select");
+      statusSelect.value = project.status;
+
+      // Обновляем классы статуса
+      this.updateStatusClasses(statusSelect, project.status);
+
+      // Set project details - используем любое доступное поле для местоположения
+      const projectLocation = project.location || project.address || "";
+      card.querySelector(".location").textContent = projectLocation;
+
+      // Форматируем даты для отображения
+      const startDate = project.startDate || project.start_date;
+      const endDate = project.endDate || project.end_date;
+      const startDateFormatted = this.formatDateForDisplay(startDate);
+      const endDateFormatted = this.formatDateForDisplay(endDate);
+      card.querySelector(
+        ".dates"
+      ).textContent = `${startDateFormatted} - ${endDateFormatted}`;
+
+      if (type === "current") {
+        this.renderCurrentProjectDetails(card, project, contractor);
+      } else {
+        this.renderFutureProjectDetails(card, project, contractor);
+      }
+
+      // Добавляем карточку в контейнер
+      container.appendChild(card);
+    });
+
+    // After rendering all projects, update the statistics
+    this.updateProjectStatistics(type);
+
+    // Bind events to project cards
+    this.bindProjectCardEvents(type);
+
+    // Привязываем события к предпросмотрам файлов для всех открытых проектов
+    const detailSections = container.querySelectorAll(
+      '.project-details[style*="display: block"]'
+    );
+    detailSections.forEach((section) => {
+      this.bindFilePreviewEvents(section);
+    });
+  }
+
+  updateStatusClasses(statusSelect, status) {
+    // Удаляем все существующие классы статуса
+    statusSelect.classList.remove(
+      "planned",
+      "in-progress",
+      "completed",
+      "on-hold",
+      "move-to-current",
+      "delayed"
+    );
+
+    // Добавляем новый класс статуса
+    statusSelect.classList.add(status);
+
+    // Сбрасываем inline стили, которые могли быть установлены ранее
+    statusSelect.style.backgroundColor = "";
+    statusSelect.style.color = "";
+    statusSelect.style.borderColor = "";
+
+    // Определяем цвета в зависимости от статуса
+    let colors = {
+      planned: {
+        bg: "#e3f2fd",
+        color: "#1976d2",
+        border: "#90caf9",
+      },
+      "in-progress": {
+        bg: "#fff3e0",
+        color: "#f57c00",
+        border: "#ffcc80",
+      },
+      completed: {
+        bg: "#e8f5e9",
+        color: "#388e3c",
+        border: "#a5d6a7",
+      },
+      "on-hold": {
+        bg: "#ffebee",
+        color: "#d32f2f",
+        border: "#ef9a9a",
+      },
+      "move-to-current": {
+        bg: "#f3e5f5",
+        color: "#7b1fa2",
+        border: "#ce93d8",
+      },
+      delayed: {
+        bg: "#ffebee",
+        color: "#d32f2f",
+        border: "#ef9a9a",
+      },
+    };
+
+    // Применяем стили, если статус найден в нашем объекте
+    if (colors[status]) {
+      statusSelect.style.backgroundColor = colors[status].bg;
+      statusSelect.style.color = colors[status].color;
+      statusSelect.style.borderColor = colors[status].border;
+      statusSelect.style.borderWidth = "1px";
+      statusSelect.style.borderStyle = "solid";
+    }
+  }
+
+  // Helper method to update card size after toggle
+  updateCardSize(card) {
+    // Ensure card is a DOM element
+    if (!card || typeof card.closest !== "function") {
+      // If card is not a DOM element, try to find the project card differently
+      // This handles cases where 'card' might be the project card body or another element
+      const projectCard = card.parentElement
+        ? card.parentElement.closest(".project-card")
+        : document.querySelector(".project-card");
+
+      if (projectCard) {
+        // Set height to auto to let it resize naturally
+        projectCard.style.height = "auto";
+        const cardBody = projectCard.querySelector(".card-body");
+        if (cardBody) {
+          cardBody.style.height = "auto";
+        }
+      }
+      return;
     }
 
+    // Regular handling if card is a DOM element with closest method
+    const projectCard = card.closest(".project-card");
+    if (projectCard) {
+      // Ensure card body expands/contracts with content
+      const cardBody = projectCard.querySelector(".card-body");
+      if (cardBody) {
+        // Use setTimeout to ensure DOM has updated
+        setTimeout(() => {
+          // Reset any fixed heights
+          cardBody.style.height = "";
+          projectCard.style.height = "";
+
+          // Calculate and set new height
+          const height = cardBody.scrollHeight;
+          cardBody.style.height = height + "px";
+
+          // Allow height to adjust naturally after initial animation
+          setTimeout(() => {
+            cardBody.style.height = "auto";
+          }, 300);
+        }, 10);
+      }
+    }
+  }
+
+  renderCurrentProjectDetails(card, project, contractor) {
     console.log(
-      `Organizing files for project ${project.id} Files count: ${project.files.length}`
+      "Rendering current project details with contractor:",
+      contractor
     );
 
-    // Копируем проект, чтобы не изменять оригинал
-    const organizedProject = { ...project };
-
-    // Организуем файлы по категориям
-    organizedProject.photos = [];
-    organizedProject.documents = [];
-    organizedProject.reports = [];
-    organizedProject.specifications = [];
-    organizedProject.budgetDocs = [];
-
-    project.files.forEach((file) => {
-      // Ensure file has all necessary properties
-      const processedFile = {
-        ...file,
-        id: file.id || file.fileId || "",
-        fileId: file.id || file.fileId || "",
-        fileName:
-          file.file_name ||
-          file.fileName ||
-          file.original_name ||
-          "Unknown file",
-        original_name:
-          file.original_name || file.fileName || file.file_name || "",
-        filePath: file.file_path || file.filePath || "",
-        file_path: file.file_path || file.filePath || "",
-        miniPath: file.mini_path || file.miniPath || "",
-        mini_path: file.mini_path || file.miniPath || "",
-        mimeType: file.mime_type || file.mimeType || "",
-        mime_type: file.mime_type || file.mimeType || "",
-        fileCategory:
-          file.file_category ||
-          file.fileCategory ||
-          file.category ||
-          "document",
-      };
-
-      const category = processedFile.fileCategory.toLowerCase();
-
-      if (category === "photo") {
-        organizedProject.photos.push(processedFile);
-      } else if (category === "document") {
-        organizedProject.documents.push(processedFile);
-      } else if (category === "report") {
-        organizedProject.reports.push(processedFile);
-      } else if (category === "specification") {
-        organizedProject.specifications.push(processedFile);
-      } else if (category === "budget") {
-        organizedProject.budgetDocs.push(processedFile);
-      } else {
-        // Если категория неизвестна, добавляем в документы
-        organizedProject.documents.push(processedFile);
-      }
-    });
-
-    console.log(`Organized files for project ${project.id}`, {
-      photos: organizedProject.photos.length,
-      documents: organizedProject.documents.length,
-      reports: organizedProject.reports.length,
-      specifications: organizedProject.specifications.length,
-      budgetDocs: organizedProject.budgetDocs.length,
-    });
-
-    return organizedProject;
-  }
-
-  // Изменим метод renderProjects, чтобы использовать organizeProjectFiles
-  renderProjects(type, projectsToRender = null) {
-    const projects =
-      projectsToRender ||
-      (type === "current" ? this.currentProjects : this.futureProjects);
-    const container = this.container.querySelector(`#${type}-projects-list`);
-
-    if (!container) {
-      console.error(`Container #${type}-projects-list not found`);
-      return;
-    }
-
-    console.log(`Rendering ${type} projects:`, projects);
-    container.innerHTML = "";
-
-    if (!projects || projects.length === 0) {
-      container.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-search"></i>
-          <p>No projects found</p>
-        </div>
-      `;
-
-      // Update statistics even if no projects are found
-      this.updateProjectStatistics(type);
-      return;
-    }
-
-    projects.forEach((project) => {
-      // Организуем файлы проекта по категориям
-      const organizedProject = this.organizeProjectFiles(project);
-
-      const contractor = this.contractors.find(
-        (c) => c.id === organizedProject.contractorId
-      );
-      const template = this.container.querySelector(
-        `#${type}-project-card-template`
-      );
-
-      if (!template) {
-        console.error(`Template #${type}-project-card-template not found`);
-        return;
-      }
-
-      const card = template.content.cloneNode(true);
-
-      // Set project ID
-      const projectCard = card.querySelector(".project-card");
-      projectCard.dataset.id = organizedProject.id;
-
-      // Set project name and status
-      card.querySelector(".project-name").textContent = organizedProject.name;
-      const statusSelect = card.querySelector(".status-select");
-      statusSelect.value = organizedProject.status;
-
-      // Добавляем data-атрибут для привязки к проекту
-      statusSelect.setAttribute("data-project-id", organizedProject.id);
-
-      // Обновляем классы статуса
-      this.updateStatusClasses(statusSelect, organizedProject.status);
-
-      // Set project details
-      card.querySelector(".location").textContent = organizedProject.location;
-
-      // Форматируем даты для отображения
-      const startDateFormatted = this.formatDateForDisplay(
-        organizedProject.startDate
-      );
-      const endDateFormatted = this.formatDateForDisplay(
-        organizedProject.endDate
-      );
-      card.querySelector(
-        ".dates"
-      ).textContent = `${startDateFormatted} - ${endDateFormatted}`;
-
-      if (type === "current") {
-        this.renderCurrentProjectDetails(card, organizedProject, contractor);
-      } else {
-        this.renderFutureProjectDetails(card, organizedProject, contractor);
-      }
-
-      // Добавляем карточку в контейнер
-      container.appendChild(card);
-    });
-
-    // After rendering all projects, update the statistics
-    this.updateProjectStatistics(type);
-
-    // Bind events to project cards
-    this.bindProjectCardEvents(type);
-
-    // Привязываем события к предпросмотрам файлов
-    this.bindFilePreviewEvents();
-
-    // Добавим дополнительную логику для обработки всех изображений на странице
-    this.enhanceAllImagePreviews(type);
-  }
-
-  // Метод для улучшения всех превью изображений в указанной секции
-  enhanceAllImagePreviews(type) {
-    // Получаем контейнер для секции
-    const sectionId =
-      type === "current"
-        ? "current-projects-section"
-        : "future-projects-section";
-    const section = this.container.querySelector(`#${sectionId}`);
-    if (!section) return;
-
-    // Находим все изображения в секции
-    const images = section.querySelectorAll(".file-preview-container img");
-    images.forEach((img) => {
-      // Проверяем, что у изображения есть src
-      const src = img.getAttribute("src");
-      if (src) {
-        // Делаем курсор указателем
-        img.style.cursor = "pointer";
-
-        // Удаляем старые обработчики, чтобы избежать дублирования
-        const newImg = img.cloneNode(true);
-        img.parentNode.replaceChild(newImg, img);
-
-        // Добавляем обработчик клика
-        newImg.addEventListener("click", () => {
-          console.log("Image clicked:", src);
-          this.showImageModal(src);
-        });
-      }
-    });
-
-    console.log(`Enhanced ${images.length} images in ${type} projects section`);
-  }
-
-  updateStatusClasses(statusSelect, status) {
-    // Удаляем все существующие классы статуса
-    statusSelect.classList.remove(
-      "planned",
-      "in-progress",
-      "completed",
-      "on-hold",
-      "move-to-current",
-      "delayed",
-      "design-phase", // Добавляем новые возможные статусы
-      "planning"
-    );
-
-    // Преобразуем статус для использования в качестве CSS класса (заменяем пробелы на дефисы)
-    const statusClass = status.replace(/\s+/g, "-").toLowerCase();
-
-    // Добавляем новый класс статуса
-    statusSelect.classList.add(statusClass);
-
-    // Сбрасываем inline стили, которые могли быть установлены ранее
-    statusSelect.style.backgroundColor = "";
-    statusSelect.style.color = "";
-    statusSelect.style.borderColor = "";
-
-    // Определяем цвета в зависимости от статуса
-    let colors = {
-      planned: {
-        bg: "#e3f2fd",
-        color: "#1976d2",
-        border: "#90caf9",
-      },
-      "in-progress": {
-        bg: "#fff3e0",
-        color: "#f57c00",
-        border: "#ffcc80",
-      },
-      completed: {
-        bg: "#e8f5e9",
-        color: "#388e3c",
-        border: "#a5d6a7",
-      },
-      "on-hold": {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "move-to-current": {
-        bg: "#f3e5f5",
-        color: "#7b1fa2",
-        border: "#ce93d8",
-      },
-      delayed: {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "design-phase": {
-        // Добавляем новые статусы с цветами
-        bg: "#e0f7fa",
-        color: "#0097a7",
-        border: "#80deea",
-      },
-      planning: {
-        bg: "#f3e5f5",
-        color: "#8e24aa",
-        border: "#ce93d8",
-      },
-    };
-
-    // Пробуем найти цвета для статуса напрямую или для его CSS версии
-    let colorConfig = colors[status] || colors[statusClass];
-
-    // Применяем стили, если статус найден в нашем объекте
-    if (colorConfig) {
-      statusSelect.style.backgroundColor = colorConfig.bg;
-      statusSelect.style.color = colorConfig.color;
-      statusSelect.style.borderColor = colorConfig.border;
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    } else {
-      // Если статус неизвестен, применяем стандартные стили
-      statusSelect.style.backgroundColor = "#f5f5f5";
-      statusSelect.style.color = "#616161";
-      statusSelect.style.borderColor = "#bdbdbd";
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    }
-
-    // Устанавливаем data-атрибут для дополнительной поддержки селекторов
-    statusSelect.setAttribute("data-status", status);
-  }
-
-  // Helper method to update card size after toggle
-  updateCardSize(card) {
-    // Ensure card is a DOM element
-    if (!card || typeof card.closest !== "function") {
-      // If card is not a DOM element, try to find the project card differently
-      // This handles cases where 'card' might be the project card body or another element
-      const projectCard = card.parentElement
-        ? card.parentElement.closest(".project-card")
-        : document.querySelector(".project-card");
-
-      if (projectCard) {
-        // Set height to auto to let it resize naturally
-        projectCard.style.height = "auto";
-        const cardBody = projectCard.querySelector(".card-body");
-        if (cardBody) {
-          cardBody.style.height = "auto";
-        }
-      }
-      return;
-    }
-
-    // Regular handling if card is a DOM element with closest method
-    const projectCard = card.closest(".project-card");
-    if (projectCard) {
-      // Ensure card body expands/contracts with content
-      const cardBody = projectCard.querySelector(".card-body");
-      if (cardBody) {
-        // Use setTimeout to ensure DOM has updated
-        setTimeout(() => {
-          // Reset any fixed heights
-          cardBody.style.height = "";
-          projectCard.style.height = "";
-
-          // Calculate and set new height
-          const height = cardBody.scrollHeight;
-          cardBody.style.height = height + "px";
-
-          // Allow height to adjust naturally after initial animation
-          setTimeout(() => {
-            cardBody.style.height = "auto";
-          }, 300);
-        }, 10);
-      }
-    }
-  }
-
-  renderCurrentProjectDetails(card, project, contractor) {
     // Set current project specific details
-    card.querySelector(".progress").textContent = project.progress
-      ? `${project.progress}%`
+    const progress = project.progress || 0;
+    card.querySelector(".progress").textContent = progress
+      ? `${progress}%`
       : "Not started";
-    card.querySelector(".actual-cost").textContent = project.actualCost
-      ? `$${project.actualCost.toLocaleString()}`
+
+    const actualCost = project.actualCost || project.actual_cost || 0;
+    card.querySelector(".actual-cost").textContent = actualCost
+      ? `$${actualCost.toLocaleString()}`
       : "Not specified";
-    card.querySelector(".contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
+
+    // Обработка информации о подрядчике
+    if (contractor) {
+      console.log("Setting contractor info in card:", contractor);
+      // Используем все возможные варианты имени компании
+      const companyName =
+        contractor.companyName || contractor.company_name || "Unknown Company";
+      card.querySelector(".contractor").textContent = companyName;
+
+      // Проверяем все возможные форматы контактного лица
+      if (contractor.contactPerson) {
+        // Объект contactPerson
+        card.querySelector(
+          ".project-manager"
+        ).textContent = `${contractor.contactPerson.name} (${contractor.contactPerson.position})`;
+      } else if (contractor.contact_person) {
+        // Строковое поле contact_person
+        const position = contractor.contact_person_position || "Contact Person";
+        card.querySelector(
+          ".project-manager"
+        ).textContent = `${contractor.contact_person} (${position})`;
+      } else {
+        card.querySelector(".project-manager").textContent = "Not assigned";
+      }
+    } else {
+      console.log("No contractor found for project");
+      card.querySelector(".contractor").textContent = "Not assigned";
+      card.querySelector(".project-manager").textContent = "Not assigned";
+    }
 
     // Форматируем дату последнего обновления
-    const lastUpdateFormatted = project.lastUpdate
-      ? this.formatDateForDisplay(project.lastUpdate)
+    const lastUpdate = project.lastUpdate || project.last_update;
+    const lastUpdateFormatted = lastUpdate
+      ? this.formatDateForDisplay(lastUpdate)
       : "Not updated";
     card.querySelector(".last-update").textContent = lastUpdateFormatted;
 
@@ -1875,12 +1417,13 @@ export default class ConstructionManager {
     docHeader.classList.add("collapsible-header");
     const documentsGrid = documentsSection.querySelector(".documents-grid");
     documentsGrid.classList.add("collapsible-content");
+    // Add toggle icon if it doesn't exist in the template
 
     // Add click event to toggle
     docHeader.addEventListener("click", (e) => {
       e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
+      const isCollapsed = documentsGrid.classList.toggle("collapsed");
+      docHeader.classList.toggle("collapsed", isCollapsed);
 
       // Update card size after toggle - pass the project card element
       this.updateCardSize(docHeader.closest(".project-card"));
@@ -1891,16 +1434,24 @@ export default class ConstructionManager {
       // Clear existing content
       documentsGrid.innerHTML = "";
 
-      // Add migrated files without collapsible headers
+      // Add "From Future Project" flag to the main header
+      const existingFlag = docHeader.querySelector(".from-future-flag");
+      if (!existingFlag) {
+        const futureFlag = document.createElement("span");
+        futureFlag.className = "from-future-flag";
+        futureFlag.textContent = "From Future Project";
+        docHeader.appendChild(futureFlag);
+      }
+
+      // Create migrated files group
       const migratedFilesGroup = document.createElement("div");
-      migratedFilesGroup.className = "migrated-files-group";
+      migratedFilesGroup.className = "migrated-files-group documents-content"; // Use documents-content class
       documentsGrid.appendChild(migratedFilesGroup);
 
-      // Add simple label for migrated files
-      const migratedLabel = document.createElement("div");
-      migratedLabel.className = "section-label";
-      migratedLabel.innerHTML = `<span class="from-future-flag">From Future Project</span>`;
-      migratedFilesGroup.appendChild(migratedLabel);
+      // Make sure content is fully visible with scrolling if needed
+      migratedFilesGroup.style.overflowY = "visible";
+      migratedFilesGroup.style.maxHeight = "none";
+      documentsGrid.style.overflowY = "visible";
 
       // Add Planning Documents (formerly called Documents in Future Projects) if they exist
       if (
@@ -1945,15 +1496,20 @@ export default class ConstructionManager {
         migratedFilesGroup.appendChild(budgetDocsGroup);
       }
 
-      // Add simple label for current files
-      const currentLabel = document.createElement("div");
-      currentLabel.className = "section-label";
-      currentLabel.innerHTML = `<span class="current-files-title">Current Project Files</span>`;
-      documentsGrid.appendChild(currentLabel);
+      // Add a collapsible header for current files
+      const currentHeader = document.createElement("div");
+      currentHeader.className = "section-header";
+      currentHeader.innerHTML = `
+        <h4 class="toggle-documents">
+          <i class="fas fa-chevron-down"></i> 
+          <span class="current-files-title">Current Project Files</span>
+        </h4>
+      `;
+      documentsGrid.appendChild(currentHeader);
 
       // Create current files group
       const currentFilesGroup = document.createElement("div");
-      currentFilesGroup.className = "current-files-group";
+      currentFilesGroup.className = "current-files-group documents-content";
       documentsGrid.appendChild(currentFilesGroup);
 
       // Add current files (Photos, Reports)
@@ -1998,7 +1554,39 @@ export default class ConstructionManager {
         `;
         currentFilesGroup.appendChild(reportsGroup);
       }
+
+      // Add toggle functionality for each section individually
+      const toggleSections = card.querySelectorAll(".toggle-documents");
+      toggleSections.forEach((toggle) => {
+        toggle.addEventListener("click", (e) => {
+          const content = toggle.closest(".section-header").nextElementSibling;
+          content.classList.toggle("collapsed");
+          const icon = toggle.querySelector("i");
+          icon.classList.toggle("fa-chevron-down", !isCollapsed);
+          icon.classList.toggle("fa-chevron-right", isCollapsed);
+
+          // Update card size after toggle
+          this.updateCardSize(toggle.closest(".project-card"));
+        });
+      });
+
+      // Add a separator between migrated and current files if both exist
+      if (
+        migratedFilesGroup.children.length > 0 &&
+        currentFilesGroup.children.length > 0
+      ) {
+        const separator = document.createElement("hr");
+        separator.className = "migrated-separator";
+        documentsGrid.insertBefore(separator, currentFilesGroup); // Insert before current files
+      }
+
+      documentsGrid.appendChild(currentFilesGroup); // Append current files group
     } else {
+      // Remove "From Future Project" flag if it exists from a previous render
+      const existingFlag = docHeader.querySelector(".from-future-flag");
+      if (existingFlag) {
+        existingFlag.remove();
+      }
       // Just set file previews without reorganization
       if (project.photos && project.photos.length > 0) {
         card.querySelector(".photos-preview").innerHTML =
@@ -2016,2968 +1604,208 @@ export default class ConstructionManager {
   }
 
   renderFutureProjectDetails(card, project, contractor) {
-    // Future project specific details
-    card.querySelector(".budget").textContent = project.budget
-      ? `$${project.budget.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".priority").textContent = project.priority
-      ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1)
-      : "Not specified";
-    card.querySelector(".preferred-contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
+    console.log(
+      "Rendering future project details with contractor:",
+      contractor
+    );
 
-    // Set planning details
-    card.querySelector(".description").textContent =
-      project.description || "No description available";
-    card.querySelector(".objectives").textContent =
-      project.objectives || "No objectives defined";
-    card.querySelector(".risks").textContent =
-      project.risks || "No risks identified";
+    // Set future project specific details
+    const priority = project.priority || "medium";
+    const priorityElement = card.querySelector(".priority");
+    if (priorityElement) {
+      priorityElement.textContent = priority
+        ? priority.charAt(0).toUpperCase() + priority.slice(1)
+        : "Medium";
+    }
+
+    const budget = project.budget || 0;
+    const budgetElement = card.querySelector(".budget");
+    if (budgetElement) {
+      budgetElement.textContent = budget
+        ? `$${budget.toLocaleString()}`
+        : "Not specified";
+    }
+
+    // Обработка информации о подрядчике
+    if (contractor) {
+      console.log("Setting contractor info in card:", contractor);
+      // Используем все возможные варианты имени компании
+      const companyName =
+        contractor.companyName || contractor.company_name || "Unknown Company";
+
+      // Добавляем проверки на существование элементов перед установкой значений
+      const contractorElement = card.querySelector(".contractor");
+      if (contractorElement) {
+        contractorElement.textContent = companyName;
+      }
+
+      const preferredContractorElement = card.querySelector(
+        ".preferred-contractor"
+      );
+      if (preferredContractorElement) {
+        preferredContractorElement.textContent = companyName;
+      }
+
+      // Проверяем все возможные форматы контактного лица
+      const contactPersonElement = card.querySelector(".contact-person");
+      if (contactPersonElement) {
+        if (contractor.contactPerson) {
+          // Объект contactPerson
+          contactPersonElement.textContent = `${contractor.contactPerson.name} (${contractor.contactPerson.position})`;
+        } else if (contractor.contact_person) {
+          // Строковое поле contact_person
+          const position =
+            contractor.contact_person_position || "Contact Person";
+          contactPersonElement.textContent = `${contractor.contact_person} (${position})`;
+        } else {
+          contactPersonElement.textContent = "Not assigned";
+        }
+      }
+
+      // Проверяем есть ли элемент project-manager
+      const projectManagerElement = card.querySelector(".project-manager");
+      if (projectManagerElement) {
+        if (contractor.contactPerson) {
+          projectManagerElement.textContent = `${contractor.contactPerson.name} (${contractor.contactPerson.position})`;
+        } else if (contractor.contact_person) {
+          const position =
+            contractor.contact_person_position || "Contact Person";
+          projectManagerElement.textContent = `${contractor.contact_person} (${position})`;
+        } else {
+          projectManagerElement.textContent = "Not assigned";
+        }
+      }
+    } else {
+      console.log("No contractor found for project");
+
+      // Аналогично добавляем проверки перед установкой значений
+      const contractorElement = card.querySelector(".contractor");
+      if (contractorElement) {
+        contractorElement.textContent = "Not assigned";
+      }
+
+      const preferredContractorElement = card.querySelector(
+        ".preferred-contractor"
+      );
+      if (preferredContractorElement) {
+        preferredContractorElement.textContent = "Not assigned";
+      }
+
+      const contactPersonElement = card.querySelector(".contact-person");
+      if (contactPersonElement) {
+        contactPersonElement.textContent = "Not assigned";
+      }
+
+      const projectManagerElement = card.querySelector(".project-manager");
+      if (projectManagerElement) {
+        projectManagerElement.textContent = "Not assigned";
+      }
+    }
+
+    // Добавляем дополнительную информацию о планировании
+    const descriptionElement = card.querySelector(".description");
+    if (descriptionElement) {
+      descriptionElement.textContent = project.description || "No description";
+    }
+
+    const objectivesElement = card.querySelector(".objectives");
+    if (objectivesElement) {
+      objectivesElement.textContent =
+        project.objectives || "No specific objectives";
+    }
+
+    const risksElement = card.querySelector(".risks");
+    if (risksElement) {
+      risksElement.textContent = project.risks || "No identified risks";
+    }
 
     // Make Project Documents header collapsible
-    const detailsSection = card.querySelector(".project-details");
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
+    const documentsSection = card.querySelector(
+      ".project-details .details-section:last-child"
     );
-    const docHeader = documentsSection.querySelector("h4");
+    if (documentsSection) {
+      const docHeader = documentsSection.querySelector("h4");
+      if (docHeader) {
+        docHeader.classList.add("collapsible-header");
+        const documentsGrid = documentsSection.querySelector(".documents-grid");
+        if (documentsGrid) {
+          documentsGrid.classList.add("collapsible-content");
 
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
+          // Add click event to toggle
+          docHeader.addEventListener("click", (e) => {
+            e.preventDefault();
+            const isCollapsed = documentsGrid.classList.toggle("collapsed");
+            docHeader.classList.toggle("collapsed", isCollapsed);
 
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle
-      this.updateCardSize(card);
-    });
-
-    // Set file previews
-    if (project.documents && project.documents.length > 0) {
-      card.querySelector(".documents-preview").innerHTML =
-        this.renderFilePreviews(project.documents, "document");
-    }
-    if (project.specifications && project.specifications.length > 0) {
-      card.querySelector(".specifications-preview").innerHTML =
-        this.renderFilePreviews(project.specifications, "specification");
+            // Update card size after toggle
+            this.updateCardSize(docHeader.closest(".project-card"));
+          });
+        }
+      }
     }
   }
 
   renderFilePreviews(files, type) {
-    // Проверяем, что files - это массив
-    if (!files || !Array.isArray(files) || files.length === 0) {
-      return "";
-    }
+    return files
+      .map((file, index) => {
+        if (!file) return ""; // Пропускаем undefined или null объекты
 
-    console.log(`Rendering file previews for ${type}:`, files);
-
-    // Капитализируем тип для отображения
-    const displayType = type.charAt(0).toUpperCase() + type.slice(1);
-
-    // Генерируем HTML для каждого файла
-    const previewsHtml = files
-      .map((file) => {
-        if (!file) return "";
-
-        // Извлекаем необходимые свойства из файла
+        // Убедимся, что имя файла определено и корректно отображается
         const fileName =
-          file.fileName ||
-          file.original_name ||
-          file.name ||
-          file.file_name ||
-          "Unknown file";
-        let filePath = file.filePath || file.file_path || "";
-        let miniPath = file.miniPath || file.mini_path || "";
-        const fileId = file.fileId || file.id || "";
-        const mimeType =
-          file.mimeType || file.mime_type || file.type || file.file_type || "";
-        const fileSize = file.fileSize || file.file_size || file.size || 0;
+          file.name && file.name.trim() !== ""
+            ? file.name
+            : file.originalName && file.originalName.trim() !== ""
+            ? file.originalName
+            : `${type.charAt(0).toUpperCase() + type.slice(1)} ${index + 1}`;
 
-        // Fix file paths to ensure all files load correctly
-        // Handle different path formats that may be in the database
+        const isImage =
+          file.type?.startsWith("image/") ||
+          (file.name && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+        const fileIcon = this.getFileIcon(
+          file.type || "application/octet-stream"
+        );
 
-        // Fix file paths
-        if (filePath) {
-          // Handle case where path has only project_upload/...
-          if (
-            filePath.includes("project_upload") &&
-            !filePath.includes("components/construction")
-          ) {
-            if (filePath.startsWith("../project_upload")) {
-              // Replace relative path with absolute path
-              filePath = filePath.replace(
-                "../project_upload",
-                "components/construction/project_upload"
-              );
-            } else if (filePath.startsWith("project_upload")) {
-              // Add components/construction/ prefix
-              filePath = "components/construction/" + filePath;
-            }
-          }
+        let previewUrl = null;
 
-          // Add Inspections-Checklist-Portal if needed
-          if (
-            filePath.includes("components/construction") &&
-            !filePath.includes("Inspections-Checklist-Portal")
-          ) {
-            filePath = filePath.replace(
-              "components/construction",
-              "Inspections-Checklist-Portal/components/construction"
-            );
-          }
-
-          // Add Maintenance_P prefix if needed
-          if (
-            !filePath.startsWith("/Maintenance_P") &&
-            !filePath.startsWith("http")
-          ) {
-            filePath = "/Maintenance_P/" + filePath;
+        // Проверяем, имеет ли файл src (для сохраненных изображений)
+        if (isImage && file.src) {
+          previewUrl = file.src;
+        }
+        // Проверяем, является ли файл объектом File или Blob для createObjectURL
+        else if (
+          isImage &&
+          (file instanceof Blob || file instanceof File) &&
+          URL.createObjectURL
+        ) {
+          try {
+            previewUrl = URL.createObjectURL(file);
+          } catch (error) {
+            console.error("Error creating object URL:", error);
           }
         }
 
-        // Fix thumbnail paths
-        if (miniPath) {
-          // Handle case where path has only project_upload/...
-          if (
-            miniPath.includes("project_upload") &&
-            !miniPath.includes("components/construction")
-          ) {
-            if (miniPath.startsWith("../project_upload")) {
-              // Replace relative path with absolute path
-              miniPath = miniPath.replace(
-                "../project_upload",
-                "components/construction/project_upload"
-              );
-            } else if (miniPath.startsWith("project_upload")) {
-              // Add components/construction/ prefix
-              miniPath = "components/construction/" + miniPath;
-            }
-          }
-
-          // Add Inspections-Checklist-Portal if needed
-          if (
-            miniPath.includes("components/construction") &&
-            !miniPath.includes("Inspections-Checklist-Portal")
-          ) {
-            miniPath = miniPath.replace(
-              "components/construction",
-              "Inspections-Checklist-Portal/components/construction"
-            );
-          }
-
-          // Add Maintenance_P prefix if needed
-          if (
-            !miniPath.startsWith("/Maintenance_P") &&
-            !miniPath.startsWith("http")
-          ) {
-            miniPath = "/Maintenance_P/" + miniPath;
-          }
-        }
-
-        // Определяем, является ли файл изображением
-        const isImage = mimeType && mimeType.startsWith("image/");
-
-        // Определяем класс иконки для не-изображений
-        let iconClass = "fas fa-file";
-        if (!isImage) {
-          if (mimeType.includes("pdf")) {
-            iconClass = "fas fa-file-pdf";
-          } else if (
-            mimeType.includes("word") ||
-            mimeType.includes("document")
-          ) {
-            iconClass = "fas fa-file-word";
-          } else if (
-            mimeType.includes("excel") ||
-            mimeType.includes("spreadsheet")
-          ) {
-            iconClass = "fas fa-file-excel";
-          } else if (
-            mimeType.includes("powerpoint") ||
-            mimeType.includes("presentation")
-          ) {
-            iconClass = "fas fa-file-powerpoint";
-          } else if (mimeType.includes("text")) {
-            iconClass = "fas fa-file-alt";
-          } else if (mimeType.includes("zip") || mimeType.includes("archive")) {
-            iconClass = "fas fa-file-archive";
-          }
-        }
-
-        // Строим HTML для превью файла
         return `
         <div class="file-preview-item" 
-             data-file-id="${fileId}" 
-             data-file-path="${filePath}"
-             data-file-name="${fileName}" 
-             data-mime-type="${mimeType}">
+            data-file-index="${index}" 
+            data-file-type="${type}" 
+            data-file-name="${fileName}"
+            data-mime-type="${file.type || "application/octet-stream"}">
           ${
-            isImage
-              ? `<img src="${miniPath || filePath}" alt="${fileName}" />`
-              : `<i class="${iconClass} file-type-icon"></i>`
+            isImage && previewUrl
+              ? `
+            <img src="${previewUrl}" alt="${fileName}">
+          `
+              : `
+            <div class="file-type-icon">
+              <i class="${fileIcon}"></i>
+            </div>
+          `
           }
-          <div class="file-info">
-            <span class="file-name" title="${fileName}">${fileName}</span>
-            ${
-              fileSize
-                ? `<span class="file-size">${this.formatFileSize(
-                    fileSize
-                  )}</span>`
-                : ""
-            }
-          </div>
-          <button class="file-action-btn view-file" title="View file">
-            <i class="fas fa-eye"></i>
-          </button>
-          <button class="file-action-btn remove-file" title="Remove file">
-            <i class="fas fa-trash"></i>
-          </button>
+          <div class="file-name">${fileName}</div>
         </div>
       `;
       })
       .join("");
-
-    return previewsHtml;
-  }
-
-  // Helper method to get the appropriate icon class based on file MIME type
-  getFileIconClass(mimeType) {
-    if (!mimeType) return "fas fa-file";
-
-    if (mimeType.startsWith("image/")) return "fas fa-file-image";
-    if (mimeType === "application/pdf") return "fas fa-file-pdf";
-    if (mimeType.includes("word") || mimeType.includes("document"))
-      return "fas fa-file-word";
-    if (mimeType.includes("excel") || mimeType.includes("spreadsheet"))
-      return "fas fa-file-excel";
-    if (mimeType.includes("powerpoint") || mimeType.includes("presentation"))
-      return "fas fa-file-powerpoint";
-    if (mimeType.includes("text/")) return "fas fa-file-alt";
-    if (mimeType.includes("zip") || mimeType.includes("compressed"))
-      return "fas fa-file-archive";
-
-    return "fas fa-file";
-  }
-
-  formatFileSize(bytes) {
-    if (!bytes) return "";
-
-    const units = ["B", "KB", "MB", "GB"];
-    let size = bytes;
-    let unitIndex = 0;
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex++;
-    }
-
-    return `${size.toFixed(1)} ${units[unitIndex]}`;
-  }
-
-  updateProgress(progressBar, progressText, current, total) {
-    const percentage = (current / total) * 100;
-    progressBar.style.width = `${percentage}%`;
-    progressText.textContent = `Uploading: ${Math.round(percentage)}%`;
-
-    if (current === total) {
-      setTimeout(() => {
-        progressBar.style.width = "0%";
-        progressText.textContent = "Uploading: 0%";
-      }, 1000);
-    }
-  }
-
-  onSectionChange(sectionId) {
-    // Если секция не указана, используем активную
-    if (!sectionId) {
-      const activeSection = this.container.querySelector(
-        ".construction-section.active"
-      );
-      if (activeSection) {
-        sectionId = activeSection.id;
-      } else {
-        return;
-      }
-    }
-
-    // Вызываем специфические действия для каждой секции
-    if (sectionId === "contractors-section") {
-      this.renderContractors();
-    } else if (sectionId === "current-projects-section") {
-      this.renderProjects("current");
-    } else if (sectionId === "future-projects-section") {
-      this.renderProjects("future");
-    }
-
-    // Update statistics for the active section
-    if (sectionId === "current-projects-section") {
-      this.updateProjectStatistics("current");
-    } else if (sectionId === "future-projects-section") {
-      this.updateProjectStatistics("future");
-    }
-  }
-
-  async loadData() {
-    try {
-      // Here will be API calls to load data
-      // For now using mock data
-      await this.loadContractors();
-      this.updateBusinessTypeFilter(); // Обновляем список типов бизнеса после загрузки
-      await this.loadCurrentProjects();
-      await this.loadFutureProjects();
-      this.renderActiveSection();
-
-      // Update statistics for both sections after loading data
-      this.updateProjectStatistics("current");
-      this.updateProjectStatistics("future");
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  }
-
-  switchTab(tab) {
-    this.container
-      .querySelectorAll(".construction-section")
-      .forEach((s) => s.classList.remove("active"));
-
-    // Update section title
-    const sectionTitle = this.container.querySelector("#section-title");
-    if (sectionTitle) {
-      sectionTitle.textContent =
-        tab === "contractors"
-          ? "Contractors"
-          : tab === "current-projects"
-          ? "Current Projects"
-          : "Future Projects";
-    }
-
-    // Show appropriate section
-    this.container.querySelector(`#${tab}-section`).classList.add("active");
-
-    // Update filters visibility
-    const contractorsFilters = this.container.querySelector(
-      "#contractors-filters"
-    );
-    const currentProjectsFilters = this.container.querySelector(
-      "#current-projects-filters"
-    );
-    const futureProjectsFilters = this.container.querySelector(
-      "#future-projects-filters"
-    );
-
-    if (contractorsFilters) {
-      contractorsFilters.style.display =
-        tab === "contractors" ? "flex" : "none";
-    }
-    if (currentProjectsFilters) {
-      currentProjectsFilters.style.display =
-        tab === "current-projects" ? "flex" : "none";
-    }
-    if (futureProjectsFilters) {
-      futureProjectsFilters.style.display =
-        tab === "future-projects" ? "flex" : "none";
-    }
-
-    // Update add buttons visibility
-    const addContractorBtn = this.container.querySelector("#add-contractor");
-    const addCurrentProjectBtn = this.container.querySelector(
-      "#add-current-project"
-    );
-    const addFutureProjectBtn = this.container.querySelector(
-      "#add-future-project"
-    );
-
-    if (addContractorBtn) {
-      addContractorBtn.style.display = tab === "contractors" ? "block" : "none";
-    }
-    if (addCurrentProjectBtn) {
-      addCurrentProjectBtn.style.display =
-        tab === "current-projects" ? "block" : "none";
-    }
-    if (addFutureProjectBtn) {
-      addFutureProjectBtn.style.display =
-        tab === "future-projects" ? "block" : "none";
-    }
-
-    this.activeTab = tab;
-    this.renderActiveSection();
-
-    // Update project statistics when switching to project tabs
-    if (tab === "current-projects") {
-      this.updateProjectStatistics("current");
-    } else if (tab === "future-projects") {
-      this.updateProjectStatistics("future");
-    }
-  }
-
-  renderActiveSection() {
-    switch (this.activeTab) {
-      case "contractors":
-        this.renderContractors();
-        break;
-      case "current-projects":
-        this.renderProjects("current");
-        break;
-      case "future-projects":
-        this.renderProjects("future");
-        break;
-    }
-  }
-
-  // Методы для работы с подрядчиками
-  async loadContractors() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        // Convert API format to client format
-        this.contractors = result.data.map((contractor) => {
-          return {
-            id: parseInt(contractor.id),
-            companyName: contractor.company_name,
-            businessType: contractor.business_type,
-            location: contractor.location || "",
-            email: contractor.email || "",
-            phone: contractor.phone || "",
-            rating: parseInt(contractor.rating) || 0,
-            contactPerson: contractor.contact_person
-              ? {
-                  id: parseInt(contractor.contact_person.id),
-                  name: contractor.contact_person.name,
-                  position: contractor.contact_person.position || "",
-                  phone: contractor.contact_person.phone || "",
-                  email: contractor.contact_person.email || "",
-                }
-              : {
-                  name: "None",
-                  position: "",
-                  phone: "",
-                  email: "",
-                },
-            employees: contractor.employees
-              ? contractor.employees.map((emp) => ({
-                  id: parseInt(emp.id),
-                  fullName: emp.name,
-                  position: emp.position || "",
-                  phone: emp.phone || "",
-                  email: emp.email || "",
-                }))
-              : [],
-          };
-        });
-      } else {
-        console.error("Failed to load contractors:", result.message);
-        // Fallback to empty array
-        this.contractors = [];
-      }
-    } catch (error) {
-      console.error("Error loading contractors:", error);
-      // Fallback to empty array on error
-      this.contractors = [];
-    }
-  }
-
-  renderContractors() {
-    const container = this.container.querySelector("#contractors-list");
-    if (!container) return;
-
-    if (this.contractors.length === 0) {
-      container.innerHTML = `
-            <div class="no-contractors">
-                <i class="fas fa-building"></i>
-                <h3>No Contractors Yet</h3>
-                <p>Click the "Add Contractor" button to add your first contractor</p>
-            </div>
-        `;
-      return;
-    }
-
-    container.innerHTML = this.contractors
-      .map(
-        (contractor) => `
-      <div class="contractor-card" data-id="${contractor.id}">
-        <div class="contractor-header">
-          <h3>${contractor.companyName}</h3>
-          <div class="contractor-rating">
-            ${this.generateRatingStars(contractor.rating)}
-          </div>
-        </div>
-        <div class="contractor-info">
-          <div class="info-item">
-            <i class="fas fa-briefcase"></i>
-            <span>${contractor.businessType}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-location-dot"></i>
-            <span>${contractor.location}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.email}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.phone}</span>
-          </div>
-        </div>
-        <div class="contact-person-info">
-          <h4>Contact Person</h4>
-          <div class="info-item">
-            <i class="fas fa-user"></i>
-            <span>${contractor.contactPerson.name}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-id-badge"></i>
-            <span>${contractor.contactPerson.position}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.contactPerson.phone}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.contactPerson.email}</span>
-          </div>
-        </div>
-        <div class="contractor-employees">
-          <h4>Employees (${contractor.employees.length})</h4>
-          <div class="employees-list">
-            ${this.renderEmployeesList(contractor.employees)}
-          </div>
-          <button class="btn-secondary add-employee" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-user-plus"></i> Add Employee
-          </button>
-        </div>
-        <div class="contractor-actions">
-          <button class="btn-action edit" data-contractor-id="${contractor.id}">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-action delete" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    `
-      )
-      .join("");
-
-    // Добавляем обработчики событий после рендеринга
-    this.bindEmployeeEvents();
-
-    // Add event handlers for contractor edit and delete buttons
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          const contractor = this.contractors.find(
-            (c) => c.id === contractorId
-          );
-          if (contractor) {
-            this.showContractorModal(contractor);
-          }
-        });
-      });
-
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          this.deleteContractor(contractorId);
-        });
-      });
-  }
-
-  renderEmployeesList(employees) {
-    return employees
-      .map(
-        (employee) => `
-        <div class="employee-item">
-            <div class="employee-info">
-                <strong>${employee.fullName}</strong>
-                <span>${employee.position}</span>
-                <span>${employee.phone}</span>
-            </div>
-            <div class="employee-actions">
-                <button class="btn-action edit" data-employee-id="${employee.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-action delete" data-employee-id="${employee.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `
-      )
-      .join("");
-  }
-
-  bindEmployeeEvents() {
-    // Обработчики для кнопок редактирования сотрудников
-    this.container
-      .querySelectorAll(".employee-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const employeeId = parseInt(button.dataset.employeeId);
-          const contractorId = parseInt(
-            button.closest(".contractor-card").dataset.id
-          );
-          this.editEmployee(contractorId, employeeId);
-        });
-      });
-
-    // Обработчики для кнопок удаления сотрудников
-    this.container
-      .querySelectorAll(".employee-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const employeeId = parseInt(button.dataset.employeeId);
-          const contractorId = parseInt(
-            button.closest(".contractor-card").dataset.id
-          );
-          this.deleteEmployee(contractorId, employeeId);
-        });
-      });
-
-    // Обработчики для кнопок добавления сотрудников
-    this.container.querySelectorAll(".add-employee").forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const contractorId = parseInt(button.dataset.contractorId);
-        this.showEmployeeModal(contractorId);
-      });
-    });
-  }
-
-  showEmployeeModal(contractorId, employee = null) {
-    const modal = this.container.querySelector("#employee-modal");
-    const form = modal.querySelector("#employee-form");
-    const title = modal.querySelector("#employee-modal-title");
-
-    title.textContent = employee ? "Edit Employee" : "Add Employee";
-
-    form.elements.contractorId.value = contractorId;
-
-    if (employee) {
-      form.elements.fullName.value = employee.fullName;
-      form.elements.position.value = employee.position;
-      form.elements.phone.value = employee.phone;
-      form.dataset.employeeId = employee.id;
-    } else {
-      form.reset();
-      form.elements.contractorId.value = contractorId;
-      delete form.dataset.employeeId;
-    }
-
-    modal.classList.add("active");
-  }
-
-  editEmployee(contractorId, employeeId) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const employee = contractor.employees.find((e) => e.id === employeeId);
-      if (employee) {
-        this.showEmployeeModal(contractorId, employee);
-      }
-    }
-  }
-
-  deleteEmployee(contractorId, employeeId) {
-    if (confirm("Are you sure you want to delete this employee?")) {
-      const contractor = this.contractors.find((c) => c.id === contractorId);
-      if (contractor) {
-        contractor.employees = contractor.employees.filter(
-          (e) => e.id !== employeeId
-        );
-        this.renderContractors();
-      }
-    }
-  }
-
-  handleEmployeeSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const contractorId = parseInt(form.elements.contractorId.value);
-    const employeeData = {
-      fullName: form.elements.fullName.value,
-      position: form.elements.position.value,
-      phone: form.elements.phone.value,
-    };
-
-    if (form.dataset.employeeId) {
-      // Редактирование существующего сотрудника
-      const employeeId = parseInt(form.dataset.employeeId);
-      this.updateEmployee(contractorId, employeeId, employeeData);
-    } else {
-      // Добавление нового сотрудника
-      this.addEmployeeToContractor(contractorId, employeeData);
-    }
-
-    this.closeModals();
-  }
-
-  addEmployeeToContractor(contractorId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      // First add to local data structure for immediate feedback
-      data.id = Date.now(); // Temporary ID
-      contractor.employees.push(data);
-
-      // Prepare data for API
-      const existingEmployees = contractor.employees.filter(
-        (e) => e.id !== data.id
-      );
-
-      const apiData = {
-        company_name: contractor.companyName,
-        business_type: contractor.businessType,
-        location: contractor.location,
-        email: contractor.email,
-        phone: contractor.phone,
-        rating: contractor.rating,
-        notes: contractor.notes || "",
-        employees: [
-          ...existingEmployees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: 0,
-          })),
-          // Add new employee
-          {
-            name: data.fullName,
-            position: data.position || "",
-            phone: data.phone || "",
-            email: data.email || "",
-            is_primary_contact: 0,
-          },
-        ],
-      };
-
-      // Используем правильный URL API
-      fetch(
-        `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(apiData),
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((responseData) => {
-          if (responseData.success) {
-            // Обновляем данные о сотрудниках из ответа API
-            if (responseData.data && responseData.data.employees) {
-              // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-              const updatedContractor = this.contractors.find(
-                (c) => c.id === contractorId
-              );
-              if (updatedContractor) {
-                // Преобразуем сотрудников из формата API в формат UI
-                updatedContractor.employees = responseData.data.employees.map(
-                  (emp) => ({
-                    id: parseInt(emp.id),
-                    fullName: emp.name,
-                    position: emp.position || "",
-                    phone: emp.phone || "",
-                    email: emp.email || "",
-                  })
-                );
-              }
-            }
-
-            // Перерисовываем UI для отображения обновленных данных
-            this.renderContractors();
-          } else {
-            console.error("Error adding employee:", responseData.message);
-            alert("Failed to add employee: " + responseData.message);
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          }
-        })
-        .catch((error) => {
-          console.error("Error adding employee:", error);
-          alert("Failed to add employee. Please try again.");
-          // Обновляем данные с сервера в случае ошибки
-          this.loadContractors().then(() => this.renderContractors());
-        });
-
-      // Render immediately for responsive UI
-      this.renderContractors();
-    }
-  }
-
-  updateEmployee(contractorId, employeeId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const index = contractor.employees.findIndex((e) => e.id === employeeId);
-      if (index !== -1) {
-        // Update local data first
-        contractor.employees[index] = {
-          ...contractor.employees[index],
-          ...data,
-        };
-
-        // Prepare data for API
-        const apiData = {
-          company_name: contractor.companyName,
-          business_type: contractor.businessType,
-          location: contractor.location,
-          email: contractor.email,
-          phone: contractor.phone,
-          rating: contractor.rating,
-          notes: contractor.notes || "",
-          employees: contractor.employees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: e.isPrimaryContact ? 1 : 0,
-          })),
-        };
-
-        // Используем правильный URL API
-        fetch(
-          `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(apiData),
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((responseData) => {
-            if (responseData.success) {
-              // Обновляем данные о сотрудниках из ответа API
-              if (responseData.data && responseData.data.employees) {
-                // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-                const updatedContractor = this.contractors.find(
-                  (c) => c.id === contractorId
-                );
-                if (updatedContractor) {
-                  // Преобразуем сотрудников из формата API в формат UI
-                  updatedContractor.employees = responseData.data.employees.map(
-                    (emp) => ({
-                      id: parseInt(emp.id),
-                      fullName: emp.name,
-                      position: emp.position || "",
-                      phone: emp.phone || "",
-                      email: emp.email || "",
-                    })
-                  );
-                }
-              }
-
-              // Перерисовываем UI для отображения обновленных данных
-              this.renderContractors();
-            } else {
-              console.error("Error updating employee:", responseData.message);
-              alert("Failed to update employee: " + responseData.message);
-              // Обновляем данные с сервера в случае ошибки
-              this.loadContractors().then(() => this.renderContractors());
-            }
-          })
-          .catch((error) => {
-            console.error("Error updating employee:", error);
-            alert("Failed to update employee. Please try again.");
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          });
-
-        // Render immediately for UI feedback
-        this.renderContractors();
-      }
-    }
-  }
-
-  // Методы для работы с проектами
-  async loadCurrentProjects() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=current"
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.currentProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          progress: project.progress,
-          actualCost: project.actual_cost,
-          lastUpdate: project.last_update,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading current projects:", data.message);
-        this.currentProjects = [];
-      }
-    } catch (error) {
-      console.error("Error loading current projects:", error);
-      this.currentProjects = [];
-    }
-  }
-
-  async loadFutureProjects() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=future"
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.futureProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          budget: project.budget,
-          priority: project.priority,
-          description: project.description,
-          objectives: project.objectives,
-          risks: project.risks,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading future projects:", data.message);
-        this.futureProjects = [];
-      }
-    } catch (error) {
-      console.error("Error loading future projects:", error);
-      this.futureProjects = [];
-    }
-  }
-
-  renderProjects(type, projectsToRender = null) {
-    const projects =
-      projectsToRender ||
-      (type === "current" ? this.currentProjects : this.futureProjects);
-    const container = this.container.querySelector(`#${type}-projects-list`);
-
-    if (!container) {
-      console.error(`Container #${type}-projects-list not found`);
-      return;
-    }
-
-    console.log(`Rendering ${type} projects:`, projects);
-    container.innerHTML = "";
-
-    if (!projects || projects.length === 0) {
-      container.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-search"></i>
-          <p>No projects found</p>
-        </div>
-      `;
-
-      // Update statistics even if no projects are found
-      this.updateProjectStatistics(type);
-      return;
-    }
-
-    projects.forEach((project) => {
-      // Организуем файлы проекта по категориям
-      const organizedProject = this.organizeProjectFiles(project);
-
-      const contractor = this.contractors.find(
-        (c) => c.id === organizedProject.contractorId
-      );
-      const template = this.container.querySelector(
-        `#${type}-project-card-template`
-      );
-
-      if (!template) {
-        console.error(`Template #${type}-project-card-template not found`);
-        return;
-      }
-
-      const card = template.content.cloneNode(true);
-
-      // Set project ID
-      const projectCard = card.querySelector(".project-card");
-      projectCard.dataset.id = organizedProject.id;
-
-      // Set project name and status
-      card.querySelector(".project-name").textContent = organizedProject.name;
-      const statusSelect = card.querySelector(".status-select");
-      statusSelect.value = organizedProject.status;
-
-      // Добавляем data-атрибут для привязки к проекту
-      statusSelect.setAttribute("data-project-id", organizedProject.id);
-
-      // Обновляем классы статуса
-      this.updateStatusClasses(statusSelect, organizedProject.status);
-
-      // Set project details
-      card.querySelector(".location").textContent = organizedProject.location;
-
-      // Форматируем даты для отображения
-      const startDateFormatted = this.formatDateForDisplay(
-        organizedProject.startDate
-      );
-      const endDateFormatted = this.formatDateForDisplay(
-        organizedProject.endDate
-      );
-      card.querySelector(
-        ".dates"
-      ).textContent = `${startDateFormatted} - ${endDateFormatted}`;
-
-      if (type === "current") {
-        this.renderCurrentProjectDetails(card, organizedProject, contractor);
-      } else {
-        this.renderFutureProjectDetails(card, organizedProject, contractor);
-      }
-
-      // Добавляем карточку в контейнер
-      container.appendChild(card);
-    });
-
-    // After rendering all projects, update the statistics
-    this.updateProjectStatistics(type);
-
-    // Bind events to project cards
-    this.bindProjectCardEvents(type);
-
-    // Привязываем события к предпросмотрам файлов
-    this.bindFilePreviewEvents();
-
-    // Добавим дополнительную логику для обработки всех изображений на странице
-    this.enhanceAllImagePreviews(type);
-  }
-
-  // Метод для улучшения всех превью изображений в указанной секции
-  enhanceAllImagePreviews(type) {
-    // Получаем контейнер для секции
-    const sectionId =
-      type === "current"
-        ? "current-projects-section"
-        : "future-projects-section";
-    const section = this.container.querySelector(`#${sectionId}`);
-    if (!section) return;
-
-    // Находим все изображения в секции
-    const images = section.querySelectorAll(".file-preview-container img");
-    images.forEach((img) => {
-      // Проверяем, что у изображения есть src
-      const src = img.getAttribute("src");
-      if (src) {
-        // Делаем курсор указателем
-        img.style.cursor = "pointer";
-
-        // Удаляем старые обработчики, чтобы избежать дублирования
-        const newImg = img.cloneNode(true);
-        img.parentNode.replaceChild(newImg, img);
-
-        // Добавляем обработчик клика
-        newImg.addEventListener("click", () => {
-          console.log("Image clicked:", src);
-          this.showImageModal(src);
-        });
-      }
-    });
-
-    console.log(`Enhanced ${images.length} images in ${type} projects section`);
-  }
-
-  updateStatusClasses(statusSelect, status) {
-    // Удаляем все существующие классы статуса
-    statusSelect.classList.remove(
-      "planned",
-      "in-progress",
-      "completed",
-      "on-hold",
-      "move-to-current",
-      "delayed",
-      "design-phase", // Добавляем новые возможные статусы
-      "planning"
-    );
-
-    // Преобразуем статус для использования в качестве CSS класса (заменяем пробелы на дефисы)
-    const statusClass = status.replace(/\s+/g, "-").toLowerCase();
-
-    // Добавляем новый класс статуса
-    statusSelect.classList.add(statusClass);
-
-    // Сбрасываем inline стили, которые могли быть установлены ранее
-    statusSelect.style.backgroundColor = "";
-    statusSelect.style.color = "";
-    statusSelect.style.borderColor = "";
-
-    // Определяем цвета в зависимости от статуса
-    let colors = {
-      planned: {
-        bg: "#e3f2fd",
-        color: "#1976d2",
-        border: "#90caf9",
-      },
-      "in-progress": {
-        bg: "#fff3e0",
-        color: "#f57c00",
-        border: "#ffcc80",
-      },
-      completed: {
-        bg: "#e8f5e9",
-        color: "#388e3c",
-        border: "#a5d6a7",
-      },
-      "on-hold": {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "move-to-current": {
-        bg: "#f3e5f5",
-        color: "#7b1fa2",
-        border: "#ce93d8",
-      },
-      delayed: {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "design-phase": {
-        // Добавляем новые статусы с цветами
-        bg: "#e0f7fa",
-        color: "#0097a7",
-        border: "#80deea",
-      },
-      planning: {
-        bg: "#f3e5f5",
-        color: "#8e24aa",
-        border: "#ce93d8",
-      },
-    };
-
-    // Пробуем найти цвета для статуса напрямую или для его CSS версии
-    let colorConfig = colors[status] || colors[statusClass];
-
-    // Применяем стили, если статус найден в нашем объекте
-    if (colorConfig) {
-      statusSelect.style.backgroundColor = colorConfig.bg;
-      statusSelect.style.color = colorConfig.color;
-      statusSelect.style.borderColor = colorConfig.border;
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    } else {
-      // Если статус неизвестен, применяем стандартные стили
-      statusSelect.style.backgroundColor = "#f5f5f5";
-      statusSelect.style.color = "#616161";
-      statusSelect.style.borderColor = "#bdbdbd";
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    }
-
-    // Устанавливаем data-атрибут для дополнительной поддержки селекторов
-    statusSelect.setAttribute("data-status", status);
-  }
-
-  // Helper method to update card size after toggle
-  updateCardSize(card) {
-    // Ensure card is a DOM element
-    if (!card || typeof card.closest !== "function") {
-      // If card is not a DOM element, try to find the project card differently
-      // This handles cases where 'card' might be the project card body or another element
-      const projectCard = card.parentElement
-        ? card.parentElement.closest(".project-card")
-        : document.querySelector(".project-card");
-
-      if (projectCard) {
-        // Set height to auto to let it resize naturally
-        projectCard.style.height = "auto";
-        const cardBody = projectCard.querySelector(".card-body");
-        if (cardBody) {
-          cardBody.style.height = "auto";
-        }
-      }
-      return;
-    }
-
-    // Regular handling if card is a DOM element with closest method
-    const projectCard = card.closest(".project-card");
-    if (projectCard) {
-      // Ensure card body expands/contracts with content
-      const cardBody = projectCard.querySelector(".card-body");
-      if (cardBody) {
-        // Use setTimeout to ensure DOM has updated
-        setTimeout(() => {
-          // Reset any fixed heights
-          cardBody.style.height = "";
-          projectCard.style.height = "";
-
-          // Calculate and set new height
-          const height = cardBody.scrollHeight;
-          cardBody.style.height = height + "px";
-
-          // Allow height to adjust naturally after initial animation
-          setTimeout(() => {
-            cardBody.style.height = "auto";
-          }, 300);
-        }, 10);
-      }
-    }
-  }
-
-  renderCurrentProjectDetails(card, project, contractor) {
-    // Set current project specific details
-    card.querySelector(".progress").textContent = project.progress
-      ? `${project.progress}%`
-      : "Not started";
-    card.querySelector(".actual-cost").textContent = project.actualCost
-      ? `$${project.actualCost.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
-
-    // Форматируем дату последнего обновления
-    const lastUpdateFormatted = project.lastUpdate
-      ? this.formatDateForDisplay(project.lastUpdate)
-      : "Not updated";
-    card.querySelector(".last-update").textContent = lastUpdateFormatted;
-
-    // Определяем, является ли проект перенесенным из Future в Current
-    const isMigratedProject =
-      project.description ||
-      project.objectives ||
-      project.risks ||
-      project.priority ||
-      (project.specifications && project.specifications.length > 0) ||
-      (project.budgetDocs && project.budgetDocs.length > 0) ||
-      (project.documents &&
-        project.documents.length > 0 &&
-        project.migratedFromFuture);
-
-    const detailsSection = card.querySelector(".project-details");
-
-    // Make Project Documents header collapsible
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
-    );
-    const docHeader = documentsSection.querySelector("h4");
-
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
-
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle - pass the project card element
-      this.updateCardSize(docHeader.closest(".project-card"));
-    });
-
-    // Reorganize documents grid - group migrated files at the top
-    if (isMigratedProject) {
-      // Clear existing content
-      documentsGrid.innerHTML = "";
-
-      // Add migrated files without collapsible headers
-      const migratedFilesGroup = document.createElement("div");
-      migratedFilesGroup.className = "migrated-files-group";
-      documentsGrid.appendChild(migratedFilesGroup);
-
-      // Add simple label for migrated files
-      const migratedLabel = document.createElement("div");
-      migratedLabel.className = "section-label";
-      migratedLabel.innerHTML = `<span class="from-future-flag">From Future Project</span>`;
-      migratedFilesGroup.appendChild(migratedLabel);
-
-      // Add Planning Documents (formerly called Documents in Future Projects) if they exist
-      if (
-        project.documents &&
-        project.documents.length > 0 &&
-        project.migratedFromFuture
-      ) {
-        const planningDocsGroup = document.createElement("div");
-        planningDocsGroup.className = "documents-group migrated-files";
-        planningDocsGroup.innerHTML = `
-          <h5>Planning Documents</h5>
-          <div class="planning-docs-preview file-preview-container">
-            ${this.renderFilePreviews(project.documents, "document")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(planningDocsGroup);
-      }
-
-      // Add specifications if they exist
-      if (project.specifications && project.specifications.length > 0) {
-        const specificationsGroup = document.createElement("div");
-        specificationsGroup.className = "documents-group migrated-files";
-        specificationsGroup.innerHTML = `
-          <h5>Specifications</h5>
-          <div class="specifications-preview file-preview-container">
-            ${this.renderFilePreviews(project.specifications, "specification")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(specificationsGroup);
-      }
-
-      // Add budget documents if they exist
-      if (project.budgetDocs && project.budgetDocs.length > 0) {
-        const budgetDocsGroup = document.createElement("div");
-        budgetDocsGroup.className = "documents-group migrated-files";
-        budgetDocsGroup.innerHTML = `
-          <h5>Budget Documents</h5>
-          <div class="budget-docs-preview file-preview-container">
-            ${this.renderFilePreviews(project.budgetDocs, "budgetDoc")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(budgetDocsGroup);
-      }
-
-      // Add simple label for current files
-      const currentLabel = document.createElement("div");
-      currentLabel.className = "section-label";
-      currentLabel.innerHTML = `<span class="current-files-title">Current Project Files</span>`;
-      documentsGrid.appendChild(currentLabel);
-
-      // Create current files group
-      const currentFilesGroup = document.createElement("div");
-      currentFilesGroup.className = "current-files-group";
-      documentsGrid.appendChild(currentFilesGroup);
-
-      // Add current files (Photos, Reports)
-      // Photos
-      if (project.photos && project.photos.length > 0) {
-        const photosGroup = document.createElement("div");
-        photosGroup.className = "documents-group";
-        photosGroup.innerHTML = `
-          <h5>Photos</h5>
-          <div class="photos-preview file-preview-container">
-            ${this.renderFilePreviews(project.photos, "photo")}
-          </div>
-        `;
-        currentFilesGroup.appendChild(photosGroup);
-      } else {
-        const photosGroup = document.createElement("div");
-        photosGroup.className = "documents-group";
-        photosGroup.innerHTML = `
-          <h5>Photos</h5>
-          <div class="photos-preview file-preview-container"></div>
-        `;
-        currentFilesGroup.appendChild(photosGroup);
-      }
-
-      // Reports
-      if (project.reports && project.reports.length > 0) {
-        const reportsGroup = document.createElement("div");
-        reportsGroup.className = "documents-group";
-        reportsGroup.innerHTML = `
-          <h5>Reports</h5>
-          <div class="reports-preview file-preview-container">
-            ${this.renderFilePreviews(project.reports, "report")}
-          </div>
-        `;
-        currentFilesGroup.appendChild(reportsGroup);
-      } else {
-        const reportsGroup = document.createElement("div");
-        reportsGroup.className = "documents-group";
-        reportsGroup.innerHTML = `
-          <h5>Reports</h5>
-          <div class="reports-preview file-preview-container"></div>
-        `;
-        currentFilesGroup.appendChild(reportsGroup);
-      }
-    } else {
-      // Just set file previews without reorganization
-      if (project.photos && project.photos.length > 0) {
-        card.querySelector(".photos-preview").innerHTML =
-          this.renderFilePreviews(project.photos, "photo");
-      }
-      if (project.documents && project.documents.length > 0) {
-        card.querySelector(".documents-preview").innerHTML =
-          this.renderFilePreviews(project.documents, "document");
-      }
-      if (project.reports && project.reports.length > 0) {
-        card.querySelector(".reports-preview").innerHTML =
-          this.renderFilePreviews(project.reports, "report");
-      }
-    }
-  }
-
-  renderFutureProjectDetails(card, project, contractor) {
-    // Future project specific details
-    card.querySelector(".budget").textContent = project.budget
-      ? `$${project.budget.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".priority").textContent = project.priority
-      ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1)
-      : "Not specified";
-    card.querySelector(".preferred-contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
-
-    // Set planning details
-    card.querySelector(".description").textContent =
-      project.description || "No description available";
-    card.querySelector(".objectives").textContent =
-      project.objectives || "No objectives defined";
-    card.querySelector(".risks").textContent =
-      project.risks || "No risks identified";
-
-    // Make Project Documents header collapsible
-    const detailsSection = card.querySelector(".project-details");
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
-    );
-    const docHeader = documentsSection.querySelector("h4");
-
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
-
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle
-      this.updateCardSize(card);
-    });
-
-    // Set file previews
-    if (project.documents && project.documents.length > 0) {
-      card.querySelector(".documents-preview").innerHTML =
-        this.renderFilePreviews(project.documents, "document");
-    }
-    if (project.specifications && project.specifications.length > 0) {
-      card.querySelector(".specifications-preview").innerHTML =
-        this.renderFilePreviews(project.specifications, "specification");
-    }
-  }
-
-  renderFilePreviews(files, type) {
-    // Проверяем, что files - это массив
-    if (!files || !Array.isArray(files) || files.length === 0) {
-      return "";
-    }
-
-    console.log(`Rendering file previews for ${type}:`, files);
-
-    // Капитализируем тип для отображения
-    const displayType = type.charAt(0).toUpperCase() + type.slice(1);
-
-    // Генерируем HTML для каждого файла
-    const previewsHtml = files
-      .map((file) => {
-        if (!file) return "";
-
-        // Извлекаем необходимые свойства из файла
-        const fileName =
-          file.fileName ||
-          file.original_name ||
-          file.name ||
-          file.file_name ||
-          "Unknown file";
-        let filePath = file.filePath || file.file_path || "";
-        let miniPath = file.miniPath || file.mini_path || "";
-        const fileId = file.fileId || file.id || "";
-        const mimeType =
-          file.mimeType || file.mime_type || file.type || file.file_type || "";
-        const fileSize = file.fileSize || file.file_size || file.size || 0;
-
-        // Fix file paths to ensure all files load correctly
-        // Handle different path formats that may be in the database
-
-        // Fix file paths
-        if (filePath) {
-          // Handle case where path has only project_upload/...
-          if (
-            filePath.includes("project_upload") &&
-            !filePath.includes("components/construction")
-          ) {
-            if (filePath.startsWith("../project_upload")) {
-              // Replace relative path with absolute path
-              filePath = filePath.replace(
-                "../project_upload",
-                "components/construction/project_upload"
-              );
-            } else if (filePath.startsWith("project_upload")) {
-              // Add components/construction/ prefix
-              filePath = "components/construction/" + filePath;
-            }
-          }
-
-          // Add Inspections-Checklist-Portal if needed
-          if (
-            filePath.includes("components/construction") &&
-            !filePath.includes("Inspections-Checklist-Portal")
-          ) {
-            filePath = filePath.replace(
-              "components/construction",
-              "Inspections-Checklist-Portal/components/construction"
-            );
-          }
-
-          // Add Maintenance_P prefix if needed
-          if (
-            !filePath.startsWith("/Maintenance_P") &&
-            !filePath.startsWith("http")
-          ) {
-            filePath = "/Maintenance_P/" + filePath;
-          }
-        }
-
-        // Fix thumbnail paths
-        if (miniPath) {
-          // Handle case where path has only project_upload/...
-          if (
-            miniPath.includes("project_upload") &&
-            !miniPath.includes("components/construction")
-          ) {
-            if (miniPath.startsWith("../project_upload")) {
-              // Replace relative path with absolute path
-              miniPath = miniPath.replace(
-                "../project_upload",
-                "components/construction/project_upload"
-              );
-            } else if (miniPath.startsWith("project_upload")) {
-              // Add components/construction/ prefix
-              miniPath = "components/construction/" + miniPath;
-            }
-          }
-
-          // Add Inspections-Checklist-Portal if needed
-          if (
-            miniPath.includes("components/construction") &&
-            !miniPath.includes("Inspections-Checklist-Portal")
-          ) {
-            miniPath = miniPath.replace(
-              "components/construction",
-              "Inspections-Checklist-Portal/components/construction"
-            );
-          }
-
-          // Add Maintenance_P prefix if needed
-          if (
-            !miniPath.startsWith("/Maintenance_P") &&
-            !miniPath.startsWith("http")
-          ) {
-            miniPath = "/Maintenance_P/" + miniPath;
-          }
-        }
-
-        // Определяем, является ли файл изображением
-        const isImage = mimeType && mimeType.startsWith("image/");
-
-        // Определяем класс иконки для не-изображений
-        let iconClass = "fas fa-file";
-        if (!isImage) {
-          if (mimeType.includes("pdf")) {
-            iconClass = "fas fa-file-pdf";
-          } else if (
-            mimeType.includes("word") ||
-            mimeType.includes("document")
-          ) {
-            iconClass = "fas fa-file-word";
-          } else if (
-            mimeType.includes("excel") ||
-            mimeType.includes("spreadsheet")
-          ) {
-            iconClass = "fas fa-file-excel";
-          } else if (
-            mimeType.includes("powerpoint") ||
-            mimeType.includes("presentation")
-          ) {
-            iconClass = "fas fa-file-powerpoint";
-          } else if (mimeType.includes("text")) {
-            iconClass = "fas fa-file-alt";
-          } else if (mimeType.includes("zip") || mimeType.includes("archive")) {
-            iconClass = "fas fa-file-archive";
-          }
-        }
-
-        // Строим HTML для превью файла
-        return `
-        <div class="file-preview-item" 
-             data-file-id="${fileId}" 
-             data-file-path="${filePath}"
-             data-file-name="${fileName}" 
-             data-mime-type="${mimeType}">
-          ${
-            isImage
-              ? `<img src="${miniPath || filePath}" alt="${fileName}" />`
-              : `<i class="${iconClass} file-type-icon"></i>`
-          }
-          <div class="file-info">
-            <span class="file-name" title="${fileName}">${fileName}</span>
-            ${
-              fileSize
-                ? `<span class="file-size">${this.formatFileSize(
-                    fileSize
-                  )}</span>`
-                : ""
-            }
-          </div>
-          <button class="file-action-btn view-file" title="View file">
-            <i class="fas fa-eye"></i>
-          </button>
-          <button class="file-action-btn remove-file" title="Remove file">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      `;
-      })
-      .join("");
-
-    return previewsHtml;
-  }
-
-  // Helper method to get the appropriate icon class based on file MIME type
-  getFileIconClass(mimeType) {
-    if (!mimeType) return "fas fa-file";
-
-    if (mimeType.startsWith("image/")) return "fas fa-file-image";
-    if (mimeType === "application/pdf") return "fas fa-file-pdf";
-    if (mimeType.includes("word") || mimeType.includes("document"))
-      return "fas fa-file-word";
-    if (mimeType.includes("excel") || mimeType.includes("spreadsheet"))
-      return "fas fa-file-excel";
-    if (mimeType.includes("powerpoint") || mimeType.includes("presentation"))
-      return "fas fa-file-powerpoint";
-    if (mimeType.includes("text/")) return "fas fa-file-alt";
-    if (mimeType.includes("zip") || mimeType.includes("compressed"))
-      return "fas fa-file-archive";
-
-    return "fas fa-file";
-  }
-
-  formatFileSize(bytes) {
-    if (!bytes) return "";
-
-    const units = ["B", "KB", "MB", "GB"];
-    let size = bytes;
-    let unitIndex = 0;
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex++;
-    }
-
-    return `${size.toFixed(1)} ${units[unitIndex]}`;
-  }
-
-  updateProgress(progressBar, progressText, current, total) {
-    const percentage = (current / total) * 100;
-    progressBar.style.width = `${percentage}%`;
-    progressText.textContent = `Uploading: ${Math.round(percentage)}%`;
-
-    if (current === total) {
-      setTimeout(() => {
-        progressBar.style.width = "0%";
-        progressText.textContent = "Uploading: 0%";
-      }, 1000);
-    }
-  }
-
-  onSectionChange(sectionId) {
-    // Если секция не указана, используем активную
-    if (!sectionId) {
-      const activeSection = this.container.querySelector(
-        ".construction-section.active"
-      );
-      if (activeSection) {
-        sectionId = activeSection.id;
-      } else {
-        return;
-      }
-    }
-
-    // Вызываем специфические действия для каждой секции
-    if (sectionId === "contractors-section") {
-      this.renderContractors();
-    } else if (sectionId === "current-projects-section") {
-      this.renderProjects("current");
-    } else if (sectionId === "future-projects-section") {
-      this.renderProjects("future");
-    }
-
-    // Update statistics for the active section
-    if (sectionId === "current-projects-section") {
-      this.updateProjectStatistics("current");
-    } else if (sectionId === "future-projects-section") {
-      this.updateProjectStatistics("future");
-    }
-  }
-
-  async loadData() {
-    try {
-      // Here will be API calls to load data
-      // For now using mock data
-      await this.loadContractors();
-      this.updateBusinessTypeFilter(); // Обновляем список типов бизнеса после загрузки
-      await this.loadCurrentProjects();
-      await this.loadFutureProjects();
-      this.renderActiveSection();
-
-      // Update statistics for both sections after loading data
-      this.updateProjectStatistics("current");
-      this.updateProjectStatistics("future");
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  }
-
-  switchTab(tab) {
-    this.container
-      .querySelectorAll(".construction-section")
-      .forEach((s) => s.classList.remove("active"));
-
-    // Update section title
-    const sectionTitle = this.container.querySelector("#section-title");
-    if (sectionTitle) {
-      sectionTitle.textContent =
-        tab === "contractors"
-          ? "Contractors"
-          : tab === "current-projects"
-          ? "Current Projects"
-          : "Future Projects";
-    }
-
-    // Show appropriate section
-    this.container.querySelector(`#${tab}-section`).classList.add("active");
-
-    // Update filters visibility
-    const contractorsFilters = this.container.querySelector(
-      "#contractors-filters"
-    );
-    const currentProjectsFilters = this.container.querySelector(
-      "#current-projects-filters"
-    );
-    const futureProjectsFilters = this.container.querySelector(
-      "#future-projects-filters"
-    );
-
-    if (contractorsFilters) {
-      contractorsFilters.style.display =
-        tab === "contractors" ? "flex" : "none";
-    }
-    if (currentProjectsFilters) {
-      currentProjectsFilters.style.display =
-        tab === "current-projects" ? "flex" : "none";
-    }
-    if (futureProjectsFilters) {
-      futureProjectsFilters.style.display =
-        tab === "future-projects" ? "flex" : "none";
-    }
-
-    // Update add buttons visibility
-    const addContractorBtn = this.container.querySelector("#add-contractor");
-    const addCurrentProjectBtn = this.container.querySelector(
-      "#add-current-project"
-    );
-    const addFutureProjectBtn = this.container.querySelector(
-      "#add-future-project"
-    );
-
-    if (addContractorBtn) {
-      addContractorBtn.style.display = tab === "contractors" ? "block" : "none";
-    }
-    if (addCurrentProjectBtn) {
-      addCurrentProjectBtn.style.display =
-        tab === "current-projects" ? "block" : "none";
-    }
-    if (addFutureProjectBtn) {
-      addFutureProjectBtn.style.display =
-        tab === "future-projects" ? "block" : "none";
-    }
-
-    this.activeTab = tab;
-    this.renderActiveSection();
-
-    // Update project statistics when switching to project tabs
-    if (tab === "current-projects") {
-      this.updateProjectStatistics("current");
-    } else if (tab === "future-projects") {
-      this.updateProjectStatistics("future");
-    }
-  }
-
-  renderActiveSection() {
-    switch (this.activeTab) {
-      case "contractors":
-        this.renderContractors();
-        break;
-      case "current-projects":
-        this.renderProjects("current");
-        break;
-      case "future-projects":
-        this.renderProjects("future");
-        break;
-    }
-  }
-
-  // Методы для работы с подрядчиками
-  async loadContractors() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        // Convert API format to client format
-        this.contractors = result.data.map((contractor) => {
-          return {
-            id: parseInt(contractor.id),
-            companyName: contractor.company_name,
-            businessType: contractor.business_type,
-            location: contractor.location || "",
-            email: contractor.email || "",
-            phone: contractor.phone || "",
-            rating: parseInt(contractor.rating) || 0,
-            contactPerson: contractor.contact_person
-              ? {
-                  id: parseInt(contractor.contact_person.id),
-                  name: contractor.contact_person.name,
-                  position: contractor.contact_person.position || "",
-                  phone: contractor.contact_person.phone || "",
-                  email: contractor.contact_person.email || "",
-                }
-              : {
-                  name: "None",
-                  position: "",
-                  phone: "",
-                  email: "",
-                },
-            employees: contractor.employees
-              ? contractor.employees.map((emp) => ({
-                  id: parseInt(emp.id),
-                  fullName: emp.name,
-                  position: emp.position || "",
-                  phone: emp.phone || "",
-                  email: emp.email || "",
-                }))
-              : [],
-          };
-        });
-      } else {
-        console.error("Failed to load contractors:", result.message);
-        // Fallback to empty array
-        this.contractors = [];
-      }
-    } catch (error) {
-      console.error("Error loading contractors:", error);
-      // Fallback to empty array on error
-      this.contractors = [];
-    }
-  }
-
-  renderContractors() {
-    const container = this.container.querySelector("#contractors-list");
-    if (!container) return;
-
-    if (this.contractors.length === 0) {
-      container.innerHTML = `
-            <div class="no-contractors">
-                <i class="fas fa-building"></i>
-                <h3>No Contractors Yet</h3>
-                <p>Click the "Add Contractor" button to add your first contractor</p>
-            </div>
-        `;
-      return;
-    }
-
-    container.innerHTML = this.contractors
-      .map(
-        (contractor) => `
-      <div class="contractor-card" data-id="${contractor.id}">
-        <div class="contractor-header">
-          <h3>${contractor.companyName}</h3>
-          <div class="contractor-rating">
-            ${this.generateRatingStars(contractor.rating)}
-          </div>
-        </div>
-        <div class="contractor-info">
-          <div class="info-item">
-            <i class="fas fa-briefcase"></i>
-            <span>${contractor.businessType}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-location-dot"></i>
-            <span>${contractor.location}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.email}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.phone}</span>
-          </div>
-        </div>
-        <div class="contact-person-info">
-          <h4>Contact Person</h4>
-          <div class="info-item">
-            <i class="fas fa-user"></i>
-            <span>${contractor.contactPerson.name}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-id-badge"></i>
-            <span>${contractor.contactPerson.position}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.contactPerson.phone}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.contactPerson.email}</span>
-          </div>
-        </div>
-        <div class="contractor-employees">
-          <h4>Employees (${contractor.employees.length})</h4>
-          <div class="employees-list">
-            ${this.renderEmployeesList(contractor.employees)}
-          </div>
-          <button class="btn-secondary add-employee" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-user-plus"></i> Add Employee
-          </button>
-        </div>
-        <div class="contractor-actions">
-          <button class="btn-action edit" data-contractor-id="${contractor.id}">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-action delete" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    `
-      )
-      .join("");
-
-    // Добавляем обработчики событий после рендеринга
-    this.bindEmployeeEvents();
-
-    // Add event handlers for contractor edit and delete buttons
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          const contractor = this.contractors.find(
-            (c) => c.id === contractorId
-          );
-          if (contractor) {
-            this.showContractorModal(contractor);
-          }
-        });
-      });
-
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          this.deleteContractor(contractorId);
-        });
-      });
-  }
-
-  renderEmployeesList(employees) {
-    return employees
-      .map(
-        (employee) => `
-        <div class="employee-item">
-            <div class="employee-info">
-                <strong>${employee.fullName}</strong>
-                <span>${employee.position}</span>
-                <span>${employee.phone}</span>
-            </div>
-            <div class="employee-actions">
-                <button class="btn-action edit" data-employee-id="${employee.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-action delete" data-employee-id="${employee.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `
-      )
-      .join("");
-  }
-
-  bindEmployeeEvents() {
-    // Обработчики для кнопок редактирования сотрудников
-    this.container
-      .querySelectorAll(".employee-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const employeeId = parseInt(button.dataset.employeeId);
-          const contractorId = parseInt(
-            button.closest(".contractor-card").dataset.id
-          );
-          this.editEmployee(contractorId, employeeId);
-        });
-      });
-
-    // Обработчики для кнопок удаления сотрудников
-    this.container
-      .querySelectorAll(".employee-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const employeeId = parseInt(button.dataset.employeeId);
-          const contractorId = parseInt(
-            button.closest(".contractor-card").dataset.id
-          );
-          this.deleteEmployee(contractorId, employeeId);
-        });
-      });
-
-    // Обработчики для кнопок добавления сотрудников
-    this.container.querySelectorAll(".add-employee").forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const contractorId = parseInt(button.dataset.contractorId);
-        this.showEmployeeModal(contractorId);
-      });
-    });
-  }
-
-  showEmployeeModal(contractorId, employee = null) {
-    const modal = this.container.querySelector("#employee-modal");
-    const form = modal.querySelector("#employee-form");
-    const title = modal.querySelector("#employee-modal-title");
-
-    title.textContent = employee ? "Edit Employee" : "Add Employee";
-
-    form.elements.contractorId.value = contractorId;
-
-    if (employee) {
-      form.elements.fullName.value = employee.fullName;
-      form.elements.position.value = employee.position;
-      form.elements.phone.value = employee.phone;
-      form.dataset.employeeId = employee.id;
-    } else {
-      form.reset();
-      form.elements.contractorId.value = contractorId;
-      delete form.dataset.employeeId;
-    }
-
-    modal.classList.add("active");
-  }
-
-  editEmployee(contractorId, employeeId) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const employee = contractor.employees.find((e) => e.id === employeeId);
-      if (employee) {
-        this.showEmployeeModal(contractorId, employee);
-      }
-    }
-  }
-
-  deleteEmployee(contractorId, employeeId) {
-    if (confirm("Are you sure you want to delete this employee?")) {
-      const contractor = this.contractors.find((c) => c.id === contractorId);
-      if (contractor) {
-        contractor.employees = contractor.employees.filter(
-          (e) => e.id !== employeeId
-        );
-        this.renderContractors();
-      }
-    }
-  }
-
-  handleEmployeeSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const contractorId = parseInt(form.elements.contractorId.value);
-    const employeeData = {
-      fullName: form.elements.fullName.value,
-      position: form.elements.position.value,
-      phone: form.elements.phone.value,
-    };
-
-    if (form.dataset.employeeId) {
-      // Редактирование существующего сотрудника
-      const employeeId = parseInt(form.dataset.employeeId);
-      this.updateEmployee(contractorId, employeeId, employeeData);
-    } else {
-      // Добавление нового сотрудника
-      this.addEmployeeToContractor(contractorId, employeeData);
-    }
-
-    this.closeModals();
-  }
-
-  addEmployeeToContractor(contractorId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      // First add to local data structure for immediate feedback
-      data.id = Date.now(); // Temporary ID
-      contractor.employees.push(data);
-
-      // Prepare data for API
-      const existingEmployees = contractor.employees.filter(
-        (e) => e.id !== data.id
-      );
-
-      const apiData = {
-        company_name: contractor.companyName,
-        business_type: contractor.businessType,
-        location: contractor.location,
-        email: contractor.email,
-        phone: contractor.phone,
-        rating: contractor.rating,
-        notes: contractor.notes || "",
-        employees: [
-          ...existingEmployees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: 0,
-          })),
-          // Add new employee
-          {
-            name: data.fullName,
-            position: data.position || "",
-            phone: data.phone || "",
-            email: data.email || "",
-            is_primary_contact: 0,
-          },
-        ],
-      };
-
-      // Используем правильный URL API
-      fetch(
-        `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(apiData),
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((responseData) => {
-          if (responseData.success) {
-            // Обновляем данные о сотрудниках из ответа API
-            if (responseData.data && responseData.data.employees) {
-              // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-              const updatedContractor = this.contractors.find(
-                (c) => c.id === contractorId
-              );
-              if (updatedContractor) {
-                // Преобразуем сотрудников из формата API в формат UI
-                updatedContractor.employees = responseData.data.employees.map(
-                  (emp) => ({
-                    id: parseInt(emp.id),
-                    fullName: emp.name,
-                    position: emp.position || "",
-                    phone: emp.phone || "",
-                    email: emp.email || "",
-                  })
-                );
-              }
-            }
-
-            // Перерисовываем UI для отображения обновленных данных
-            this.renderContractors();
-          } else {
-            console.error("Error adding employee:", responseData.message);
-            alert("Failed to add employee: " + responseData.message);
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          }
-        })
-        .catch((error) => {
-          console.error("Error adding employee:", error);
-          alert("Failed to add employee. Please try again.");
-          // Обновляем данные с сервера в случае ошибки
-          this.loadContractors().then(() => this.renderContractors());
-        });
-
-      // Render immediately for responsive UI
-      this.renderContractors();
-    }
-  }
-
-  updateEmployee(contractorId, employeeId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const index = contractor.employees.findIndex((e) => e.id === employeeId);
-      if (index !== -1) {
-        // Update local data first
-        contractor.employees[index] = {
-          ...contractor.employees[index],
-          ...data,
-        };
-
-        // Prepare data for API
-        const apiData = {
-          company_name: contractor.companyName,
-          business_type: contractor.businessType,
-          location: contractor.location,
-          email: contractor.email,
-          phone: contractor.phone,
-          rating: contractor.rating,
-          notes: contractor.notes || "",
-          employees: contractor.employees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: e.isPrimaryContact ? 1 : 0,
-          })),
-        };
-
-        // Используем правильный URL API
-        fetch(
-          `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(apiData),
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((responseData) => {
-            if (responseData.success) {
-              // Обновляем данные о сотрудниках из ответа API
-              if (responseData.data && responseData.data.employees) {
-                // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-                const updatedContractor = this.contractors.find(
-                  (c) => c.id === contractorId
-                );
-                if (updatedContractor) {
-                  // Преобразуем сотрудников из формата API в формат UI
-                  updatedContractor.employees = responseData.data.employees.map(
-                    (emp) => ({
-                      id: parseInt(emp.id),
-                      fullName: emp.name,
-                      position: emp.position || "",
-                      phone: emp.phone || "",
-                      email: emp.email || "",
-                    })
-                  );
-                }
-              }
-
-              // Перерисовываем UI для отображения обновленных данных
-              this.renderContractors();
-            } else {
-              console.error("Error updating employee:", responseData.message);
-              alert("Failed to update employee: " + responseData.message);
-              // Обновляем данные с сервера в случае ошибки
-              this.loadContractors().then(() => this.renderContractors());
-            }
-          })
-          .catch((error) => {
-            console.error("Error updating employee:", error);
-            alert("Failed to update employee. Please try again.");
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          });
-
-        // Render immediately for UI feedback
-        this.renderContractors();
-      }
-    }
-  }
-
-  // Методы для работы с проектами
-  async loadCurrentProjects() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=current"
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.currentProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          progress: project.progress,
-          actualCost: project.actual_cost,
-          lastUpdate: project.last_update,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading current projects:", data.message);
-        this.currentProjects = [];
-      }
-    } catch (error) {
-      console.error("Error loading current projects:", error);
-      this.currentProjects = [];
-    }
-  }
-
-  async loadFutureProjects() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=future"
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.futureProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          budget: project.budget,
-          priority: project.priority,
-          description: project.description,
-          objectives: project.objectives,
-          risks: project.risks,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading future projects:", data.message);
-        this.futureProjects = [];
-      }
-    } catch (error) {
-      console.error("Error loading future projects:", error);
-      this.futureProjects = [];
-    }
-  }
-
-  renderProjects(type, projectsToRender = null) {
-    const projects =
-      projectsToRender ||
-      (type === "current" ? this.currentProjects : this.futureProjects);
-    const container = this.container.querySelector(`#${type}-projects-list`);
-
-    if (!container) {
-      console.error(`Container #${type}-projects-list not found`);
-      return;
-    }
-
-    console.log(`Rendering ${type} projects:`, projects);
-    container.innerHTML = "";
-
-    if (!projects || projects.length === 0) {
-      container.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-search"></i>
-          <p>No projects found</p>
-        </div>
-      `;
-
-      // Update statistics even if no projects are found
-      this.updateProjectStatistics(type);
-      return;
-    }
-
-    projects.forEach((project) => {
-      // Организуем файлы проекта по категориям
-      const organizedProject = this.organizeProjectFiles(project);
-
-      const contractor = this.contractors.find(
-        (c) => c.id === organizedProject.contractorId
-      );
-      const template = this.container.querySelector(
-        `#${type}-project-card-template`
-      );
-
-      if (!template) {
-        console.error(`Template #${type}-project-card-template not found`);
-        return;
-      }
-
-      const card = template.content.cloneNode(true);
-
-      // Set project ID
-      const projectCard = card.querySelector(".project-card");
-      projectCard.dataset.id = organizedProject.id;
-
-      // Set project name and status
-      card.querySelector(".project-name").textContent = organizedProject.name;
-      const statusSelect = card.querySelector(".status-select");
-      statusSelect.value = organizedProject.status;
-
-      // Добавляем data-атрибут для привязки к проекту
-      statusSelect.setAttribute("data-project-id", organizedProject.id);
-
-      // Обновляем классы статуса
-      this.updateStatusClasses(statusSelect, organizedProject.status);
-
-      // Set project details
-      card.querySelector(".location").textContent = organizedProject.location;
-
-      // Форматируем даты для отображения
-      const startDateFormatted = this.formatDateForDisplay(
-        organizedProject.startDate
-      );
-      const endDateFormatted = this.formatDateForDisplay(
-        organizedProject.endDate
-      );
-      card.querySelector(
-        ".dates"
-      ).textContent = `${startDateFormatted} - ${endDateFormatted}`;
-
-      if (type === "current") {
-        this.renderCurrentProjectDetails(card, organizedProject, contractor);
-      } else {
-        this.renderFutureProjectDetails(card, organizedProject, contractor);
-      }
-
-      // Добавляем карточку в контейнер
-      container.appendChild(card);
-    });
-
-    // After rendering all projects, update the statistics
-    this.updateProjectStatistics(type);
-
-    // Bind events to project cards
-    this.bindProjectCardEvents(type);
-
-    // Привязываем события к предпросмотрам файлов
-    this.bindFilePreviewEvents();
-
-    // Добавим дополнительную логику для обработки всех изображений на странице
-    this.enhanceAllImagePreviews(type);
-  }
-
-  // Метод для улучшения всех превью изображений в указанной секции
-  enhanceAllImagePreviews(type) {
-    // Получаем контейнер для секции
-    const sectionId =
-      type === "current"
-        ? "current-projects-section"
-        : "future-projects-section";
-    const section = this.container.querySelector(`#${sectionId}`);
-    if (!section) return;
-
-    // Находим все изображения в секции
-    const images = section.querySelectorAll(".file-preview-container img");
-    images.forEach((img) => {
-      // Проверяем, что у изображения есть src
-      const src = img.getAttribute("src");
-      if (src) {
-        // Делаем курсор указателем
-        img.style.cursor = "pointer";
-
-        // Удаляем старые обработчики, чтобы избежать дублирования
-        const newImg = img.cloneNode(true);
-        img.parentNode.replaceChild(newImg, img);
-
-        // Добавляем обработчик клика
-        newImg.addEventListener("click", () => {
-          console.log("Image clicked:", src);
-          this.showImageModal(src);
-        });
-      }
-    });
-
-    console.log(`Enhanced ${images.length} images in ${type} projects section`);
-  }
-
-  updateStatusClasses(statusSelect, status) {
-    // Удаляем все существующие классы статуса
-    statusSelect.classList.remove(
-      "planned",
-      "in-progress",
-      "completed",
-      "on-hold",
-      "move-to-current",
-      "delayed",
-      "design-phase", // Добавляем новые возможные статусы
-      "planning"
-    );
-
-    // Преобразуем статус для использования в качестве CSS класса (заменяем пробелы на дефисы)
-    const statusClass = status.replace(/\s+/g, "-").toLowerCase();
-
-    // Добавляем новый класс статуса
-    statusSelect.classList.add(statusClass);
-
-    // Сбрасываем inline стили, которые могли быть установлены ранее
-    statusSelect.style.backgroundColor = "";
-    statusSelect.style.color = "";
-    statusSelect.style.borderColor = "";
-
-    // Определяем цвета в зависимости от статуса
-    let colors = {
-      planned: {
-        bg: "#e3f2fd",
-        color: "#1976d2",
-        border: "#90caf9",
-      },
-      "in-progress": {
-        bg: "#fff3e0",
-        color: "#f57c00",
-        border: "#ffcc80",
-      },
-      completed: {
-        bg: "#e8f5e9",
-        color: "#388e3c",
-        border: "#a5d6a7",
-      },
-      "on-hold": {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "move-to-current": {
-        bg: "#f3e5f5",
-        color: "#7b1fa2",
-        border: "#ce93d8",
-      },
-      delayed: {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "design-phase": {
-        // Добавляем новые статусы с цветами
-        bg: "#e0f7fa",
-        color: "#0097a7",
-        border: "#80deea",
-      },
-      planning: {
-        bg: "#f3e5f5",
-        color: "#8e24aa",
-        border: "#ce93d8",
-      },
-    };
-
-    // Пробуем найти цвета для статуса напрямую или для его CSS версии
-    let colorConfig = colors[status] || colors[statusClass];
-
-    // Применяем стили, если статус найден в нашем объекте
-    if (colorConfig) {
-      statusSelect.style.backgroundColor = colorConfig.bg;
-      statusSelect.style.color = colorConfig.color;
-      statusSelect.style.borderColor = colorConfig.border;
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    } else {
-      // Если статус неизвестен, применяем стандартные стили
-      statusSelect.style.backgroundColor = "#f5f5f5";
-      statusSelect.style.color = "#616161";
-      statusSelect.style.borderColor = "#bdbdbd";
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    }
-
-    // Устанавливаем data-атрибут для дополнительной поддержки селекторов
-    statusSelect.setAttribute("data-status", status);
-  }
-
-  // Helper method to update card size after toggle
-  updateCardSize(card) {
-    // Ensure card is a DOM element
-    if (!card || typeof card.closest !== "function") {
-      // If card is not a DOM element, try to find the project card differently
-      // This handles cases where 'card' might be the project card body or another element
-      const projectCard = card.parentElement
-        ? card.parentElement.closest(".project-card")
-        : document.querySelector(".project-card");
-
-      if (projectCard) {
-        // Set height to auto to let it resize naturally
-        projectCard.style.height = "auto";
-        const cardBody = projectCard.querySelector(".card-body");
-        if (cardBody) {
-          cardBody.style.height = "auto";
-        }
-      }
-      return;
-    }
-
-    // Regular handling if card is a DOM element with closest method
-    const projectCard = card.closest(".project-card");
-    if (projectCard) {
-      // Ensure card body expands/contracts with content
-      const cardBody = projectCard.querySelector(".card-body");
-      if (cardBody) {
-        // Use setTimeout to ensure DOM has updated
-        setTimeout(() => {
-          // Reset any fixed heights
-          cardBody.style.height = "";
-          projectCard.style.height = "";
-
-          // Calculate and set new height
-          const height = cardBody.scrollHeight;
-          cardBody.style.height = height + "px";
-
-          // Allow height to adjust naturally after initial animation
-          setTimeout(() => {
-            cardBody.style.height = "auto";
-          }, 300);
-        }, 10);
-      }
-    }
-  }
-
-  renderCurrentProjectDetails(card, project, contractor) {
-    // Set current project specific details
-    card.querySelector(".progress").textContent = project.progress
-      ? `${project.progress}%`
-      : "Not started";
-    card.querySelector(".actual-cost").textContent = project.actualCost
-      ? `$${project.actualCost.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
-
-    // Форматируем дату последнего обновления
-    const lastUpdateFormatted = project.lastUpdate
-      ? this.formatDateForDisplay(project.lastUpdate)
-      : "Not updated";
-    card.querySelector(".last-update").textContent = lastUpdateFormatted;
-
-    // Определяем, является ли проект перенесенным из Future в Current
-    const isMigratedProject =
-      project.description ||
-      project.objectives ||
-      project.risks ||
-      project.priority ||
-      (project.specifications && project.specifications.length > 0) ||
-      (project.budgetDocs && project.budgetDocs.length > 0) ||
-      (project.documents &&
-        project.documents.length > 0 &&
-        project.migratedFromFuture);
-
-    const detailsSection = card.querySelector(".project-details");
-
-    // Make Project Documents header collapsible
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
-    );
-    const docHeader = documentsSection.querySelector("h4");
-
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
-
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle - pass the project card element
-      this.updateCardSize(docHeader.closest(".project-card"));
-    });
-
-    // Reorganize documents grid - group migrated files at the top
-    if (isMigratedProject) {
-      // Clear existing content
-      documentsGrid.innerHTML = "";
-
-      // Add migrated files without collapsible headers
-      const migratedFilesGroup = document.createElement("div");
-      migratedFilesGroup.className = "migrated-files-group";
-      documentsGrid.appendChild(migratedFilesGroup);
-
-      // Add simple label for migrated files
-      const migratedLabel = document.createElement("div");
-      migratedLabel.className = "section-label";
-      migratedLabel.innerHTML = `<span class="from-future-flag">From Future Project</span>`;
-      migratedFilesGroup.appendChild(migratedLabel);
-
-      // Add Planning Documents (formerly called Documents in Future Projects) if they exist
-      if (
-        project.documents &&
-        project.documents.length > 0 &&
-        project.migratedFromFuture
-      ) {
-        const planningDocsGroup = document.createElement("div");
-        planningDocsGroup.className = "documents-group migrated-files";
-        planningDocsGroup.innerHTML = `
-          <h5>Planning Documents</h5>
-          <div class="planning-docs-preview file-preview-container">
-            ${this.renderFilePreviews(project.documents, "document")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(planningDocsGroup);
-      }
-
-      // Add specifications if they exist
-      if (project.specifications && project.specifications.length > 0) {
-        const specificationsGroup = document.createElement("div");
-        specificationsGroup.className = "documents-group migrated-files";
-        specificationsGroup.innerHTML = `
-          <h5>Specifications</h5>
-          <div class="specifications-preview file-preview-container">
-            ${this.renderFilePreviews(project.specifications, "specification")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(specificationsGroup);
-      }
-
-      // Add budget documents if they exist
-      if (project.budgetDocs && project.budgetDocs.length > 0) {
-        const budgetDocsGroup = document.createElement("div");
-        budgetDocsGroup.className = "documents-group migrated-files";
-        budgetDocsGroup.innerHTML = `
-          <h5>Budget Documents</h5>
-          <div class="budget-docs-preview file-preview-container">
-            ${this.renderFilePreviews(project.budgetDocs, "budgetDoc")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(budgetDocsGroup);
-      }
-
-      // Add simple label for current files
-      const currentLabel = document.createElement("div");
-      currentLabel.className = "section-label";
-      currentLabel.innerHTML = `<span class="current-files-title">Current Project Files</span>`;
-      documentsGrid.appendChild(currentLabel);
-
-      // Create current files group
-      const currentFilesGroup = document.createElement("div");
-      currentFilesGroup.className = "current-files-group";
-      documentsGrid.appendChild(currentFilesGroup);
-
-      // Add current files (Photos, Reports)
-      // Photos
-      if (project.photos && project.photos.length > 0) {
-        const photosGroup = document.createElement("div");
-        photosGroup.className = "documents-group";
-        photosGroup.innerHTML = `
-          <h5>Photos</h5>
-          <div class="photos-preview file-preview-container">
-            ${this.renderFilePreviews(project.photos, "photo")}
-          </div>
-        `;
-        currentFilesGroup.appendChild(photosGroup);
-      } else {
-        const photosGroup = document.createElement("div");
-        photosGroup.className = "documents-group";
-        photosGroup.innerHTML = `
-          <h5>Photos</h5>
-          <div class="photos-preview file-preview-container"></div>
-        `;
-        currentFilesGroup.appendChild(photosGroup);
-      }
-
-      // Reports
-      if (project.reports && project.reports.length > 0) {
-        const reportsGroup = document.createElement("div");
-        reportsGroup.className = "documents-group";
-        reportsGroup.innerHTML = `
-          <h5>Reports</h5>
-          <div class="reports-preview file-preview-container">
-            ${this.renderFilePreviews(project.reports, "report")}
-          </div>
-        `;
-        currentFilesGroup.appendChild(reportsGroup);
-      } else {
-        const reportsGroup = document.createElement("div");
-        reportsGroup.className = "documents-group";
-        reportsGroup.innerHTML = `
-          <h5>Reports</h5>
-          <div class="reports-preview file-preview-container"></div>
-        `;
-        currentFilesGroup.appendChild(reportsGroup);
-      }
-    } else {
-      // Just set file previews without reorganization
-      if (project.photos && project.photos.length > 0) {
-        card.querySelector(".photos-preview").innerHTML =
-          this.renderFilePreviews(project.photos, "photo");
-      }
-      if (project.documents && project.documents.length > 0) {
-        card.querySelector(".documents-preview").innerHTML =
-          this.renderFilePreviews(project.documents, "document");
-      }
-      if (project.reports && project.reports.length > 0) {
-        card.querySelector(".reports-preview").innerHTML =
-          this.renderFilePreviews(project.reports, "report");
-      }
-    }
-  }
-
-  renderFutureProjectDetails(card, project, contractor) {
-    // Future project specific details
-    card.querySelector(".budget").textContent = project.budget
-      ? `$${project.budget.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".priority").textContent = project.priority
-      ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1)
-      : "Not specified";
-    card.querySelector(".preferred-contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
-
-    // Set planning details
-    card.querySelector(".description").textContent =
-      project.description || "No description available";
-    card.querySelector(".objectives").textContent =
-      project.objectives || "No objectives defined";
-    card.querySelector(".risks").textContent =
-      project.risks || "No risks identified";
-
-    // Make Project Documents header collapsible
-    const detailsSection = card.querySelector(".project-details");
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
-    );
-    const docHeader = documentsSection.querySelector("h4");
-
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
-
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle
-      this.updateCardSize(card);
-    });
-
-    // Set file previews
-    if (project.documents && project.documents.length > 0) {
-      card.querySelector(".documents-preview").innerHTML =
-        this.renderFilePreviews(project.documents, "document");
-    }
-    if (project.specifications && project.specifications.length > 0) {
-      card.querySelector(".specifications-preview").innerHTML =
-        this.renderFilePreviews(project.specifications, "specification");
-    }
   }
 
   getFileIcon(fileType) {
@@ -5052,22 +1880,13 @@ export default class ConstructionManager {
           } else if (file.path) {
             // Если есть путь к файлу
             img.src = file.path;
-          } else if (file.miniUrl) {
-            // Если есть путь к миниатюре
-            img.src = file.miniUrl;
-          } else if (file.url) {
-            // Если есть путь к полноразмерному файлу
-            img.src = file.url;
-          } else if (fileName) {
-            // Последняя попытка - формируем путь по имени файла
-            img.src = `components/construction/project_upload/project_mini/mini_${fileName}`;
           } else {
             // Последняя попытка - если файл - это строка с URL или данными base64
             img.src = typeof file === "string" ? file : "";
           }
         }
 
-        // Улучшенная обработка ошибок загрузки изображения
+        // Проверка на ошибку загрузки изображения
         img.onerror = () => {
           console.error("Error loading image:", img.src);
           img.remove();
@@ -5078,16 +1897,7 @@ export default class ConstructionManager {
           previewItem.appendChild(iconDiv);
         };
 
-        // Убедимся, что изображение добавится в DOM даже если оно закэшировано и onload не сработает
-        if (img.complete) {
-          previewItem.appendChild(img);
-        } else {
-          img.onload = () => {
-            // Изображение успешно загрузилось
-            console.log("Image loaded successfully:", img.src);
-          };
-          previewItem.appendChild(img);
-        }
+        previewItem.appendChild(img);
       } catch (error) {
         console.error("Ошибка создания превью изображения:", error);
         // Если не удалось создать превью, используем иконку
@@ -5128,7 +1938,7 @@ export default class ConstructionManager {
     // Добавляем превью в контейнер
     container.appendChild(previewItem);
 
-    // Привязываем обработчики к новому превью
+    // Привязываем события к новому превью
     this.bindFilePreviewEvents(container);
   }
 
@@ -5152,28 +1962,13 @@ export default class ConstructionManager {
       });
     });
 
-    // Add click handler for project card images
-    const projectCards = document.querySelectorAll(".project-card");
-    projectCards.forEach((card) => {
-      const cardImage = card.querySelector(".project-image img");
-      if (cardImage) {
-        cardImage.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const imageSrc = cardImage.src;
-          if (imageSrc) {
-            this.showImageModal(imageSrc);
-          }
-        });
-      }
-    });
-
     // Toggle details button handler
     const toggleButtons = document.querySelectorAll(".btn-toggle-details");
     toggleButtons.forEach((button) => {
       button.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const projectCard = e.target.closest(".project-card");
+        const projectCard = button.closest(".project-card");
         if (projectCard) {
           const detailsSection = projectCard.querySelector(".project-details");
           if (detailsSection) {
@@ -5228,283 +2023,143 @@ export default class ConstructionManager {
   }
 
   // Добавляем новый метод для привязки обработчиков к превью файлов
-  bindFilePreviewEvents(container = null) {
-    // Если контейнер не указан, привязываем обработчики ко всем превью файлов
-    if (!container) {
-      // Получаем все контейнеры с превью файлов
-      const containers = this.container.querySelectorAll(
-        ".file-preview-container"
-      );
-      containers.forEach((container) => this.bindFilePreviewEvents(container));
+  bindFilePreviewEvents(container) {
+    // Предотвращаем добавление обработчиков дважды
+    if (container.dataset.previewEventsInitialized === "true") {
       return;
     }
 
-    // Handle clicks on file preview items
+    // Добавляем кнопки удаления ко всем превью, если их еще нет
     const fileItems = container.querySelectorAll(".file-preview-item");
-
     fileItems.forEach((item) => {
-      // Get file info
-      const fileId = item.dataset.fileId;
-      const filePath = item.dataset.filePath;
-      const mimeType = item.dataset.mimeType;
-      const fileName = item.dataset.fileName;
-
-      // View file button - open in new tab or in modal
-      const viewButton = item.querySelector(".view-file");
-      if (viewButton) {
-        viewButton.addEventListener("click", (e) => {
-          e.stopPropagation();
-          console.log("Opening file:", filePath);
-
-          if (mimeType && mimeType.startsWith("image/")) {
-            // Show image in modal
-            this.showImageModal(filePath);
-          } else {
-            // Open other file types in a new tab
-            window.open(filePath, "_blank");
-          }
-        });
-      }
-
-      // Remove file button - delete file from project
-      const removeButton = item.querySelector(".remove-file");
-      if (removeButton) {
-        removeButton.addEventListener("click", (e) => {
-          e.stopPropagation();
-
-          // Check if this is a file being uploaded or already saved
-          if (fileId && fileId !== "") {
-            // This is a saved file
-            if (confirm("Are you sure you want to delete this file?")) {
-              console.log("Deleting file:", fileId);
-              this.deleteProjectFile(fileId);
-            }
-          } else {
-            // This is a file being uploaded
-            console.log("Removing file from upload list:", fileName);
-
-            // Remove this item from the preview container
-            item.remove();
-
-            // Get the input field related to this container
-            const containerId = container.id;
-            const inputId = containerId.replace("-preview", "");
-            const inputElement = document.getElementById(inputId);
-
-            // We can't directly modify the FileList object, but we need to indicate this file
-            // should be excluded when submitting the form
-            if (inputElement) {
-              // Mark the container with data about removed files
-              if (!container.dataset.removedFiles) {
-                container.dataset.removedFiles = JSON.stringify([]);
-              }
-
-              const removedFiles = JSON.parse(container.dataset.removedFiles);
-              removedFiles.push(fileName);
-              container.dataset.removedFiles = JSON.stringify(removedFiles);
-            }
-          }
-        });
-      }
-
-      // Click on image thumbnail - show in modal
-      const imgElement = item.querySelector("img");
-      if (imgElement && mimeType && mimeType.startsWith("image/")) {
-        imgElement.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.showImageModal(filePath);
-        });
-      }
-
-      // Make the whole item clickable for images
-      if (mimeType && mimeType.startsWith("image/")) {
-        item.style.cursor = "pointer";
-        item.addEventListener("click", () => {
-          this.showImageModal(filePath);
-        });
+      // Проверяем, есть ли уже кнопка удаления
+      if (!item.querySelector(".remove-file")) {
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-file";
+        removeBtn.innerHTML = "×";
+        removeBtn.title = "Remove file";
+        item.appendChild(removeBtn);
       }
     });
 
-    // Также обработаем отдельные изображения, которые могут быть добавлены
-    // напрямую в контейнер превью (не в .file-preview-item)
-    const directImages = container.querySelectorAll(
-      "img:not(.file-preview-item img)"
-    );
-    directImages.forEach((img) => {
-      const src = img.getAttribute("src");
-      if (src) {
-        img.style.cursor = "pointer";
-        img.addEventListener("click", () => {
-          this.showImageModal(src);
-        });
-      }
-    });
-  }
-
-  // Show image in modal
-  showImageModal(imageSrc) {
-    console.log("Opening file:", imageSrc);
-
-    // Fix path issues for project upload files
-    if (imageSrc && imageSrc.includes("project_upload")) {
-      // If the path doesn't start with the correct prefix and isn't an absolute URL
-      if (
-        !imageSrc.startsWith("/Maintenance_P") &&
-        !imageSrc.startsWith("http")
-      ) {
-        // Handle relative paths that start with ../
-        if (imageSrc.includes("../project_upload")) {
-          imageSrc = imageSrc.replace(
-            "../project_upload",
-            "components/construction/project_upload"
-          );
+    // Обработка событий нажатия на превью файлов
+    fileItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        // Проверяем, не кликнули ли мы на кнопку удаления
+        if (
+          e.target.classList.contains("remove-file") ||
+          e.target.closest(".remove-file")
+        ) {
+          e.stopPropagation();
+          return;
         }
 
-        // If path is just starting with "project_upload", add full path
-        if (imageSrc.startsWith("project_upload")) {
-          imageSrc = "components/construction/" + imageSrc;
-        }
+        // Получаем данные о файле
+        const fileType = item.dataset.fileType;
+        const mimeType = item.dataset.mimeType;
+        const fileName = item.dataset.fileName;
 
-        // Add the main prefix if needed
-        if (!imageSrc.startsWith("/Maintenance_P")) {
-          imageSrc = "/Maintenance_P/" + imageSrc;
-        }
-      }
+        console.log("File clicked:", fileType, mimeType, fileName); // Для отладки
 
-      // Add Inspections-Checklist-Portal if needed
-      if (
-        imageSrc.includes("components/construction") &&
-        !imageSrc.includes("Inspections-Checklist-Portal")
-      ) {
-        imageSrc = imageSrc.replace(
-          "components/construction",
-          "Inspections-Checklist-Portal/components/construction"
-        );
-      }
-    }
-
-    // Use the existing image modal in the HTML
-    const imageModal = document.getElementById("image-modal");
-    const modalImage = document.getElementById("modal-image");
-
-    if (imageModal && modalImage) {
-      // Set image source and show modal
-      modalImage.src = imageSrc;
-      imageModal.style.display = "block";
-
-      // Add Escape key handler
-      const escKeyHandler = (e) => {
-        if (e.key === "Escape") {
-          imageModal.style.display = "none";
-          document.removeEventListener("keydown", escKeyHandler);
-        }
-      };
-      document.addEventListener("keydown", escKeyHandler);
-
-      // Make sure close button works
-      const closeBtn = imageModal.querySelector(".close-modal");
-      if (closeBtn) {
-        // Remove any existing handlers to prevent duplicates
-        const newCloseBtn = closeBtn.cloneNode(true);
-        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-
-        newCloseBtn.addEventListener("click", () => {
-          imageModal.style.display = "none";
-          document.removeEventListener("keydown", escKeyHandler);
-        });
-      }
-
-      // Close on click outside the image
-      const clickOutsideHandler = (e) => {
-        if (e.target === imageModal) {
-          imageModal.style.display = "none";
-          imageModal.removeEventListener("click", clickOutsideHandler);
-          document.removeEventListener("keydown", escKeyHandler);
-        }
-      };
-
-      // Remove any existing handlers to prevent duplicates
-      imageModal.removeEventListener("click", clickOutsideHandler);
-      imageModal.addEventListener("click", clickOutsideHandler);
-    } else {
-      // Fallback to the old implementation if the HTML modal is not found
-      // Create modal if it doesn't exist
-      let modal = document.querySelector(".image-preview-modal");
-
-      if (!modal) {
-        modal = document.createElement("div");
-        modal.className = "image-preview-modal";
-        modal.innerHTML = `
-          <div class="image-preview-content">
-            <span class="image-preview-close">&times;</span>
-            <img class="image-preview-img">
-          </div>
-        `;
-        document.body.appendChild(modal);
-
-        // Add close functionality
-        const closeBtn = modal.querySelector(".image-preview-close");
-        closeBtn.addEventListener("click", () => {
-          modal.style.display = "none";
-        });
-
-        // Close on click outside the image
-        modal.addEventListener("click", (e) => {
-          if (e.target === modal) {
-            modal.style.display = "none";
-          }
-        });
-
-        // Add Escape key handler
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && modal.style.display === "block") {
-            modal.style.display = "none";
-          }
-        });
-      }
-
-      // Set image source and show modal
-      const img = modal.querySelector(".image-preview-img");
-      img.src = imageSrc;
-      modal.style.display = "block";
-    }
-  }
-
-  // Delete project file
-  deleteProjectFile(fileId) {
-    if (!fileId) return;
-
-    fetch(
-      `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/files.php?id=${fileId}`,
-      {
-        method: "DELETE",
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          console.log("File deleted successfully");
-          // Refresh the current view
-          const activeSection = this.activeTab || "current-projects";
-          const type =
-            activeSection === "current-projects" ? "current" : "future";
-
-          // Reload the respective projects
-          if (type === "current") {
-            this.loadCurrentProjects().then(() =>
-              this.renderProjects("current")
-            );
+        // Если это фото или изображение, показываем его в модальном окне
+        if (
+          fileType === "photo" ||
+          (mimeType && mimeType.startsWith("image/"))
+        ) {
+          const imgElement = item.querySelector("img");
+          if (imgElement && imgElement.src) {
+            console.log("Opening image preview:", imgElement.src); // Для отладки
+            this.showFilePreviewModal(imgElement.src);
           } else {
-            this.loadFutureProjects().then(() => this.renderProjects("future"));
+            console.log("No img element or src found for image preview"); // Для отладки
+
+            // Пробуем получить данные о фото из базы данных или хранилища
+            const fileName = item.dataset.fileName;
+            const projectId = item.closest(".project-card")?.dataset.projectId;
+
+            if (projectId && fileName) {
+              // Формируем путь к файлу на сервере
+              const fileUrl = `components/construction/uploads/${projectId}/${fileName}`;
+              console.log("Trying to load image from server:", fileUrl);
+              this.showFilePreviewModal(fileUrl);
+            }
           }
         } else {
-          alert("Error deleting file: " + data.message);
+          // Для других типов файлов можно реализовать другую логику (например, скачивание)
+          console.log(`File clicked: ${fileName} of type ${fileType}`);
         }
-      })
-      .catch((error) => {
-        console.error("Error deleting file:", error);
-        alert("Error deleting file. Please try again.");
       });
+    });
+
+    // Привязываем событие для кнопок удаления файлов
+    const removeButtons = container.querySelectorAll(".remove-file");
+    removeButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault(); // Добавлено для предотвращения перенаправления
+
+        // Находим родительский элемент и удаляем его
+        const fileItem = button.closest(".file-preview-item");
+        if (fileItem) {
+          // Если есть URL-объект, освобождаем его
+          if (fileItem.dataset.imgUrl) {
+            URL.revokeObjectURL(fileItem.dataset.imgUrl);
+          }
+
+          // Удаляем элемент
+          fileItem.remove();
+
+          // Найдем ID проекта и обновим данные проекта, чтобы синхронизировать удаление в карточке и форме редактирования
+          const projectCard = button.closest(".project-card");
+          if (projectCard) {
+            const projectId = parseInt(projectCard.dataset.id);
+            const projectsList = projectCard.closest(".projects-grid");
+            const projectType =
+              projectsList.id === "current-projects-list"
+                ? "current"
+                : "future";
+            const project = this.getProjectById(projectId, projectType);
+
+            if (project) {
+              // Синхронизируем удаленные файлы между карточкой и потенциальной формой редактирования
+              this.syncDeletedPhotos(fileItem, project);
+            }
+          }
+        }
+      });
+    });
+
+    // Добавляем обработчики для toggle-documents в модальном окне
+    if (
+      container.closest("#current-project-modal") ||
+      container.closest("#future-project-modal")
+    ) {
+      const toggleElements = container
+        .closest(".form-section")
+        ?.querySelectorAll(".toggle-documents");
+      if (toggleElements && toggleElements.length > 0) {
+        toggleElements.forEach((toggle) => {
+          // Предотвращаем повторное добавление обработчика
+          if (toggle.dataset.toggleInitialized === "true") {
+            return;
+          }
+
+          toggle.addEventListener("click", (e) => {
+            const content =
+              toggle.closest(".section-header").nextElementSibling;
+            content.classList.toggle("collapsed");
+            const icon = toggle.querySelector("i");
+            icon.classList.toggle("fa-chevron-down");
+            icon.classList.toggle("fa-chevron-right");
+          });
+
+          toggle.dataset.toggleInitialized = "true";
+        });
+      }
+    }
+
+    // Помечаем контейнер как инициализированный
+    container.dataset.previewEventsInitialized = "true";
   }
 
   handleProjectAction(projectId, action) {
@@ -5631,1513 +2286,55 @@ export default class ConstructionManager {
         sourceFileMap[key] = true;
       });
 
-      targetProject.documents = targetProject.documents.filter((file) => {
+      // Отфильтровываем только те документы, которые есть в исходном проекте
+      // и помечаем их как мигрированные
+      const migratedDocuments = targetProject.documents
+        .filter((file) => {
+          const key = `${file.name}-${file.type}`;
+          return sourceFileMap[key];
+        })
+        .map((file) => {
+          return { ...file, migratedFromFuture: true };
+        });
+
+      // Сохраняем немигрированные документы
+      const currentDocuments = targetProject.documents.filter((file) => {
+        return !file.migratedFromFuture;
+      });
+
+      // Объединяем документы
+      targetProject.documents = [...migratedDocuments, ...currentDocuments];
+    }
+
+    // Синхронизируем Budget Documents
+    if (sourceProject.budgetDocs && targetProject.budgetDocs) {
+      const sourceFileMap = {};
+      sourceProject.budgetDocs.forEach((file) => {
+        const key = `${file.name}-${file.type}`;
+        sourceFileMap[key] = true;
+      });
+
+      targetProject.budgetDocs = targetProject.budgetDocs.filter((file) => {
         const key = `${file.name}-${file.type}`;
         return sourceFileMap[key];
       });
 
-      // Mark all documents as migrated from future
-      targetProject.documents = targetProject.documents.map((file) => {
+      // Пометим все budget documents как мигрированные
+      targetProject.budgetDocs = targetProject.budgetDocs.map((file) => {
         return { ...file, migratedFromFuture: true };
       });
     }
 
+    // Помечаем проект как мигрированный
+    targetProject.migratedFromFuture = true;
+
     return targetProject;
-  }
-
-  // Method to synchronize deleted photos between card and edit form
-  syncDeletedPhotos(fileItem, project) {
-    if (!project || !fileItem) return;
-
-    const fileType = fileItem.dataset.fileType;
-    const fileName = fileItem.dataset.fileName;
-
-    if (!fileName) return;
-
-    // Determine which array to update based on file type
-    let fileArray;
-    switch (fileType) {
-      case "photo":
-        fileArray = project.photos;
-        break;
-      case "document":
-        fileArray = project.documents;
-        break;
-      case "report":
-        fileArray = project.reports;
-        break;
-      case "specification":
-        fileArray = project.specifications;
-        break;
-      case "budgetDoc":
-        fileArray = project.budgetDocs;
-        break;
-      default:
-        return;
-    }
-
-    // Remove the file from the array if it exists
-    if (fileArray && Array.isArray(fileArray)) {
-      const index = fileArray.findIndex(
-        (file) => file.name === fileName || file.originalName === fileName
-      );
-      if (index !== -1) {
-        fileArray.splice(index, 1);
-      }
-    }
-  }
-
-  // Method to display image preview in modal
-  showFilePreviewModal(imageSrc) {
-    const modal = this.container.querySelector(".preview-modal");
-    if (!modal) return;
-
-    const previewImage = modal.querySelector("img");
-    if (previewImage) {
-      previewImage.src = imageSrc;
-
-      // Add error handler in case the image fails to load
-      previewImage.onerror = () => {
-        console.error("Failed to load image:", imageSrc);
-        previewImage.src = ""; // Clear the source to prevent further errors
-        modal.style.display = "none";
-      };
-
-      // Display the modal
-      modal.style.display = "flex";
-
-      // Add event listener to close button if not already added
-      const closeButton = modal.querySelector(".close-preview");
-      if (closeButton && !closeButton.hasClickListener) {
-        closeButton.addEventListener("click", () => {
-          modal.style.display = "none";
-        });
-        closeButton.hasClickListener = true;
-      }
-
-      // Add event listener to close modal on background click
-      if (!modal.hasClickListener) {
-        modal.addEventListener("click", (e) => {
-          if (e.target === modal) {
-            modal.style.display = "none";
-          }
-        });
-        modal.hasClickListener = true;
-      }
-    }
-  }
-
-  // Methods for formatting dates
-  formatDateForDisplay(dateString) {
-    if (!dateString) return "";
-
-    // Поддержка различных форматов даты
-    let date;
-
-    if (typeof dateString === "object" && dateString instanceof Date) {
-      date = dateString;
-    } else {
-      // Проверяем формат YYYY-MM-DD (из базы данных)
-      if (
-        typeof dateString === "string" &&
-        dateString.match(/^\d{4}-\d{2}-\d{2}$/)
-      ) {
-        const [year, month, day] = dateString.split("-");
-        date = new Date(year, month - 1, day);
-      } else {
-        // Пытаемся разобрать строку как дату
-        date = new Date(dateString);
-      }
-    }
-
-    // Проверяем, что получилась корректная дата
-    if (isNaN(date.getTime())) return "";
-
-    // Форматируем дату в формат MM/DD/YYYY
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const year = date.getFullYear();
-
-    return `${month}/${day}/${year}`;
-  }
-
-  // Функция для преобразования даты в формат YYYY-MM-DD для API
-  formatDateForAPI(dateString) {
-    if (!dateString || typeof dateString !== "string") {
-      return null; // Return null for empty values instead of passing through
-    }
-
-    // Проверяем формат даты MM/DD/YYYY и преобразуем в YYYY-MM-DD
-    if (dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-      const [month, day, year] = dateString.split("/");
-      return `${year}-${month}-${day}`;
-    }
-
-    // Check MM-DD-YYYY format
-    if (dateString.match(/^\d{2}-\d{2}-\d{4}$/)) {
-      const [month, day, year] = dateString.split("-");
-      return `${year}-${month}-${day}`;
-    }
-
-    // Already in YYYY-MM-DD format
-    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return dateString;
-    }
-
-    // Try to parse with Date object as fallback
-    try {
-      const date = new Date(dateString);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().split("T")[0]; // Returns YYYY-MM-DD
-      }
-    } catch (e) {
-      console.error("Error parsing date:", e);
-    }
-
-    // If all else fails, return null to avoid database errors
-    return null;
-  }
-
-  // Method to initialize the ratings system
-  setupRatingHandlers() {
-    // Handle star rating in contractor list
-    this.container.addEventListener("click", (e) => {
-      const star = e.target.closest(".star, .fa-star");
-      if (star) {
-        // Handle star clicks in the contractor cards (list view)
-        const contractorCard = star.closest(".contractor-card");
-        if (contractorCard) {
-          const contractorId = parseInt(contractorCard.dataset.id);
-          const rating = parseInt(
-            star.dataset.rating || star.parentElement.dataset.rating
-          );
-          this.setContractorRating(contractorId, rating);
-        }
-
-        // Handle star clicks in the contractor modal (add/edit form)
-        const ratingContainer = star.closest(".rating");
-        if (ratingContainer && !contractorCard) {
-          const modal = star.closest("#contractor-modal");
-          if (modal) {
-            const rating = parseInt(
-              star.dataset.rating || star.parentElement.dataset.rating
-            );
-            const form = modal.querySelector("#contractor-form");
-
-            // Update hidden input value
-            form.elements.rating.value = rating;
-
-            // Update stars visual representation
-            ratingContainer.querySelectorAll("i").forEach((icon, index) => {
-              if (index < rating) {
-                icon.className = "fas fa-star";
-              } else {
-                icon.className = "far fa-star";
-              }
-            });
-          }
-        }
-      }
-    });
-  }
-
-  // Helper method to generate star rating HTML
-  generateRatingStars(rating, interactive = true) {
-    const maxRating = 5;
-    let starsHtml = "";
-
-    for (let i = 1; i <= maxRating; i++) {
-      const starClass = i <= rating ? "fas fa-star" : "far fa-star";
-      starsHtml += `<span class="star ${
-        interactive ? "interactive" : ""
-      }" data-rating="${i}"><i class="${starClass}"></i></span>`;
-    }
-
-    return starsHtml;
-  }
-
-  // Method to handle changing contractor rating
-  handleRating(contractorId, rating) {
-    this.setContractorRating(contractorId, rating);
-  }
-
-  // Method to set contractor rating
-  setContractorRating(contractorId, rating) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      contractor.rating = rating;
-      this.renderContractors();
-
-      // Here should be API call to update rating
-    }
-  }
-
-  // Method to update project statistics
-  updateProjectStatistics(type) {
-    const projects =
-      type === "current" ? this.currentProjects : this.futureProjects;
-    const statsContainer = this.container.querySelector(
-      `#${type}-projects-stats`
-    );
-
-    if (!statsContainer) return;
-
-    // Calculate statistics
-    const totalProjects = projects.length;
-    const statusCounts = {
-      planned: 0,
-      "in-progress": 0,
-      "In Progress": 0,
-      completed: 0,
-      "on-hold": 0,
-      delayed: 0,
-      "move-to-current": 0,
-      "Design Phase": 0,
-      "design-phase": 0,
-      Planning: 0,
-      planning: 0,
-    };
-
-    // Приоритеты для будущих проектов
-    const priorityCounts = {
-      high: 0,
-      medium: 0,
-      low: 0,
-    };
-
-    // Count projects by status and priority
-    projects.forEach((project) => {
-      if (project.status in statusCounts) {
-        statusCounts[project.status]++;
-      } else {
-        // Проверяем нормализованную версию статуса (в нижнем регистре с дефисами вместо пробелов)
-        const normalizedStatus = project.status
-          .toLowerCase()
-          .replace(/\s+/g, "-");
-        if (normalizedStatus in statusCounts) {
-          statusCounts[normalizedStatus]++;
-        }
-      }
-
-      // Подсчитываем проекты по приоритету для Future Projects
-      if (type === "future" && project.priority in priorityCounts) {
-        priorityCounts[project.priority]++;
-      }
-    });
-
-    // Комбинируем счетчики для статусов с разными форматами написания
-    const completedCount = statusCounts["completed"];
-    const inProgressCount =
-      statusCounts["in-progress"] + statusCounts["In Progress"];
-    const onHoldCount = statusCounts["on-hold"];
-    const delayedCount = statusCounts["delayed"];
-    const designPhaseCount =
-      statusCounts["Design Phase"] + statusCounts["design-phase"];
-    const planningCount = statusCounts["Planning"] + statusCounts["planning"];
-
-    // Разные шаблоны для Current и Future Projects
-    if (type === "current") {
-      // Update the stats display for Current Projects
-      statsContainer.innerHTML = `
-        <div class="stats-container">
-          <div class="stat-item">
-            <span class="stat-label">Total Projects:</span>
-            <span class="stat-value" id="current-projects-total">${totalProjects}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Completed:</span>
-            <span class="stat-value stat-completed" id="current-projects-completed">${completedCount}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">In Progress:</span>
-            <span class="stat-value stat-in-progress" id="current-projects-in-progress">${inProgressCount}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Design Phase:</span>
-            <span class="stat-value stat-design" id="current-projects-design">${designPhaseCount}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Planning:</span>
-            <span class="stat-value stat-planning" id="current-projects-planning">${planningCount}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">On Hold:</span>
-            <span class="stat-value stat-on-hold" id="current-projects-on-hold">${onHoldCount}</span>
-          </div>
-        </div>
-      `;
-    } else {
-      // Update the stats display for Future Projects
-      statsContainer.innerHTML = `
-        <div class="stats-container">
-          <div class="stat-item">
-            <span class="stat-label">Total Planned:</span>
-            <span class="stat-value" id="future-projects-total">${totalProjects}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">High Priority:</span>
-            <span class="stat-value stat-high" id="future-projects-high">${priorityCounts["high"]}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Medium Priority:</span>
-            <span class="stat-value stat-medium" id="future-projects-medium">${priorityCounts["medium"]}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Low Priority:</span>
-            <span class="stat-value stat-low" id="future-projects-low">${priorityCounts["low"]}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Delayed:</span>
-            <span class="stat-value stat-delayed" id="future-projects-delayed">${delayedCount}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    // Add styles if they don't exist
-    if (!document.getElementById("project-stats-styles")) {
-      const statsStyles = document.createElement("style");
-      statsStyles.id = "project-stats-styles";
-      statsStyles.innerHTML = `
-        .stats-container {
-          display: flex;
-          justify-content: space-around;
-          margin-bottom: 20px;
-          background-color: #f8f9fa;
-          border-radius: 8px;
-          padding: 15px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .stat-item {
-          text-align: center;
-          padding: 0 15px;
-          border-right: 1px solid #ddd;
-          flex: 1;
-        }
-        
-        .stat-item:last-child {
-          border-right: none;
-        }
-        
-        .stat-value {
-          font-size: 1.5rem;
-          font-weight: bold;
-          color: #0088cc;
-          margin-bottom: 5px;
-        }
-        
-        .stat-label {
-          font-size: 0.9rem;
-          color: #6c757d;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        
-        .stat-completed {
-          color: #388e3c;
-        }
-        
-        .stat-in-progress {
-          color: #f57c00;
-        }
-        
-        .stat-on-hold {
-          color: #d32f2f;
-        }
-        
-        .stat-high {
-          color: #d32f2f;
-        }
-        
-        .stat-medium {
-          color: #f57c00;
-        }
-        
-        .stat-low {
-          color: #388e3c;
-        }
-        
-        .stat-delayed {
-          color: #d32f2f;
-        }
-        
-        .stat-design {
-          color: #0097a7;
-        }
-        
-        .stat-planning {
-          color: #8e24aa;
-        }
-      `;
-      document.head.appendChild(statsStyles);
-    }
-  }
-
-  // Method to setup search filters
-  setupSearchFilters() {
-    // Implement search functionality for each section
-    const searchInputs = this.container.querySelectorAll(".search-input");
-    searchInputs.forEach((input) => {
-      input.addEventListener("input", (e) => {
-        const section = e.target.dataset.section;
-        this.filters[section].search = e.target.value.toLowerCase().trim();
-        this.applyFilters(section);
-      });
-    });
-
-    // Business type filter for contractors
-    const businessTypeFilter = this.container.querySelector(
-      "#business-type-filter"
-    );
-    if (businessTypeFilter) {
-      businessTypeFilter.addEventListener("change", (e) => {
-        this.filters.contractors.businessType = e.target.value;
-        this.applyFilters("contractors");
-      });
-    }
-
-    // Rating filter for contractors
-    const ratingFilter = this.container.querySelector("#rating-filter");
-    if (ratingFilter) {
-      ratingFilter.addEventListener("change", (e) => {
-        this.filters.contractors.rating = e.target.value;
-        this.applyFilters("contractors");
-      });
-    }
-  }
-
-  // Method to update business type filter options
-  updateBusinessTypeFilter() {
-    const businessTypeFilter = this.container.querySelector(
-      "#business-type-filter"
-    );
-    if (!businessTypeFilter) return;
-
-    // Get unique business types
-    const businessTypes = [
-      ...new Set(this.contractors.map((c) => c.businessType)),
-    ].filter(Boolean);
-
-    // Create options HTML
-    const optionsHtml = `
-      <option value="all">All Types</option>
-      ${businessTypes
-        .map((type) => `<option value="${type}">${type}</option>`)
-        .join("")}
-    `;
-
-    // Update the select element
-    businessTypeFilter.innerHTML = optionsHtml;
-  }
-
-  // Method to apply filters to a section
-  applyFilters(section) {
-    switch (section) {
-      case "contractors":
-        this.applyContractorFilters();
-        break;
-      case "current-projects":
-        this.applyProjectFilters("current");
-        break;
-      case "future-projects":
-        this.applyProjectFilters("future");
-        break;
-    }
-  }
-
-  // Method to apply contractor filters
-  applyContractorFilters() {
-    const filters = this.filters.contractors;
-    let filteredContractors = [...this.contractors];
-
-    // Apply search filter
-    if (filters.search) {
-      filteredContractors = filteredContractors.filter(
-        (contractor) =>
-          contractor.companyName.toLowerCase().includes(filters.search) ||
-          contractor.businessType.toLowerCase().includes(filters.search) ||
-          contractor.location.toLowerCase().includes(filters.search) ||
-          contractor.email.toLowerCase().includes(filters.search) ||
-          contractor.phone.toLowerCase().includes(filters.search)
-      );
-    }
-
-    // Apply business type filter
-    if (filters.businessType !== "all") {
-      filteredContractors = filteredContractors.filter(
-        (contractor) => contractor.businessType === filters.businessType
-      );
-    }
-
-    // Apply rating filter
-    if (filters.rating !== "all") {
-      const ratingValue = parseInt(filters.rating);
-      filteredContractors = filteredContractors.filter(
-        (contractor) => contractor.rating === ratingValue
-      );
-    }
-
-    // Render filtered contractors
-    this.renderContractors(filteredContractors);
-  }
-
-  // Method to apply project filters
-  applyProjectFilters(type) {
-    const filters =
-      this.filters[type === "current" ? "currentProjects" : "futureProjects"];
-    const projects =
-      type === "current" ? this.currentProjects : this.futureProjects;
-    let filteredProjects = [...projects];
-
-    // Apply search filter
-    if (filters.search) {
-      filteredProjects = filteredProjects.filter(
-        (project) =>
-          project.name.toLowerCase().includes(filters.search) ||
-          project.location.toLowerCase().includes(filters.search)
-      );
-    }
-
-    // Apply location filter
-    if (filters.location) {
-      filteredProjects = filteredProjects.filter((project) =>
-        project.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
-    // Apply status/priority filter
-    if (filters.status !== "all") {
-      filteredProjects = filteredProjects.filter(
-        (project) => project.status === filters.status
-      );
-    }
-
-    // Apply date filter
-    if (filters.date !== "all") {
-      // Implement date filtering logic here
-    }
-
-    // Render filtered projects
-    this.renderProjects(type, filteredProjects);
-  }
-
-  // Helper method to close all modals
-  closeModals() {
-    this.container.querySelectorAll(".modal").forEach((modal) => {
-      modal.classList.remove("active");
-    });
-  }
-
-  // Method to show contractor modal for adding or editing
-  showContractorModal(contractor = null) {
-    const modal = this.container.querySelector("#contractor-modal");
-    const form = modal.querySelector("#contractor-form");
-    const title = modal.querySelector("#contractor-modal-title");
-
-    // Reset the form to clear previous data
-    form.reset();
-
-    // Set the title based on whether we're adding or editing
-    title.textContent = contractor ? "Edit Contractor" : "Add Contractor";
-
-    // Fill the form with existing data if editing
-    if (contractor) {
-      form.elements.companyName.value = contractor.companyName || "";
-      form.elements.businessType.value = contractor.businessType || "";
-      form.elements.location.value = contractor.location || "";
-      form.elements.email.value = contractor.email || "";
-      form.elements.phone.value = contractor.phone || "";
-
-      // Contact person details if available
-      if (contractor.contactPerson) {
-        form.elements.contactName.value = contractor.contactPerson.name || "";
-        form.elements.position.value = contractor.contactPerson.position || "";
-        form.elements.contactPhone.value = contractor.contactPerson.phone || "";
-        form.elements.contactEmail.value = contractor.contactPerson.email || "";
-      }
-
-      // Set the rating
-      const rating = parseInt(contractor.rating) || 0;
-      form.elements.rating.value = rating;
-
-      // Update the star icons to match the rating
-      modal.querySelectorAll(".rating i").forEach((star, index) => {
-        star.className = index < rating ? "fas fa-star" : "far fa-star";
-      });
-
-      // Store contractor ID for update
-      form.dataset.contractorId = contractor.id;
-    } else {
-      // Clear any stored ID when adding new contractor
-      delete form.dataset.contractorId;
-
-      // Reset rating to 0
-      form.elements.rating.value = 0;
-      modal.querySelectorAll(".rating i").forEach((star) => {
-        star.className = "far fa-star";
-      });
-    }
-
-    // Show the modal
-    modal.classList.add("active");
-  }
-
-  // Method to handle contractor form submission
-  handleContractorSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-
-    // Gather form data
-    const contractorData = {
-      companyName: form.elements.companyName.value,
-      businessType: form.elements.businessType.value,
-      location: form.elements.location.value,
-      email: form.elements.email.value,
-      phone: form.elements.phone.value,
-      rating: parseInt(form.elements.rating.value) || 0,
-      contactPerson: {
-        name: form.elements.contactName.value,
-        position: form.elements.position.value,
-        phone: form.elements.contactPhone.value,
-        email: form.elements.contactEmail.value,
-      },
-    };
-
-    if (form.dataset.contractorId) {
-      // Update existing contractor
-      const contractorId = parseInt(form.dataset.contractorId);
-      this.updateContractor(contractorId, contractorData);
-    } else {
-      // Create new contractor
-      this.createContractor(contractorData);
-    }
-
-    // Close the modal
-    this.closeModals();
-  }
-
-  updateContractor(contractorId, contractorData) {
-    // Implement the logic to update an existing contractor
-    // This might involve making an API call to update the contractor data
-    console.log("Updating contractor:", contractorId, contractorData);
-  }
-
-  createContractor(contractorData) {
-    // Implement the logic to create a new contractor
-    // This might involve making an API call to create a new contractor
-    console.log("Creating new contractor:", contractorData);
-  }
-
-  // Method to create a new contractor
-  createContractor(data) {
-    // First add to local data structure for immediate feedback
-    const newContractor = {
-      id: Date.now(), // Temporary ID until server responds
-      ...data,
-      employees: [],
-    };
-
-    // Prepare data for API
-    const apiData = {
-      company_name: data.companyName,
-      business_type: data.businessType,
-      location: data.location || "",
-      email: data.email || "",
-      phone: data.phone || "",
-      rating: parseInt(data.rating) || 0,
-      contact_person: {
-        name: data.contactPerson.name || "",
-        position: data.contactPerson.position || "",
-        phone: data.contactPerson.phone || "",
-        email: data.contactPerson.email || "",
-        is_primary_contact: 1,
-      },
-    };
-
-    // Исправленный URL API - напрямую к contractors.php вместо index.php
-    fetch(
-      "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apiData),
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((responseData) => {
-        if (responseData.success) {
-          // Refresh the contractors list
-          this.loadContractors().then(() => this.renderContractors());
-        } else {
-          console.error("Error creating contractor:", responseData.message);
-          alert("Failed to create contractor: " + responseData.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error creating contractor:", error);
-        alert("Failed to create contractor. Please try again.");
-      });
-
-    // Add to local array for immediate UI update
-    this.contractors.push(newContractor);
-    this.renderContractors();
-  }
-
-  // Method to update an existing contractor
-  updateContractor(contractorId, data) {
-    // Find the contractor in the local array
-    const index = this.contractors.findIndex((c) => c.id === contractorId);
-    if (index === -1) return;
-
-    // Update local data first for immediate feedback
-    const updatedContractor = {
-      ...this.contractors[index],
-      ...data,
-    };
-    this.contractors[index] = updatedContractor;
-
-    // Prepare data for API
-    const apiData = {
-      company_name: data.companyName,
-      business_type: data.businessType,
-      location: data.location || "",
-      email: data.email || "",
-      phone: data.phone || "",
-      rating: parseInt(data.rating) || 0,
-      contact_person: {
-        name: data.contactPerson.name || "",
-        position: data.contactPerson.position || "",
-        phone: data.contactPerson.phone || "",
-        email: data.contactPerson.email || "",
-        is_primary_contact: 1,
-      },
-    };
-
-    // Исправленный URL API - напрямую к contractors.php вместо index.php
-    fetch(
-      `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apiData),
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((responseData) => {
-        if (responseData.success) {
-          // Refresh the contractors list
-          this.loadContractors().then(() => this.renderContractors());
-        } else {
-          console.error("Error updating contractor:", responseData.message);
-          alert("Failed to update contractor: " + responseData.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error updating contractor:", error);
-        alert("Failed to update contractor. Please try again.");
-      });
-
-    // Update the UI immediately for better UX
-    this.renderContractors();
-  }
-
-  // Method to delete a contractor
-  deleteContractor(contractorId) {
-    if (!confirm("Are you sure you want to delete this contractor?")) return;
-
-    // Remove from local array first for immediate feedback
-    this.contractors = this.contractors.filter((c) => c.id !== contractorId);
-
-    // Исправленный URL API - напрямую к contractors.php вместо index.php
-    fetch(
-      `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?id=${contractorId}`,
-      {
-        method: "DELETE",
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((responseData) => {
-        if (responseData.success) {
-          // Already removed from local array, just re-render
-          this.renderContractors();
-        } else {
-          console.error("Error deleting contractor:", responseData.message);
-          alert("Failed to delete contractor: " + responseData.message);
-
-          // Reload contractors to restore the deleted one
-          this.loadContractors().then(() => this.renderContractors());
-        }
-      })
-      .catch((error) => {
-        console.error("Error deleting contractor:", error);
-        alert("Failed to delete contractor. Please try again.");
-
-        // Reload contractors to restore the deleted one
-        this.loadContractors().then(() => this.renderContractors());
-      });
-
-    // Render immediately for UI feedback
-    this.renderContractors();
-  }
-
-  // Метод для заполнения списка подрядчиков в выпадающем списке
-  populateContractorSelect(select) {
-    // Очищаем текущий список
-    select.innerHTML = '<option value="">Select Contractor</option>';
-
-    // Заполняем список подрядчиками
-    this.contractors.forEach((contractor) => {
-      const option = document.createElement("option");
-      option.value = contractor.id;
-      option.textContent = `${contractor.companyName} (${contractor.businessType})`;
-      select.appendChild(option);
-    });
-  }
-
-  // Метод для обновления списка контактных лиц при выборе подрядчика
-  updateContactPersonSelect(contractorId) {
-    // Находим активную форму (в модальном окне)
-    const activeModal = this.container.querySelector(".modal.active");
-    if (!activeModal) return;
-
-    const form = activeModal.querySelector("form");
-    if (!form) return;
-
-    const contactPersonSelect = form.elements.contactPersonId;
-    if (!contactPersonSelect) return;
-
-    // Очищаем список и делаем его неактивным, если не выбран подрядчик
-    contactPersonSelect.innerHTML =
-      '<option value="">Select Contact Person</option>';
-
-    if (!contractorId) {
-      contactPersonSelect.disabled = true;
-      return;
-    }
-
-    // Находим выбранного подрядчика
-    const contractor = this.contractors.find((c) => c.id == contractorId);
-    if (!contractor) {
-      contactPersonSelect.disabled = true;
-      return;
-    }
-
-    // Делаем список активным
-    contactPersonSelect.disabled = false;
-
-    // Добавляем основное контактное лицо подрядчика
-    if (contractor.contactPerson) {
-      const option = document.createElement("option");
-      option.value = contractor.contactPerson.id; // Use the contact person's ID instead of contractor ID
-      option.textContent = `${contractor.contactPerson.name} (${
-        contractor.contactPerson.position || "Primary Contact"
-      })`;
-      contactPersonSelect.appendChild(option);
-    }
-
-    // Добавляем сотрудников подрядчика
-    if (contractor.employees && contractor.employees.length > 0) {
-      contractor.employees.forEach((employee) => {
-        const option = document.createElement("option");
-        option.value = employee.id;
-        option.textContent = `${employee.name || employee.fullName} (${
-          employee.position || "Employee"
-        })`;
-        contactPersonSelect.appendChild(option);
-      });
-    }
-  }
-
-  // Метод для отображения модального окна проекта
-  showProjectModal(type, project = null) {
-    // Определяем, какое модальное окно нужно показать
-    const modal = this.container.querySelector(
-      `#${type === "current" ? "current" : "future"}-project-modal`
-    );
-    const form = modal.querySelector("form");
-    const titleElement = modal.querySelector("h3");
-
-    // Сначала очищаем форму от предыдущих данных
-    form.reset();
-
-    // Удаляем все существующие info-message и migrated-fields элементы
-    const existingInfoMessages = form.querySelectorAll(".info-message");
-    existingInfoMessages.forEach((msg) => msg.remove());
-
-    const existingMigratedFields = form.querySelectorAll(".migrated-fields");
-    existingMigratedFields.forEach((field) => field.remove());
-
-    // Обновляем заголовок модального окна в зависимости от действия
-    if (titleElement) {
-      titleElement.textContent = project
-        ? `Edit ${type === "current" ? "Current" : "Future"} Project`
-        : `Add ${type === "current" ? "Current" : "Future"} Project`;
-    }
-
-    // Указываем тип проекта
-    form.elements.projectType.value = type;
-    // Set the data attribute for the project type (this was missing)
-    form.dataset.projectType = type;
-
-    // Заполняем список подрядчиков
-    this.populateContractorSelect(form.elements.contractorId);
-
-    // Добавляем обработчик выбора типа бизнеса для обновления списка подрядчиков
-    const businessTypeSelect = form.elements.businessType;
-    businessTypeSelect.onchange = () => {
-      this.updateContractorSelectByBusinessType(
-        businessTypeSelect.value,
-        form.elements.contractorId
-      );
-    };
-
-    // Добавляем обработчик выбора подрядчика для обновления списка контактных лиц
-    const contractorSelect = form.elements.contractorId;
-    contractorSelect.onchange = () => {
-      this.updateContactPersonSelect(contractorSelect.value);
-    };
-
-    // Если редактируем существующий проект
-    if (project) {
-      // Устанавливаем id проекта для формы
-      form.dataset.projectId = project.id;
-
-      // Заполняем форму данными проекта, общие для обоих типов
-      form.elements.projectName.value = project.name || "";
-      form.elements.location.value = project.location || "";
-      form.elements.startDate.value = this.formatDateForDisplay(
-        project.startDate
-      );
-      form.elements.endDate.value = this.formatDateForDisplay(project.endDate);
-
-      // Если у проекта уже есть businessType, устанавливаем его
-      if (project.businessType) {
-        form.elements.businessType.value = project.businessType;
-      }
-
-      // Устанавливаем значение подрядчика
-      if (project.contractorId) {
-        form.elements.contractorId.value = project.contractorId;
-        // После установки значения подрядчика, обновляем список контактных лиц
-        this.updateContactPersonSelect(project.contractorId);
-      }
-
-      if (project.contactPersonId) {
-        form.elements.contactPersonId.value = project.contactPersonId;
-      }
-
-      // Обрабатываем специфичные для типа проекта поля
-      if (type === "current") {
-        form.elements.progress.value = project.progress || 0;
-        form.elements.actualCost.value = project.actualCost || "";
-        form.elements.status.value = project.status || "not_started";
-        if (form.elements.lastUpdate) {
-          form.elements.lastUpdate.value = this.formatDateForDisplay(
-            project.lastUpdate
-          );
-        }
-      } else {
-        // Future project
-        form.elements.budget.value = project.budget || "";
-        form.elements.priority.value = project.priority || "medium";
-        form.elements.description.value = project.description || "";
-        form.elements.objectives.value = project.objectives || "";
-        form.elements.risks.value = project.risks || "";
-      }
-
-      // Отображаем существующие файлы проекта, если есть метод
-      if (typeof this.displayExistingFiles === "function") {
-        this.displayExistingFiles(project, type);
-      }
-    } else {
-      // Для нового проекта
-      form.dataset.projectId = "";
-
-      // Обновляем список контактных лиц на пустой
-      const contactPersonSelect = form.elements.contactPersonId;
-      contactPersonSelect.innerHTML =
-        '<option value="">Select Contact Person</option>';
-      contactPersonSelect.disabled = true;
-    }
-
-    // Показываем модальное окно
-    modal.classList.add("active");
-
-    // Инициализируем календари для полей дат после открытия модального окна
-    setTimeout(() => {
-      this.initDatepickers();
-    }, 100);
-  }
-
-  // Метод для фильтрации списка подрядчиков по виду деятельности
-  updateContractorSelectByBusinessType(businessType, select) {
-    // Очищаем текущий список
-    select.innerHTML = '<option value="">Select Contractor</option>';
-
-    // Если не выбран тип бизнеса, показываем всех подрядчиков
-    if (!businessType || businessType === "") {
-      this.populateContractorSelect(select);
-      return;
-    }
-
-    // Фильтруем подрядчиков по выбранному типу бизнеса
-    const filteredContractors = this.contractors.filter(
-      (contractor) => contractor.businessType === businessType
-    );
-
-    // Если нет подрядчиков с таким типом бизнеса, показываем сообщение
-    if (filteredContractors.length === 0) {
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = "No contractors with this business type";
-      select.appendChild(option);
-      return;
-    }
-
-    // Заполняем список отфильтрованными подрядчиками
-    filteredContractors.forEach((contractor) => {
-      const option = document.createElement("option");
-      option.value = contractor.id;
-      option.textContent = `${contractor.companyName} (${contractor.businessType})`;
-      select.appendChild(option);
-    });
-  }
-
-  // Method to upload project files
-  async uploadProjectFiles(projectId, files) {
-    if (!files || files.length === 0) {
-      return [];
-    }
-
-    const uploadUrl =
-      "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/files.php?project_id=" +
-      projectId;
-    const uploadedFiles = [];
-
-    // Create a promise for each file upload
-    const uploadPromises = files.map(async (fileData) => {
-      try {
-        const formData = new FormData();
-        formData.append("file", fileData.file);
-        formData.append("category", fileData.category);
-
-        const response = await fetch(uploadUrl, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.success) {
-          // Add file info to the list of uploaded files
-          uploadedFiles.push({
-            id: result.data.id,
-            name: result.data.original_name,
-            path: result.data.file_path,
-            category: fileData.category,
-            type: fileData.file.type,
-            size: fileData.file.size,
-            upload_date: new Date().toISOString(),
-          });
-        } else {
-          console.error("Error uploading file:", result.message);
-        }
-      } catch (error) {
-        console.error(`Error uploading file ${fileData.file.name}:`, error);
-      }
-    });
-
-    // Wait for all uploads to finish
-    await Promise.all(uploadPromises);
-    return uploadedFiles;
-  }
-
-  // Method to handle contractor form submission
-  handleProjectSubmit(e) {
-    e.preventDefault();
-
-    const form = e.target;
-    const projectType = form.dataset.projectType; // Store this in a local constant
-    const isEdit = form.dataset.projectId ? true : false;
-
-    // Format dates in YYYY-MM-DD format
-    const startDate = form.elements.startDate.value
-      ? this.formatDateForAPI(form.elements.startDate.value)
-      : null;
-    const endDate = form.elements.endDate.value
-      ? this.formatDateForAPI(form.elements.endDate.value)
-      : null;
-
-    // Handle contact person ID - set to null if empty or invalid
-    let contactPersonId = form.elements.contactPersonId.value
-      ? parseInt(form.elements.contactPersonId.value)
-      : null;
-
-    // If contactPersonId is 0 or NaN, set it to null to avoid foreign key constraints
-    if (contactPersonId === 0 || isNaN(contactPersonId)) {
-      contactPersonId = null;
-    }
-
-    // Gather form data
-    const projectData = {
-      name: form.elements.projectName.value,
-      location: form.elements.location.value,
-      start_date: startDate,
-      end_date: endDate,
-      business_type: form.elements.businessType.value,
-      contractor_id: parseInt(form.elements.contractorId.value) || null,
-      contact_person_id: contactPersonId,
-      project_type: projectType,
-    };
-
-    // Add type-specific fields
-    if (projectType === "current") {
-      projectData.progress = parseInt(form.elements.progress.value) || 0;
-      projectData.actual_cost = parseFloat(form.elements.actualCost.value) || 0;
-      projectData.status = form.elements.status.value || "planned";
-      if (form.elements.lastUpdate) {
-        projectData.last_update = form.elements.lastUpdate.value
-          ? this.formatDateForAPI(form.elements.lastUpdate.value)
-          : new Date().toISOString().split("T")[0];
-      }
-    } else {
-      // Future project
-      projectData.budget = parseFloat(form.elements.budget.value) || 0;
-      projectData.priority = form.elements.priority.value || "medium";
-      projectData.description = form.elements.description.value || "";
-      projectData.objectives = form.elements.objectives.value || "";
-      projectData.risks = form.elements.risks.value || "";
-      projectData.status = "planned";
-    }
-
-    // Create a temporary local copy for immediate UI update
-    const localProject = {
-      ...projectData,
-      id: isEdit ? parseInt(form.dataset.projectId) : Date.now(),
-      startDate: form.elements.startDate.value, // Keep original format for UI
-      endDate: form.elements.endDate.value, // Keep original format for UI
-      businessType: projectData.business_type,
-      contractorId: projectData.contractor_id,
-      contactPersonId: projectData.contact_person_id,
-      actualCost: projectData.actual_cost,
-      lastUpdate: form.elements.lastUpdate
-        ? form.elements.lastUpdate.value
-        : null,
-    };
-
-    // Collect file data
-    const files = [];
-
-    // Process files based on project type
-    if (projectType === "current") {
-      // Get list of removed files
-      const photosContainer = form.querySelector("#photos-preview");
-      const photosRemovedFiles =
-        photosContainer && photosContainer.dataset.removedFiles
-          ? JSON.parse(photosContainer.dataset.removedFiles)
-          : [];
-
-      // Process photos
-      const photosInput = form.elements.photos;
-      if (photosInput && photosInput.files.length > 0) {
-        Array.from(photosInput.files).forEach((file) => {
-          // Only add files that haven't been removed in the UI
-          if (!photosRemovedFiles.includes(file.name)) {
-            files.push({
-              file: file,
-              category: "photo",
-            });
-          }
-        });
-      }
-
-      // Process documents
-      const documentsContainer = form.querySelector("#documents-preview");
-      const documentsRemovedFiles =
-        documentsContainer && documentsContainer.dataset.removedFiles
-          ? JSON.parse(documentsContainer.dataset.removedFiles)
-          : [];
-
-      const documentsInput = form.elements.documents;
-      if (documentsInput && documentsInput.files.length > 0) {
-        Array.from(documentsInput.files).forEach((file) => {
-          // Only add files that haven't been removed in the UI
-          if (!documentsRemovedFiles.includes(file.name)) {
-            files.push({
-              file: file,
-              category: "document",
-            });
-          }
-        });
-      }
-
-      // Process reports
-      const reportsContainer = form.querySelector("#reports-preview");
-      const reportsRemovedFiles =
-        reportsContainer && reportsContainer.dataset.removedFiles
-          ? JSON.parse(reportsContainer.dataset.removedFiles)
-          : [];
-
-      const reportsInput = form.elements.reports;
-      if (reportsInput && reportsInput.files.length > 0) {
-        Array.from(reportsInput.files).forEach((file) => {
-          // Only add files that haven't been removed in the UI
-          if (!reportsRemovedFiles.includes(file.name)) {
-            files.push({
-              file: file,
-              category: "report",
-            });
-          }
-        });
-      }
-    } else {
-      // Process future project documents
-      const documentsContainer = form.querySelector(
-        "#future-documents-preview"
-      );
-      const documentsRemovedFiles =
-        documentsContainer && documentsContainer.dataset.removedFiles
-          ? JSON.parse(documentsContainer.dataset.removedFiles)
-          : [];
-
-      const documentsInput = form.elements.documents;
-      if (documentsInput && documentsInput.files.length > 0) {
-        Array.from(documentsInput.files).forEach((file) => {
-          // Only add files that haven't been removed in the UI
-          if (!documentsRemovedFiles.includes(file.name)) {
-            files.push({
-              file: file,
-              category: "document",
-            });
-          }
-        });
-      }
-
-      // Process specifications
-      const specificationsContainer = form.querySelector(
-        "#future-specifications-preview"
-      );
-      const specificationsRemovedFiles =
-        specificationsContainer && specificationsContainer.dataset.removedFiles
-          ? JSON.parse(specificationsContainer.dataset.removedFiles)
-          : [];
-
-      const specificationsInput = form.elements.specifications;
-      if (specificationsInput && specificationsInput.files.length > 0) {
-        Array.from(specificationsInput.files).forEach((file) => {
-          // Only add files that haven't been removed in the UI
-          if (!specificationsRemovedFiles.includes(file.name)) {
-            files.push({
-              file: file,
-              category: "specification",
-            });
-          }
-        });
-      }
-    }
-
-    const apiUrl =
-      "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php";
-
-    if (isEdit) {
-      // Update existing project
-      const projectId = parseInt(form.dataset.projectId);
-      console.log(`Updating ${projectType} project ID: ${projectId}`);
-
-      // First upload files
-      this.uploadProjectFiles(projectId, files)
-        .then((uploadedFiles) => {
-          // Then update project data
-          projectData.uploaded_files = uploadedFiles;
-
-          return fetch(`${apiUrl}?action=update&id=${projectId}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(projectData),
-          });
-        })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((responseData) => {
-          if (responseData.success) {
-            console.log("Project updated successfully:", responseData);
-
-            // Find project index in the appropriate array
-            const projectsArray =
-              projectType === "current"
-                ? this.currentProjects
-                : this.futureProjects;
-
-            const index = projectsArray.findIndex((p) => p.id === projectId);
-
-            if (index !== -1) {
-              // Get current project data
-              const currentProject = projectsArray[index];
-
-              // Add new uploaded files to files array
-              if (!currentProject.files) {
-                currentProject.files = [];
-              }
-
-              // Append the newly uploaded files to the project
-              if (
-                projectData.uploaded_files &&
-                Array.isArray(projectData.uploaded_files)
-              ) {
-                currentProject.files = [
-                  ...currentProject.files,
-                  ...projectData.uploaded_files,
-                ];
-
-                // Log the files for debugging
-                console.log(
-                  `Updated project ${projectId} files:`,
-                  currentProject.files
-                );
-              }
-
-              // Update project in array with new data and uploaded files
-              projectsArray[index] = {
-                ...currentProject,
-                ...localProject,
-              };
-            }
-
-            alert("Project updated successfully!");
-
-            // Close modal
-            this.closeModals();
-
-            // Update project list - use the stored projectType value to avoid undefined
-            this.renderProjects(projectType);
-
-            // Also update statistics
-            this.updateProjectStatistics(projectType);
-          } else {
-            console.error("Error updating project:", responseData.message);
-            alert("Error updating project: " + responseData.message);
-          }
-        })
-        .catch((error) => {
-          console.error("Error updating project:", error);
-          alert("Error updating project. Please try again.");
-        });
-    } else {
-      // Create new project
-      console.log(`Creating new ${projectType} project`);
-
-      // First create the project to get the project ID
-      fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(projectData),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((responseData) => {
-          if (responseData.success) {
-            console.log("Project created successfully:", responseData);
-
-            // Update project ID from server
-            const projectId =
-              responseData.data && responseData.data.id
-                ? responseData.data.id
-                : null;
-
-            if (projectId) {
-              localProject.id = projectId;
-
-              // Then upload files
-              return this.uploadProjectFiles(projectId, files).then(
-                (uploadedFiles) => {
-                  // Add explicit return with the project ID and type
-                  return {
-                    projectId,
-                    uploadedFiles,
-                    type: projectType, // Add type to carry it forward
-                  };
-                }
-              );
-            } else {
-              throw new Error("No project ID received from server");
-            }
-          } else {
-            console.error("Error creating project:", responseData.message);
-            alert("Error creating project: " + responseData.message);
-            throw new Error(responseData.message);
-          }
-        })
-        .then((result) => {
-          console.log("Files uploaded successfully:", result.uploadedFiles);
-
-          // Add uploaded files to local project object
-          localProject.files = result.uploadedFiles || [];
-
-          // Add project to appropriate array
-          if (result.type === "current") {
-            this.currentProjects.push(localProject);
-          } else {
-            this.futureProjects.push(localProject);
-          }
-
-          alert("New project created successfully!");
-
-          // Close modal
-          this.closeModals();
-
-          // Update project list - use the type from the result object
-          this.renderProjects(result.type);
-
-          // Also update statistics
-          this.updateProjectStatistics(result.type);
-        })
-        .catch((error) => {
-          console.error("Error creating project:", error);
-          alert("Error creating project. Please try again.");
-        });
-    }
   }
 
   updateProjectStatus(projectId, newStatus, type) {
     const project = this.getProjectById(parseInt(projectId), type);
     if (!project) return;
 
-    // When moving a project from Future to Current
     if (type === "future" && newStatus === "move-to-current") {
       // Создаем копию исходного проекта для последующей синхронизации файлов
       const originalProject = JSON.parse(JSON.stringify(project));
@@ -7159,11 +2356,9 @@ export default class ConstructionManager {
           `Moving project: Budget value ${projectCopy.budget} transferred to Actual Cost`
         );
         projectCopy.actualCost = projectCopy.budget;
-        projectCopy.actual_cost = projectCopy.budget;
       } else {
         console.log(`Moving project: No budget value found to transfer`);
         projectCopy.actualCost = 0;
-        projectCopy.actual_cost = 0;
       }
 
       // Устанавливаем начальный прогресс
@@ -7172,15 +2367,13 @@ export default class ConstructionManager {
       }
 
       // Создаем новые поля, необходимые для Current Projects, если они отсутствуют
-      projectCopy.lastUpdate = new Date().toISOString().split("T")[0];
-      projectCopy.last_update = projectCopy.lastUpdate;
+      projectCopy.lastUpdate = new Date().toISOString();
       if (!projectCopy.photos) projectCopy.photos = [];
       if (!projectCopy.documents) projectCopy.documents = []; // Сохраняем существующие документы
       if (!projectCopy.reports) projectCopy.reports = [];
 
       // Mark that this project was migrated from Future Projects
       projectCopy.migratedFromFuture = true;
-      projectCopy.migrated_from_future = 1;
 
       // Mark documents as migrated
       if (projectCopy.documents && projectCopy.documents.length > 0) {
@@ -7206,116 +2399,14 @@ export default class ConstructionManager {
       // Синхронизируем удаленные файлы
       projectCopy = this.syncDeletedFiles(originalProject, projectCopy);
 
-      // Преобразуем даты в формат YYYY-MM-DD перед отправкой на сервер
-      const start_date = this.formatDateForAPI(projectCopy.startDate);
-      const end_date = this.formatDateForAPI(projectCopy.endDate);
+      // Добавляем проект в Current Projects
+      this.currentProjects.push(projectCopy);
 
-      // Ensure contact_person_id is valid
-      let contactPersonId = projectCopy.contactPersonId;
-      if (
-        contactPersonId === 0 ||
-        isNaN(contactPersonId) ||
-        contactPersonId === undefined
-      ) {
-        contactPersonId = null;
-      }
-
-      // Подготавливаем данные для API
-      const apiData = {
-        name: projectCopy.name,
-        location: projectCopy.location,
-        start_date: start_date,
-        end_date: end_date,
-        business_type: projectCopy.businessType,
-        contractor_id: projectCopy.contractorId || null,
-        contact_person_id: contactPersonId,
-        project_type: "current",
-        status: projectCopy.status,
-        progress: projectCopy.progress,
-        actual_cost: projectCopy.actualCost,
-        last_update: projectCopy.lastUpdate,
-        migrated_from_future: 1,
-        files: projectCopy.files || [],
-        // Add missing project planning fields
-        description: projectCopy.description || "",
-        objectives: projectCopy.objectives || "",
-        risks: projectCopy.risks || "",
-        budget: projectCopy.budget || 0,
-        priority: projectCopy.priority || "medium",
-      };
-
-      // Отправляем запрос на создание нового проекта типа "current"
-      fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(apiData),
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          if (data.success) {
-            console.log("Project moved to current successfully");
-
-            // Обновляем ID если вернулся от сервера
-            if (data.data && data.data.id) {
-              projectCopy.id = data.data.id;
-            }
-
-            // Добавляем проект в Current Projects
-            this.currentProjects.push(projectCopy);
-
-            // Update both sections' stats when moving a project between sections
-            this.renderProjects("future");
-            this.renderProjects("current");
-            this.updateProjectStatistics("future");
-            this.updateProjectStatistics("current");
-          } else {
-            console.error("Error moving project to current:", data.message);
-            alert(`Ошибка при перемещении проекта: ${data.message}`);
-          }
-        })
-        .catch((error) => {
-          console.error("Error moving project to current:", error);
-          alert(
-            "Ошибка при перемещении проекта. Пожалуйста, попробуйте снова."
-          );
-        });
-
-      // Отправляем запрос на удаление проекта из future
-      fetch(
-        `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?id=${projectId}`,
-        {
-          method: "DELETE",
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          if (data.success) {
-            console.log("Original future project deleted successfully");
-          } else {
-            console.error(
-              "Error deleting original future project:",
-              data.message
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("Error deleting original future project:", error);
-        });
+      // Update both sections' stats when moving a project between sections
+      this.renderProjects("future");
+      this.renderProjects("current");
+      this.updateProjectStatistics("future");
+      this.updateProjectStatistics("current");
     } else {
       // Обновляем статус в текущем разделе
       project.status = newStatus;
@@ -7325,4577 +2416,1531 @@ export default class ConstructionManager {
         `.status-select[data-project-id="${projectId}"]`
       );
       if (statusSelect) {
-        statusSelect.value = newStatus;
         this.updateStatusClasses(statusSelect, newStatus);
       }
 
-      // Подготавливаем данные для API
-      const apiData = {
-        status: newStatus,
-        last_update: new Date().toISOString().split("T")[0],
-      };
-
-      // Отправляем запрос на обновление статуса проекта
-      fetch(
-        `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?action=update&id=${projectId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(apiData),
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          if (data.success) {
-            console.log("Project status updated successfully");
-            // Обновляем UI
-            this.renderProjects(type);
-            this.updateProjectStatistics(type);
-          } else {
-            console.error("Error updating project status:", data.message);
-            alert(`Ошибка при обновлении статуса проекта: ${data.message}`);
-          }
-        })
-        .catch((error) => {
-          console.error("Error updating project status:", error);
-          alert(
-            "Ошибка при обновлении статуса проекта. Пожалуйста, попробуйте снова."
-          );
-        });
+      this.renderProjects(type);
+      this.updateProjectStatistics(type);
     }
   }
 
-  initFileUploadSection(inputId, fileType) {
-    const input = this.container.querySelector(`#${inputId}`);
-    const previewContainer = this.container.querySelector(
-      `#${inputId}-preview`
-    );
-    const progressContainer = input
-      .closest(".form-group")
-      .querySelector(".upload-progress");
-    const progressBar = progressContainer.querySelector(".progress-bar-fill");
-    const progressText = progressContainer.querySelector(".progress-text");
+  // Модальные окна
+  showContractorModal(contractor = null) {
+    const modal = this.container.querySelector("#contractor-modal");
+    const form = modal.querySelector("#contractor-form");
+    const title = modal.querySelector("#contractor-modal-title");
 
-    if (!input || !previewContainer) return;
+    title.textContent = contractor ? "Edit Contractor" : "Add Contractor";
 
-    // Обработчик изменения input
-    input.addEventListener("change", (e) => {
-      this.handleFileSelection(
-        e.target.files,
-        fileType,
-        previewContainer,
-        progressContainer,
-        progressBar,
-        progressText
-      );
-    });
+    // Очищаем форму перед заполнением
+    form.reset();
+    this.setRating(0); // Сбрасываем рейтинг
+    delete form.dataset.contractorId;
 
-    // Обработчики drag-and-drop
-    const dropZone = input.closest(".file-upload-container");
-    if (dropZone) {
-      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-        dropZone.addEventListener(eventName, (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        });
-      });
+    if (contractor) {
+      console.log("Showing contractor modal with data:", contractor);
 
-      ["dragenter", "dragover"].forEach((eventName) => {
-        dropZone.addEventListener(eventName, () => {
-          dropZone.classList.add("drag-over");
-        });
-      });
+      // Заполняем форму данными из API (плоская структура)
+      form.elements.companyName.value = contractor.company_name || "";
+      // Используем business_type вместо scope_of_work
+      form.elements.businessType.value = contractor.business_type || "";
+      form.elements.location.value = contractor.location || "";
+      form.elements.email.value = contractor.email || "";
+      form.elements.phone.value = contractor.phone || "";
+      form.elements.contactName.value = contractor.contact_person || "";
+      // Используем значение contact_person_position из данных API
+      form.elements.position.value = contractor.contact_person_position || "";
+      form.elements.contactPhone.value = contractor.phone || ""; // Используем основной телефон
+      form.elements.contactEmail.value = contractor.email || ""; // Используем основной email
 
-      ["dragleave", "drop"].forEach((eventName) => {
-        dropZone.addEventListener(eventName, () => {
-          dropZone.classList.remove("drag-over");
-        });
-      });
-
-      dropZone.addEventListener("drop", (e) => {
-        const files = e.dataTransfer.files;
-        this.handleFileSelection(
-          files,
-          fileType,
-          previewContainer,
-          progressContainer,
-          progressBar,
-          progressText
-        );
-      });
-    }
-  }
-
-  handleFileSelection(
-    files,
-    fileType,
-    previewContainer,
-    progressContainer,
-    progressBar,
-    progressText
-  ) {
-    if (!files || files.length === 0) return;
-
-    // Show progress bar
-    progressContainer.classList.add("active");
-
-    // Get existing previews if any, otherwise create new array
-    const existingPreviews =
-      previewContainer.querySelectorAll(".file-preview-item");
-    const previews = [];
-
-    // First add any existing previews that were already processed
-    if (existingPreviews && existingPreviews.length > 0) {
-      existingPreviews.forEach((item) => {
-        if (item.dataset.fileObject) {
-          previews.push(JSON.parse(item.dataset.fileObject));
-        }
-      });
-    }
-
-    // Process each file
-    Array.from(files).forEach((file, index) => {
-      // Create preview object
-      const preview = {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        file: file,
-        category: fileType,
-      };
-
-      // Add to previews array
-      previews.push(preview);
-
-      // If it's an image, create preview
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          preview.data = e.target.result;
-          this.updateFilePreviews(previewContainer, previews);
-          this.updateProgress(
-            progressBar,
-            progressText,
-            index + 1,
-            files.length
-          );
-        };
-        reader.readAsDataURL(file);
-      } else {
-        // For non-images, just update preview
-        this.updateFilePreviews(previewContainer, previews);
-        this.updateProgress(progressBar, progressText, index + 1, files.length);
-      }
-    });
-  }
-
-  updateFilePreviews(container, previews) {
-    if (!container || !Array.isArray(previews)) return;
-
-    // Clear existing previews
-    container.innerHTML = "";
-
-    // Add new previews
-    previews.forEach((preview) => {
-      const previewItem = document.createElement("div");
-      previewItem.className = "file-preview-item";
-      previewItem.dataset.fileType = preview.category;
-      previewItem.dataset.fileName = preview.name;
-      previewItem.dataset.mimeType = preview.type;
-
-      // Store file data in a data attribute for later retrieval
-      previewItem.dataset.fileObject = JSON.stringify({
-        name: preview.name,
-        type: preview.type,
-        size: preview.size,
-        category: preview.category,
-        data: preview.data,
-      });
-
-      // Create preview content based on file type
-      if (preview.type.startsWith("image/")) {
-        const img = document.createElement("img");
-        img.src =
-          preview.data ||
-          (preview.file ? URL.createObjectURL(preview.file) : "");
-        img.alt = preview.name;
-        previewItem.appendChild(img);
-      } else {
-        const icon = document.createElement("i");
-        icon.className = this.getFileIconClass(preview.type);
-        previewItem.appendChild(icon);
-      }
-
-      // Add file info
-      const info = document.createElement("div");
-      info.className = "file-info";
-      info.innerHTML = `
-            <span class="file-name">${preview.name}</span>
-            <span class="file-size">${this.formatFileSize(preview.size)}</span>
-        `;
-      previewItem.appendChild(info);
-
-      // Add remove button
-      const removeBtn = document.createElement("button");
-      removeBtn.className = "remove-file";
-      removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-      previewItem.appendChild(removeBtn);
-
-      container.appendChild(previewItem);
-    });
-
-    // Bind events to new preview items
-    this.bindFilePreviewEvents(container);
-  }
-
-  getFileIconClass(mimeType) {
-    if (mimeType.startsWith("image/")) return "fas fa-image";
-    if (mimeType === "application/pdf") return "fas fa-file-pdf";
-    if (mimeType.includes("word")) return "fas fa-file-word";
-    if (mimeType.includes("excel") || mimeType.includes("spreadsheet"))
-      return "fas fa-file-excel";
-    return "fas fa-file";
-  }
-
-  formatFileSize(bytes) {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  }
-
-  updateProgress(progressBar, progressText, current, total) {
-    const percentage = (current / total) * 100;
-    progressBar.style.width = `${percentage}%`;
-    progressText.textContent = `Uploading: ${Math.round(percentage)}%`;
-
-    if (current === total) {
-      setTimeout(() => {
-        progressBar.style.width = "0%";
-        progressText.textContent = "Uploading: 0%";
-      }, 1000);
-    }
-  }
-
-  onSectionChange(sectionId) {
-    // Если секция не указана, используем активную
-    if (!sectionId) {
-      const activeSection = this.container.querySelector(
-        ".construction-section.active"
-      );
-      if (activeSection) {
-        sectionId = activeSection.id;
-      } else {
-        return;
-      }
-    }
-
-    // Вызываем специфические действия для каждой секции
-    if (sectionId === "contractors-section") {
-      this.renderContractors();
-    } else if (sectionId === "current-projects-section") {
-      this.renderProjects("current");
-    } else if (sectionId === "future-projects-section") {
-      this.renderProjects("future");
-    }
-
-    // Update statistics for the active section
-    if (sectionId === "current-projects-section") {
-      this.updateProjectStatistics("current");
-    } else if (sectionId === "future-projects-section") {
-      this.updateProjectStatistics("future");
-    }
-  }
-
-  async loadData() {
-    try {
-      // Here will be API calls to load data
-      // For now using mock data
-      await this.loadContractors();
-      this.updateBusinessTypeFilter(); // Обновляем список типов бизнеса после загрузки
-      await this.loadCurrentProjects();
-      await this.loadFutureProjects();
-      this.renderActiveSection();
-
-      // Update statistics for both sections after loading data
-      this.updateProjectStatistics("current");
-      this.updateProjectStatistics("future");
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  }
-
-  switchTab(tab) {
-    this.container
-      .querySelectorAll(".construction-section")
-      .forEach((s) => s.classList.remove("active"));
-
-    // Update section title
-    const sectionTitle = this.container.querySelector("#section-title");
-    if (sectionTitle) {
-      sectionTitle.textContent =
-        tab === "contractors"
-          ? "Contractors"
-          : tab === "current-projects"
-          ? "Current Projects"
-          : "Future Projects";
-    }
-
-    // Show appropriate section
-    this.container.querySelector(`#${tab}-section`).classList.add("active");
-
-    // Update filters visibility
-    const contractorsFilters = this.container.querySelector(
-      "#contractors-filters"
-    );
-    const currentProjectsFilters = this.container.querySelector(
-      "#current-projects-filters"
-    );
-    const futureProjectsFilters = this.container.querySelector(
-      "#future-projects-filters"
-    );
-
-    if (contractorsFilters) {
-      contractorsFilters.style.display =
-        tab === "contractors" ? "flex" : "none";
-    }
-    if (currentProjectsFilters) {
-      currentProjectsFilters.style.display =
-        tab === "current-projects" ? "flex" : "none";
-    }
-    if (futureProjectsFilters) {
-      futureProjectsFilters.style.display =
-        tab === "future-projects" ? "flex" : "none";
-    }
-
-    // Update add buttons visibility
-    const addContractorBtn = this.container.querySelector("#add-contractor");
-    const addCurrentProjectBtn = this.container.querySelector(
-      "#add-current-project"
-    );
-    const addFutureProjectBtn = this.container.querySelector(
-      "#add-future-project"
-    );
-
-    if (addContractorBtn) {
-      addContractorBtn.style.display = tab === "contractors" ? "block" : "none";
-    }
-    if (addCurrentProjectBtn) {
-      addCurrentProjectBtn.style.display =
-        tab === "current-projects" ? "block" : "none";
-    }
-    if (addFutureProjectBtn) {
-      addFutureProjectBtn.style.display =
-        tab === "future-projects" ? "block" : "none";
-    }
-
-    this.activeTab = tab;
-    this.renderActiveSection();
-
-    // Update project statistics when switching to project tabs
-    if (tab === "current-projects") {
-      this.updateProjectStatistics("current");
-    } else if (tab === "future-projects") {
-      this.updateProjectStatistics("future");
-    }
-  }
-
-  renderActiveSection() {
-    switch (this.activeTab) {
-      case "contractors":
-        this.renderContractors();
-        break;
-      case "current-projects":
-        this.renderProjects("current");
-        break;
-      case "future-projects":
-        this.renderProjects("future");
-        break;
-    }
-  }
-
-  // Методы для работы с подрядчиками
-  async loadContractors() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        // Convert API format to client format
-        this.contractors = result.data.map((contractor) => {
-          return {
-            id: parseInt(contractor.id),
-            companyName: contractor.company_name,
-            businessType: contractor.business_type,
-            location: contractor.location || "",
-            email: contractor.email || "",
-            phone: contractor.phone || "",
-            rating: parseInt(contractor.rating) || 0,
-            contactPerson: contractor.contact_person
-              ? {
-                  id: parseInt(contractor.contact_person.id),
-                  name: contractor.contact_person.name,
-                  position: contractor.contact_person.position || "",
-                  phone: contractor.contact_person.phone || "",
-                  email: contractor.contact_person.email || "",
-                }
-              : {
-                  name: "None",
-                  position: "",
-                  phone: "",
-                  email: "",
-                },
-            employees: contractor.employees
-              ? contractor.employees.map((emp) => ({
-                  id: parseInt(emp.id),
-                  fullName: emp.name,
-                  position: emp.position || "",
-                  phone: emp.phone || "",
-                  email: emp.email || "",
-                }))
-              : [],
-          };
-        });
-      } else {
-        console.error("Failed to load contractors:", result.message);
-        // Fallback to empty array
-        this.contractors = [];
-      }
-    } catch (error) {
-      console.error("Error loading contractors:", error);
-      // Fallback to empty array on error
-      this.contractors = [];
-    }
-  }
-
-  renderContractors() {
-    const container = this.container.querySelector("#contractors-list");
-    if (!container) return;
-
-    if (this.contractors.length === 0) {
-      container.innerHTML = `
-            <div class="no-contractors">
-                <i class="fas fa-building"></i>
-                <h3>No Contractors Yet</h3>
-                <p>Click the "Add Contractor" button to add your first contractor</p>
-            </div>
-        `;
-      return;
-    }
-
-    container.innerHTML = this.contractors
-      .map(
-        (contractor) => `
-      <div class="contractor-card" data-id="${contractor.id}">
-        <div class="contractor-header">
-          <h3>${contractor.companyName}</h3>
-          <div class="contractor-rating">
-            ${this.generateRatingStars(contractor.rating)}
-          </div>
-        </div>
-        <div class="contractor-info">
-          <div class="info-item">
-            <i class="fas fa-briefcase"></i>
-            <span>${contractor.businessType}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-location-dot"></i>
-            <span>${contractor.location}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.email}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.phone}</span>
-          </div>
-        </div>
-        <div class="contact-person-info">
-          <h4>Contact Person</h4>
-          <div class="info-item">
-            <i class="fas fa-user"></i>
-            <span>${contractor.contactPerson.name}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-id-badge"></i>
-            <span>${contractor.contactPerson.position}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.contactPerson.phone}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.contactPerson.email}</span>
-          </div>
-        </div>
-        <div class="contractor-employees">
-          <h4>Employees (${contractor.employees.length})</h4>
-          <div class="employees-list">
-            ${this.renderEmployeesList(contractor.employees)}
-          </div>
-          <button class="btn-secondary add-employee" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-user-plus"></i> Add Employee
-          </button>
-        </div>
-        <div class="contractor-actions">
-          <button class="btn-action edit" data-contractor-id="${contractor.id}">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-action delete" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    `
-      )
-      .join("");
-
-    // Добавляем обработчики событий после рендеринга
-    this.bindEmployeeEvents();
-
-    // Add event handlers for contractor edit and delete buttons
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          const contractor = this.contractors.find(
-            (c) => c.id === contractorId
-          );
-          if (contractor) {
-            this.showContractorModal(contractor);
-          }
-        });
-      });
-
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          this.deleteContractor(contractorId);
-        });
-      });
-  }
-
-  renderEmployeesList(employees) {
-    return employees
-      .map(
-        (employee) => `
-        <div class="employee-item">
-            <div class="employee-info">
-                <strong>${employee.fullName}</strong>
-                <span>${employee.position}</span>
-                <span>${employee.phone}</span>
-            </div>
-            <div class="employee-actions">
-                <button class="btn-action edit" data-employee-id="${employee.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-action delete" data-employee-id="${employee.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `
-      )
-      .join("");
-  }
-
-  bindEmployeeEvents() {
-    // Обработчики для кнопок редактирования сотрудников
-    this.container
-      .querySelectorAll(".employee-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const employeeId = parseInt(button.dataset.employeeId);
-          const contractorId = parseInt(
-            button.closest(".contractor-card").dataset.id
-          );
-          this.editEmployee(contractorId, employeeId);
-        });
-      });
-
-    // Обработчики для кнопок удаления сотрудников
-    this.container
-      .querySelectorAll(".employee-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const employeeId = parseInt(button.dataset.employeeId);
-          const contractorId = parseInt(
-            button.closest(".contractor-card").dataset.id
-          );
-          this.deleteEmployee(contractorId, employeeId);
-        });
-      });
-
-    // Обработчики для кнопок добавления сотрудников
-    this.container.querySelectorAll(".add-employee").forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const contractorId = parseInt(button.dataset.contractorId);
-        this.showEmployeeModal(contractorId);
-      });
-    });
-  }
-
-  showEmployeeModal(contractorId, employee = null) {
-    const modal = this.container.querySelector("#employee-modal");
-    const form = modal.querySelector("#employee-form");
-    const title = modal.querySelector("#employee-modal-title");
-
-    title.textContent = employee ? "Edit Employee" : "Add Employee";
-
-    form.elements.contractorId.value = contractorId;
-
-    if (employee) {
-      form.elements.fullName.value = employee.fullName;
-      form.elements.position.value = employee.position;
-      form.elements.phone.value = employee.phone;
-      form.dataset.employeeId = employee.id;
+      // Поле rating отсутствует в API
+      const ratingValue = parseInt(contractor.rating) || 0;
+      this.setRating(ratingValue);
+      form.elements.rating.value = ratingValue;
+      form.dataset.contractorId = contractor.id;
     } else {
-      form.reset();
-      form.elements.contractorId.value = contractorId;
-      delete form.dataset.employeeId;
+      // Для нового контрактора просто сбрасываем форму (уже сделано выше)
     }
 
     modal.classList.add("active");
   }
 
-  editEmployee(contractorId, employeeId) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const employee = contractor.employees.find((e) => e.id === employeeId);
-      if (employee) {
-        this.showEmployeeModal(contractorId, employee);
-      }
-    }
-  }
-
-  deleteEmployee(contractorId, employeeId) {
-    if (confirm("Are you sure you want to delete this employee?")) {
-      const contractor = this.contractors.find((c) => c.id === contractorId);
-      if (contractor) {
-        contractor.employees = contractor.employees.filter(
-          (e) => e.id !== employeeId
-        );
-        this.renderContractors();
-      }
-    }
-  }
-
-  handleEmployeeSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const contractorId = parseInt(form.elements.contractorId.value);
-    const employeeData = {
-      fullName: form.elements.fullName.value,
-      position: form.elements.position.value,
-      phone: form.elements.phone.value,
-    };
-
-    if (form.dataset.employeeId) {
-      // Редактирование существующего сотрудника
-      const employeeId = parseInt(form.dataset.employeeId);
-      this.updateEmployee(contractorId, employeeId, employeeData);
-    } else {
-      // Добавление нового сотрудника
-      this.addEmployeeToContractor(contractorId, employeeData);
-    }
-
-    this.closeModals();
-  }
-
-  addEmployeeToContractor(contractorId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      // First add to local data structure for immediate feedback
-      data.id = Date.now(); // Temporary ID
-      contractor.employees.push(data);
-
-      // Prepare data for API
-      const existingEmployees = contractor.employees.filter(
-        (e) => e.id !== data.id
-      );
-
-      const apiData = {
-        company_name: contractor.companyName,
-        business_type: contractor.businessType,
-        location: contractor.location,
-        email: contractor.email,
-        phone: contractor.phone,
-        rating: contractor.rating,
-        notes: contractor.notes || "",
-        employees: [
-          ...existingEmployees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: 0,
-          })),
-          // Add new employee
-          {
-            name: data.fullName,
-            position: data.position || "",
-            phone: data.phone || "",
-            email: data.email || "",
-            is_primary_contact: 0,
-          },
-        ],
-      };
-
-      // Используем правильный URL API
-      fetch(
-        `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(apiData),
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((responseData) => {
-          if (responseData.success) {
-            // Обновляем данные о сотрудниках из ответа API
-            if (responseData.data && responseData.data.employees) {
-              // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-              const updatedContractor = this.contractors.find(
-                (c) => c.id === contractorId
-              );
-              if (updatedContractor) {
-                // Преобразуем сотрудников из формата API в формат UI
-                updatedContractor.employees = responseData.data.employees.map(
-                  (emp) => ({
-                    id: parseInt(emp.id),
-                    fullName: emp.name,
-                    position: emp.position || "",
-                    phone: emp.phone || "",
-                    email: emp.email || "",
-                  })
-                );
-              }
-            }
-
-            // Перерисовываем UI для отображения обновленных данных
-            this.renderContractors();
-          } else {
-            console.error("Error adding employee:", responseData.message);
-            alert("Failed to add employee: " + responseData.message);
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          }
-        })
-        .catch((error) => {
-          console.error("Error adding employee:", error);
-          alert("Failed to add employee. Please try again.");
-          // Обновляем данные с сервера в случае ошибки
-          this.loadContractors().then(() => this.renderContractors());
-        });
-
-      // Render immediately for responsive UI
-      this.renderContractors();
-    }
-  }
-
-  updateEmployee(contractorId, employeeId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const index = contractor.employees.findIndex((e) => e.id === employeeId);
-      if (index !== -1) {
-        // Update local data first
-        contractor.employees[index] = {
-          ...contractor.employees[index],
-          ...data,
-        };
-
-        // Prepare data for API
-        const apiData = {
-          company_name: contractor.companyName,
-          business_type: contractor.businessType,
-          location: contractor.location,
-          email: contractor.email,
-          phone: contractor.phone,
-          rating: contractor.rating,
-          notes: contractor.notes || "",
-          employees: contractor.employees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: e.isPrimaryContact ? 1 : 0,
-          })),
-        };
-
-        // Используем правильный URL API
-        fetch(
-          `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(apiData),
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((responseData) => {
-            if (responseData.success) {
-              // Обновляем данные о сотрудниках из ответа API
-              if (responseData.data && responseData.data.employees) {
-                // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-                const updatedContractor = this.contractors.find(
-                  (c) => c.id === contractorId
-                );
-                if (updatedContractor) {
-                  // Преобразуем сотрудников из формата API в формат UI
-                  updatedContractor.employees = responseData.data.employees.map(
-                    (emp) => ({
-                      id: parseInt(emp.id),
-                      fullName: emp.name,
-                      position: emp.position || "",
-                      phone: emp.phone || "",
-                      email: emp.email || "",
-                    })
-                  );
-                }
-              }
-
-              // Перерисовываем UI для отображения обновленных данных
-              this.renderContractors();
-            } else {
-              console.error("Error updating employee:", responseData.message);
-              alert("Failed to update employee: " + responseData.message);
-              // Обновляем данные с сервера в случае ошибки
-              this.loadContractors().then(() => this.renderContractors());
-            }
-          })
-          .catch((error) => {
-            console.error("Error updating employee:", error);
-            alert("Failed to update employee. Please try again.");
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          });
-
-        // Render immediately for UI feedback
-        this.renderContractors();
-      }
-    }
-  }
-
-  // Методы для работы с проектами
-  async loadCurrentProjects() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=current"
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.currentProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          progress: project.progress,
-          actualCost: project.actual_cost,
-          lastUpdate: project.last_update,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading current projects:", data.message);
-        this.currentProjects = [];
-      }
-    } catch (error) {
-      console.error("Error loading current projects:", error);
-      this.currentProjects = [];
-    }
-  }
-
-  async loadFutureProjects() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=future"
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.futureProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          budget: project.budget,
-          priority: project.priority,
-          description: project.description,
-          objectives: project.objectives,
-          risks: project.risks,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading future projects:", data.message);
-        this.futureProjects = [];
-      }
-    } catch (error) {
-      console.error("Error loading future projects:", error);
-      this.futureProjects = [];
-    }
-  }
-
-  // Метод для организации файлов проекта по категориям
-  organizeProjectFiles(project) {
-    if (!project) return project;
-    if (!project.files) {
-      project.files = [];
-    }
-
-    if (!Array.isArray(project.files)) {
-      console.error("Files is not an array:", project.files);
-      project.files = [];
-    }
-
+  showProjectModal(type, project = null) {
     console.log(
-      `Organizing files for project ${project.id} Files count: ${project.files.length}`
+      `Opening ${type} project modal`,
+      project ? `for editing project ID: ${project.id}` : "for new project"
     );
 
-    // Копируем проект, чтобы не изменять оригинал
-    const organizedProject = { ...project };
-
-    // Организуем файлы по категориям
-    organizedProject.photos = [];
-    organizedProject.documents = [];
-    organizedProject.reports = [];
-    organizedProject.specifications = [];
-    organizedProject.budgetDocs = [];
-
-    project.files.forEach((file) => {
-      // Ensure file has all necessary properties
-      const processedFile = {
-        ...file,
-        id: file.id || file.fileId || "",
-        fileId: file.id || file.fileId || "",
-        fileName:
-          file.file_name ||
-          file.fileName ||
-          file.original_name ||
-          "Unknown file",
-        original_name:
-          file.original_name || file.fileName || file.file_name || "",
-        filePath: file.file_path || file.filePath || "",
-        file_path: file.file_path || file.filePath || "",
-        miniPath: file.mini_path || file.miniPath || "",
-        mini_path: file.mini_path || file.miniPath || "",
-        mimeType: file.mime_type || file.mimeType || "",
-        mime_type: file.mime_type || file.mimeType || "",
-        fileCategory:
-          file.file_category ||
-          file.fileCategory ||
-          file.category ||
-          "document",
-      };
-
-      const category = processedFile.fileCategory.toLowerCase();
-
-      if (category === "photo") {
-        organizedProject.photos.push(processedFile);
-      } else if (category === "document") {
-        organizedProject.documents.push(processedFile);
-      } else if (category === "report") {
-        organizedProject.reports.push(processedFile);
-      } else if (category === "specification") {
-        organizedProject.specifications.push(processedFile);
-      } else if (category === "budget") {
-        organizedProject.budgetDocs.push(processedFile);
-      } else {
-        // Если категория неизвестна, добавляем в документы
-        organizedProject.documents.push(processedFile);
-      }
-    });
-
-    console.log(`Organized files for project ${project.id}`, {
-      photos: organizedProject.photos.length,
-      documents: organizedProject.documents.length,
-      reports: organizedProject.reports.length,
-      specifications: organizedProject.specifications.length,
-      budgetDocs: organizedProject.budgetDocs.length,
-    });
-
-    return organizedProject;
-  }
-
-  // Изменим метод renderProjects, чтобы использовать organizeProjectFiles
-  renderProjects(type, projectsToRender = null) {
-    const projects =
-      projectsToRender ||
-      (type === "current" ? this.currentProjects : this.futureProjects);
-    const container = this.container.querySelector(`#${type}-projects-list`);
-
-    if (!container) {
-      console.error(`Container #${type}-projects-list not found`);
-      return;
-    }
-
-    console.log(`Rendering ${type} projects:`, projects);
-    container.innerHTML = "";
-
-    if (!projects || projects.length === 0) {
-      container.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-search"></i>
-          <p>No projects found</p>
-        </div>
-      `;
-
-      // Update statistics even if no projects are found
-      this.updateProjectStatistics(type);
-      return;
-    }
-
-    projects.forEach((project) => {
-      // Организуем файлы проекта по категориям
-      const organizedProject = this.organizeProjectFiles(project);
-
-      const contractor = this.contractors.find(
-        (c) => c.id === organizedProject.contractorId
-      );
-      const template = this.container.querySelector(
-        `#${type}-project-card-template`
-      );
-
-      if (!template) {
-        console.error(`Template #${type}-project-card-template not found`);
-        return;
-      }
-
-      const card = template.content.cloneNode(true);
-
-      // Set project ID
-      const projectCard = card.querySelector(".project-card");
-      projectCard.dataset.id = organizedProject.id;
-
-      // Set project name and status
-      card.querySelector(".project-name").textContent = organizedProject.name;
-      const statusSelect = card.querySelector(".status-select");
-      statusSelect.value = organizedProject.status;
-
-      // Добавляем data-атрибут для привязки к проекту
-      statusSelect.setAttribute("data-project-id", organizedProject.id);
-
-      // Обновляем классы статуса
-      this.updateStatusClasses(statusSelect, organizedProject.status);
-
-      // Set project details
-      card.querySelector(".location").textContent = organizedProject.location;
-
-      // Форматируем даты для отображения
-      const startDateFormatted = this.formatDateForDisplay(
-        organizedProject.startDate
-      );
-      const endDateFormatted = this.formatDateForDisplay(
-        organizedProject.endDate
-      );
-      card.querySelector(
-        ".dates"
-      ).textContent = `${startDateFormatted} - ${endDateFormatted}`;
-
-      if (type === "current") {
-        this.renderCurrentProjectDetails(card, organizedProject, contractor);
-      } else {
-        this.renderFutureProjectDetails(card, organizedProject, contractor);
-      }
-
-      // Добавляем карточку в контейнер
-      container.appendChild(card);
-    });
-
-    // After rendering all projects, update the statistics
-    this.updateProjectStatistics(type);
-
-    // Bind events to project cards
-    this.bindProjectCardEvents(type);
-
-    // Привязываем события к предпросмотрам файлов
-    this.bindFilePreviewEvents();
-
-    // Добавим дополнительную логику для обработки всех изображений на странице
-    this.enhanceAllImagePreviews(type);
-  }
-
-  // Метод для улучшения всех превью изображений в указанной секции
-  enhanceAllImagePreviews(type) {
-    // Получаем контейнер для секции
-    const sectionId =
-      type === "current"
-        ? "current-projects-section"
-        : "future-projects-section";
-    const section = this.container.querySelector(`#${sectionId}`);
-    if (!section) return;
-
-    // Находим все изображения в секции
-    const images = section.querySelectorAll(".file-preview-container img");
-    images.forEach((img) => {
-      // Проверяем, что у изображения есть src
-      const src = img.getAttribute("src");
-      if (src) {
-        // Делаем курсор указателем
-        img.style.cursor = "pointer";
-
-        // Удаляем старые обработчики, чтобы избежать дублирования
-        const newImg = img.cloneNode(true);
-        img.parentNode.replaceChild(newImg, img);
-
-        // Добавляем обработчик клика
-        newImg.addEventListener("click", () => {
-          console.log("Image clicked:", src);
-          this.showImageModal(src);
-        });
-      }
-    });
-
-    console.log(`Enhanced ${images.length} images in ${type} projects section`);
-  }
-
-  updateStatusClasses(statusSelect, status) {
-    // Удаляем все существующие классы статуса
-    statusSelect.classList.remove(
-      "planned",
-      "in-progress",
-      "completed",
-      "on-hold",
-      "move-to-current",
-      "delayed",
-      "design-phase", // Добавляем новые возможные статусы
-      "planning"
+    // Определяем, какое модальное окно нужно показать
+    const modal = this.container.querySelector(
+      `#${type === "current" ? "current" : "future"}-project-modal`
     );
+    const form = modal.querySelector("form");
+    const titleElement = modal.querySelector("h3");
 
-    // Преобразуем статус для использования в качестве CSS класса (заменяем пробелы на дефисы)
-    const statusClass = status.replace(/\s+/g, "-").toLowerCase();
+    // Сначала очищаем форму от предыдущих данных
+    form.reset();
 
-    // Добавляем новый класс статуса
-    statusSelect.classList.add(statusClass);
+    // Удаляем все существующие info-message и migrated-fields элементы
+    const existingInfoMessages = form.querySelectorAll(".info-message");
+    existingInfoMessages.forEach((msg) => msg.remove());
 
-    // Сбрасываем inline стили, которые могли быть установлены ранее
-    statusSelect.style.backgroundColor = "";
-    statusSelect.style.color = "";
-    statusSelect.style.borderColor = "";
+    const existingMigratedFields = form.querySelectorAll(".migrated-fields");
+    existingMigratedFields.forEach((field) => field.remove());
 
-    // Определяем цвета в зависимости от статуса
-    let colors = {
-      planned: {
-        bg: "#e3f2fd",
-        color: "#1976d2",
-        border: "#90caf9",
-      },
-      "in-progress": {
-        bg: "#fff3e0",
-        color: "#f57c00",
-        border: "#ffcc80",
-      },
-      completed: {
-        bg: "#e8f5e9",
-        color: "#388e3c",
-        border: "#a5d6a7",
-      },
-      "on-hold": {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "move-to-current": {
-        bg: "#f3e5f5",
-        color: "#7b1fa2",
-        border: "#ce93d8",
-      },
-      delayed: {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "design-phase": {
-        // Добавляем новые статусы с цветами
-        bg: "#e0f7fa",
-        color: "#0097a7",
-        border: "#80deea",
-      },
-      planning: {
-        bg: "#f3e5f5",
-        color: "#8e24aa",
-        border: "#ce93d8",
-      },
+    // Обновляем заголовок модального окна в зависимости от действия
+    if (titleElement) {
+      titleElement.textContent = project
+        ? `Edit ${type === "current" ? "Current" : "Future"} Project`
+        : `Add ${type === "current" ? "Current" : "Future"} Project`;
+    }
+
+    // Проверяем, является ли проект перенесенным из Future в Current
+    const isMigratedProject =
+      type === "current" &&
+      project &&
+      (project.specifications ||
+        project.budgetDocs ||
+        project.description ||
+        project.objectives ||
+        project.risks ||
+        project.priority);
+
+    // Очищаем предыдущие предпросмотры файлов
+    this.clearFilePreviews(type);
+
+    // Настраиваем обработчики загрузки файлов
+    this.setupFileUploadHandlers(type);
+
+    // Указываем тип проекта
+    form.elements.projectType.value = type;
+
+    // Сначала заполняем список всех подрядчиков
+    this.populateContractorSelect(form.elements.contractorId);
+
+    // Добавляем обработчик выбора типа бизнеса для обновления списка подрядчиков
+    const businessTypeSelect = form.elements.businessType;
+    businessTypeSelect.onchange = (e) => {
+      console.log(`Business type changed to: ${e.target.value}`);
+      this.updateContractorSelectByBusinessType(
+        e.target.value,
+        form.elements.contractorId
+      );
+
+      // Сбрасываем выбор подрядчика, так как фильтр изменился
+      form.elements.contractorId.value = "";
+
+      // Сбрасываем выбор контактного лица
+      if (form.elements.contactPersonId) {
+        form.elements.contactPersonId.innerHTML =
+          '<option value="">Select Contact Person</option>';
+        form.elements.contactPersonId.disabled = true;
+      }
     };
 
-    // Пробуем найти цвета для статуса напрямую или для его CSS версии
-    let colorConfig = colors[status] || colors[statusClass];
+    // Добавляем обработчик выбора подрядчика для обновления списка контактных лиц
+    const contractorSelect = form.elements.contractorId;
+    contractorSelect.onchange = (e) => {
+      console.log(`Contractor changed to ID: ${e.target.value}`);
 
-    // Применяем стили, если статус найден в нашем объекте
-    if (colorConfig) {
-      statusSelect.style.backgroundColor = colorConfig.bg;
-      statusSelect.style.color = colorConfig.color;
-      statusSelect.style.borderColor = colorConfig.border;
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    } else {
-      // Если статус неизвестен, применяем стандартные стили
-      statusSelect.style.backgroundColor = "#f5f5f5";
-      statusSelect.style.color = "#616161";
-      statusSelect.style.borderColor = "#bdbdbd";
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    }
-
-    // Устанавливаем data-атрибут для дополнительной поддержки селекторов
-    statusSelect.setAttribute("data-status", status);
-  }
-
-  // Helper method to update card size after toggle
-  updateCardSize(card) {
-    // Ensure card is a DOM element
-    if (!card || typeof card.closest !== "function") {
-      // If card is not a DOM element, try to find the project card differently
-      // This handles cases where 'card' might be the project card body or another element
-      const projectCard = card.parentElement
-        ? card.parentElement.closest(".project-card")
-        : document.querySelector(".project-card");
-
-      if (projectCard) {
-        // Set height to auto to let it resize naturally
-        projectCard.style.height = "auto";
-        const cardBody = projectCard.querySelector(".card-body");
-        if (cardBody) {
-          cardBody.style.height = "auto";
+      if (e.target.value) {
+        this.updateContactPersonSelect(e.target.value);
+      } else {
+        // Если подрядчик не выбран, очищаем список контактных лиц
+        if (form.elements.contactPersonId) {
+          form.elements.contactPersonId.innerHTML =
+            '<option value="">Select Contact Person</option>';
+          form.elements.contactPersonId.disabled = true;
         }
       }
-      return;
-    }
+    };
 
-    // Regular handling if card is a DOM element with closest method
-    const projectCard = card.closest(".project-card");
-    if (projectCard) {
-      // Ensure card body expands/contracts with content
-      const cardBody = projectCard.querySelector(".card-body");
-      if (cardBody) {
-        // Use setTimeout to ensure DOM has updated
-        setTimeout(() => {
-          // Reset any fixed heights
-          cardBody.style.height = "";
-          projectCard.style.height = "";
+    // Если редактируем существующий проект
+    if (project) {
+      // Сохраняем ID проекта
+      form.dataset.projectId = project.id;
 
-          // Calculate and set new height
-          const height = cardBody.scrollHeight;
-          cardBody.style.height = height + "px";
+      console.log("Project data to fill form:", project);
 
-          // Allow height to adjust naturally after initial animation
-          setTimeout(() => {
-            cardBody.style.height = "auto";
-          }, 300);
-        }, 10);
-      }
-    }
-  }
+      // Отладка: выведем все доступные поля в проекте
+      console.log("Available fields in project:", Object.keys(project));
 
-  renderCurrentProjectDetails(card, project, contractor) {
-    // Set current project specific details
-    card.querySelector(".progress").textContent = project.progress
-      ? `${project.progress}%`
-      : "Not started";
-    card.querySelector(".actual-cost").textContent = project.actualCost
-      ? `$${project.actualCost.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
+      // Отладка: выведем все доступные элементы формы
+      console.log("Form elements:", Object.keys(form.elements));
 
-    // Форматируем дату последнего обновления
-    const lastUpdateFormatted = project.lastUpdate
-      ? this.formatDateForDisplay(project.lastUpdate)
-      : "Not updated";
-    card.querySelector(".last-update").textContent = lastUpdateFormatted;
-
-    // Определяем, является ли проект перенесенным из Future в Current
-    const isMigratedProject =
-      project.description ||
-      project.objectives ||
-      project.risks ||
-      project.priority ||
-      (project.specifications && project.specifications.length > 0) ||
-      (project.budgetDocs && project.budgetDocs.length > 0) ||
-      (project.documents &&
-        project.documents.length > 0 &&
-        project.migratedFromFuture);
-
-    const detailsSection = card.querySelector(".project-details");
-
-    // Make Project Documents header collapsible
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
-    );
-    const docHeader = documentsSection.querySelector("h4");
-
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
-
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle - pass the project card element
-      this.updateCardSize(docHeader.closest(".project-card"));
-    });
-
-    // Reorganize documents grid - group migrated files at the top
-    if (isMigratedProject) {
-      // Clear existing content
-      documentsGrid.innerHTML = "";
-
-      // Add migrated files without collapsible headers
-      const migratedFilesGroup = document.createElement("div");
-      migratedFilesGroup.className = "migrated-files-group";
-      documentsGrid.appendChild(migratedFilesGroup);
-
-      // Add simple label for migrated files
-      const migratedLabel = document.createElement("div");
-      migratedLabel.className = "section-label";
-      migratedLabel.innerHTML = `<span class="from-future-flag">From Future Project</span>`;
-      migratedFilesGroup.appendChild(migratedLabel);
-
-      // Add Planning Documents (formerly called Documents in Future Projects) if they exist
+      // Попробуем явно заполнить поле name
       if (
-        project.documents &&
-        project.documents.length > 0 &&
-        project.migratedFromFuture
+        project.name ||
+        project.project_name ||
+        project.projectName ||
+        project.title
       ) {
-        const planningDocsGroup = document.createElement("div");
-        planningDocsGroup.className = "documents-group migrated-files";
-        planningDocsGroup.innerHTML = `
-          <h5>Planning Documents</h5>
-          <div class="planning-docs-preview file-preview-container">
-            ${this.renderFilePreviews(project.documents, "document")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(planningDocsGroup);
+        const projectNameValue =
+          project.name ||
+          project.project_name ||
+          project.projectName ||
+          project.title;
+        console.log("Setting project name to:", projectNameValue);
+
+        // Проверим все возможные имена полей для названия проекта
+        ["name", "projectName", "project_name", "title"].forEach(
+          (fieldName) => {
+            if (form.elements[fieldName]) {
+              console.log(`Found form field ${fieldName}, setting value`);
+              form.elements[fieldName].value = projectNameValue;
+            }
+          }
+        );
       }
 
-      // Add specifications if they exist
-      if (project.specifications && project.specifications.length > 0) {
-        const specificationsGroup = document.createElement("div");
-        specificationsGroup.className = "documents-group migrated-files";
-        specificationsGroup.innerHTML = `
-          <h5>Specifications</h5>
-          <div class="specifications-preview file-preview-container">
-            ${this.renderFilePreviews(project.specifications, "specification")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(specificationsGroup);
-      }
+      // Маппинг полей из snake_case в camelCase и наоборот
+      const fieldMappings = {
+        // Базовые поля, которые могут быть в разных форматах
+        name: ["name", "projectName", "project_name", "title"],
+        projectName: [
+          "name",
+          "title",
+          "project_name",
+          "projectName",
+          "project_title",
+        ],
+        title: [
+          "title",
+          "name",
+          "project_name",
+          "projectName",
+          "project_title",
+        ],
+        status: ["status"],
+        businessType: ["businessType", "business_type"],
+        startDate: ["startDate", "start_date"],
+        endDate: ["endDate", "end_date"],
+        contractAmount: ["contractAmount", "contract_amount"],
+        address: ["address", "location"],
+        location: ["location", "address"],
+        stageDescription: ["stageDescription", "stage_description"],
+        scheduledInspectionDate: [
+          "scheduledInspectionDate",
+          "scheduled_inspection_date",
+        ],
+        contractorId: ["contractorId", "contractor_id"],
+        contactPersonId: ["contactPersonId", "contact_person_id"],
+        // Поля для Current проектов
+        progress: ["progress"],
+        actualCost: ["actualCost", "actual_cost"],
+        lastUpdate: ["lastUpdate", "last_update"],
+        // Поля для Future проектов
+        description: ["description"],
+        objectives: ["objectives"],
+        risks: ["risks"],
+        priority: ["priority"],
+        budget: ["budget"],
+      };
 
-      // Add budget documents if they exist
-      if (project.budgetDocs && project.budgetDocs.length > 0) {
-        const budgetDocsGroup = document.createElement("div");
-        budgetDocsGroup.className = "documents-group migrated-files";
-        budgetDocsGroup.innerHTML = `
-          <h5>Budget Documents</h5>
-          <div class="budget-docs-preview file-preview-container">
-            ${this.renderFilePreviews(project.budgetDocs, "budgetDoc")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(budgetDocsGroup);
-      }
+      // Заполняем поля формы на основе данных проекта
+      Object.keys(fieldMappings).forEach((formFieldName) => {
+        if (form.elements[formFieldName]) {
+          const possibleProjectFields = fieldMappings[formFieldName];
 
-      // Add simple label for current files
-      const currentLabel = document.createElement("div");
-      currentLabel.className = "section-label";
-      currentLabel.innerHTML = `<span class="current-files-title">Current Project Files</span>`;
-      documentsGrid.appendChild(currentLabel);
-
-      // Create current files group
-      const currentFilesGroup = document.createElement("div");
-      currentFilesGroup.className = "current-files-group";
-      documentsGrid.appendChild(currentFilesGroup);
-
-      // Add current files (Photos, Reports)
-      // Photos
-      if (project.photos && project.photos.length > 0) {
-        const photosGroup = document.createElement("div");
-        photosGroup.className = "documents-group";
-        photosGroup.innerHTML = `
-          <h5>Photos</h5>
-          <div class="photos-preview file-preview-container">
-            ${this.renderFilePreviews(project.photos, "photo")}
-          </div>
-        `;
-        currentFilesGroup.appendChild(photosGroup);
-      } else {
-        const photosGroup = document.createElement("div");
-        photosGroup.className = "documents-group";
-        photosGroup.innerHTML = `
-          <h5>Photos</h5>
-          <div class="photos-preview file-preview-container"></div>
-        `;
-        currentFilesGroup.appendChild(photosGroup);
-      }
-
-      // Reports
-      if (project.reports && project.reports.length > 0) {
-        const reportsGroup = document.createElement("div");
-        reportsGroup.className = "documents-group";
-        reportsGroup.innerHTML = `
-          <h5>Reports</h5>
-          <div class="reports-preview file-preview-container">
-            ${this.renderFilePreviews(project.reports, "report")}
-          </div>
-        `;
-        currentFilesGroup.appendChild(reportsGroup);
-      } else {
-        const reportsGroup = document.createElement("div");
-        reportsGroup.className = "documents-group";
-        reportsGroup.innerHTML = `
-          <h5>Reports</h5>
-          <div class="reports-preview file-preview-container"></div>
-        `;
-        currentFilesGroup.appendChild(reportsGroup);
-      }
-    } else {
-      // Just set file previews without reorganization
-      if (project.photos && project.photos.length > 0) {
-        card.querySelector(".photos-preview").innerHTML =
-          this.renderFilePreviews(project.photos, "photo");
-      }
-      if (project.documents && project.documents.length > 0) {
-        card.querySelector(".documents-preview").innerHTML =
-          this.renderFilePreviews(project.documents, "document");
-      }
-      if (project.reports && project.reports.length > 0) {
-        card.querySelector(".reports-preview").innerHTML =
-          this.renderFilePreviews(project.reports, "report");
-      }
-    }
-  }
-
-  renderFutureProjectDetails(card, project, contractor) {
-    // Future project specific details
-    card.querySelector(".budget").textContent = project.budget
-      ? `$${project.budget.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".priority").textContent = project.priority
-      ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1)
-      : "Not specified";
-    card.querySelector(".preferred-contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
-
-    // Set planning details
-    card.querySelector(".description").textContent =
-      project.description || "No description available";
-    card.querySelector(".objectives").textContent =
-      project.objectives || "No objectives defined";
-    card.querySelector(".risks").textContent =
-      project.risks || "No risks identified";
-
-    // Make Project Documents header collapsible
-    const detailsSection = card.querySelector(".project-details");
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
-    );
-    const docHeader = documentsSection.querySelector("h4");
-
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
-
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle
-      this.updateCardSize(card);
-    });
-
-    // Set file previews
-    if (project.documents && project.documents.length > 0) {
-      card.querySelector(".documents-preview").innerHTML =
-        this.renderFilePreviews(project.documents, "document");
-    }
-    if (project.specifications && project.specifications.length > 0) {
-      card.querySelector(".specifications-preview").innerHTML =
-        this.renderFilePreviews(project.specifications, "specification");
-    }
-  }
-
-  renderFilePreviews(files, type) {
-    // Проверяем, что files - это массив
-    if (!files || !Array.isArray(files) || files.length === 0) {
-      return "";
-    }
-
-    console.log(`Rendering file previews for ${type}:`, files);
-
-    // Капитализируем тип для отображения
-    const displayType = type.charAt(0).toUpperCase() + type.slice(1);
-
-    // Генерируем HTML для каждого файла
-    const previewsHtml = files
-      .map((file) => {
-        if (!file) return "";
-
-        // Извлекаем необходимые свойства из файла
-        const fileName =
-          file.fileName ||
-          file.original_name ||
-          file.name ||
-          file.file_name ||
-          "Unknown file";
-        let filePath = file.filePath || file.file_path || "";
-        let miniPath = file.miniPath || file.mini_path || "";
-        const fileId = file.fileId || file.id || "";
-        const mimeType =
-          file.mimeType || file.mime_type || file.type || file.file_type || "";
-        const fileSize = file.fileSize || file.file_size || file.size || 0;
-
-        // Fix file paths to ensure all files load correctly
-        // Handle different path formats that may be in the database
-
-        // Fix file paths
-        if (filePath) {
-          // Handle case where path has only project_upload/...
-          if (
-            filePath.includes("project_upload") &&
-            !filePath.includes("components/construction")
-          ) {
-            if (filePath.startsWith("../project_upload")) {
-              // Replace relative path with absolute path
-              filePath = filePath.replace(
-                "../project_upload",
-                "components/construction/project_upload"
+          // Проверяем все возможные имена полей
+          for (const projectField of possibleProjectFields) {
+            if (project[projectField] !== undefined) {
+              console.log(
+                `Setting form field ${formFieldName} = ${project[projectField]} from project field ${projectField}`
               );
-            } else if (filePath.startsWith("project_upload")) {
-              // Add components/construction/ prefix
-              filePath = "components/construction/" + filePath;
+              form.elements[formFieldName].value = project[projectField];
+              break;
             }
           }
-
-          // Add Inspections-Checklist-Portal if needed
-          if (
-            filePath.includes("components/construction") &&
-            !filePath.includes("Inspections-Checklist-Portal")
-          ) {
-            filePath = filePath.replace(
-              "components/construction",
-              "Inspections-Checklist-Portal/components/construction"
-            );
-          }
-
-          // Add Maintenance_P prefix if needed
-          if (
-            !filePath.startsWith("/Maintenance_P") &&
-            !filePath.startsWith("http")
-          ) {
-            filePath = "/Maintenance_P/" + filePath;
-          }
         }
+      });
 
-        // Fix thumbnail paths
-        if (miniPath) {
-          // Handle case where path has only project_upload/...
-          if (
-            miniPath.includes("project_upload") &&
-            !miniPath.includes("components/construction")
-          ) {
-            if (miniPath.startsWith("../project_upload")) {
-              // Replace relative path with absolute path
-              miniPath = miniPath.replace(
-                "../project_upload",
-                "components/construction/project_upload"
-              );
-            } else if (miniPath.startsWith("project_upload")) {
-              // Add components/construction/ prefix
-              miniPath = "components/construction/" + miniPath;
-            }
-          }
-
-          // Add Inspections-Checklist-Portal if needed
-          if (
-            miniPath.includes("components/construction") &&
-            !miniPath.includes("Inspections-Checklist-Portal")
-          ) {
-            miniPath = miniPath.replace(
-              "components/construction",
-              "Inspections-Checklist-Portal/components/construction"
-            );
-          }
-
-          // Add Maintenance_P prefix if needed
-          if (
-            !miniPath.startsWith("/Maintenance_P") &&
-            !miniPath.startsWith("http")
-          ) {
-            miniPath = "/Maintenance_P/" + miniPath;
-          }
-        }
-
-        // Определяем, является ли файл изображением
-        const isImage = mimeType && mimeType.startsWith("image/");
-
-        // Определяем класс иконки для не-изображений
-        let iconClass = "fas fa-file";
-        if (!isImage) {
-          if (mimeType.includes("pdf")) {
-            iconClass = "fas fa-file-pdf";
-          } else if (
-            mimeType.includes("word") ||
-            mimeType.includes("document")
-          ) {
-            iconClass = "fas fa-file-word";
-          } else if (
-            mimeType.includes("excel") ||
-            mimeType.includes("spreadsheet")
-          ) {
-            iconClass = "fas fa-file-excel";
-          } else if (
-            mimeType.includes("powerpoint") ||
-            mimeType.includes("presentation")
-          ) {
-            iconClass = "fas fa-file-powerpoint";
-          } else if (mimeType.includes("text")) {
-            iconClass = "fas fa-file-alt";
-          } else if (mimeType.includes("zip") || mimeType.includes("archive")) {
-            iconClass = "fas fa-file-archive";
-          }
-        }
-
-        // Строим HTML для превью файла
-        return `
-        <div class="file-preview-item" 
-             data-file-id="${fileId}" 
-             data-file-path="${filePath}"
-             data-file-name="${fileName}" 
-             data-mime-type="${mimeType}">
-          ${
-            isImage
-              ? `<img src="${miniPath || filePath}" alt="${fileName}" />`
-              : `<i class="${iconClass} file-type-icon"></i>`
-          }
-          <div class="file-info">
-            <span class="file-name" title="${fileName}">${fileName}</span>
-            ${
-              fileSize
-                ? `<span class="file-size">${this.formatFileSize(
-                    fileSize
-                  )}</span>`
-                : ""
-            }
-          </div>
-          <button class="file-action-btn view-file" title="View file">
-            <i class="fas fa-eye"></i>
-          </button>
-          <button class="file-action-btn remove-file" title="Remove file">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      `;
-      })
-      .join("");
-
-    return previewsHtml;
-  }
-
-  // Helper method to get the appropriate icon class based on file MIME type
-  getFileIconClass(mimeType) {
-    if (!mimeType) return "fas fa-file";
-
-    if (mimeType.startsWith("image/")) return "fas fa-file-image";
-    if (mimeType === "application/pdf") return "fas fa-file-pdf";
-    if (mimeType.includes("word") || mimeType.includes("document"))
-      return "fas fa-file-word";
-    if (mimeType.includes("excel") || mimeType.includes("spreadsheet"))
-      return "fas fa-file-excel";
-    if (mimeType.includes("powerpoint") || mimeType.includes("presentation"))
-      return "fas fa-file-powerpoint";
-    if (mimeType.includes("text/")) return "fas fa-file-alt";
-    if (mimeType.includes("zip") || mimeType.includes("compressed"))
-      return "fas fa-file-archive";
-
-    return "fas fa-file";
-  }
-
-  formatFileSize(bytes) {
-    if (!bytes) return "";
-
-    const units = ["B", "KB", "MB", "GB"];
-    let size = bytes;
-    let unitIndex = 0;
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex++;
-    }
-
-    return `${size.toFixed(1)} ${units[unitIndex]}`;
-  }
-
-  updateProgress(progressBar, progressText, current, total) {
-    const percentage = (current / total) * 100;
-    progressBar.style.width = `${percentage}%`;
-    progressText.textContent = `Uploading: ${Math.round(percentage)}%`;
-
-    if (current === total) {
-      setTimeout(() => {
-        progressBar.style.width = "0%";
-        progressText.textContent = "Uploading: 0%";
-      }, 1000);
-    }
-  }
-
-  onSectionChange(sectionId) {
-    // Если секция не указана, используем активную
-    if (!sectionId) {
-      const activeSection = this.container.querySelector(
-        ".construction-section.active"
+      // Обновляем список подрядчиков в зависимости от типа бизнеса
+      const businessType = project.businessType || project.business_type;
+      console.log(
+        `Updating contractor list for business type: ${businessType}`
       );
-      if (activeSection) {
-        sectionId = activeSection.id;
-      } else {
-        return;
-      }
-    }
-
-    // Вызываем специфические действия для каждой секции
-    if (sectionId === "contractors-section") {
-      this.renderContractors();
-    } else if (sectionId === "current-projects-section") {
-      this.renderProjects("current");
-    } else if (sectionId === "future-projects-section") {
-      this.renderProjects("future");
-    }
-
-    // Update statistics for the active section
-    if (sectionId === "current-projects-section") {
-      this.updateProjectStatistics("current");
-    } else if (sectionId === "future-projects-section") {
-      this.updateProjectStatistics("future");
-    }
-  }
-
-  async loadData() {
-    try {
-      // Here will be API calls to load data
-      // For now using mock data
-      await this.loadContractors();
-      this.updateBusinessTypeFilter(); // Обновляем список типов бизнеса после загрузки
-      await this.loadCurrentProjects();
-      await this.loadFutureProjects();
-      this.renderActiveSection();
-
-      // Update statistics for both sections after loading data
-      this.updateProjectStatistics("current");
-      this.updateProjectStatistics("future");
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-  }
-
-  switchTab(tab) {
-    this.container
-      .querySelectorAll(".construction-section")
-      .forEach((s) => s.classList.remove("active"));
-
-    // Update section title
-    const sectionTitle = this.container.querySelector("#section-title");
-    if (sectionTitle) {
-      sectionTitle.textContent =
-        tab === "contractors"
-          ? "Contractors"
-          : tab === "current-projects"
-          ? "Current Projects"
-          : "Future Projects";
-    }
-
-    // Show appropriate section
-    this.container.querySelector(`#${tab}-section`).classList.add("active");
-
-    // Update filters visibility
-    const contractorsFilters = this.container.querySelector(
-      "#contractors-filters"
-    );
-    const currentProjectsFilters = this.container.querySelector(
-      "#current-projects-filters"
-    );
-    const futureProjectsFilters = this.container.querySelector(
-      "#future-projects-filters"
-    );
-
-    if (contractorsFilters) {
-      contractorsFilters.style.display =
-        tab === "contractors" ? "flex" : "none";
-    }
-    if (currentProjectsFilters) {
-      currentProjectsFilters.style.display =
-        tab === "current-projects" ? "flex" : "none";
-    }
-    if (futureProjectsFilters) {
-      futureProjectsFilters.style.display =
-        tab === "future-projects" ? "flex" : "none";
-    }
-
-    // Update add buttons visibility
-    const addContractorBtn = this.container.querySelector("#add-contractor");
-    const addCurrentProjectBtn = this.container.querySelector(
-      "#add-current-project"
-    );
-    const addFutureProjectBtn = this.container.querySelector(
-      "#add-future-project"
-    );
-
-    if (addContractorBtn) {
-      addContractorBtn.style.display = tab === "contractors" ? "block" : "none";
-    }
-    if (addCurrentProjectBtn) {
-      addCurrentProjectBtn.style.display =
-        tab === "current-projects" ? "block" : "none";
-    }
-    if (addFutureProjectBtn) {
-      addFutureProjectBtn.style.display =
-        tab === "future-projects" ? "block" : "none";
-    }
-
-    this.activeTab = tab;
-    this.renderActiveSection();
-
-    // Update project statistics when switching to project tabs
-    if (tab === "current-projects") {
-      this.updateProjectStatistics("current");
-    } else if (tab === "future-projects") {
-      this.updateProjectStatistics("future");
-    }
-  }
-
-  renderActiveSection() {
-    switch (this.activeTab) {
-      case "contractors":
-        this.renderContractors();
-        break;
-      case "current-projects":
-        this.renderProjects("current");
-        break;
-      case "future-projects":
-        this.renderProjects("future");
-        break;
-    }
-  }
-
-  // Методы для работы с подрядчиками
-  async loadContractors() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      if (businessType) {
+        this.updateContractorSelectByBusinessType(
+          businessType,
+          form.elements.contractorId
+        );
       }
 
-      const result = await response.json();
-      if (result.success) {
-        // Convert API format to client format
-        this.contractors = result.data.map((contractor) => {
-          return {
-            id: parseInt(contractor.id),
-            companyName: contractor.company_name,
-            businessType: contractor.business_type,
-            location: contractor.location || "",
-            email: contractor.email || "",
-            phone: contractor.phone || "",
-            rating: parseInt(contractor.rating) || 0,
-            contactPerson: contractor.contact_person
-              ? {
-                  id: parseInt(contractor.contact_person.id),
-                  name: contractor.contact_person.name,
-                  position: contractor.contact_person.position || "",
-                  phone: contractor.contact_person.phone || "",
-                  email: contractor.contact_person.email || "",
-                }
-              : {
-                  name: "None",
-                  position: "",
-                  phone: "",
-                  email: "",
-                },
-            employees: contractor.employees
-              ? contractor.employees.map((emp) => ({
-                  id: parseInt(emp.id),
-                  fullName: emp.name,
-                  position: emp.position || "",
-                  phone: emp.phone || "",
-                  email: emp.email || "",
-                }))
-              : [],
-          };
-        });
-      } else {
-        console.error("Failed to load contractors:", result.message);
-        // Fallback to empty array
-        this.contractors = [];
-      }
-    } catch (error) {
-      console.error("Error loading contractors:", error);
-      // Fallback to empty array on error
-      this.contractors = [];
-    }
-  }
+      // После обновления списка подрядчиков, выбираем нужного подрядчика
+      const contractorId = project.contractorId || project.contractor_id;
+      if (contractorId && form.elements.contractorId) {
+        setTimeout(() => {
+          console.log(`Setting contractor to ID: ${contractorId}`);
+          form.elements.contractorId.value = contractorId;
 
-  renderContractors() {
-    const container = this.container.querySelector("#contractors-list");
-    if (!container) return;
+          // После выбора подрядчика обновляем список контактных лиц
+          this.updateContactPersonSelect(contractorId);
 
-    if (this.contractors.length === 0) {
-      container.innerHTML = `
-            <div class="no-contractors">
-                <i class="fas fa-building"></i>
-                <h3>No Contractors Yet</h3>
-                <p>Click the "Add Contractor" button to add your first contractor</p>
-            </div>
-        `;
-      return;
-    }
-
-    container.innerHTML = this.contractors
-      .map(
-        (contractor) => `
-      <div class="contractor-card" data-id="${contractor.id}">
-        <div class="contractor-header">
-          <h3>${contractor.companyName}</h3>
-          <div class="contractor-rating">
-            ${this.generateRatingStars(contractor.rating)}
-          </div>
-        </div>
-        <div class="contractor-info">
-          <div class="info-item">
-            <i class="fas fa-briefcase"></i>
-            <span>${contractor.businessType}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-location-dot"></i>
-            <span>${contractor.location}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.email}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.phone}</span>
-          </div>
-        </div>
-        <div class="contact-person-info">
-          <h4>Contact Person</h4>
-          <div class="info-item">
-            <i class="fas fa-user"></i>
-            <span>${contractor.contactPerson.name}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-id-badge"></i>
-            <span>${contractor.contactPerson.position}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.contactPerson.phone}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.contactPerson.email}</span>
-          </div>
-        </div>
-        <div class="contractor-employees">
-          <h4>Employees (${contractor.employees.length})</h4>
-          <div class="employees-list">
-            ${this.renderEmployeesList(contractor.employees)}
-          </div>
-          <button class="btn-secondary add-employee" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-user-plus"></i> Add Employee
-          </button>
-        </div>
-        <div class="contractor-actions">
-          <button class="btn-action edit" data-contractor-id="${contractor.id}">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-action delete" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    `
-      )
-      .join("");
-
-    // Добавляем обработчики событий после рендеринга
-    this.bindEmployeeEvents();
-
-    // Add event handlers for contractor edit and delete buttons
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          const contractor = this.contractors.find(
-            (c) => c.id === contractorId
-          );
-          if (contractor) {
-            this.showContractorModal(contractor);
+          // Устанавливаем контактное лицо
+          const contactPersonId =
+            project.contactPersonId || project.contact_person_id;
+          if (contactPersonId && form.elements.contactPersonId) {
+            setTimeout(() => {
+              console.log(`Setting contact person to ID: ${contactPersonId}`);
+              form.elements.contactPersonId.value = contactPersonId;
+            }, 300);
           }
-        });
-      });
+        }, 300);
+      }
 
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          this.deleteContractor(contractorId);
-        });
-      });
-  }
-
-  renderEmployeesList(employees) {
-    return employees
-      .map(
-        (employee) => `
-        <div class="employee-item">
-            <div class="employee-info">
-                <strong>${employee.fullName}</strong>
-                <span>${employee.position}</span>
-                <span>${employee.phone}</span>
-            </div>
-            <div class="employee-actions">
-                <button class="btn-action edit" data-employee-id="${employee.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-action delete" data-employee-id="${employee.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `
-      )
-      .join("");
-  }
-
-  bindEmployeeEvents() {
-    // Обработчики для кнопок редактирования сотрудников
-    this.container
-      .querySelectorAll(".employee-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const employeeId = parseInt(button.dataset.employeeId);
-          const contractorId = parseInt(
-            button.closest(".contractor-card").dataset.id
-          );
-          this.editEmployee(contractorId, employeeId);
-        });
-      });
-
-    // Обработчики для кнопок удаления сотрудников
-    this.container
-      .querySelectorAll(".employee-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const employeeId = parseInt(button.dataset.employeeId);
-          const contractorId = parseInt(
-            button.closest(".contractor-card").dataset.id
-          );
-          this.deleteEmployee(contractorId, employeeId);
-        });
-      });
-
-    // Обработчики для кнопок добавления сотрудников
-    this.container.querySelectorAll(".add-employee").forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const contractorId = parseInt(button.dataset.contractorId);
-        this.showEmployeeModal(contractorId);
-      });
-    });
-  }
-
-  showEmployeeModal(contractorId, employee = null) {
-    const modal = this.container.querySelector("#employee-modal");
-    const form = modal.querySelector("#employee-form");
-    const title = modal.querySelector("#employee-modal-title");
-
-    title.textContent = employee ? "Edit Employee" : "Add Employee";
-
-    form.elements.contractorId.value = contractorId;
-
-    if (employee) {
-      form.elements.fullName.value = employee.fullName;
-      form.elements.position.value = employee.position;
-      form.elements.phone.value = employee.phone;
-      form.dataset.employeeId = employee.id;
+      // Отображаем существующие файлы
+      this.displayExistingFiles(project, type);
     } else {
-      form.reset();
-      form.elements.contractorId.value = contractorId;
-      delete form.dataset.employeeId;
+      // Для нового проекта
+      form.dataset.projectId = "";
+
+      // Обновляем список контактных лиц на пустой
+      const contactPersonSelect = form.elements.contactPersonId;
+      contactPersonSelect.innerHTML =
+        '<option value="">Select Contact Person</option>';
+      contactPersonSelect.disabled = true;
+
+      // Устанавливаем текущую дату для поля lastUpdate
+      if (type === "current") {
+        form.elements.lastUpdate.value = this.formatDateForDisplay(new Date());
+      }
     }
+
+    // Инициализируем календари для формы
+    this.initFormDatepickers(form);
+
+    // Добавляем обработчики для кнопок удаления файлов
+    setTimeout(() => {
+      const allRemoveButtons = modal.querySelectorAll(".remove-file");
+      allRemoveButtons.forEach((button) => {
+        // Клонируем кнопку, чтобы удалить все обработчики событий
+        const clone = button.cloneNode(true);
+        button.parentNode.replaceChild(clone, button);
+
+        // Добавляем новый обработчик с правильной логикой
+        clone.addEventListener("click", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+
+          // Удаляем превью файла
+          const fileItem = clone.closest(".file-preview-item");
+          if (fileItem) {
+            if (fileItem.dataset.imgUrl) {
+              URL.revokeObjectURL(fileItem.dataset.imgUrl);
+            }
+            fileItem.remove();
+          }
+        });
+      });
+    }, 300);
 
     modal.classList.add("active");
   }
 
-  editEmployee(contractorId, employeeId) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const employee = contractor.employees.find((e) => e.id === employeeId);
-      if (employee) {
-        this.showEmployeeModal(contractorId, employee);
-      }
-    }
-  }
-
-  deleteEmployee(contractorId, employeeId) {
-    if (confirm("Are you sure you want to delete this employee?")) {
-      const contractor = this.contractors.find((c) => c.id === contractorId);
-      if (contractor) {
-        contractor.employees = contractor.employees.filter(
-          (e) => e.id !== employeeId
-        );
-        this.renderContractors();
-      }
-    }
-  }
-
-  handleEmployeeSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const contractorId = parseInt(form.elements.contractorId.value);
-    const employeeData = {
-      fullName: form.elements.fullName.value,
-      position: form.elements.position.value,
-      phone: form.elements.phone.value,
-    };
-
-    if (form.dataset.employeeId) {
-      // Редактирование существующего сотрудника
-      const employeeId = parseInt(form.dataset.employeeId);
-      this.updateEmployee(contractorId, employeeId, employeeData);
-    } else {
-      // Добавление нового сотрудника
-      this.addEmployeeToContractor(contractorId, employeeData);
-    }
-
-    this.closeModals();
-  }
-
-  addEmployeeToContractor(contractorId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      // First add to local data structure for immediate feedback
-      data.id = Date.now(); // Temporary ID
-      contractor.employees.push(data);
-
-      // Prepare data for API
-      const existingEmployees = contractor.employees.filter(
-        (e) => e.id !== data.id
-      );
-
-      const apiData = {
-        company_name: contractor.companyName,
-        business_type: contractor.businessType,
-        location: contractor.location,
-        email: contractor.email,
-        phone: contractor.phone,
-        rating: contractor.rating,
-        notes: contractor.notes || "",
-        employees: [
-          ...existingEmployees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: 0,
-          })),
-          // Add new employee
-          {
-            name: data.fullName,
-            position: data.position || "",
-            phone: data.phone || "",
-            email: data.email || "",
-            is_primary_contact: 0,
-          },
-        ],
-      };
-
-      // Используем правильный URL API
-      fetch(
-        `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(apiData),
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((responseData) => {
-          if (responseData.success) {
-            // Обновляем данные о сотрудниках из ответа API
-            if (responseData.data && responseData.data.employees) {
-              // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-              const updatedContractor = this.contractors.find(
-                (c) => c.id === contractorId
-              );
-              if (updatedContractor) {
-                // Преобразуем сотрудников из формата API в формат UI
-                updatedContractor.employees = responseData.data.employees.map(
-                  (emp) => ({
-                    id: parseInt(emp.id),
-                    fullName: emp.name,
-                    position: emp.position || "",
-                    phone: emp.phone || "",
-                    email: emp.email || "",
-                  })
-                );
-              }
-            }
-
-            // Перерисовываем UI для отображения обновленных данных
-            this.renderContractors();
-          } else {
-            console.error("Error adding employee:", responseData.message);
-            alert("Failed to add employee: " + responseData.message);
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          }
-        })
-        .catch((error) => {
-          console.error("Error adding employee:", error);
-          alert("Failed to add employee. Please try again.");
-          // Обновляем данные с сервера в случае ошибки
-          this.loadContractors().then(() => this.renderContractors());
-        });
-
-      // Render immediately for responsive UI
-      this.renderContractors();
-    }
-  }
-
-  updateEmployee(contractorId, employeeId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const index = contractor.employees.findIndex((e) => e.id === employeeId);
-      if (index !== -1) {
-        // Update local data first
-        contractor.employees[index] = {
-          ...contractor.employees[index],
-          ...data,
-        };
-
-        // Prepare data for API
-        const apiData = {
-          company_name: contractor.companyName,
-          business_type: contractor.businessType,
-          location: contractor.location,
-          email: contractor.email,
-          phone: contractor.phone,
-          rating: contractor.rating,
-          notes: contractor.notes || "",
-          employees: contractor.employees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: e.isPrimaryContact ? 1 : 0,
-          })),
-        };
-
-        // Используем правильный URL API
-        fetch(
-          `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(apiData),
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((responseData) => {
-            if (responseData.success) {
-              // Обновляем данные о сотрудниках из ответа API
-              if (responseData.data && responseData.data.employees) {
-                // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-                const updatedContractor = this.contractors.find(
-                  (c) => c.id === contractorId
-                );
-                if (updatedContractor) {
-                  // Преобразуем сотрудников из формата API в формат UI
-                  updatedContractor.employees = responseData.data.employees.map(
-                    (emp) => ({
-                      id: parseInt(emp.id),
-                      fullName: emp.name,
-                      position: emp.position || "",
-                      phone: emp.phone || "",
-                      email: emp.email || "",
-                    })
-                  );
-                }
-              }
-
-              // Перерисовываем UI для отображения обновленных данных
-              this.renderContractors();
-            } else {
-              console.error("Error updating employee:", responseData.message);
-              alert("Failed to update employee: " + responseData.message);
-              // Обновляем данные с сервера в случае ошибки
-              this.loadContractors().then(() => this.renderContractors());
-            }
-          })
-          .catch((error) => {
-            console.error("Error updating employee:", error);
-            alert("Failed to update employee. Please try again.");
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          });
-
-        // Render immediately for UI feedback
-        this.renderContractors();
-      }
-    }
-  }
-
-  // Методы для работы с проектами
-  async loadCurrentProjects() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=current"
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.currentProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          progress: project.progress,
-          actualCost: project.actual_cost,
-          lastUpdate: project.last_update,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading current projects:", data.message);
-        this.currentProjects = [];
-      }
-    } catch (error) {
-      console.error("Error loading current projects:", error);
-      this.currentProjects = [];
-    }
-  }
-
-  async loadFutureProjects() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/projects.php?type=future"
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Преобразуем свойства для совместимости с существующим кодом
-        this.futureProjects = data.data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          location: project.location,
-          startDate: project.start_date,
-          endDate: project.end_date,
-          businessType: project.business_type,
-          contractorId: project.contractor_id,
-          contractorName: project.contractor_name,
-          contactPersonId: project.contact_person_id,
-          contactPersonName: project.contact_person_name,
-          status: project.status,
-          budget: project.budget,
-          priority: project.priority,
-          description: project.description,
-          objectives: project.objectives,
-          risks: project.risks,
-          files: project.files || [],
-        }));
-      } else {
-        console.error("Error loading future projects:", data.message);
-        this.futureProjects = [];
-      }
-    } catch (error) {
-      console.error("Error loading future projects:", error);
-      this.futureProjects = [];
-    }
-  }
-
-  renderProjects(type, projectsToRender = null) {
-    const projects =
-      projectsToRender ||
-      (type === "current" ? this.currentProjects : this.futureProjects);
-    const container = this.container.querySelector(`#${type}-projects-list`);
-
-    if (!container) {
-      console.error(`Container #${type}-projects-list not found`);
-      return;
-    }
-
-    console.log(`Rendering ${type} projects:`, projects);
-    container.innerHTML = "";
-
-    if (!projects || projects.length === 0) {
-      container.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-search"></i>
-          <p>No projects found</p>
-        </div>
-      `;
-
-      // Update statistics even if no projects are found
-      this.updateProjectStatistics(type);
-      return;
-    }
-
-    projects.forEach((project) => {
-      // Организуем файлы проекта по категориям
-      const organizedProject = this.organizeProjectFiles(project);
-
-      const contractor = this.contractors.find(
-        (c) => c.id === organizedProject.contractorId
-      );
-      const template = this.container.querySelector(
-        `#${type}-project-card-template`
-      );
-
-      if (!template) {
-        console.error(`Template #${type}-project-card-template not found`);
-        return;
-      }
-
-      const card = template.content.cloneNode(true);
-
-      // Set project ID
-      const projectCard = card.querySelector(".project-card");
-      projectCard.dataset.id = organizedProject.id;
-
-      // Set project name and status
-      card.querySelector(".project-name").textContent = organizedProject.name;
-      const statusSelect = card.querySelector(".status-select");
-      statusSelect.value = organizedProject.status;
-
-      // Добавляем data-атрибут для привязки к проекту
-      statusSelect.setAttribute("data-project-id", organizedProject.id);
-
-      // Обновляем классы статуса
-      this.updateStatusClasses(statusSelect, organizedProject.status);
-
-      // Set project details
-      card.querySelector(".location").textContent = organizedProject.location;
-
-      // Форматируем даты для отображения
-      const startDateFormatted = this.formatDateForDisplay(
-        organizedProject.startDate
-      );
-      const endDateFormatted = this.formatDateForDisplay(
-        organizedProject.endDate
-      );
-      card.querySelector(
-        ".dates"
-      ).textContent = `${startDateFormatted} - ${endDateFormatted}`;
-
-      if (type === "current") {
-        this.renderCurrentProjectDetails(card, organizedProject, contractor);
-      } else {
-        this.renderFutureProjectDetails(card, organizedProject, contractor);
-      }
-
-      // Добавляем карточку в контейнер
-      container.appendChild(card);
-    });
-
-    // After rendering all projects, update the statistics
-    this.updateProjectStatistics(type);
-
-    // Bind events to project cards
-    this.bindProjectCardEvents(type);
-
-    // Привязываем события к предпросмотрам файлов
-    this.bindFilePreviewEvents();
-
-    // Добавим дополнительную логику для обработки всех изображений на странице
-    this.enhanceAllImagePreviews(type);
-  }
-
-  // Метод для улучшения всех превью изображений в указанной секции
-  enhanceAllImagePreviews(type) {
-    // Получаем контейнер для секции
-    const sectionId =
-      type === "current"
-        ? "current-projects-section"
-        : "future-projects-section";
-    const section = this.container.querySelector(`#${sectionId}`);
-    if (!section) return;
-
-    // Находим все изображения в секции
-    const images = section.querySelectorAll(".file-preview-container img");
-    images.forEach((img) => {
-      // Проверяем, что у изображения есть src
-      const src = img.getAttribute("src");
-      if (src) {
-        // Делаем курсор указателем
-        img.style.cursor = "pointer";
-
-        // Удаляем старые обработчики, чтобы избежать дублирования
-        const newImg = img.cloneNode(true);
-        img.parentNode.replaceChild(newImg, img);
-
-        // Добавляем обработчик клика
-        newImg.addEventListener("click", () => {
-          console.log("Image clicked:", src);
-          this.showImageModal(src);
-        });
-      }
-    });
-
-    console.log(`Enhanced ${images.length} images in ${type} projects section`);
-  }
-
-  updateStatusClasses(statusSelect, status) {
-    // Удаляем все существующие классы статуса
-    statusSelect.classList.remove(
-      "planned",
-      "in-progress",
-      "completed",
-      "on-hold",
-      "move-to-current",
-      "delayed",
-      "design-phase", // Добавляем новые возможные статусы
-      "planning"
-    );
-
-    // Преобразуем статус для использования в качестве CSS класса (заменяем пробелы на дефисы)
-    const statusClass = status.replace(/\s+/g, "-").toLowerCase();
-
-    // Добавляем новый класс статуса
-    statusSelect.classList.add(statusClass);
-
-    // Сбрасываем inline стили, которые могли быть установлены ранее
-    statusSelect.style.backgroundColor = "";
-    statusSelect.style.color = "";
-    statusSelect.style.borderColor = "";
-
-    // Определяем цвета в зависимости от статуса
-    let colors = {
-      planned: {
-        bg: "#e3f2fd",
-        color: "#1976d2",
-        border: "#90caf9",
-      },
-      "in-progress": {
-        bg: "#fff3e0",
-        color: "#f57c00",
-        border: "#ffcc80",
-      },
-      completed: {
-        bg: "#e8f5e9",
-        color: "#388e3c",
-        border: "#a5d6a7",
-      },
-      "on-hold": {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "move-to-current": {
-        bg: "#f3e5f5",
-        color: "#7b1fa2",
-        border: "#ce93d8",
-      },
-      delayed: {
-        bg: "#ffebee",
-        color: "#d32f2f",
-        border: "#ef9a9a",
-      },
-      "design-phase": {
-        // Добавляем новые статусы с цветами
-        bg: "#e0f7fa",
-        color: "#0097a7",
-        border: "#80deea",
-      },
-      planning: {
-        bg: "#f3e5f5",
-        color: "#8e24aa",
-        border: "#ce93d8",
-      },
-    };
-
-    // Пробуем найти цвета для статуса напрямую или для его CSS версии
-    let colorConfig = colors[status] || colors[statusClass];
-
-    // Применяем стили, если статус найден в нашем объекте
-    if (colorConfig) {
-      statusSelect.style.backgroundColor = colorConfig.bg;
-      statusSelect.style.color = colorConfig.color;
-      statusSelect.style.borderColor = colorConfig.border;
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    } else {
-      // Если статус неизвестен, применяем стандартные стили
-      statusSelect.style.backgroundColor = "#f5f5f5";
-      statusSelect.style.color = "#616161";
-      statusSelect.style.borderColor = "#bdbdbd";
-      statusSelect.style.borderWidth = "1px";
-      statusSelect.style.borderStyle = "solid";
-    }
-
-    // Устанавливаем data-атрибут для дополнительной поддержки селекторов
-    statusSelect.setAttribute("data-status", status);
-  }
-
-  // Helper method to update card size after toggle
-  updateCardSize(card) {
-    // Ensure card is a DOM element
-    if (!card || typeof card.closest !== "function") {
-      // If card is not a DOM element, try to find the project card differently
-      // This handles cases where 'card' might be the project card body or another element
-      const projectCard = card.parentElement
-        ? card.parentElement.closest(".project-card")
-        : document.querySelector(".project-card");
-
-      if (projectCard) {
-        // Set height to auto to let it resize naturally
-        projectCard.style.height = "auto";
-        const cardBody = projectCard.querySelector(".card-body");
-        if (cardBody) {
-          cardBody.style.height = "auto";
-        }
-      }
-      return;
-    }
-
-    // Regular handling if card is a DOM element with closest method
-    const projectCard = card.closest(".project-card");
-    if (projectCard) {
-      // Ensure card body expands/contracts with content
-      const cardBody = projectCard.querySelector(".card-body");
-      if (cardBody) {
-        // Use setTimeout to ensure DOM has updated
-        setTimeout(() => {
-          // Reset any fixed heights
-          cardBody.style.height = "";
-          projectCard.style.height = "";
-
-          // Calculate and set new height
-          const height = cardBody.scrollHeight;
-          cardBody.style.height = height + "px";
-
-          // Allow height to adjust naturally after initial animation
-          setTimeout(() => {
-            cardBody.style.height = "auto";
-          }, 300);
-        }, 10);
-      }
-    }
-  }
-
-  renderCurrentProjectDetails(card, project, contractor) {
-    // Set current project specific details
-    card.querySelector(".progress").textContent = project.progress
-      ? `${project.progress}%`
-      : "Not started";
-    card.querySelector(".actual-cost").textContent = project.actualCost
-      ? `$${project.actualCost.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
-
-    // Форматируем дату последнего обновления
-    const lastUpdateFormatted = project.lastUpdate
-      ? this.formatDateForDisplay(project.lastUpdate)
-      : "Not updated";
-    card.querySelector(".last-update").textContent = lastUpdateFormatted;
-
-    // Определяем, является ли проект перенесенным из Future в Current
-    const isMigratedProject =
-      project.description ||
-      project.objectives ||
-      project.risks ||
-      project.priority ||
-      (project.specifications && project.specifications.length > 0) ||
-      (project.budgetDocs && project.budgetDocs.length > 0) ||
-      (project.documents &&
-        project.documents.length > 0 &&
-        project.migratedFromFuture);
-
-    const detailsSection = card.querySelector(".project-details");
-
-    // Make Project Documents header collapsible
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
-    );
-    const docHeader = documentsSection.querySelector("h4");
-
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
-
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle - pass the project card element
-      this.updateCardSize(docHeader.closest(".project-card"));
-    });
-
-    // Reorganize documents grid - group migrated files at the top
-    if (isMigratedProject) {
-      // Clear existing content
-      documentsGrid.innerHTML = "";
-
-      // Add migrated files without collapsible headers
-      const migratedFilesGroup = document.createElement("div");
-      migratedFilesGroup.className = "migrated-files-group";
-      documentsGrid.appendChild(migratedFilesGroup);
-
-      // Add simple label for migrated files
-      const migratedLabel = document.createElement("div");
-      migratedLabel.className = "section-label";
-      migratedLabel.innerHTML = `<span class="from-future-flag">From Future Project</span>`;
-      migratedFilesGroup.appendChild(migratedLabel);
-
-      // Add Planning Documents (formerly called Documents in Future Projects) if they exist
-      if (
-        project.documents &&
-        project.documents.length > 0 &&
-        project.migratedFromFuture
-      ) {
-        const planningDocsGroup = document.createElement("div");
-        planningDocsGroup.className = "documents-group migrated-files";
-        planningDocsGroup.innerHTML = `
-          <h5>Planning Documents</h5>
-          <div class="planning-docs-preview file-preview-container">
-            ${this.renderFilePreviews(project.documents, "document")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(planningDocsGroup);
-      }
-
-      // Add specifications if they exist
-      if (project.specifications && project.specifications.length > 0) {
-        const specificationsGroup = document.createElement("div");
-        specificationsGroup.className = "documents-group migrated-files";
-        specificationsGroup.innerHTML = `
-          <h5>Specifications</h5>
-          <div class="specifications-preview file-preview-container">
-            ${this.renderFilePreviews(project.specifications, "specification")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(specificationsGroup);
-      }
-
-      // Add budget documents if they exist
-      if (project.budgetDocs && project.budgetDocs.length > 0) {
-        const budgetDocsGroup = document.createElement("div");
-        budgetDocsGroup.className = "documents-group migrated-files";
-        budgetDocsGroup.innerHTML = `
-          <h5>Budget Documents</h5>
-          <div class="budget-docs-preview file-preview-container">
-            ${this.renderFilePreviews(project.budgetDocs, "budgetDoc")}
-          </div>
-        `;
-        migratedFilesGroup.appendChild(budgetDocsGroup);
-      }
-
-      // Add simple label for current files
-      const currentLabel = document.createElement("div");
-      currentLabel.className = "section-label";
-      currentLabel.innerHTML = `<span class="current-files-title">Current Project Files</span>`;
-      documentsGrid.appendChild(currentLabel);
-
-      // Create current files group
-      const currentFilesGroup = document.createElement("div");
-      currentFilesGroup.className = "current-files-group";
-      documentsGrid.appendChild(currentFilesGroup);
-
-      // Add current files (Photos, Reports)
-      // Photos
-      if (project.photos && project.photos.length > 0) {
-        const photosGroup = document.createElement("div");
-        photosGroup.className = "documents-group";
-        photosGroup.innerHTML = `
-          <h5>Photos</h5>
-          <div class="photos-preview file-preview-container">
-            ${this.renderFilePreviews(project.photos, "photo")}
-          </div>
-        `;
-        currentFilesGroup.appendChild(photosGroup);
-      } else {
-        const photosGroup = document.createElement("div");
-        photosGroup.className = "documents-group";
-        photosGroup.innerHTML = `
-          <h5>Photos</h5>
-          <div class="photos-preview file-preview-container"></div>
-        `;
-        currentFilesGroup.appendChild(photosGroup);
-      }
-
-      // Reports
-      if (project.reports && project.reports.length > 0) {
-        const reportsGroup = document.createElement("div");
-        reportsGroup.className = "documents-group";
-        reportsGroup.innerHTML = `
-          <h5>Reports</h5>
-          <div class="reports-preview file-preview-container">
-            ${this.renderFilePreviews(project.reports, "report")}
-          </div>
-        `;
-        currentFilesGroup.appendChild(reportsGroup);
-      } else {
-        const reportsGroup = document.createElement("div");
-        reportsGroup.className = "documents-group";
-        reportsGroup.innerHTML = `
-          <h5>Reports</h5>
-          <div class="reports-preview file-preview-container"></div>
-        `;
-        currentFilesGroup.appendChild(reportsGroup);
-      }
-    } else {
-      // Just set file previews without reorganization
-      if (project.photos && project.photos.length > 0) {
-        card.querySelector(".photos-preview").innerHTML =
-          this.renderFilePreviews(project.photos, "photo");
-      }
-      if (project.documents && project.documents.length > 0) {
-        card.querySelector(".documents-preview").innerHTML =
-          this.renderFilePreviews(project.documents, "document");
-      }
-      if (project.reports && project.reports.length > 0) {
-        card.querySelector(".reports-preview").innerHTML =
-          this.renderFilePreviews(project.reports, "report");
-      }
-    }
-  }
-
-  renderFutureProjectDetails(card, project, contractor) {
-    // Future project specific details
-    card.querySelector(".budget").textContent = project.budget
-      ? `$${project.budget.toLocaleString()}`
-      : "Not specified";
-    card.querySelector(".priority").textContent = project.priority
-      ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1)
-      : "Not specified";
-    card.querySelector(".preferred-contractor").textContent = contractor
-      ? contractor.companyName
-      : "Not assigned";
-    card.querySelector(".project-manager").textContent =
-      contractor && contractor.contactPerson
-        ? `${contractor.contactPerson.name} (${contractor.contactPerson.position})`
-        : "Not assigned";
-
-    // Set planning details
-    card.querySelector(".description").textContent =
-      project.description || "No description available";
-    card.querySelector(".objectives").textContent =
-      project.objectives || "No objectives defined";
-    card.querySelector(".risks").textContent =
-      project.risks || "No risks identified";
-
-    // Make Project Documents header collapsible
-    const detailsSection = card.querySelector(".project-details");
-    const documentsSection = detailsSection.querySelector(
-      ".details-section:last-child"
-    );
-    const docHeader = documentsSection.querySelector("h4");
-
-    // Make header collapsible
-    docHeader.classList.add("collapsible-header");
-    const documentsGrid = documentsSection.querySelector(".documents-grid");
-    documentsGrid.classList.add("collapsible-content");
-
-    // Add click event to toggle
-    docHeader.addEventListener("click", (e) => {
-      e.preventDefault();
-      docHeader.classList.toggle("collapsed");
-      documentsGrid.classList.toggle("collapsed");
-
-      // Update card size after toggle
-      this.updateCardSize(card);
-    });
-
-    // Set file previews
-    if (project.documents && project.documents.length > 0) {
-      card.querySelector(".documents-preview").innerHTML =
-        this.renderFilePreviews(project.documents, "document");
-    }
-    if (project.specifications && project.specifications.length > 0) {
-      card.querySelector(".specifications-preview").innerHTML =
-        this.renderFilePreviews(project.specifications, "specification");
-    }
-  }
-
-  getFileIcon(fileType) {
-    if (fileType.startsWith("image/")) return "fas fa-image";
-    if (fileType.includes("pdf")) return "fas fa-file-pdf";
-    if (fileType.includes("word")) return "fas fa-file-word";
-    if (fileType.includes("excel") || fileType.includes("spreadsheet"))
-      return "fas fa-file-excel";
-    return "fas fa-file";
-  }
-
-  addFilePreview(file, container, type) {
-    // Проверяем, существует ли файл
-    if (!file) return;
-
-    console.log("Adding file preview:", file); // Для отладки
-
-    // Получаем имя файла, используя свойства originalName или name
-    const fileName =
-      file.originalName && file.originalName.trim() !== ""
-        ? file.originalName
-        : file.name && file.name.trim() !== ""
-        ? file.name
-        : `${type.charAt(0).toUpperCase() + type.slice(1)} File`;
-
-    // Создаем элемент для превью файла
-    const previewItem = document.createElement("div");
-    previewItem.className = "file-preview-item";
-    previewItem.dataset.fileType = type;
-    previewItem.dataset.fileName = fileName;
-
-    // Всегда устанавливаем тип MIME для фотографий
-    if (type === "photo") {
-      previewItem.dataset.mimeType = file.type || "image/jpeg";
-    } else {
-      previewItem.dataset.mimeType = file.type || "application/octet-stream";
-    }
-
-    // Проверяем, является ли файл изображением - для фото это всегда true
-    const isImage =
-      type === "photo" ||
-      file.type?.startsWith("image/") ||
-      (fileName && fileName.match(/\.(jpg|jpeg|png|gif|webp|bmp|tiff|tif)$/i));
-
-    console.log("Is image:", isImage, "Type:", type, "File type:", file.type); // Для отладки
-
-    // Если это изображение, создаем превью
-    if (isImage) {
-      const img = document.createElement("img");
-      try {
-        // Используем существующий URL или создаем новый
-        if (file.src) {
-          console.log("Using existing src:", file.src); // Для отладки
-          img.src = file.src;
-        } else if (file instanceof Blob || file instanceof File) {
-          console.log("Creating new blob URL"); // Для отладки
-          const imgUrl = URL.createObjectURL(file);
-          img.src = imgUrl;
-          previewItem.dataset.imgUrl = imgUrl; // Сохраняем URL для последующего освобождения
-        } else if (file.file instanceof Blob || file.file instanceof File) {
-          // Иногда файл может быть обернут в объект с полем file
-          console.log("Creating new blob URL from file.file"); // Для отладки
-          const imgUrl = URL.createObjectURL(file.file);
-          img.src = imgUrl;
-          previewItem.dataset.imgUrl = imgUrl;
-        } else {
-          // Если у нас нет прямого доступа к блобу, попробуем использовать base64 или путь к файлу
-          console.log("Trying to use file data or path"); // Для отладки
-          if (file.data) {
-            // Если есть данные в base64
-            img.src = file.data;
-          } else if (file.path) {
-            // Если есть путь к файлу
-            img.src = file.path;
-          } else if (file.miniUrl) {
-            // Если есть путь к миниатюре
-            img.src = file.miniUrl;
-          } else if (file.url) {
-            // Если есть путь к полноразмерному файлу
-            img.src = file.url;
-          } else if (fileName) {
-            // Последняя попытка - формируем путь по имени файла
-            img.src = `components/construction/project_upload/project_mini/mini_${fileName}`;
-          } else {
-            // Последняя попытка - если файл - это строка с URL или данными base64
-            img.src = typeof file === "string" ? file : "";
-          }
-        }
-
-        // Улучшенная обработка ошибок загрузки изображения
-        img.onerror = () => {
-          console.error("Error loading image:", img.src);
-          img.remove();
-          // Если не удалось загрузить изображение, используем иконку
-          const iconDiv = document.createElement("div");
-          iconDiv.className = "file-type-icon";
-          iconDiv.innerHTML = `<i class="fas fa-image"></i>`;
-          previewItem.appendChild(iconDiv);
-        };
-
-        // Убедимся, что изображение добавится в DOM даже если оно закэшировано и onload не сработает
-        if (img.complete) {
-          previewItem.appendChild(img);
-        } else {
-          img.onload = () => {
-            // Изображение успешно загрузилось
-            console.log("Image loaded successfully:", img.src);
-          };
-          previewItem.appendChild(img);
-        }
-      } catch (error) {
-        console.error("Ошибка создания превью изображения:", error);
-        // Если не удалось создать превью, используем иконку
-        const iconDiv = document.createElement("div");
-        iconDiv.className = "file-type-icon";
-        iconDiv.innerHTML = `<i class="fas fa-image"></i>`;
-        previewItem.appendChild(iconDiv);
-      }
-    } else {
-      // Для не-изображений показываем иконку типа файла
-      const iconDiv = document.createElement("div");
-      iconDiv.className = "file-type-icon";
-      const fileIcon = this.getFileIcon(
-        file.type || "application/octet-stream"
-      );
-      iconDiv.innerHTML = `<i class="${fileIcon}"></i>`;
-      previewItem.appendChild(iconDiv);
-    }
-
-    // Добавляем имя файла
-    const nameElement = document.createElement("div");
-    nameElement.className = "file-name";
-    nameElement.textContent = fileName;
-    previewItem.appendChild(nameElement);
-
-    // Добавляем скрытое поле для хранения оригинального имени, если оно есть
-    if (file.originalName && file.originalName !== fileName) {
-      previewItem.dataset.originalFileName = file.originalName;
-    }
-
-    // Добавляем кнопку удаления
-    const removeBtn = document.createElement("button");
-    removeBtn.className = "remove-file";
-    removeBtn.innerHTML = "×";
-    removeBtn.title = "Remove file";
-    previewItem.appendChild(removeBtn);
-
-    // Добавляем превью в контейнер
-    container.appendChild(previewItem);
-
-    // Привязываем обработчики к новому превью
-    this.bindFilePreviewEvents(container);
-  }
-
-  bindProjectCardEvents(type) {
-    // Status change handler
-    const statusSelects = document.querySelectorAll(`.status-select`);
-    statusSelects.forEach((select) => {
-      select.addEventListener("change", (e) => {
-        e.stopPropagation();
-        // Получаем ID проекта из ближайшей карточки
-        const projectCard = e.target.closest(".project-card");
-        const projectId = parseInt(projectCard.dataset.id);
-        const newStatus = e.target.value;
-
-        // Определяем тип проекта на основе родительского контейнера
-        const projectsList = projectCard.closest(".projects-grid");
-        const projectType =
-          projectsList.id === "current-projects-list" ? "current" : "future";
-
-        this.updateProjectStatus(projectId, newStatus, projectType);
-      });
-    });
-
-    // Add click handler for project card images
-    const projectCards = document.querySelectorAll(".project-card");
-    projectCards.forEach((card) => {
-      const cardImage = card.querySelector(".project-image img");
-      if (cardImage) {
-        cardImage.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const imageSrc = cardImage.src;
-          if (imageSrc) {
-            this.showImageModal(imageSrc);
-          }
-        });
-      }
-    });
-
-    // Toggle details button handler
-    const toggleButtons = document.querySelectorAll(".btn-toggle-details");
-    toggleButtons.forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const projectCard = e.target.closest(".project-card");
-        if (projectCard) {
-          const detailsSection = projectCard.querySelector(".project-details");
-          if (detailsSection) {
-            button.classList.toggle("active");
-            detailsSection.classList.toggle("active");
-            const icon = button.querySelector("i");
-            if (icon) {
-              icon.style.transform = button.classList.contains("active")
-                ? "rotate(180deg)"
-                : "rotate(0)";
-            }
-
-            // Если детали были открыты, добавляем обработчики для файловых превью
-            if (detailsSection.classList.contains("active")) {
-              this.bindFilePreviewEvents(detailsSection);
-            }
-          }
-        }
-      });
-    });
-
-    // Edit project handler
-    this.container.querySelectorAll(".edit-project").forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const projectCard = button.closest(".project-card");
-        const projectId = parseInt(projectCard.dataset.id);
-        const projectsList = projectCard.closest(".projects-grid");
-        const projectType =
-          projectsList.id === "current-projects-list" ? "current" : "future";
-        const project = this.getProjectById(projectId, projectType);
-        if (project) {
-          this.showProjectModal(projectType, project);
-        }
-      });
-    });
-
-    // Delete project handler
-    this.container.querySelectorAll(".delete-project").forEach((button) => {
-      button.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const projectCard = button.closest(".project-card");
-        const projectId = parseInt(projectCard.dataset.id);
-        const projectsList = projectCard.closest(".projects-grid");
-        const projectType =
-          projectsList.id === "current-projects-list" ? "current" : "future";
-        if (confirm("Are you sure you want to delete this project?")) {
-          this.deleteProject(projectId, projectType);
-        }
-      });
-    });
-  }
-
-  // Добавляем новый метод для привязки обработчиков к превью файлов
-  bindFilePreviewEvents(container = null) {
-    // Если контейнер не указан, привязываем обработчики ко всем превью файлов
-    if (!container) {
-      // Получаем все контейнеры с превью файлов
-      const containers = this.container.querySelectorAll(
-        ".file-preview-container"
-      );
-      containers.forEach((container) => this.bindFilePreviewEvents(container));
-      return;
-    }
-
-    // Handle clicks on file preview items
-    const fileItems = container.querySelectorAll(".file-preview-item");
-
-    fileItems.forEach((item) => {
-      // Get file info
-      const fileId = item.dataset.fileId;
-      const filePath = item.dataset.filePath;
-      const mimeType = item.dataset.mimeType;
-      const fileName = item.dataset.fileName;
-
-      // View file button - open in new tab or in modal
-      const viewButton = item.querySelector(".view-file");
-      if (viewButton) {
-        viewButton.addEventListener("click", (e) => {
-          e.stopPropagation();
-          console.log("Opening file:", filePath);
-
-          if (mimeType && mimeType.startsWith("image/")) {
-            // Show image in modal
-            this.showImageModal(filePath);
-          } else {
-            // Open other file types in a new tab
-            window.open(filePath, "_blank");
-          }
-        });
-      }
-
-      // Remove file button - delete file from project
-      const removeButton = item.querySelector(".remove-file");
-      if (removeButton) {
-        removeButton.addEventListener("click", (e) => {
-          e.stopPropagation();
-
-          // Check if this is a file being uploaded or already saved
-          if (fileId && fileId !== "") {
-            // This is a saved file
-            if (confirm("Are you sure you want to delete this file?")) {
-              console.log("Deleting file:", fileId);
-              this.deleteProjectFile(fileId);
-            }
-          } else {
-            // This is a file being uploaded
-            console.log("Removing file from upload list:", fileName);
-
-            // Remove this item from the preview container
-            item.remove();
-
-            // Get the input field related to this container
-            const containerId = container.id;
-            const inputId = containerId.replace("-preview", "");
-            const inputElement = document.getElementById(inputId);
-
-            // We can't directly modify the FileList object, but we need to indicate this file
-            // should be excluded when submitting the form
-            if (inputElement) {
-              // Mark the container with data about removed files
-              if (!container.dataset.removedFiles) {
-                container.dataset.removedFiles = JSON.stringify([]);
-              }
-
-              const removedFiles = JSON.parse(container.dataset.removedFiles);
-              removedFiles.push(fileName);
-              container.dataset.removedFiles = JSON.stringify(removedFiles);
-            }
-          }
-        });
-      }
-
-      // Click on image thumbnail - show in modal
-      const imgElement = item.querySelector("img");
-      if (imgElement && mimeType && mimeType.startsWith("image/")) {
-        imgElement.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.showImageModal(filePath);
-        });
-      }
-
-      // Make the whole item clickable for images
-      if (mimeType && mimeType.startsWith("image/")) {
-        item.style.cursor = "pointer";
-        item.addEventListener("click", () => {
-          this.showImageModal(filePath);
-        });
-      }
-    });
-
-    // Также обработаем отдельные изображения, которые могут быть добавлены
-    // напрямую в контейнер превью (не в .file-preview-item)
-    const directImages = container.querySelectorAll(
-      "img:not(.file-preview-item img)"
-    );
-    directImages.forEach((img) => {
-      const src = img.getAttribute("src");
-      if (src) {
-        img.style.cursor = "pointer";
-        img.addEventListener("click", () => {
-          this.showImageModal(src);
-        });
-      }
-    });
-  }
-
-  // Show image in modal
-  showImageModal(imageSrc) {
-    console.log("Opening file:", imageSrc);
-
-    // Fix path issues for project upload files
-    if (imageSrc && imageSrc.includes("project_upload")) {
-      // If the path doesn't start with the correct prefix and isn't an absolute URL
-      if (
-        !imageSrc.startsWith("/Maintenance_P") &&
-        !imageSrc.startsWith("http")
-      ) {
-        // Handle relative paths that start with ../
-        if (imageSrc.includes("../project_upload")) {
-          imageSrc = imageSrc.replace(
-            "../project_upload",
-            "components/construction/project_upload"
-          );
-        }
-
-        // If path is just starting with "project_upload", add full path
-        if (imageSrc.startsWith("project_upload")) {
-          imageSrc = "components/construction/" + imageSrc;
-        }
-
-        // Add the main prefix if needed
-        if (!imageSrc.startsWith("/Maintenance_P")) {
-          imageSrc = "/Maintenance_P/" + imageSrc;
-        }
-      }
-
-      // Add Inspections-Checklist-Portal if needed
-      if (
-        imageSrc.includes("components/construction") &&
-        !imageSrc.includes("Inspections-Checklist-Portal")
-      ) {
-        imageSrc = imageSrc.replace(
-          "components/construction",
-          "Inspections-Checklist-Portal/components/construction"
-        );
-      }
-    }
-
-    // Use the existing image modal in the HTML
-    const imageModal = document.getElementById("image-modal");
-    const modalImage = document.getElementById("modal-image");
-
-    if (imageModal && modalImage) {
-      // Set image source and show modal
-      modalImage.src = imageSrc;
-      imageModal.style.display = "block";
-
-      // Add Escape key handler
-      const escKeyHandler = (e) => {
-        if (e.key === "Escape") {
-          imageModal.style.display = "none";
-          document.removeEventListener("keydown", escKeyHandler);
-        }
-      };
-      document.addEventListener("keydown", escKeyHandler);
-
-      // Make sure close button works
-      const closeBtn = imageModal.querySelector(".close-modal");
-      if (closeBtn) {
-        // Remove any existing handlers to prevent duplicates
-        const newCloseBtn = closeBtn.cloneNode(true);
-        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-
-        newCloseBtn.addEventListener("click", () => {
-          imageModal.style.display = "none";
-          document.removeEventListener("keydown", escKeyHandler);
-        });
-      }
-
-      // Close on click outside the image
-      const clickOutsideHandler = (e) => {
-        if (e.target === imageModal) {
-          imageModal.style.display = "none";
-          imageModal.removeEventListener("click", clickOutsideHandler);
-          document.removeEventListener("keydown", escKeyHandler);
-        }
-      };
-
-      // Remove any existing handlers to prevent duplicates
-      imageModal.removeEventListener("click", clickOutsideHandler);
-      imageModal.addEventListener("click", clickOutsideHandler);
-    } else {
-      // Fallback to the old implementation if the HTML modal is not found
-      // Create modal if it doesn't exist
-      let modal = document.querySelector(".image-preview-modal");
-
-      if (!modal) {
-        modal = document.createElement("div");
-        modal.className = "image-preview-modal";
-        modal.innerHTML = `
-          <div class="image-preview-content">
-            <span class="image-preview-close">&times;</span>
-            <img class="image-preview-img">
-          </div>
-        `;
-        document.body.appendChild(modal);
-
-        // Add close functionality
-        const closeBtn = modal.querySelector(".image-preview-close");
-        closeBtn.addEventListener("click", () => {
-          modal.style.display = "none";
-        });
-
-        // Close on click outside the image
-        modal.addEventListener("click", (e) => {
-          if (e.target === modal) {
-            modal.style.display = "none";
-          }
-        });
-
-        // Add Escape key handler
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && modal.style.display === "block") {
-            modal.style.display = "none";
-          }
-        });
-      }
-
-      // Set image source and show modal
-      const img = modal.querySelector(".image-preview-img");
-      img.src = imageSrc;
-      modal.style.display = "block";
-    }
-  }
-
-  // Delete project file
-  deleteProjectFile(fileId) {
-    if (!fileId) return;
-
-    fetch(
-      `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/files.php?id=${fileId}`,
-      {
-        method: "DELETE",
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          console.log("File deleted successfully");
-          // Refresh the current view
-          const activeSection = this.activeTab || "current-projects";
-          const type =
-            activeSection === "current-projects" ? "current" : "future";
-
-          // Reload the respective projects
-          if (type === "current") {
-            this.loadCurrentProjects().then(() =>
-              this.renderProjects("current")
-            );
-          } else {
-            this.loadFutureProjects().then(() => this.renderProjects("future"));
-          }
-        } else {
-          alert("Error deleting file: " + data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error deleting file:", error);
-        alert("Error deleting file. Please try again.");
-      });
-  }
-
-  handleProjectAction(projectId, action) {
-    const projectCard = document.querySelector(
-      `.project-card[data-project-id="${projectId}"]`
-    );
-    if (!projectCard) return;
-
-    const projectsList = projectCard.closest(".projects-grid");
-    const projectType =
-      projectsList.id === "current-projects-list" ? "current" : "future";
-    const project = this.getProjectById(projectId, projectType);
-
+  displayExistingFiles(project, type) {
+    // Если проект отсутствует или не имеет структуры файлов, нечего отображать
     if (!project) return;
 
-    switch (action) {
-      case "edit":
-        this.showProjectModal(projectType, project);
-        break;
-      case "delete":
-        if (confirm("Are you sure you want to delete this project?")) {
-          this.deleteProject(projectId, projectType);
-        }
-        break;
-      default:
-        console.warn("Unknown project action:", action);
-    }
-  }
+    // Предварительно проверяем и корректируем структуру файлов проекта
+    project = this.ensureFileStructures(project, type);
 
-  showFilePreview(file) {
-    const modal = this.container.querySelector(".preview-modal");
-    const previewContent = modal.querySelector(".preview-content img");
+    // Определяем контейнеры для превью в зависимости от типа проекта
+    if (type === "current") {
+      // Текущий проект - отображаем фотографии, документы и отчеты
+      const modal = this.container.querySelector("#current-project-modal");
+      if (!modal) return;
 
-    if (file.type.startsWith("image/")) {
-      previewContent.src = URL.createObjectURL(file);
-      modal.classList.add("active");
-    } else {
-      // For non-image files, you might want to show a different preview or download option
-      window.open(URL.createObjectURL(file), "_blank");
-    }
-  }
-
-  closeFilePreview() {
-    const modal = this.container.querySelector(".preview-modal");
-    const previewContent = modal.querySelector(".preview-content img");
-
-    if (previewContent.src) {
-      URL.revokeObjectURL(previewContent.src);
-    }
-
-    modal.classList.remove("active");
-  }
-
-  getProjectById(id, type) {
-    // Убедимся, что id - это число
-    id = parseInt(id);
-
-    if (isNaN(id)) {
-      console.error("Invalid project ID:", id);
-      return null;
-    }
-
-    const projects =
-      type === "current" ? this.currentProjects : this.futureProjects;
-    return projects.find((p) => p.id === id) || null;
-  }
-
-  // Метод для синхронизации удаленных файлов в перенесенном проекте
-  syncDeletedFiles(sourceProject, targetProject) {
-    if (!sourceProject || !targetProject) return targetProject;
-
-    // Синхронизируем Photos
-    if (
-      targetProject.photos &&
-      Array.isArray(targetProject.photos) &&
-      sourceProject.photos &&
-      Array.isArray(sourceProject.photos)
-    ) {
-      // Создаем карту файлов из исходного проекта
-      const sourcePhotoMap = {};
-      sourceProject.photos.forEach((photo) => {
-        if (photo && photo.name) {
-          const key = photo.name || photo.originalName;
-          sourcePhotoMap[key] = true;
-        }
-      });
-
-      // Фильтруем фотографии, оставляя только те, которые есть в исходном проекте
-      targetProject.photos = targetProject.photos.filter((photo) => {
-        if (!photo) return false;
-        const key = photo.name || photo.originalName;
-        return sourcePhotoMap[key];
-      });
-    }
-
-    // Синхронизируем Specifications
-    if (sourceProject.specifications && targetProject.specifications) {
-      const sourceFileMap = {};
-      sourceProject.specifications.forEach((file) => {
-        const key = `${file.name}-${file.type}`;
-        sourceFileMap[key] = true;
-      });
-
-      targetProject.specifications = targetProject.specifications.filter(
-        (file) => {
-          const key = `${file.name}-${file.type}`;
-          return sourceFileMap[key];
-        }
+      // Находим все контейнеры превью
+      const photosContainer = modal.querySelector("#current-photos-preview");
+      const documentsContainer = modal.querySelector(
+        "#current-documents-preview"
       );
+      const reportsContainer = modal.querySelector("#current-reports-preview");
 
-      // Пометим все specifications как мигрированные
-      targetProject.specifications = targetProject.specifications.map(
-        (file) => {
-          return { ...file, migratedFromFuture: true };
-        }
-      );
-    }
+      // Очищаем контейнеры перед добавлением файлов
+      if (photosContainer) photosContainer.innerHTML = "";
+      if (documentsContainer) documentsContainer.innerHTML = "";
+      if (reportsContainer) reportsContainer.innerHTML = "";
 
-    // Синхронизируем Documents - копируем документы из исходного проекта в целевой
-    if (sourceProject.documents && targetProject.documents) {
-      const sourceFileMap = {};
-      sourceProject.documents.forEach((file) => {
-        const key = `${file.name}-${file.type}`;
-        sourceFileMap[key] = true;
-      });
-
-      targetProject.documents = targetProject.documents.filter((file) => {
-        const key = `${file.name}-${file.type}`;
-        return sourceFileMap[key];
-      });
-
-      // Mark all documents as migrated from future
-      targetProject.documents = targetProject.documents.map((file) => {
-        return { ...file, migratedFromFuture: true };
-      });
-    }
-
-    return targetProject;
-  }
-
-  // Method to synchronize deleted photos between card and edit form
-  syncDeletedPhotos(fileItem, project) {
-    if (!project || !fileItem) return;
-
-    const fileType = fileItem.dataset.fileType;
-    const fileName = fileItem.dataset.fileName;
-
-    if (!fileName) return;
-
-    // Determine which array to update based on file type
-    let fileArray;
-    switch (fileType) {
-      case "photo":
-        fileArray = project.photos;
-        break;
-      case "document":
-        fileArray = project.documents;
-        break;
-      case "report":
-        fileArray = project.reports;
-        break;
-      case "specification":
-        fileArray = project.specifications;
-        break;
-      case "budgetDoc":
-        fileArray = project.budgetDocs;
-        break;
-      default:
-        return;
-    }
-
-    // Remove the file from the array if it exists
-    if (fileArray && Array.isArray(fileArray)) {
-      const index = fileArray.findIndex(
-        (file) => file.name === fileName || file.originalName === fileName
-      );
-      if (index !== -1) {
-        fileArray.splice(index, 1);
-      }
-    }
-  }
-
-  // Method to display image preview in modal
-  showFilePreviewModal(imageSrc) {
-    const modal = this.container.querySelector(".preview-modal");
-    if (!modal) return;
-
-    const previewImage = modal.querySelector("img");
-    if (previewImage) {
-      previewImage.src = imageSrc;
-
-      // Add error handler in case the image fails to load
-      previewImage.onerror = () => {
-        console.error("Failed to load image:", imageSrc);
-        previewImage.src = ""; // Clear the source to prevent further errors
-        modal.style.display = "none";
-      };
-
-      // Display the modal
-      modal.style.display = "flex";
-
-      // Add event listener to close button if not already added
-      const closeButton = modal.querySelector(".close-preview");
-      if (closeButton && !closeButton.hasClickListener) {
-        closeButton.addEventListener("click", () => {
-          modal.style.display = "none";
-        });
-        closeButton.hasClickListener = true;
-      }
-
-      // Add event listener to close modal on background click
-      if (!modal.hasClickListener) {
-        modal.addEventListener("click", (e) => {
-          if (e.target === modal) {
-            modal.style.display = "none";
+      // Отображаем фотографии
+      if (photosContainer && project.photos && Array.isArray(project.photos)) {
+        project.photos.forEach((photo) => {
+          if (photo) {
+            this.addFilePreview(photo, photosContainer, "photo");
           }
         });
-        modal.hasClickListener = true;
       }
-    }
-  }
 
-  // Methods for formatting dates
-  formatDateForDisplay(dateString) {
-    if (!dateString) return "";
-
-    // Поддержка различных форматов даты
-    let date;
-
-    if (typeof dateString === "object" && dateString instanceof Date) {
-      date = dateString;
-    } else {
-      // Проверяем формат YYYY-MM-DD (из базы данных)
+      // Отображаем отчеты
       if (
-        typeof dateString === "string" &&
-        dateString.match(/^\d{4}-\d{2}-\d{2}$/)
+        reportsContainer &&
+        project.reports &&
+        Array.isArray(project.reports)
       ) {
-        const [year, month, day] = dateString.split("-");
-        date = new Date(year, month - 1, day);
-      } else {
-        // Пытаемся разобрать строку как дату
-        date = new Date(dateString);
+        project.reports.forEach((report) => {
+          if (report) {
+            this.addFilePreview(report, reportsContainer, "report");
+          }
+        });
       }
-    }
 
-    // Проверяем, что получилась корректная дата
-    if (isNaN(date.getTime())) return "";
-
-    // Форматируем дату в формат MM/DD/YYYY
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const year = date.getFullYear();
-
-    return `${month}/${day}/${year}`;
-  }
-
-  // Функция для преобразования даты в формат YYYY-MM-DD для API
-  formatDateForAPI(dateString) {
-    if (!dateString || typeof dateString !== "string") {
-      return null; // Return null for empty values instead of passing through
-    }
-
-    // Проверяем формат даты MM/DD/YYYY и преобразуем в YYYY-MM-DD
-    if (dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-      const [month, day, year] = dateString.split("/");
-      return `${year}-${month}-${day}`;
-    }
-
-    // Check MM-DD-YYYY format
-    if (dateString.match(/^\d{2}-\d{2}-\d{4}$/)) {
-      const [month, day, year] = dateString.split("-");
-      return `${year}-${month}-${day}`;
-    }
-
-    // Already in YYYY-MM-DD format
-    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return dateString;
-    }
-
-    // Try to parse with Date object as fallback
-    try {
-      const date = new Date(dateString);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().split("T")[0]; // Returns YYYY-MM-DD
+      // Отображаем документы
+      if (
+        documentsContainer &&
+        project.documents &&
+        Array.isArray(project.documents)
+      ) {
+        // Фильтруем документы, чтобы отображать только те, которые не мигрированы из будущих проектов
+        const nonMigratedDocs = project.documents.filter(
+          (doc) => !doc.migratedFromFuture
+        );
+        nonMigratedDocs.forEach((doc) => {
+          if (doc) {
+            this.addFilePreview(doc, documentsContainer, "document");
+          }
+        });
       }
-    } catch (e) {
-      console.error("Error parsing date:", e);
-    }
 
-    // If all else fails, return null to avoid database errors
-    return null;
-  }
+      // Проверяем, является ли проект мигрированным из Future Projects
+      const isMigratedProject =
+        project.migratedFromFuture ||
+        (project.specifications && project.specifications.length) ||
+        (project.documents &&
+          project.documents.some((doc) => doc.migratedFromFuture));
 
-  // Method to initialize the ratings system
-  setupRatingHandlers() {
-    // Handle star rating in contractor list
-    this.container.addEventListener("click", (e) => {
-      const star = e.target.closest(".star, .fa-star");
-      if (star) {
-        // Handle star clicks in the contractor cards (list view)
-        const contractorCard = star.closest(".contractor-card");
-        if (contractorCard) {
-          const contractorId = parseInt(contractorCard.dataset.id);
-          const rating = parseInt(
-            star.dataset.rating || star.parentElement.dataset.rating
-          );
-          this.setContractorRating(contractorId, rating);
+      if (isMigratedProject) {
+        // Создаем или находим контейнер для мигрированных файлов
+        let migratedFilesGroup = modal.querySelector(".migrated-files-group");
+
+        if (!migratedFilesGroup) {
+          // Если контейнера нет, создаем его
+          const filesSection =
+            modal.querySelector(".form-section:has(#current-photos-preview)") ||
+            modal.querySelector(".form-section:has(.file-preview-container)");
+
+          if (filesSection) {
+            migratedFilesGroup = document.createElement("div");
+            migratedFilesGroup.className = "form-section migrated-files-group";
+            migratedFilesGroup.innerHTML = `
+              <h3>Files from Future Project</h3>
+              <div class="info-message">
+                <i class="fas fa-info-circle"></i> These files were migrated from Future Projects section.
+              </div>
+            `;
+
+            filesSection.after(migratedFilesGroup);
+          }
         }
 
-        // Handle star clicks in the contractor modal (add/edit form)
-        const ratingContainer = star.closest(".rating");
-        if (ratingContainer && !contractorCard) {
-          const modal = star.closest("#contractor-modal");
-          if (modal) {
-            const rating = parseInt(
-              star.dataset.rating || star.parentElement.dataset.rating
+        if (migratedFilesGroup) {
+          // Очищаем контейнер перед добавлением файлов
+          const existingContainers =
+            migratedFilesGroup.querySelectorAll(".form-group");
+          existingContainers.forEach((container) => container.remove());
+
+          // Добавляем мигрированные документы
+          if (
+            project.documents &&
+            project.documents.some((doc) => doc.migratedFromFuture)
+          ) {
+            const migratedDocs = project.documents.filter(
+              (doc) => doc.migratedFromFuture
             );
-            const form = modal.querySelector("#contractor-form");
 
-            // Update hidden input value
-            form.elements.rating.value = rating;
+            if (migratedDocs.length > 0) {
+              const docsGroup = document.createElement("div");
+              docsGroup.className = "form-group";
+              docsGroup.innerHTML = `
+                <label>Planning Documents</label>
+                <div id="current-planning-docs-preview" class="file-preview-container"></div>
+              `;
+              migratedFilesGroup.appendChild(docsGroup);
 
-            // Update stars visual representation
-            ratingContainer.querySelectorAll("i").forEach((icon, index) => {
-              if (index < rating) {
-                icon.className = "fas fa-star";
-              } else {
-                icon.className = "far fa-star";
+              const docsContainer = docsGroup.querySelector(
+                "#current-planning-docs-preview"
+              );
+              migratedDocs.forEach((doc) => {
+                if (doc) {
+                  this.addFilePreview(doc, docsContainer, "document");
+                }
+              });
+            }
+          }
+
+          // Добавляем спецификации
+          if (project.specifications && project.specifications.length > 0) {
+            const specsGroup = document.createElement("div");
+            specsGroup.className = "form-group";
+            specsGroup.innerHTML = `
+              <label>Project Specifications</label>
+                <div id="current-specifications-preview" class="file-preview-container"></div>
+              `;
+            migratedFilesGroup.appendChild(specsGroup);
+
+            const specsContainer = specsGroup.querySelector(
+              "#current-specifications-preview"
+            );
+            project.specifications.forEach((spec) => {
+              if (spec) {
+                this.addFilePreview(spec, specsContainer, "specification");
               }
             });
           }
         }
       }
-    });
-  }
 
-  // Helper method to generate star rating HTML
-  generateRatingStars(rating, interactive = true) {
-    const maxRating = 5;
-    let starsHtml = "";
+      // После добавления всех файлов, настраиваем обработчики для кнопок удаления
+      setTimeout(() => {
+        const allRemoveButtons = modal.querySelectorAll(".remove-file");
+        allRemoveButtons.forEach((button) => {
+          // Удаляем существующие обработчики
+          const clone = button.cloneNode(true);
+          button.parentNode.replaceChild(clone, button);
 
-    for (let i = 1; i <= maxRating; i++) {
-      const starClass = i <= rating ? "fas fa-star" : "far fa-star";
-      starsHtml += `<span class="star ${
-        interactive ? "interactive" : ""
-      }" data-rating="${i}"><i class="${starClass}"></i></span>`;
-    }
+          // Добавляем новый обработчик для модального окна
+          clone.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
 
-    return starsHtml;
-  }
-
-  // Method to handle changing contractor rating
-  handleRating(contractorId, rating) {
-    this.setContractorRating(contractorId, rating);
-  }
-
-  // Method to set contractor rating
-  setContractorRating(contractorId, rating) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      contractor.rating = rating;
-      this.renderContractors();
-
-      // Here should be API call to update rating
-    }
-  }
-
-  // Method to update project statistics
-  updateProjectStatistics(type) {
-    const projects =
-      type === "current" ? this.currentProjects : this.futureProjects;
-    const statsContainer = this.container.querySelector(
-      `#${type}-projects-stats`
-    );
-
-    if (!statsContainer) return;
-
-    // Calculate statistics
-    const totalProjects = projects.length;
-    const statusCounts = {
-      planned: 0,
-      "in-progress": 0,
-      "In Progress": 0,
-      completed: 0,
-      "on-hold": 0,
-      delayed: 0,
-      "move-to-current": 0,
-      "Design Phase": 0,
-      "design-phase": 0,
-      Planning: 0,
-      planning: 0,
-    };
-
-    // Приоритеты для будущих проектов
-    const priorityCounts = {
-      high: 0,
-      medium: 0,
-      low: 0,
-    };
-
-    // Count projects by status and priority
-    projects.forEach((project) => {
-      if (project.status in statusCounts) {
-        statusCounts[project.status]++;
-      } else {
-        // Проверяем нормализованную версию статуса (в нижнем регистре с дефисами вместо пробелов)
-        const normalizedStatus = project.status
-          .toLowerCase()
-          .replace(/\s+/g, "-");
-        if (normalizedStatus in statusCounts) {
-          statusCounts[normalizedStatus]++;
-        }
-      }
-
-      // Подсчитываем проекты по приоритету для Future Projects
-      if (type === "future" && project.priority in priorityCounts) {
-        priorityCounts[project.priority]++;
-      }
-    });
-
-    // Комбинируем счетчики для статусов с разными форматами написания
-    const completedCount = statusCounts["completed"];
-    const inProgressCount =
-      statusCounts["in-progress"] + statusCounts["In Progress"];
-    const onHoldCount = statusCounts["on-hold"];
-    const delayedCount = statusCounts["delayed"];
-    const designPhaseCount =
-      statusCounts["Design Phase"] + statusCounts["design-phase"];
-    const planningCount = statusCounts["Planning"] + statusCounts["planning"];
-
-    // Разные шаблоны для Current и Future Projects
-    if (type === "current") {
-      // Update the stats display for Current Projects
-      statsContainer.innerHTML = `
-        <div class="stats-container">
-          <div class="stat-item">
-            <span class="stat-label">Total Projects:</span>
-            <span class="stat-value" id="current-projects-total">${totalProjects}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Completed:</span>
-            <span class="stat-value stat-completed" id="current-projects-completed">${completedCount}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">In Progress:</span>
-            <span class="stat-value stat-in-progress" id="current-projects-in-progress">${inProgressCount}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Design Phase:</span>
-            <span class="stat-value stat-design" id="current-projects-design">${designPhaseCount}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Planning:</span>
-            <span class="stat-value stat-planning" id="current-projects-planning">${planningCount}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">On Hold:</span>
-            <span class="stat-value stat-on-hold" id="current-projects-on-hold">${onHoldCount}</span>
-          </div>
-        </div>
-      `;
+            // Удаляем превью файла
+            const fileItem = clone.closest(".file-preview-item");
+            if (fileItem) {
+              if (fileItem.dataset.imgUrl) {
+                URL.revokeObjectURL(fileItem.dataset.imgUrl);
+              }
+              fileItem.remove();
+            }
+          });
+        });
+      }, 200);
     } else {
-      // Update the stats display for Future Projects
-      statsContainer.innerHTML = `
-        <div class="stats-container">
-          <div class="stat-item">
-            <span class="stat-label">Total Planned:</span>
-            <span class="stat-value" id="future-projects-total">${totalProjects}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">High Priority:</span>
-            <span class="stat-value stat-high" id="future-projects-high">${priorityCounts["high"]}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Medium Priority:</span>
-            <span class="stat-value stat-medium" id="future-projects-medium">${priorityCounts["medium"]}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Low Priority:</span>
-            <span class="stat-value stat-low" id="future-projects-low">${priorityCounts["low"]}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Delayed:</span>
-            <span class="stat-value stat-delayed" id="future-projects-delayed">${delayedCount}</span>
-          </div>
-        </div>
-      `;
-    }
+      // Future project - отображаем документы и спецификации
+      const modal = this.container.querySelector("#future-project-modal");
+      if (!modal) return;
 
-    // Add styles if they don't exist
-    if (!document.getElementById("project-stats-styles")) {
-      const statsStyles = document.createElement("style");
-      statsStyles.id = "project-stats-styles";
-      statsStyles.innerHTML = `
-        .stats-container {
-          display: flex;
-          justify-content: space-around;
-          margin-bottom: 20px;
-          background-color: #f8f9fa;
-          border-radius: 8px;
-          padding: 15px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .stat-item {
-          text-align: center;
-          padding: 0 15px;
-          border-right: 1px solid #ddd;
-          flex: 1;
-        }
-        
-        .stat-item:last-child {
-          border-right: none;
-        }
-        
-        .stat-value {
-          font-size: 1.5rem;
-          font-weight: bold;
-          color: #0088cc;
-          margin-bottom: 5px;
-        }
-        
-        .stat-label {
-          font-size: 0.9rem;
-          color: #6c757d;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        
-        .stat-completed {
-          color: #388e3c;
-        }
-        
-        .stat-in-progress {
-          color: #f57c00;
-        }
-        
-        .stat-on-hold {
-          color: #d32f2f;
-        }
-        
-        .stat-high {
-          color: #d32f2f;
-        }
-        
-        .stat-medium {
-          color: #f57c00;
-        }
-        
-        .stat-low {
-          color: #388e3c;
-        }
-        
-        .stat-delayed {
-          color: #d32f2f;
-        }
-        
-        .stat-design {
-          color: #0097a7;
-        }
-        
-        .stat-planning {
-          color: #8e24aa;
-        }
-      `;
-      document.head.appendChild(statsStyles);
+      // Находим контейнеры для превью
+      const documentsContainer = modal.querySelector(
+        "#future-documents-preview"
+      );
+      const specificationsContainer = modal.querySelector(
+        "#future-specifications-preview"
+      );
+
+      // Очищаем контейнеры перед добавлением файлов
+      if (documentsContainer) documentsContainer.innerHTML = "";
+      if (specificationsContainer) specificationsContainer.innerHTML = "";
+
+      // Добавляем документы
+      if (
+        documentsContainer &&
+        project.documents &&
+        Array.isArray(project.documents)
+      ) {
+        project.documents.forEach((doc) => {
+          if (doc) {
+            this.addFilePreview(doc, documentsContainer, "document");
+          }
+        });
+      }
+
+      // Добавляем спецификации
+      if (
+        specificationsContainer &&
+        project.specifications &&
+        Array.isArray(project.specifications)
+      ) {
+        project.specifications.forEach((spec) => {
+          if (spec) {
+            this.addFilePreview(spec, specificationsContainer, "specification");
+          }
+        });
+      }
+
+      // Настраиваем обработчики для кнопок удаления
+      setTimeout(() => {
+        const allRemoveButtons = modal.querySelectorAll(".remove-file");
+        allRemoveButtons.forEach((button) => {
+          // Удаляем существующие обработчики
+          const clone = button.cloneNode(true);
+          button.parentNode.replaceChild(clone, button);
+
+          // Добавляем новый обработчик для модального окна
+          clone.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // Удаляем превью файла
+            const fileItem = clone.closest(".file-preview-item");
+            if (fileItem) {
+              if (fileItem.dataset.imgUrl) {
+                URL.revokeObjectURL(fileItem.dataset.imgUrl);
+              }
+              fileItem.remove();
+            }
+          });
+        });
+      }, 200);
     }
   }
 
-  // Method to setup search filters
-  setupSearchFilters() {
-    // Implement search functionality for each section
-    const searchInputs = this.container.querySelectorAll(".search-input");
-    searchInputs.forEach((input) => {
-      input.addEventListener("input", (e) => {
-        const section = e.target.dataset.section;
-        this.filters[section].search = e.target.value.toLowerCase().trim();
-        this.applyFilters(section);
+  clearFilePreviews(type) {
+    const previewContainers = {
+      current: {
+        photos: this.container.querySelector("#current-photos-preview"),
+        documents: this.container.querySelector("#current-documents-preview"),
+        reports: this.container.querySelector("#current-reports-preview"),
+      },
+      future: {
+        documents: this.container.querySelector("#future-documents-preview"),
+        specifications: this.container.querySelector(
+          "#future-specifications-preview"
+        ),
+      },
+    };
+
+    Object.values(previewContainers[type]).forEach((container) => {
+      if (container) container.innerHTML = "";
+    });
+  }
+
+  setupFileUploadHandlers(type) {
+    // Define file input selectors based on project type
+    const fileInputs =
+      type === "current"
+        ? ["#current-photos", "#current-documents", "#current-reports"]
+        : ["#future-documents", "#future-specifications"];
+
+    fileInputs.forEach((inputSelector) => {
+      const input = this.container.querySelector(inputSelector);
+      if (!input) return;
+
+      // Определяем соответствующий контейнер превью
+      const previewSelector = inputSelector + "-preview";
+      const previewContainer = this.container.querySelector(previewSelector);
+      if (!previewContainer) return;
+
+      // Очищаем существующие обработчики
+      if (input._eventListenerAttached) {
+        input.removeEventListener("change", input._eventListenerAttached);
+      }
+
+      // Обработчик события выбора файлов
+      const handleFileSelect = (e) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        // Определяем тип файла на основе селектора
+        let fileType = "document";
+        if (inputSelector.includes("photos")) {
+          fileType = "photo";
+        } else if (inputSelector.includes("reports")) {
+          fileType = "report";
+        } else if (inputSelector.includes("specifications")) {
+          fileType = "specification";
+        }
+
+        console.log(
+          `Selected ${files.length} files of type ${fileType} for ${inputSelector}`
+        );
+
+        // Обрабатываем каждый выбранный файл
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          this.addFilePreview(file, previewContainer, fileType);
+        }
+      };
+
+      // Прикрепляем обработчик
+      input._eventListenerAttached = handleFileSelect;
+      input.addEventListener("change", handleFileSelect);
+
+      // Добавляем специальную обработку для кнопок удаления внутри модального окна
+      // Это предотвратит перенаправление на главную страницу при удалении фото
+      const setupRemoveButtons = () => {
+        const modal = input.closest(".modal");
+        if (!modal) return;
+
+        const removeButtons = modal.querySelectorAll(".remove-file");
+        removeButtons.forEach((button) => {
+          // Удаляем существующие обработчики, чтобы избежать дублирования
+          const clone = button.cloneNode(true);
+          button.parentNode.replaceChild(clone, button);
+
+          // Добавляем новый обработчик с правильной логикой для модального окна
+          clone.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // Удаляем превью файла
+            const fileItem = clone.closest(".file-preview-item");
+            if (fileItem) {
+              if (fileItem.dataset.imgUrl) {
+                URL.revokeObjectURL(fileItem.dataset.imgUrl);
+              }
+              fileItem.remove();
+            }
+          });
+        });
+      };
+
+      // Выполняем настройку обработчиков с небольшой задержкой, чтобы
+      // дать время для рендеринга превью файлов в модальном окне
+      setTimeout(setupRemoveButtons, 100);
+    });
+
+    // Добавляем обработчик для обеспечения правильного удаления файлов после загрузки модального окна
+    const setupModalRemoveHandlers = () => {
+      const modal = this.container.querySelector(`#${type}-project-modal`);
+      if (!modal) return;
+
+      // Обрабатываем все кнопки удаления в модальном окне
+      const allRemoveButtons = modal.querySelectorAll(".remove-file");
+      allRemoveButtons.forEach((button) => {
+        // Удаляем существующие обработчики
+        const clone = button.cloneNode(true);
+        button.parentNode.replaceChild(clone, button);
+
+        // Добавляем новый обработчик для модального окна
+        clone.addEventListener("click", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+
+          // Удаляем превью файла
+          const fileItem = clone.closest(".file-preview-item");
+          if (fileItem) {
+            if (fileItem.dataset.imgUrl) {
+              URL.revokeObjectURL(fileItem.dataset.imgUrl);
+            }
+            fileItem.remove();
+          }
+        });
+      });
+    };
+
+    // Выполняем настройку с небольшой задержкой
+    setTimeout(setupModalRemoveHandlers, 200);
+  }
+
+  // Обновленный метод для отображения превью изображений в модальном окне
+  showFilePreviewModal(imageSrc) {
+    console.log("Showing preview modal for image:", imageSrc); // Для отладки
+
+    // Проверяем наличие модального окна
+    if (!this.container.querySelector(".preview-modal")) {
+      this.ensurePreviewModalExists();
+    }
+
+    const modal = this.container.querySelector(".preview-modal");
+    const previewImage = modal.querySelector(".preview-content img");
+    if (!previewImage) {
+      console.error("Preview image element not found!");
+      return;
+    }
+
+    // Создаем индикатор загрузки
+    let loadingIndicator = modal.querySelector(".loading-indicator");
+    if (!loadingIndicator) {
+      loadingIndicator = document.createElement("div");
+      loadingIndicator.className = "loading-indicator";
+      loadingIndicator.innerHTML = `
+        <div class="spinner">
+          <div class="bounce1"></div>
+          <div class="bounce2"></div>
+          <div class="bounce3"></div>
+        </div>
+        <p>Loading image...</p>
+      `;
+      loadingIndicator.style.position = "absolute";
+      loadingIndicator.style.top = "50%";
+      loadingIndicator.style.left = "50%";
+      loadingIndicator.style.transform = "translate(-50%, -50%)";
+      loadingIndicator.style.color = "#333";
+      loadingIndicator.style.fontSize = "16px";
+      loadingIndicator.style.textAlign = "center";
+
+      const spinner = loadingIndicator.querySelector(".spinner");
+      spinner.style.margin = "0 auto";
+      spinner.style.width = "70px";
+      spinner.style.textAlign = "center";
+
+      const bounces = loadingIndicator.querySelectorAll(
+        ".bounce1, .bounce2, .bounce3"
+      );
+      bounces.forEach((bounce) => {
+        bounce.style.width = "18px";
+        bounce.style.height = "18px";
+        bounce.style.backgroundColor = "#0088cc";
+        bounce.style.borderRadius = "100%";
+        bounce.style.display = "inline-block";
+        bounce.style.animation =
+          "sk-bouncedelay 1.4s infinite ease-in-out both";
+        bounce.style.marginRight = "5px";
+      });
+
+      const styleSheet = document.createElement("style");
+      styleSheet.textContent = `
+        @keyframes sk-bouncedelay {
+          0%, 80%, 100% { transform: scale(0); }
+          40% { transform: scale(1.0); }
+        }
+        .spinner .bounce1 { animation-delay: -0.32s; }
+        .spinner .bounce2 { animation-delay: -0.16s; }
+      `;
+      document.head.appendChild(styleSheet);
+
+      modal.querySelector(".preview-content").appendChild(loadingIndicator);
+    }
+
+    // Показываем индикатор загрузки и скрываем изображение
+    loadingIndicator.style.display = "block";
+    previewImage.style.display = "none";
+
+    // Важно! Удаляем предыдущие обработчики событий перед установкой новых
+    previewImage.onload = null;
+    previewImage.onerror = null;
+
+    // Очищаем предыдущее изображение
+    previewImage.src = "";
+
+    // Устанавливаем новые обработчики перед загрузкой нового изображения
+    previewImage.onload = () => {
+      console.log("Image loaded successfully in modal"); // Для отладки
+      loadingIndicator.style.display = "none";
+      previewImage.style.display = "block";
+    };
+
+    previewImage.onerror = () => {
+      console.error("Failed to load image in modal:", imageSrc); // Для отладки
+
+      // Пытаемся исправить URL, если это путь к локальному файлу
+      if (
+        !imageSrc.startsWith("data:") &&
+        !imageSrc.startsWith("blob:") &&
+        !imageSrc.startsWith("http")
+      ) {
+        // Пробуем разные пути к изображению
+        const attemptPaths = [
+          // Оригинальный путь
+          imageSrc,
+          // Путь относительно корня сайта
+          `${window.location.origin}/${imageSrc}`,
+          // Путь относительно Inspections-Checklist-Portal
+          `${window.location.origin}/Maintenance_P/Inspections-Checklist-Portal/${imageSrc}`,
+          // Путь с другим расширением
+          `${imageSrc.replace(/\.\w+$/, ".jpg")}`,
+          `${imageSrc.replace(/\.\w+$/, ".jpeg")}`,
+          `${imageSrc.replace(/\.\w+$/, ".png")}`,
+        ];
+
+        console.log("Trying alternative URLs:", attemptPaths);
+
+        // Последовательно пробуем все альтернативные пути
+        let currentPathIndex = 1; // Начинаем со второго пути, так как первый уже не сработал
+
+        const tryNextPath = () => {
+          if (currentPathIndex < attemptPaths.length) {
+            // Снова очищаем обработчики перед установкой нового src
+            const nextPath = attemptPaths[currentPathIndex];
+            currentPathIndex++;
+
+            // Устанавливаем обработчики перед установкой нового src
+            previewImage.onload = () => {
+              console.log(
+                "Image loaded with alternative URL:",
+                previewImage.src
+              );
+              loadingIndicator.style.display = "none";
+              previewImage.style.display = "block";
+            };
+
+            previewImage.onerror = tryNextPath;
+
+            // Устанавливаем новый src
+            previewImage.src = nextPath;
+          } else {
+            // Если все попытки не удались, показываем сообщение об ошибке
+            loadingIndicator.innerHTML = `
+              <div style="text-align: center;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f44336;"></i>
+                <p>Failed to load image</p>
+              </div>
+            `;
+          }
+        };
+
+        // Начинаем процесс
+        tryNextPath();
+      } else if (imageSrc.startsWith("blob:")) {
+        // Для blob URL есть проблема с повторным использованием
+        // Покажем сообщение с информацией, что превью может быть временно недоступно
+        loadingIndicator.innerHTML = `
+          <div style="text-align: center;">
+            <i class="fas fa-info-circle" style="font-size: 2rem; color: #0088cc;"></i>
+            <p>Preview may be temporarily unavailable.<br>Try closing and reopening the modal.</p>
+          </div>
+        `;
+      } else {
+        // Для URL из data или http протоколов, просто показываем сообщение об ошибке
+        loadingIndicator.innerHTML = `
+          <div style="text-align: center;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f44336;"></i>
+            <p>Failed to load image</p>
+          </div>
+        `;
+      }
+    };
+
+    // Устанавливаем новый src после настройки обработчиков
+    setTimeout(() => {
+      previewImage.src = imageSrc;
+    }, 100);
+
+    // Показываем модальное окно
+    modal.style.display = "flex";
+
+    // Функция закрытия модального окна
+    const closePreviewHandler = () => {
+      modal.style.display = "none";
+      document.removeEventListener("keydown", escapeKeyHandler);
+
+      // Важно! Очищаем src и обработчики при закрытии
+      previewImage.src = "";
+      previewImage.onload = null;
+      previewImage.onerror = null;
+    };
+
+    // Находим кнопку закрытия
+    const closeButton = modal.querySelector(".close-preview");
+    if (closeButton) {
+      // Закрытие по клику на кнопку закрытия
+      closeButton.onclick = closePreviewHandler;
+    }
+
+    // Закрытие по клику на фон (но не на само изображение)
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        closePreviewHandler();
+      }
+    };
+
+    // Закрытие по нажатию клавиши Escape
+    const escapeKeyHandler = (e) => {
+      if (e.key === "Escape") {
+        closePreviewHandler();
+      }
+    };
+
+    document.addEventListener("keydown", escapeKeyHandler);
+  }
+
+  async handleProjectSubmit(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const type = form.id === "current-project-form" ? "current" : "future";
+    const projectId = form.dataset.projectId;
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    submitButton.disabled = true;
+    submitButton.textContent = projectId ? "Saving..." : "Creating...";
+
+    console.log(
+      "handleProjectSubmit called with type:",
+      type,
+      "and id:",
+      projectId
+    );
+
+    try {
+      // Basic form data extraction
+      const formData = new FormData(form);
+
+      // Преобразуем FormData в объект для отправки
+      const data = {};
+      for (let [key, value] of formData.entries()) {
+        // Convert camelCase to snake_case
+        const snakeCaseKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+        data[snakeCaseKey] = value;
+      }
+
+      console.log("Form data collected:", data);
+
+      // Важно: правильно обработать поле названия проекта
+      // Если есть project_name, используем его значение для поля name (которое есть в БД)
+      if (data.project_name) {
+        data.name = data.project_name;
+        delete data.project_name; // Удаляем поле project_name, так как оно не нужно
+      }
+
+      // Если есть projectname, тоже используем для name
+      if (data.projectname) {
+        data.name = data.projectname;
+        delete data.projectname;
+      }
+
+      // Проверяем, что поле name существует
+      if (!data.name) {
+        // Если поле name отсутствует, выводим предупреждение
+        console.warn("Project name is missing! This may cause errors.");
+      }
+
+      // Additional field mappings if needed
+      if (data.projecttype) {
+        data.project_type = data.projecttype;
+        delete data.projecttype;
+      }
+
+      if (data.startdate) {
+        data.start_date = data.startdate;
+        delete data.startdate;
+      }
+
+      if (data.enddate) {
+        data.end_date = data.enddate;
+        delete data.enddate;
+      }
+
+      if (data.businesstype) {
+        data.business_type = data.businesstype;
+        delete data.businesstype;
+      }
+
+      if (data.contractorid) {
+        data.contractor_id = data.contractorid;
+        delete data.contractorid;
+      }
+
+      if (data.contactpersonid) {
+        data.contact_person_id = data.contactpersonid;
+        delete data.contactpersonid;
+      }
+
+      if (data.actualcost) {
+        data.actual_cost = data.actualcost;
+        delete data.actualcost;
+      }
+
+      if (data.lastupdate) {
+        data.last_update = data.lastupdate;
+        delete data.lastupdate;
+      }
+
+      if (data.managerid) {
+        data.manager_id = data.managerid;
+        delete data.managerid;
+      }
+
+      if (data.contractamount) {
+        data.contract_amount = data.contractamount;
+        delete data.contractamount;
+      }
+
+      if (data.stageDescription) {
+        data.stage_description = data.stageDescription;
+        delete data.stageDescription;
+      }
+
+      if (data.scheduledInspectionDate) {
+        data.scheduled_inspection_date = data.scheduledInspectionDate;
+        delete data.scheduledInspectionDate;
+      }
+
+      // Specific data handling for future projects (planning details)
+      if (type === "future") {
+        // Form fields are already converted to snake_case above
+        // Convert date formats if necessary
+        if (data.start_date)
+          data.start_date = this.formatDateForStorage(data.start_date);
+        if (data.end_date)
+          data.end_date = this.formatDateForStorage(data.end_date);
+
+        // Ensure status is set correctly for new future projects
+        if (!projectId) {
+          data.status = "planned"; // Or 'pending', match your default status for future projects
+        }
+      }
+
+      // Specific data handling for current projects
+      if (type === "current") {
+        // Form fields are already converted to snake_case above
+        // Convert date formats
+        if (data.start_date)
+          data.start_date = this.formatDateForStorage(data.start_date);
+        if (data.end_date)
+          data.end_date = this.formatDateForStorage(data.end_date);
+        if (data.last_update)
+          data.last_update = this.formatDateForStorage(data.last_update);
+        if (data.scheduled_inspection_date)
+          data.scheduled_inspection_date = this.formatDateForStorage(
+            data.scheduled_inspection_date
+          );
+      }
+
+      console.log("Final data to send:", data);
+
+      const apiUrl =
+        "/Maintenance_P/backend/construction/projects_api.php" +
+        (projectId ? `?id=${projectId}` : ""); // Полный путь до API
+      const method = projectId ? "PUT" : "POST";
+
+      console.log(`Sending ${method} request to ${apiUrl}`);
+
+      const response = await fetch(apiUrl, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      // Для отладки выведем raw-ответ
+      const rawText = await response.text();
+      console.log("Raw API response:", rawText);
+
+      // Попытаемся преобразовать ответ в JSON
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch (e) {
+        console.error("Error parsing JSON response:", e);
+        throw new Error("Invalid JSON response from server");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      console.log("Project saved successfully:", result);
+      alert(result.message || "Project saved successfully!"); // Simple feedback
+      this.closeModals();
+
+      // Refresh the relevant project list
+      if (type === "current") {
+        await this.loadCurrentProjects();
+        this.renderProjects("current");
+        this.updateCurrentProjectStatistics();
+      } else {
+        await this.loadFutureProjects();
+        this.renderProjects("future");
+        this.updateFutureProjectStatistics();
+      }
+    } catch (error) {
+      console.error("Error saving project:", error);
+      alert(`Error saving project: ${error.message}`); // Show error to user
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = projectId ? "Save Changes" : "Add Project";
+    }
+  }
+
+  // --- Remove or comment out the old createProject, updateProject, deleteProject methods ---
+  // createProject(data, type) { ... old code ... }
+  // updateProject(id, data, type) { ... old code ... }
+  // deleteProject(id, type) { ... old code ... }
+  // --- End Removal ---
+
+  // Function to collect files (kept for reference, needs rework for backend uploads)
+  collectFilesFromContainer(containerSelector) {
+    if (!containerSelector) return [];
+
+    const container = document.querySelector(containerSelector);
+    if (!container) return [];
+
+    const fileItems = container.querySelectorAll(".file-preview-item");
+    const files = [];
+
+    fileItems.forEach((item) => {
+      const fileName = item.dataset.fileName;
+      const mimeType = item.dataset.mimeType;
+      const fileType = item.dataset.fileType;
+      const isMigrated =
+        item.closest(".migrated-files") !== null ||
+        container.closest(".migrated-files") !== null;
+
+      // Проверяем наличие элемента img, чтобы определить, является ли это изображением
+      const imgElement = item.querySelector("img");
+      let src = null;
+
+      if (imgElement && imgElement.src) {
+        src = imgElement.src;
+        console.log(`Collecting file ${fileName} with src: ${src}`); // Для отладки
+      }
+
+      // Получаем имя файла из элемента с классом file-name, если оно доступно
+      const fileNameElement = item.querySelector(".file-name");
+      const displayedName = fileNameElement
+        ? fileNameElement.textContent
+        : null;
+
+      // Для фотографий и изображений всегда устанавливаем правильный тип MIME
+      let finalMimeType = mimeType;
+      if (
+        fileType === "photo" &&
+        (!mimeType || !mimeType.startsWith("image/"))
+      ) {
+        // Определяем тип MIME на основе расширения файла
+        if (fileName && fileName.match(/\.jpe?g$/i)) {
+          finalMimeType = "image/jpeg";
+        } else if (fileName && fileName.match(/\.png$/i)) {
+          finalMimeType = "image/png";
+        } else if (fileName && fileName.match(/\.gif$/i)) {
+          finalMimeType = "image/gif";
+        } else if (fileName && fileName.match(/\.webp$/i)) {
+          finalMimeType = "image/webp";
+        } else {
+          finalMimeType = "image/jpeg"; // По умолчанию
+        }
+      }
+
+      // Создаем объект файла с метаданными
+      files.push({
+        name: fileName || displayedName || "Unknown file",
+        originalName: fileName || displayedName || "Unknown file", // Сохраняем оригинальное имя
+        type: finalMimeType || "application/octet-stream",
+        fileType: fileType || "unknown",
+        src: src, // Добавляем src для изображений
+        isStoredFile: true, // Отмечаем, что это сохраненный файл, а не свежезагруженный
+        migratedFromFuture: isMigrated, // Сохраняем статус миграции
       });
     });
 
-    // Business type filter for contractors
-    const businessTypeFilter = this.container.querySelector(
-      "#business-type-filter"
-    );
-    if (businessTypeFilter) {
-      businessTypeFilter.addEventListener("change", (e) => {
-        this.filters.contractors.businessType = e.target.value;
-        this.applyFilters("contractors");
-      });
-    }
-
-    // Rating filter for contractors
-    const ratingFilter = this.container.querySelector("#rating-filter");
-    if (ratingFilter) {
-      ratingFilter.addEventListener("change", (e) => {
-        this.filters.contractors.rating = e.target.value;
-        this.applyFilters("contractors");
-      });
-    }
+    return files;
   }
 
-  // Method to update business type filter options
+  // Метод для сбора файлов из input и сохранения существующих
+  collectFiles(inputSelector, previewSelector) {
+    const files = [];
+
+    // Получаем элемент input
+    const input = this.container.querySelector(inputSelector);
+    if (!input) return files;
+
+    // Проверяем, есть ли новые выбранные файлы для загрузки
+    if (input.files && input.files.length > 0) {
+      for (let i = 0; i < input.files.length; i++) {
+        const file = input.files[i];
+        files.push({
+          name: file.name,
+          originalName: file.name,
+          type: file.type,
+          file: file, // Это объект File, а не строка с данными
+          isStoredFile: false,
+          migratedFromFuture: false, // Новые файлы никогда не мигрированные
+        });
+      }
+    }
+
+    // Получаем ранее загруженные файлы из превью
+    const previewContainer = this.container.querySelector(previewSelector);
+    if (previewContainer) {
+      // Собираем существующие файлы из контейнера превью
+      const existingFiles = this.collectFilesFromContainer(previewContainer);
+      files.push(...existingFiles);
+    }
+
+    // Для случая с мигрированными проектами в модальном окне, нужно собрать файлы из дополнительных секций
+    // Определяем тип контейнера по селектору
+    if (
+      inputSelector.includes("current-photos") ||
+      inputSelector.includes("current-reports") ||
+      inputSelector.includes("current-documents")
+    ) {
+      // Проверяем, есть ли в модальном окне мигрированные файлы
+      const migratedFilesGroup = this.container.querySelector(
+        "#current-project-modal .migrated-files-group"
+      );
+      if (migratedFilesGroup) {
+        // Если это контейнер для фотографий, нам не нужно собирать мигрированные файлы
+        if (
+          !inputSelector.includes("photos") &&
+          !inputSelector.includes("reports")
+        ) {
+          // Для documents собираем мигрированные документы
+          const migratedDocs = migratedFilesGroup.querySelectorAll(
+            ".file-preview-container"
+          );
+          migratedDocs.forEach((container) => {
+            const containerFiles = this.collectFilesFromContainer(container);
+            // Убедимся, что все файлы помечены как мигрированные
+            containerFiles.forEach((file) => {
+              file.migratedFromFuture = true;
+            });
+            files.push(...containerFiles);
+          });
+        }
+      }
+    }
+
+    return files;
+  }
+
+  // Метод для обновления списка типов бизнеса в фильтре
   updateBusinessTypeFilter() {
     const businessTypeFilter = this.container.querySelector(
       "#business-type-filter"
     );
     if (!businessTypeFilter) return;
 
-    // Get unique business types
+    // Получаем уникальные типы бизнеса
     const businessTypes = [
       ...new Set(this.contractors.map((c) => c.businessType)),
-    ].filter(Boolean);
+    ];
 
-    // Create options HTML
-    const optionsHtml = `
-      <option value="all">All Types</option>
-      ${businessTypes
-        .map((type) => `<option value="${type}">${type}</option>`)
-        .join("")}
+    businessTypeFilter.innerHTML = `
+        <option value="all">All Types</option>
+        ${businessTypes
+          .map(
+            (type) => `
+            <option value="${type}">${type}</option>
+        `
+          )
+          .join("")}
     `;
-
-    // Update the select element
-    businessTypeFilter.innerHTML = optionsHtml;
   }
 
-  // Method to apply filters to a section
-  applyFilters(section) {
-    switch (section) {
-      case "contractors":
-        this.applyContractorFilters();
-        break;
-      case "current-projects":
-        this.applyProjectFilters("current");
-        break;
-      case "future-projects":
-        this.applyProjectFilters("future");
-        break;
-    }
-  }
+  // Метод для применения фильтров
+  applyFilters() {
+    const filteredContractors = this.contractors.filter((contractor) => {
+      // Фильтр по названию компании
+      const matchesSearch =
+        contractor.companyName
+          .toLowerCase()
+          .includes(this.filters.contractors.search) ||
+        contractor.businessType
+          .toLowerCase()
+          .includes(this.filters.contractors.search);
 
-  // Method to apply contractor filters
-  applyContractorFilters() {
-    const filters = this.filters.contractors;
-    let filteredContractors = [...this.contractors];
+      // Фильтр по типу бизнеса
+      const matchesBusinessType =
+        this.filters.contractors.businessType === "all" ||
+        contractor.businessType === this.filters.contractors.businessType;
 
-    // Apply search filter
-    if (filters.search) {
-      filteredContractors = filteredContractors.filter(
-        (contractor) =>
-          contractor.companyName.toLowerCase().includes(filters.search) ||
-          contractor.businessType.toLowerCase().includes(filters.search) ||
-          contractor.location.toLowerCase().includes(filters.search) ||
-          contractor.email.toLowerCase().includes(filters.search) ||
-          contractor.phone.toLowerCase().includes(filters.search)
-      );
-    }
+      // Фильтр по рейтингу
+      const matchesRating =
+        this.filters.contractors.rating === "all" ||
+        contractor.rating >= parseInt(this.filters.contractors.rating);
 
-    // Apply business type filter
-    if (filters.businessType !== "all") {
-      filteredContractors = filteredContractors.filter(
-        (contractor) => contractor.businessType === filters.businessType
-      );
-    }
-
-    // Apply rating filter
-    if (filters.rating !== "all") {
-      const ratingValue = parseInt(filters.rating);
-      filteredContractors = filteredContractors.filter(
-        (contractor) => contractor.rating === ratingValue
-      );
-    }
-
-    // Render filtered contractors
-    this.renderContractors(filteredContractors);
-  }
-
-  // Method to apply project filters
-  applyProjectFilters(type) {
-    const filters =
-      this.filters[type === "current" ? "currentProjects" : "futureProjects"];
-    const projects =
-      type === "current" ? this.currentProjects : this.futureProjects;
-    let filteredProjects = [...projects];
-
-    // Apply search filter
-    if (filters.search) {
-      filteredProjects = filteredProjects.filter(
-        (project) =>
-          project.name.toLowerCase().includes(filters.search) ||
-          project.location.toLowerCase().includes(filters.search)
-      );
-    }
-
-    // Apply location filter
-    if (filters.location) {
-      filteredProjects = filteredProjects.filter((project) =>
-        project.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
-    // Apply status/priority filter
-    if (filters.status !== "all") {
-      filteredProjects = filteredProjects.filter(
-        (project) => project.status === filters.status
-      );
-    }
-
-    // Apply date filter
-    if (filters.date !== "all") {
-      // Implement date filtering logic here
-    }
-
-    // Render filtered projects
-    this.renderProjects(type, filteredProjects);
-  }
-
-  // Helper method to close all modals
-  closeModals() {
-    this.container.querySelectorAll(".modal").forEach((modal) => {
-      modal.classList.remove("active");
+      return matchesSearch && matchesBusinessType && matchesRating;
     });
+
+    this.renderFilteredContractors(filteredContractors);
   }
 
-  // Method to show contractor modal for adding or editing
-  showContractorModal(contractor = null) {
-    const modal = this.container.querySelector("#contractor-modal");
-    const form = modal.querySelector("#contractor-form");
-    const title = modal.querySelector("#contractor-modal-title");
+  // Метод для отображения отфильтрованных подрядчиков
+  renderFilteredContractors(filteredContractors) {
+    const container = this.container.querySelector("#contractors-list");
+    if (!container) return;
 
-    // Reset the form to clear previous data
-    form.reset();
-
-    // Set the title based on whether we're adding or editing
-    title.textContent = contractor ? "Edit Contractor" : "Add Contractor";
-
-    // Fill the form with existing data if editing
-    if (contractor) {
-      form.elements.companyName.value = contractor.companyName || "";
-      form.elements.businessType.value = contractor.businessType || "";
-      form.elements.location.value = contractor.location || "";
-      form.elements.email.value = contractor.email || "";
-      form.elements.phone.value = contractor.phone || "";
-
-      // Contact person details if available
-      if (contractor.contactPerson) {
-        form.elements.contactName.value = contractor.contactPerson.name || "";
-        form.elements.position.value = contractor.contactPerson.position || "";
-        form.elements.contactPhone.value = contractor.contactPerson.phone || "";
-        form.elements.contactEmail.value = contractor.contactPerson.email || "";
-      }
-
-      // Set the rating
-      const rating = parseInt(contractor.rating) || 0;
-      form.elements.rating.value = rating;
-
-      // Update the star icons to match the rating
-      modal.querySelectorAll(".rating i").forEach((star, index) => {
-        star.className = index < rating ? "fas fa-star" : "far fa-star";
-      });
-
-      // Store contractor ID for update
-      form.dataset.contractorId = contractor.id;
-    } else {
-      // Clear any stored ID when adding new contractor
-      delete form.dataset.contractorId;
-
-      // Reset rating to 0
-      form.elements.rating.value = 0;
-      modal.querySelectorAll(".rating i").forEach((star) => {
-        star.className = "far fa-star";
-      });
+    if (filteredContractors.length === 0) {
+      container.innerHTML = `
+        <div class="no-results">
+          <i class="fas fa-search"></i>
+          <h3>No contractors found</h3>
+          <p>Try adjusting your search criteria</p>
+        </div>
+      `;
+      return;
     }
 
-    // Show the modal
-    modal.classList.add("active");
-  }
+    // Используем существующий метод рендеринга
+    container.innerHTML = filteredContractors
+      .map((contractor) => {
+        // Используем API структуру данных (плоская структура)
+        const companyName =
+          contractor.company_name || contractor.companyName || "N/A";
+        const businessType =
+          contractor.business_type || contractor.businessType || "N/A";
+        const location = contractor.location || "N/A";
+        const email = contractor.email || "N/A";
+        const phone = contractor.phone || "N/A";
+        const rating = contractor.rating || 0;
+        const contactPersonName = contractor.contact_person || "N/A";
+        const contactPersonPosition =
+          contractor.contact_person_position || "N/A";
+        const contactPersonPhone = phone; // Используем основной телефон
+        const contactPersonEmail = email; // Используем основной email
+        const employees = contractor.employees || [];
 
-  // Method to handle contractor form submission
-  handleContractorSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-
-    // Gather form data
-    const contractorData = {
-      companyName: form.elements.companyName.value,
-      businessType: form.elements.businessType.value,
-      location: form.elements.location.value,
-      email: form.elements.email.value,
-      phone: form.elements.phone.value,
-      rating: parseInt(form.elements.rating.value) || 0,
-      contactPerson: {
-        name: form.elements.contactName.value,
-        position: form.elements.position.value,
-        phone: form.elements.contactPhone.value,
-        email: form.elements.contactEmail.value,
-      },
-    };
-
-    if (form.dataset.contractorId) {
-      // Update existing contractor
-      const contractorId = parseInt(form.dataset.contractorId);
-      this.updateContractor(contractorId, contractorData);
-    } else {
-      // Create new contractor
-      this.createContractor(contractorData);
-    }
-
-    // Close the modal
-    this.closeModals();
-  }
-
-  updateContractor(contractorId, contractorData) {
-    // Implement the logic to update an existing contractor
-    // This might involve making an API call to update the contractor data
-    console.log("Updating contractor:", contractorId, contractorData);
-  }
-
-  createContractor(contractorData) {
-    // Implement the logic to create a new contractor
-    // This might involve making an API call to create a new contractor
-    console.log("Creating new contractor:", contractorData);
-  }
-
-  // Method to create a new contractor
-  createContractor(data) {
-    // First add to local data structure for immediate feedback
-    const newContractor = {
-      id: Date.now(), // Temporary ID until server responds
-      ...data,
-      employees: [],
-    };
-
-    // Prepare data for API
-    const apiData = {
-      company_name: data.companyName,
-      business_type: data.businessType,
-      location: data.location || "",
-      email: data.email || "",
-      phone: data.phone || "",
-      rating: parseInt(data.rating) || 0,
-      contact_person: {
-        name: data.contactPerson.name || "",
-        position: data.contactPerson.position || "",
-        phone: data.contactPerson.phone || "",
-        email: data.contactPerson.email || "",
-        is_primary_contact: 1,
-      },
-    };
-
-    // Исправленный URL API - напрямую к contractors.php вместо index.php
-    fetch(
-      "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apiData),
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
+        return `
+      <div class="contractor-card" data-id="${contractor.id}">
+        <div class="contractor-header">
+          <h3>${companyName}</h3>
+          <div class="contractor-rating">
+            ${this.generateRatingStars(rating)}
+          </div>
+        </div>
+        <div class="contractor-info">
+          <div class="info-item">
+            <i class="fas fa-briefcase"></i>
+            <span>${businessType}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-location-dot"></i>
+            <span>${location}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-envelope"></i>
+            <span>${email}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-phone"></i>
+            <span>${phone}</span>
+          </div>
+        </div>
+        <div class="contact-person-info">
+          <h4>Contact Person</h4>
+          <div class="info-item">
+            <i class="fas fa-user"></i>
+            <span>${contactPersonName}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-id-badge"></i>
+            <span>${contactPersonPosition}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-phone"></i>
+            <span>${contactPersonPhone}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-envelope"></i>
+            <span>${contactPersonEmail}</span>
+          </div>
+        </div>
+        <div class="contractor-employees">
+          <h4>Employees (${employees.length})</h4>
+          <div class="employees-list">
+            ${this.renderEmployeesList(employees)}
+          </div>
+          <button class="btn-secondary add-employee" data-contractor-id="${
+            contractor.id
+          }">
+            <i class="fas fa-user-plus"></i> Add Employee
+          </button>
+        </div>
+        <div class="contractor-actions">
+          <button class="btn-action edit" data-contractor-id="${contractor.id}">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-action delete" data-contractor-id="${
+            contractor.id
+          }">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
       })
-      .then((responseData) => {
-        if (responseData.success) {
-          // Refresh the contractors list
-          this.loadContractors().then(() => this.renderContractors());
-        } else {
-          console.error("Error creating contractor:", responseData.message);
-          alert("Failed to create contractor: " + responseData.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error creating contractor:", error);
-        alert("Failed to create contractor. Please try again.");
-      });
+      .join("");
+  }
 
-    // Add to local array for immediate UI update
-    this.contractors.push(newContractor);
+  // Метод для сброса фильтров
+  resetFilters() {
+    this.filters.contractors = {
+      search: "",
+      businessType: "all",
+      rating: "all",
+    };
+
+    // Сбрасываем значения в форме
+    const searchInput = this.container.querySelector("#contractor-search");
+    const businessTypeFilter = this.container.querySelector(
+      "#business-type-filter"
+    );
+    const ratingFilter = this.container.querySelector("#rating-filter");
+
+    if (searchInput) searchInput.value = "";
+    if (businessTypeFilter) businessTypeFilter.value = "all";
+    if (ratingFilter) ratingFilter.value = "all";
+
+    // Перерендериваем список
     this.renderContractors();
   }
 
-  // Method to update an existing contractor
-  updateContractor(contractorId, data) {
-    // Find the contractor in the local array
-    const index = this.contractors.findIndex((c) => c.id === contractorId);
-    if (index === -1) return;
-
-    // Update local data first for immediate feedback
-    const updatedContractor = {
-      ...this.contractors[index],
-      ...data,
-    };
-    this.contractors[index] = updatedContractor;
-
-    // Prepare data for API
-    const apiData = {
-      company_name: data.companyName,
-      business_type: data.businessType,
-      location: data.location || "",
-      email: data.email || "",
-      phone: data.phone || "",
-      rating: parseInt(data.rating) || 0,
-      contact_person: {
-        name: data.contactPerson.name || "",
-        position: data.contactPerson.position || "",
-        phone: data.contactPerson.phone || "",
-        email: data.contactPerson.email || "",
-        is_primary_contact: 1,
-      },
-    };
-
-    // Исправленный URL API - напрямую к contractors.php вместо index.php
-    fetch(
-      `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apiData),
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((responseData) => {
-        if (responseData.success) {
-          // Refresh the contractors list
-          this.loadContractors().then(() => this.renderContractors());
-        } else {
-          console.error("Error updating contractor:", responseData.message);
-          alert("Failed to update contractor: " + responseData.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error updating contractor:", error);
-        alert("Failed to update contractor. Please try again.");
-      });
-
-    // Update the UI immediately for better UX
-    this.renderContractors();
-  }
-
-  // Method to delete a contractor
-  deleteContractor(contractorId) {
-    if (!confirm("Are you sure you want to delete this contractor?")) return;
-
-    // Remove from local array first for immediate feedback
-    this.contractors = this.contractors.filter((c) => c.id !== contractorId);
-
-    // Исправленный URL API - напрямую к contractors.php вместо index.php
-    fetch(
-      `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?id=${contractorId}`,
-      {
-        method: "DELETE",
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((responseData) => {
-        if (responseData.success) {
-          // Already removed from local array, just re-render
-          this.renderContractors();
-        } else {
-          console.error("Error deleting contractor:", responseData.message);
-          alert("Failed to delete contractor: " + responseData.message);
-
-          // Reload contractors to restore the deleted one
-          this.loadContractors().then(() => this.renderContractors());
-        }
-      })
-      .catch((error) => {
-        console.error("Error deleting contractor:", error);
-        alert("Failed to delete contractor. Please try again.");
-
-        // Reload contractors to restore the deleted one
-        this.loadContractors().then(() => this.renderContractors());
-      });
-
-    // Render immediately for UI feedback
-    this.renderContractors();
-  }
-
-  // Метод для заполнения списка подрядчиков в выпадающем списке
+  // Метод для заполнения списка подрядчиков
   populateContractorSelect(select) {
+    console.log("Populating contractor select dropdown");
+
+    // Проверка параметра
+    if (!select || !(select instanceof HTMLElement)) {
+      console.error(
+        "Invalid select element provided to populateContractorSelect"
+      );
+      return;
+    }
+
     // Очищаем текущий список
     select.innerHTML = '<option value="">Select Contractor</option>';
+
+    // Проверяем наличие подрядчиков
+    if (
+      !this.contractors ||
+      !Array.isArray(this.contractors) ||
+      this.contractors.length === 0
+    ) {
+      console.warn("No contractors available to populate dropdown");
+      return;
+    }
+
+    console.log(
+      `Found ${this.contractors.length} contractors to populate dropdown`
+    );
 
     // Заполняем список подрядчиками
     this.contractors.forEach((contractor) => {
       const option = document.createElement("option");
       option.value = contractor.id;
-      option.textContent = `${contractor.companyName} (${contractor.businessType})`;
+
+      // Используем подходящее поле имени компании, учитывая разные форматы данных
+      const companyName =
+        contractor.company_name || contractor.companyName || "Unknown";
+      const businessType =
+        contractor.business_type || contractor.businessType || "General";
+
+      option.textContent = `${companyName} (${businessType})`;
       select.appendChild(option);
     });
+
+    console.log("Contractor select dropdown populated successfully");
   }
 
   // Метод для обновления списка контактных лиц при выборе подрядчика
   updateContactPersonSelect(contractorId) {
-    // Находим активную форму (в модальном окне)
+    console.log(
+      `Updating contact person list for contractor ID: ${contractorId}`
+    );
+
+    // Находим активную форму
+    let activeForm = null;
+    const currentForm = this.container.querySelector("#current-project-form");
+    const futureForm = this.container.querySelector("#future-project-form");
+
+    // Ищем активную форму среди модальных окон
     const activeModal = this.container.querySelector(".modal.active");
-    if (!activeModal) return;
+    if (activeModal) {
+      activeForm = activeModal.querySelector("form");
+    } else {
+      // Если нет активного модального окна, проверяем обе формы
+      activeForm =
+        currentForm && currentForm.offsetParent
+          ? currentForm
+          : futureForm && futureForm.offsetParent
+          ? futureForm
+          : null;
+    }
 
-    const form = activeModal.querySelector("form");
-    if (!form) return;
+    if (!activeForm) {
+      console.warn("No active form found for contact person update");
+      return;
+    }
 
-    const contactPersonSelect = form.elements.contactPersonId;
-    if (!contactPersonSelect) return;
+    const contactPersonSelect = activeForm.elements.contactPersonId;
+    if (!contactPersonSelect) {
+      console.warn("Contact person select not found in the form");
+      return;
+    }
 
     // Очищаем список и делаем его неактивным, если не выбран подрядчик
     contactPersonSelect.innerHTML =
@@ -11909,429 +3954,949 @@ export default class ConstructionManager {
     // Находим выбранного подрядчика
     const contractor = this.contractors.find((c) => c.id == contractorId);
     if (!contractor) {
+      console.warn(`Contractor with ID ${contractorId} not found`);
       contactPersonSelect.disabled = true;
       return;
     }
+
+    console.log("Found contractor:", contractor);
 
     // Делаем список активным
     contactPersonSelect.disabled = false;
 
     // Добавляем основное контактное лицо подрядчика
-    if (contractor.contactPerson) {
+    if (contractor.contact_person) {
       const option = document.createElement("option");
-      option.value = contractor.contactPerson.id; // Use the contact person's ID instead of contractor ID
-      option.textContent = `${contractor.contactPerson.name} (${
-        contractor.contactPerson.position || "Primary Contact"
+      option.value = `contact_${contractorId}`; // Особый ID для основного контактного лица
+      option.textContent = `${contractor.contact_person} (${
+        contractor.contact_person_position || "Contact Person"
       })`;
       contactPersonSelect.appendChild(option);
+
+      console.log(`Added main contact person: ${contractor.contact_person}`);
     }
 
     // Добавляем сотрудников подрядчика
-    if (contractor.employees && contractor.employees.length > 0) {
+    if (
+      contractor.employees &&
+      Array.isArray(contractor.employees) &&
+      contractor.employees.length > 0
+    ) {
+      console.log(
+        `Adding ${contractor.employees.length} employees from contractor`
+      );
+
       contractor.employees.forEach((employee) => {
         const option = document.createElement("option");
         option.value = employee.id;
-        option.textContent = `${employee.name || employee.fullName} (${
-          employee.position || "Employee"
-        })`;
+
+        // Используем поля, совместимые с нашим API
+        const fullName = employee.fullName || employee.full_name || "Unknown";
+        const position = employee.position || "Employee";
+
+        option.textContent = `${fullName} (${position})`;
         contactPersonSelect.appendChild(option);
       });
+    } else {
+      console.log("No employees found for this contractor");
     }
   }
 
-  // Оставляю только рабочую версию метода loadContractors
-  async loadContractors() {
-    try {
-      const response = await fetch(
-        "/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php"
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+  // Вспомогательные методы
+  generateRatingStars(rating) {
+    return Array(5)
+      .fill(0)
+      .map(
+        (_, index) => `
+      <i class="fa${index < rating ? "s" : "r"} fa-star"></i>
+    `
+      )
+      .join("");
+  }
+
+  getContractorName(id) {
+    const contractor = this.contractors.find((c) => c.id === id);
+    return contractor ? contractor.companyName : "Unknown";
+  }
+
+  getContactPersonName(id) {
+    for (const contractor of this.contractors) {
+      const employee = contractor.employees.find((e) => e.id === id);
+      if (employee) return employee.fullName;
+    }
+    return "Unknown";
+  }
+
+  updateContactPersons(contractorId) {
+    // Находим форму, в которой обновляем список контактных лиц
+    const currentForm = this.container.querySelector("#current-project-form");
+    const futureForm = this.container.querySelector("#future-project-form");
+
+    const forms = [currentForm, futureForm].filter((form) => form);
+
+    // Альтернативный метод поиска форм для активных модальных окон
+    if (forms.length === 0) {
+      const activeModal = this.container.querySelector(".modal.active");
+      if (activeModal) {
+        const formInModal = activeModal.querySelector("form");
+        if (formInModal) {
+          forms.push(formInModal);
+        }
+      }
+    }
+
+    forms.forEach((form) => {
+      const contactPersonSelect = form.elements.contactPersonId;
+      if (!contactPersonSelect) return;
+
+      // Очищаем список и делаем его неактивным, если не выбран подрядчик
+      contactPersonSelect.innerHTML =
+        '<option value="">Select Contact Person</option>';
+
+      if (!contractorId) {
+        contactPersonSelect.disabled = true;
+        return;
       }
 
-      const result = await response.json();
-      if (result.success) {
-        // Convert API format to client format
-        this.contractors = result.data.map((contractor) => {
-          return {
-            id: parseInt(contractor.id),
-            companyName: contractor.company_name,
-            businessType: contractor.business_type,
-            location: contractor.location || "",
-            email: contractor.email || "",
-            phone: contractor.phone || "",
-            rating: parseInt(contractor.rating) || 0,
-            contactPerson: contractor.contact_person
-              ? {
-                  id: parseInt(contractor.contact_person.id),
-                  name: contractor.contact_person.name,
-                  position: contractor.contact_person.position || "",
-                  phone: contractor.contact_person.phone || "",
-                  email: contractor.contact_person.email || "",
-                }
-              : {
-                  name: "None",
-                  position: "",
-                  phone: "",
-                  email: "",
-                },
-            employees: contractor.employees
-              ? contractor.employees.map((emp) => ({
-                  id: parseInt(emp.id),
-                  fullName: emp.name,
-                  position: emp.position || "",
-                  phone: emp.phone || "",
-                  email: emp.email || "",
-                }))
-              : [],
-          };
+      // Находим выбранного подрядчика
+      const contractor = this.contractors.find((c) => c.id == contractorId);
+      if (!contractor) {
+        contactPersonSelect.disabled = true;
+        return;
+      }
+
+      // Делаем список активным
+      contactPersonSelect.disabled = false;
+
+      // Добавляем основное контактное лицо подрядчика
+      if (contractor.contactPerson) {
+        const option = document.createElement("option");
+        option.value = contractorId; // Используем ID подрядчика для основного контактного лица
+        option.textContent = `${contractor.contactPerson.name} (${contractor.contactPerson.position})`;
+        contactPersonSelect.appendChild(option);
+      }
+
+      // Добавляем сотрудников подрядчика
+      if (contractor.employees && contractor.employees.length > 0) {
+        contractor.employees.forEach((employee) => {
+          const option = document.createElement("option");
+          option.value = employee.id;
+          option.textContent = `${employee.fullName} (${employee.position})`;
+          contactPersonSelect.appendChild(option);
         });
-      } else {
-        console.error("Failed to load contractors:", result.message);
-        // Fallback to empty array
-        this.contractors = [];
       }
-    } catch (error) {
-      console.error("Error loading contractors:", error);
-      // Fallback to empty array on error
-      this.contractors = [];
+    });
+  }
+
+  closeModals() {
+    this.container.querySelectorAll(".modal").forEach((modal) => {
+      modal.classList.remove("active");
+
+      // Очищаем информацию о перенесенных проектах при закрытии модального окна
+      const form = modal.querySelector("form");
+      if (form) {
+        // Удаляем info-message элементы
+        const infoMessages = form.querySelectorAll(".info-message");
+        infoMessages.forEach((msg) => msg.remove());
+
+        // Удаляем migrated-fields секции
+        const migratedFields = form.querySelectorAll(".migrated-fields");
+        migratedFields.forEach((field) => field.remove());
+      }
+    });
+  }
+
+  // Обработчики событий форм
+  handleContractorSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const contractorId = form.dataset.contractorId
+      ? parseInt(form.dataset.contractorId)
+      : null;
+
+    // Добавим лог для отладки
+    console.log("handleContractorSubmit: Form values:", {
+      companyName: form.elements.companyName.value,
+      businessType: form.elements.businessType.value,
+      location: form.elements.location.value,
+      position: form.elements.position.value,
+      rating: form.elements.rating.value,
+    });
+
+    const contractorData = {
+      company_name: form.elements.companyName.value,
+      business_type: form.elements.businessType.value,
+      location: form.elements.location.value, // Убедимся, что location правильно включен
+      email: form.elements.email.value,
+      phone: form.elements.phone.value,
+      contact_person: form.elements.contactName.value,
+      contact_person_position: form.elements.position.value,
+      rating: parseInt(form.elements.rating.value) || 0,
+      project_id: 1, // ВРЕМЕННАЯ ЗАГЛУШКА - ЗАМЕНИТЬ!
+    };
+
+    // Логируем итоговый объект данных перед отправкой
+    console.log(
+      "handleContractorSubmit: Data being sent:",
+      JSON.stringify(contractorData)
+    );
+
+    // Убираем временную заглушку для project_id
+    // if (!contractorData.project_id) {
+    //    console.warn("handleContractorSubmit: project_id is missing! Setting to null for now. Fix this!");
+    //    contractorData.project_id = null;
+    // }
+
+    // ВАЖНО: Добавьте здесь логику получения project_id
+    // Например, если у вас есть select для проекта в форме или он передается при открытии раздела:
+    // const projectIdSelect = document.getElementById('project-selector'); // Пример
+    // if (projectIdSelect && projectIdSelect.value) {
+    //      contractorData.project_id = parseInt(projectIdSelect.value);
+    // } else {
+    //      alert("Error: Project ID is missing!");
+    //      console.error("handleContractorSubmit: Could not determine Project ID.");
+    //      return; // Не продолжаем без ID проекта
+    // }
+    // Временная заглушка для теста (удалите это)
+    if (!contractorData.project_id) {
+      contractorData.project_id = 1; // Установите ID существующего проекта для теста
+      console.warn(
+        `handleContractorSubmit: Using TEST Project ID: ${contractorData.project_id}. REMOVE THIS!`
+      );
+    }
+
+    if (contractorId) {
+      this.updateContractor(contractorId, contractorData);
+    } else {
+      // Проверка project_id перед созданием
+      if (!contractorData.project_id) {
+        alert("Error: Cannot add contractor without a Project ID.");
+        console.error(
+          "handleContractorSubmit: project_id is null or undefined before calling createContractor."
+        );
+        return; // Прерываем выполнение
+      }
+      this.createContractor(contractorData);
+    }
+
+    this.closeModals();
+  }
+
+  setupSearchFilters() {
+    // Keep only contractor filter logic, remove project filters
+    const contractorsSection = this.container.querySelector(
+      "#contractors-section"
+    );
+    if (contractorsSection) {
+      const searchInput = this.container.querySelector("#contractor-search");
+      const businessTypeSelect = this.container.querySelector(
+        "#business-type-filter"
+      );
+      const ratingSelect = this.container.querySelector("#rating-filter");
+      const resetButton = this.container.querySelector("#reset-filters");
+
+      if (searchInput) {
+        searchInput.addEventListener("input", () => {
+          this.filters.contractors.search = searchInput.value.toLowerCase();
+          this.filterContractors();
+        });
+      }
+
+      if (businessTypeSelect) {
+        businessTypeSelect.addEventListener("change", () => {
+          this.filters.contractors.businessType = businessTypeSelect.value;
+          this.filterContractors();
+        });
+      }
+
+      if (ratingSelect) {
+        ratingSelect.addEventListener("change", () => {
+          this.filters.contractors.rating = ratingSelect.value;
+          this.filterContractors();
+        });
+      }
+
+      if (resetButton) {
+        resetButton.addEventListener("click", () => {
+          this.resetContractorFilters();
+        });
+      }
+    }
+
+    // Remove currentProjects and futureProjects filter setup
+  }
+
+  filterContractors() {
+    const searchInput = this.container.querySelector("#contractor-search");
+    const businessTypeFilter = this.container.querySelector(
+      "#business-type-filter"
+    );
+    const ratingFilter = this.container.querySelector("#rating-filter");
+
+    if (searchInput) {
+      this.filters.contractors.search = searchInput.value.toLowerCase();
+    }
+    if (businessTypeFilter) {
+      this.filters.contractors.businessType = businessTypeFilter.value;
+    }
+    if (ratingFilter) {
+      this.filters.contractors.rating = ratingFilter.value;
+    }
+
+    const filteredContractors = this.contractors.filter((contractor) => {
+      // For filtering, we'll check both company_name and companyName to be safe
+      const companyName =
+        contractor.company_name || contractor.companyName || "";
+      // Same for business_type
+      const businessType =
+        contractor.business_type || contractor.businessType || "";
+
+      const matchesSearch =
+        companyName.toLowerCase().includes(this.filters.contractors.search) ||
+        businessType.toLowerCase().includes(this.filters.contractors.search);
+      const matchesBusinessType =
+        this.filters.contractors.businessType === "all" ||
+        businessType === this.filters.contractors.businessType;
+      const matchesRating =
+        this.filters.contractors.rating === "all" ||
+        contractor.rating >= parseInt(this.filters.contractors.rating);
+
+      return matchesSearch && matchesBusinessType && matchesRating;
+    });
+
+    this.renderFilteredContractors(filteredContractors);
+  }
+
+  resetContractorFilters() {
+    this.filters.contractors = {
+      search: "",
+      businessType: "all",
+      rating: "all",
+    };
+
+    const searchInput = this.container.querySelector("#contractor-search");
+    const businessTypeFilter = this.container.querySelector(
+      "#business-type-filter"
+    );
+    const ratingFilter = this.container.querySelector("#rating-filter");
+
+    if (searchInput) searchInput.value = "";
+    if (businessTypeFilter) businessTypeFilter.value = "all";
+    if (ratingFilter) ratingFilter.value = "all";
+
+    this.renderContractors();
+  }
+
+  // Метод для форматирования даты из YYYY-MM-DD в MM-DD-YY для отображения
+  formatDateForDisplay(dateStr) {
+    if (!dateStr) return "";
+
+    // Проверка, если дата уже в формате MM-DD-YY
+    if (/^\d{2}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
+
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return dateStr; // Возвращаем исходную строку, если не удалось преобразовать
+      }
+
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      // Берем последние 2 цифры года
+      const year = String(date.getFullYear()).slice(-2);
+
+      return `${month}-${day}-${year}`;
+    } catch (e) {
+      console.error("Error formatting date for display:", e);
+      return dateStr;
     }
   }
 
-  // Оставляю только одну копию метода renderContractors
-  renderContractors() {
-    const container = this.container.querySelector("#contractors-list");
-    if (!container) return;
+  // Метод для форматирования даты из MM-DD-YY в YYYY-MM-DD для хранения
+  formatDateForStorage(dateStr) {
+    if (!dateStr) return "";
 
-    if (this.contractors.length === 0) {
-      container.innerHTML = `
-            <div class="no-contractors">
-                <i class="fas fa-building"></i>
-                <h3>No Contractors Yet</h3>
-                <p>Click the "Add Contractor" button to add your first contractor</p>
-            </div>
-        `;
+    // Проверка, если дата уже в формате YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
+
+    try {
+      // Разбиваем строку даты в формате MM-DD-YY
+      const [month, day, shortYear] = dateStr.split("-");
+
+      // Преобразуем двузначный год в четырехзначный
+      let fullYear;
+      const twoDigitYear = parseInt(shortYear, 10);
+      if (twoDigitYear < 50) {
+        // Предполагаем, что годы меньше 50 относятся к 21 веку
+        fullYear = 2000 + twoDigitYear;
+      } else {
+        // А больше или равные 50 - к 20 веку
+        fullYear = 1900 + twoDigitYear;
+      }
+
+      // Формируем дату в формате YYYY-MM-DD
+      return `${fullYear}-${month}-${day}`;
+    } catch (e) {
+      console.error("Error formatting date for storage:", e);
+      return dateStr;
+    }
+  }
+
+  setupRatingHandlers() {
+    // Находим контейнер с рейтингом
+    const ratingContainer = this.container.querySelector(".rating");
+    if (!ratingContainer) return;
+
+    // Получаем все звезды
+    const stars = ratingContainer.querySelectorAll("i");
+
+    // Добавляем обработчики для каждой звезды
+    stars.forEach((star) => {
+      // Обработчик клика - устанавливает рейтинг
+      star.addEventListener("click", (e) => {
+        const rating = parseInt(e.target.dataset.rating);
+        this.setRating(rating);
+      });
+
+      // Обработчик наведения - показывает временный рейтинг
+      star.addEventListener("mouseover", (e) => {
+        const rating = parseInt(e.target.dataset.rating);
+        this.showTemporaryRating(rating);
+      });
+    });
+
+    // Восстанавливаем оригинальный рейтинг при уходе мыши
+    ratingContainer.addEventListener("mouseleave", () => {
+      const ratingInput = this.container.querySelector('input[name="rating"]');
+      if (ratingInput) {
+        const currentRating = parseInt(ratingInput.value) || 0;
+        this.setRating(currentRating);
+      }
+    });
+  }
+
+  showTemporaryRating(rating) {
+    const stars = this.container.querySelectorAll(".rating i");
+    stars.forEach((star, index) => {
+      if (index < rating) {
+        star.className = "fas fa-star";
+      } else {
+        star.className = "far fa-star";
+      }
+    });
+  }
+
+  setRating(rating) {
+    const stars = this.container.querySelectorAll(".rating i");
+    const ratingInput = this.container.querySelector('input[name="rating"]');
+
+    // Обновляем отображение звезд
+    stars.forEach((star, index) => {
+      if (index < rating) {
+        star.className = "fas fa-star";
+      } else {
+        star.className = "far fa-star";
+      }
+    });
+
+    // Обновляем значение в скрытом поле
+    if (ratingInput) {
+      ratingInput.value = rating;
+    }
+  }
+
+  // Метод для обновления списка подрядчиков на основе выбранного типа бизнеса
+  updateContractorSelectByBusinessType(businessType, select) {
+    console.log(`Updating contractor list by business type: "${businessType}"`);
+
+    // Очищаем текущий список
+    select.innerHTML = '<option value="">Select Contractor</option>';
+
+    if (!businessType) {
+      // Если тип бизнеса не выбран, показываем всех подрядчиков
+      this.populateContractorSelect(select);
       return;
     }
 
-    container.innerHTML = this.contractors
-      .map(
-        (contractor) => `
-      <div class="contractor-card" data-id="${contractor.id}">
-        <div class="contractor-header">
-          <h3>${contractor.companyName}</h3>
-          <div class="contractor-rating">
-            ${this.generateRatingStars(contractor.rating)}
-          </div>
-        </div>
-        <div class="contractor-info">
-          <div class="info-item">
-            <i class="fas fa-briefcase"></i>
-            <span>${contractor.businessType}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-location-dot"></i>
-            <span>${contractor.location}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.email}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.phone}</span>
-          </div>
-        </div>
-        <div class="contact-person-info">
-          <h4>Contact Person</h4>
-          <div class="info-item">
-            <i class="fas fa-user"></i>
-            <span>${contractor.contactPerson.name}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-id-badge"></i>
-            <span>${contractor.contactPerson.position}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-phone"></i>
-            <span>${contractor.contactPerson.phone}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-envelope"></i>
-            <span>${contractor.contactPerson.email}</span>
-          </div>
-        </div>
-        <div class="contractor-employees">
-          <h4>Employees (${contractor.employees.length})</h4>
-          <div class="employees-list">
-            ${this.renderEmployeesList(contractor.employees)}
-          </div>
-          <button class="btn-secondary add-employee" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-user-plus"></i> Add Employee
-          </button>
-        </div>
-        <div class="contractor-actions">
-          <button class="btn-action edit" data-contractor-id="${contractor.id}">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-action delete" data-contractor-id="${
-            contractor.id
-          }">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-    `
-      )
-      .join("");
+    // Проверяем наличие подрядчиков
+    if (
+      !this.contractors ||
+      !Array.isArray(this.contractors) ||
+      this.contractors.length === 0
+    ) {
+      console.warn("No contractors available to filter");
+      return;
+    }
 
-    // Добавляем обработчики событий после рендеринга
-    this.bindEmployeeEvents();
+    console.log("Filtering contractors. Available:", this.contractors.length);
 
-    // Add event handlers for contractor edit and delete buttons
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.edit")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          const contractor = this.contractors.find(
-            (c) => c.id === contractorId
-          );
-          if (contractor) {
-            this.showContractorModal(contractor);
-          }
-        });
-      });
+    // Фильтруем подрядчиков по выбранному типу бизнеса
+    // Проверяем оба возможных имени поля: businessType и business_type
+    const filteredContractors = this.contractors.filter(
+      (c) => c.businessType === businessType || c.business_type === businessType
+    );
 
-    this.container
-      .querySelectorAll(".contractor-actions .btn-action.delete")
-      .forEach((button) => {
-        button.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const contractorId = parseInt(button.dataset.contractorId);
-          this.deleteContractor(contractorId);
-        });
-      });
+    console.log(
+      `Found ${filteredContractors.length} contractors of type "${businessType}"`
+    );
+
+    // Заполняем список отфильтрованными подрядчиками
+    filteredContractors.forEach((contractor) => {
+      const option = document.createElement("option");
+      option.value = contractor.id;
+
+      // Используем подходящее поле имени компании, учитывая разные форматы данных
+      const companyName =
+        contractor.company_name || contractor.companyName || "Unknown";
+
+      option.textContent = companyName;
+      select.appendChild(option);
+    });
+
+    // Сбрасываем список контактных лиц, так как подрядчик изменился
+    const form = select.closest("form");
+    if (form) {
+      const contactPersonSelect = form.elements.contactPersonId;
+      if (contactPersonSelect) {
+        contactPersonSelect.innerHTML =
+          '<option value="">Select Contact Person</option>';
+        contactPersonSelect.disabled = true;
+      }
+    }
   }
 
-  // Оставляю только одну копию метода renderEmployeesList
-  renderEmployeesList(employees) {
-    return employees
-      .map(
-        (employee) => `
-        <div class="employee-item">
-            <div class="employee-info">
-                <strong>${employee.fullName}</strong>
-                <span>${employee.position}</span>
-                <span>${employee.phone}</span>
-            </div>
-            <div class="employee-actions">
-                <button class="btn-action edit" data-employee-id="${employee.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-action delete" data-employee-id="${employee.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `
-      )
-      .join("");
+  // Add new method to update project statistics
+  updateProjectStatistics(type) {
+    if (type === "current") {
+      this.updateCurrentProjectStatistics();
+    } else if (type === "future") {
+      this.updateFutureProjectStatistics();
+    }
   }
 
-  // Оставляю только одну копию метода addEmployeeToContractor
-  addEmployeeToContractor(contractorId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      // First add to local data structure for immediate feedback
-      data.id = Date.now(); // Temporary ID
-      contractor.employees.push(data);
+  // Method to update current project statistics
+  updateCurrentProjectStatistics() {
+    // Get all stats elements
+    const totalElement = this.container.querySelector(
+      "#current-projects-total"
+    );
+    const completedElement = this.container.querySelector(
+      "#current-projects-completed"
+    );
+    const inProgressElement = this.container.querySelector(
+      "#current-projects-in-progress"
+    );
+    const onHoldElement = this.container.querySelector(
+      "#current-projects-on-hold"
+    );
 
-      // Prepare data for API
-      const existingEmployees = contractor.employees.filter(
-        (e) => e.id !== data.id
-      );
+    // Calculate stats
+    const total = this.currentProjects.length;
+    const completed = this.currentProjects.filter(
+      (p) => p.status === "completed"
+    ).length;
+    const inProgress = this.currentProjects.filter(
+      (p) => p.status === "in-progress"
+    ).length;
+    const onHold = this.currentProjects.filter(
+      (p) => p.status === "on-hold"
+    ).length;
 
-      const apiData = {
-        company_name: contractor.companyName,
-        business_type: contractor.businessType,
-        location: contractor.location,
-        email: contractor.email,
-        phone: contractor.phone,
-        rating: contractor.rating,
-        notes: contractor.notes || "",
-        employees: [
-          ...existingEmployees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: 0,
-          })),
-          // Add new employee
-          {
-            name: data.fullName,
-            position: data.position || "",
-            phone: data.phone || "",
-            email: data.email || "",
-            is_primary_contact: 0,
-          },
-        ],
-      };
+    // Update DOM
+    if (totalElement) totalElement.textContent = total;
+    if (completedElement) completedElement.textContent = completed;
+    if (inProgressElement) inProgressElement.textContent = inProgress;
+    if (onHoldElement) onHoldElement.textContent = onHold;
+  }
 
-      // Используем правильный URL API
-      fetch(
-        `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(apiData),
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((responseData) => {
-          if (responseData.success) {
-            // Обновляем данные о сотрудниках из ответа API
-            if (responseData.data && responseData.data.employees) {
-              // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-              const updatedContractor = this.contractors.find(
-                (c) => c.id === contractorId
-              );
-              if (updatedContractor) {
-                // Преобразуем сотрудников из формата API в формат UI
-                updatedContractor.employees = responseData.data.employees.map(
-                  (emp) => ({
-                    id: parseInt(emp.id),
-                    fullName: emp.name,
-                    position: emp.position || "",
-                    phone: emp.phone || "",
-                    email: emp.email || "",
-                  })
-                );
+  // Method to update future project statistics
+  updateFutureProjectStatistics() {
+    // Get all stats elements
+    const totalElement = this.container.querySelector("#future-projects-total");
+    const highElement = this.container.querySelector("#future-projects-high");
+    const mediumElement = this.container.querySelector(
+      "#future-projects-medium"
+    );
+    const lowElement = this.container.querySelector("#future-projects-low");
+    const delayedElement = this.container.querySelector(
+      "#future-projects-delayed"
+    );
+
+    // Calculate stats
+    const total = this.futureProjects.length;
+    const highPriority = this.futureProjects.filter(
+      (p) => p.priority === "high"
+    ).length;
+    const mediumPriority = this.futureProjects.filter(
+      (p) => p.priority === "medium"
+    ).length;
+    const lowPriority = this.futureProjects.filter(
+      (p) => p.priority === "low"
+    ).length;
+    const delayed = this.futureProjects.filter(
+      (p) => p.status === "delayed"
+    ).length;
+
+    // Update DOM
+    if (totalElement) totalElement.textContent = total;
+    if (highElement) highElement.textContent = highPriority;
+    if (mediumElement) mediumElement.textContent = mediumPriority;
+    if (lowElement) lowElement.textContent = lowPriority;
+    if (delayedElement) delayedElement.textContent = delayed;
+  }
+
+  ensureFileStructures(project, type) {
+    // Список типов файлов для каждого типа проекта
+    const fileTypes = {
+      current: ["photos", "documents", "reports"],
+      future: ["documents", "specifications"],
+    };
+
+    // Проверяем и исправляем структуры файлов
+    fileTypes[type].forEach((fileType) => {
+      if (!project[fileType]) {
+        project[fileType] = [];
+      } else if (Array.isArray(project[fileType])) {
+        // Проверка каждого файла в массиве
+        project[fileType] = project[fileType]
+          .map((file) => {
+            if (!file) return null;
+
+            const newFile = { ...file }; // Создаем копию, чтобы не модифицировать оригинал
+
+            // Если файл не имеет необходимых свойств, создаем заполнитель
+            if (!newFile.type) {
+              // Пытаемся определить тип по имени файла
+              const fileExt = newFile.name
+                ? newFile.name.split(".").pop().toLowerCase()
+                : "";
+              let mimeType = "application/octet-stream";
+
+              if (["jpg", "jpeg", "png", "gif", "webp"].includes(fileExt)) {
+                mimeType = `image/${fileExt === "jpg" ? "jpeg" : fileExt}`;
+              } else if (fileExt === "pdf") {
+                mimeType = "application/pdf";
+              } else if (["doc", "docx"].includes(fileExt)) {
+                mimeType = "application/msword";
+              } else if (["xls", "xlsx"].includes(fileExt)) {
+                mimeType = "application/vnd.ms-excel";
               }
+
+              newFile.type = mimeType;
             }
 
-            // Перерисовываем UI для отображения обновленных данных
-            this.renderContractors();
-          } else {
-            console.error("Error adding employee:", responseData.message);
-            alert("Failed to add employee: " + responseData.message);
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          }
-        })
-        .catch((error) => {
-          console.error("Error adding employee:", error);
-          alert("Failed to add employee. Please try again.");
-          // Обновляем данные с сервера в случае ошибки
-          this.loadContractors().then(() => this.renderContractors());
-        });
+            // Сохраняем оригинальное имя файла, если оно есть
+            if (newFile.name && newFile.name.trim() !== "") {
+              newFile.originalName = newFile.name;
+            }
 
-      // Render immediately for responsive UI
+            // Если нет имени, создаем стандартное
+            if (!newFile.name || newFile.name.trim() === "") {
+              const defaultName = `${
+                fileType.charAt(0).toUpperCase() + fileType.slice(0, -1)
+              } ${Math.floor(Math.random() * 1000)}`;
+              newFile.name = defaultName;
+              newFile.originalName = newFile.originalName || defaultName;
+            }
+
+            // Добавляем флаг, что это сохраненный файл
+            newFile.isStoredFile = true;
+
+            return newFile;
+          })
+          .filter((file) => file !== null); // Удаляем null элементы
+      }
+    });
+
+    // Проверяем наличие дополнительных файлов при перемещении из future в current
+    if (type === "current") {
+      // Для файлов, которые могут быть только в future
+      ["specifications"].forEach((fileType) => {
+        if (project[fileType] && Array.isArray(project[fileType])) {
+          project[fileType] = project[fileType]
+            .map((file) => {
+              if (!file) return null;
+
+              const newFile = { ...file };
+
+              // Сохраняем оригинальное имя файла, если оно есть
+              if (newFile.name && newFile.name.trim() !== "") {
+                newFile.originalName = newFile.originalName || newFile.name;
+              }
+
+              // Проверяем и исправляем тип файла
+              if (!newFile.type) {
+                // Пытаемся определить тип по имени файла
+                const fileExt = newFile.name
+                  ? newFile.name.split(".").pop().toLowerCase()
+                  : "";
+                let mimeType = "application/octet-stream";
+
+                if (["jpg", "jpeg", "png", "gif", "webp"].includes(fileExt)) {
+                  mimeType = `image/${fileExt === "jpg" ? "jpeg" : fileExt}`;
+                } else if (fileExt === "pdf") {
+                  mimeType = "application/pdf";
+                } else if (["doc", "docx"].includes(fileExt)) {
+                  mimeType = "application/msword";
+                } else if (["xls", "xlsx"].includes(fileExt)) {
+                  mimeType = "application/vnd.ms-excel";
+                }
+
+                newFile.type = mimeType;
+              }
+
+              // Проверяем и исправляем имя файла
+              if (!newFile.name || newFile.name.trim() === "") {
+                const defaultName = `${
+                  fileType.charAt(0).toUpperCase() + fileType.slice(0, -1)
+                } ${Math.floor(Math.random() * 1000)}`;
+                newFile.name = defaultName;
+                newFile.originalName = newFile.originalName || defaultName;
+              }
+
+              // Помечаем как сохраненный файл
+              newFile.isStoredFile = true;
+
+              return newFile;
+            })
+            .filter((file) => file !== null);
+        }
+      });
+    }
+
+    return project;
+  }
+
+  // ... rest of the existing methods ...
+
+  // CRUD операции
+  async createContractor(data) {
+    // API ожидает project_id, company_name, contact_person, phone, email, scope_of_work
+    // Убедимся, что все необходимые поля присутствуют
+    if (!data.project_id || !data.company_name) {
+      alert(
+        "Missing required fields: Project ID and Company Name are required."
+      );
+      console.error("createContractor: Missing required fields", data);
+      return;
+    }
+
+    const apiUrl = "/Maintenance_P/backend/construction/contractors_api.php";
+    console.log("ConstructionManager: Creating contractor...", data);
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data), // Отправляем плоские данные
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      console.log("Contractor created successfully:", result);
+
+      // После успешного создания получаем полные данные подрядчика с сервера
+      const newId = result.id;
+      const getResponse = await fetch(`${apiUrl}?id=${newId}`);
+
+      if (!getResponse.ok) {
+        console.warn(
+          `Failed to fetch complete contractor data after creation, using partial data`
+        );
+        // Как резервный вариант, просто добавляем ID к данным формы
+        data.id = newId;
+        data.employees = [];
+        this.contractors.push(data);
+      } else {
+        // Получаем полные данные с сервера
+        const fullContractorData = await getResponse.json();
+        console.log("Fetched full contractor data:", fullContractorData);
+
+        // Добавляем пустой массив сотрудников
+        fullContractorData.employees = [];
+
+        // Добавляем в массив подрядчиков
+        this.contractors.push(fullContractorData);
+      }
+
+      this.updateBusinessTypeFilter(); // Обновляем список типов бизнеса
+      this.renderContractors(); // Перерисовываем список
+      alert(result.message || "Contractor added successfully");
+    } catch (error) {
+      console.error("Error creating contractor:", error);
+      alert(`Error adding contractor: ${error.message}`);
+    }
+  }
+
+  async updateContractor(id, data) {
+    const updateUrl = `/Maintenance_P/backend/construction/contractors_api.php?id=${id}`;
+    console.log(`ConstructionManager: Updating contractor ID: ${id}`, data);
+    try {
+      // 1. Отправляем PUT запрос на обновление
+      const updateResponse = await fetch(updateUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const updateResult = await updateResponse.json();
+
+      if (!updateResponse.ok) {
+        // Если обновление не удалось, выбрасываем ошибку
+        throw new Error(
+          updateResult.message ||
+            `Update failed! status: ${updateResponse.status}`
+        );
+      }
+
+      console.log("Update API call successful:", updateResult);
+
+      // 2. Запрашиваем обновленные данные с сервера GET-запросом
+      console.log(`Fetching updated data for contractor ID: ${id}`);
+      const getUrl = `/Maintenance_P/backend/construction/contractors_api.php?id=${id}`;
+      const getResponse = await fetch(getUrl);
+
+      if (!getResponse.ok) {
+        // Если не удалось получить обновленные данные
+        console.error(
+          `Failed to fetch updated contractor data: ${getResponse.status}`
+        );
+        // Можно или показать ошибку, или просто перерисовать с тем, что было (менее точно)
+        // На всякий случай обновим локально с отправленными данными как запасной вариант
+        const index = this.contractors.findIndex((c) => c.id === id);
+        if (index !== -1) {
+          this.contractors[index] = { ...this.contractors[index], ...data };
+        }
+        throw new Error("Update succeeded, but failed to fetch updated data.");
+      }
+
+      const updatedContractorData = await getResponse.json();
+      console.log("Fetched updated contractor data:", updatedContractorData);
+
+      // 3. Обновляем локальный массив свежими данными
+      const index = this.contractors.findIndex((c) => c.id === id);
+      if (index !== -1) {
+        // Сохраняем текущих сотрудников перед обновлением
+        const currentEmployees = this.contractors[index].employees || [];
+
+        this.contractors[index] = updatedContractorData; // Заменяем объект полностью
+
+        // Загружаем сотрудников для обновленного подрядчика
+        this.contractors[index].employees =
+          await this.loadEmployeesForContractor(id);
+
+        console.log(
+          "Local contractor data updated with fetched data:",
+          this.contractors[index]
+        );
+      } else {
+        // Этого не должно произойти, но на всякий случай добавим
+        console.warn(
+          `updateContractor: Contractor with ID ${id} not found locally after update. Adding fetched data.`
+        );
+        updatedContractorData.employees = await this.loadEmployeesForContractor(
+          id
+        );
+        this.contractors.push(updatedContractorData);
+      }
+
+      // 4. Перерисовываем список
+      this.renderContractors();
+      alert(updateResult.message || "Contractor updated successfully"); // Показываем сообщение из PUT ответа
+    } catch (error) {
+      console.error(
+        `Error during update process for contractor ID ${id}:`,
+        error
+      );
+      // Показываем более общее сообщение или специфичное из ошибки
+      alert(`Error updating contractor: ${error.message || "Unknown error"}`);
+      // Перерисовываем на случай, если нужно откатить визуальные изменения
       this.renderContractors();
     }
   }
 
-  // Оставляю только рабочую версию метода updateEmployee
-  updateEmployee(contractorId, employeeId, data) {
-    const contractor = this.contractors.find((c) => c.id === contractorId);
-    if (contractor) {
-      const index = contractor.employees.findIndex((e) => e.id === employeeId);
-      if (index !== -1) {
-        // Update local data first
-        contractor.employees[index] = {
-          ...contractor.employees[index],
-          ...data,
-        };
+  async deleteContractor(id) {
+    if (confirm("Are you sure you want to delete this contractor?")) {
+      const apiUrl = `/Maintenance_P/backend/construction/contractors_api.php?id=${id}`;
+      console.log(`ConstructionManager: Deleting contractor ID: ${id}`);
+      try {
+        const response = await fetch(apiUrl, {
+          method: "DELETE",
+        });
 
-        // Prepare data for API
-        const apiData = {
-          company_name: contractor.companyName,
-          business_type: contractor.businessType,
-          location: contractor.location,
-          email: contractor.email,
-          phone: contractor.phone,
-          rating: contractor.rating,
-          notes: contractor.notes || "",
-          employees: contractor.employees.map((e) => ({
-            name: e.fullName,
-            position: e.position || "",
-            phone: e.phone || "",
-            email: e.email || "",
-            is_primary_contact: e.isPrimaryContact ? 1 : 0,
-          })),
-        };
+        const result = await response.json();
 
-        // Используем правильный URL API
-        fetch(
-          `/Maintenance_P/Inspections-Checklist-Portal/components/construction/api/contractors.php?action=update&id=${contractorId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(apiData),
-          }
-        )
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((responseData) => {
-            if (responseData.success) {
-              // Обновляем данные о сотрудниках из ответа API
-              if (responseData.data && responseData.data.employees) {
-                // Находим контрактор в массиве this.contractors и обновляем его сотрудников
-                const updatedContractor = this.contractors.find(
-                  (c) => c.id === contractorId
-                );
-                if (updatedContractor) {
-                  // Преобразуем сотрудников из формата API в формат UI
-                  updatedContractor.employees = responseData.data.employees.map(
-                    (emp) => ({
-                      id: parseInt(emp.id),
-                      fullName: emp.name,
-                      position: emp.position || "",
-                      phone: emp.phone || "",
-                      email: emp.email || "",
-                    })
-                  );
-                }
-              }
+        if (!response.ok) {
+          throw new Error(
+            result.message || `HTTP error! status: ${response.status}`
+          );
+        }
 
-              // Перерисовываем UI для отображения обновленных данных
-              this.renderContractors();
-            } else {
-              console.error("Error updating employee:", responseData.message);
-              alert("Failed to update employee: " + responseData.message);
-              // Обновляем данные с сервера в случае ошибки
-              this.loadContractors().then(() => this.renderContractors());
-            }
-          })
-          .catch((error) => {
-            console.error("Error updating employee:", error);
-            alert("Failed to update employee. Please try again.");
-            // Обновляем данные с сервера в случае ошибки
-            this.loadContractors().then(() => this.renderContractors());
-          });
-
-        // Render immediately for UI feedback
-        this.renderContractors();
+        console.log("Contractor deleted successfully:", result);
+        // Удаляем из локального массива
+        this.contractors = this.contractors.filter((c) => c.id !== id);
+        this.renderContractors(); // Перерисовываем список
+        alert(result.message || "Contractor deleted successfully");
+      } catch (error) {
+        console.error(`Error deleting contractor ID ${id}:`, error);
+        alert(`Error deleting contractor: ${error.message}`);
       }
     }
   }
 
-  // ... existing code ...
+  handleRating(starElement) {
+    const rating = parseInt(starElement.dataset.rating);
+    const stars = starElement.parentElement.querySelectorAll("i");
+    const ratingInput = this.container.querySelector('input[name="rating"]');
+
+    // Обновляем отображение звезд
+    stars.forEach((star, index) => {
+      if (index < rating) {
+        star.className = "fas fa-star";
+      } else {
+        star.className = "far fa-star";
+      }
+    });
+
+    // Обновляем значение в скрытом поле
+    if (ratingInput) {
+      ratingInput.value = rating;
+    }
+  }
+
+  // Новый метод для синхронизации удаленных фотографий
+  syncDeletedPhotos(deletedFileItem, project) {
+    if (!project || !deletedFileItem) return;
+
+    const fileName = deletedFileItem.dataset.fileName;
+    const fileType = deletedFileItem.dataset.fileType;
+
+    // Если это фото, удаляем его из массива фотографий проекта
+    if (
+      fileType === "photo" &&
+      project.photos &&
+      Array.isArray(project.photos)
+    ) {
+      project.photos = project.photos.filter((photo) => {
+        // Проверяем имя файла или оригинальное имя
+        return (
+          photo && photo.name !== fileName && photo.originalName !== fileName
+        );
+      });
+      console.log("Photo removed from project data:", fileName);
+    }
+  }
 }

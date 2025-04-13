@@ -1074,7 +1074,6 @@ async function getUserTasksForLast3Months() {
       formData.append("staff", user.fullName);
       formData.append("email", user.email);
 
-
       const currentDate = new Date().toLocaleDateString("en-CA", {
         timeZone: "America/Chicago",
       });

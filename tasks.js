@@ -127,12 +127,11 @@ let filters = {
   },
 };
 
-
 let tasksStatistics = {
   totalTasks: 0,
   pendingTasks: 0,
   inProgressTasks: 0,
-  completedTasks: 0
+  completedTasks: 0,
 };
 
 let currentPage = 1;
@@ -207,38 +206,45 @@ function groupTasksByFilter(tasks, filterBy) {
   tasks.forEach(task => {
     let groupKey;
 
+
     // Определяем ключ группировки в зависимости от фильтра
     switch (filterBy) {
       case "date":
         // Группировка по дате, как в оригинальном коде
-        groupKey = new Date(task.timestamp).toLocaleDateString('ru-RU');
+        groupKey = new Date(task.timestamp).toLocaleDateString("ru-RU");
         break;
+
 
       case "priority":
         // Группировка по приоритету
         groupKey = task.priority || "unknown";
         break;
 
+
       case "status":
         // Группировка по статусу
         groupKey = task.status || "unknown";
         break;
+
 
       case "assignment":
         // Группировка по назначению
         groupKey = task.assigned_to ? "assigned" : "unassigned";
         break;
 
+
       default:
         // По умолчанию группируем по дате
-        groupKey = new Date(task.timestamp).toLocaleDateString('ru-RU');
+        groupKey = new Date(task.timestamp).toLocaleDateString("ru-RU");
     }
+
 
     if (!tasksByGroup[groupKey]) {
       tasksByGroup[groupKey] = [];
     }
     tasksByGroup[groupKey].push(task);
   });
+
 
   return tasksByGroup;
 }
@@ -249,30 +255,34 @@ function getGroupDisplayName(groupKey, filterBy) {
     case "date":
       return formatDisplayDate(groupKey);
 
+
     case "priority":
       // Форматируем название приоритета для отображения
       const priorityNames = {
-        "urgent": "Urgent Priority",
-        "high": "High Priority",
-        "medium": "Medium Priority",
-        "low": "Low Priority",
-        "unknown": "Unknown Priority"
+        urgent: "Urgent Priority",
+        high: "High Priority",
+        medium: "Medium Priority",
+        low: "Low Priority",
+        unknown: "Unknown Priority",
       };
       return priorityNames[groupKey.toLowerCase()] || groupKey;
+
 
     case "status":
       // Форматируем название статуса
       const statusNames = {
-        "Pending": "Pending Tasks",
+        Pending: "Pending Tasks",
         "In Progress": "Tasks In Progress",
-        "Completed": "Completed Tasks",
-        "unknown": "Unknown Status"
+        Completed: "Completed Tasks",
+        unknown: "Unknown Status",
       };
       return statusNames[groupKey] || groupKey;
+
 
     case "assignment":
       // Форматируем название назначения
       return groupKey === "assigned" ? "Assigned Tasks" : "Unassigned Tasks";
+
 
     default:
       return groupKey;
@@ -316,31 +326,51 @@ async function updateTasksList(tasks) {
       // Определяем текущий тип сортировки
       const currentSortBy = filters.sort.by || "date";
 
+
       // Группируем задачи по соответствующему фильтру
       const tasksByGroup = groupTasksByFilter(tasks, currentSortBy);
+
 
       // Получаем ключи групп и сортируем их соответствующим образом
       let groupKeys = Object.keys(tasksByGroup);
 
+
       // Сортируем ключи в зависимости от типа фильтра
       if (currentSortBy === "priority") {
         // Сортировка приоритетов в логическом порядке
-        const priorityOrder = { "urgent": 0, "high": 1, "medium": 2, "low": 3, "unknown": 4 };
-        groupKeys.sort((a, b) => priorityOrder[a.toLowerCase()] - priorityOrder[b.toLowerCase()]);
+        const priorityOrder = {
+          urgent: 0,
+          high: 1,
+          medium: 2,
+          low: 3,
+          unknown: 4,
+        };
+        groupKeys.sort(
+          (a, b) =>
+            priorityOrder[a.toLowerCase()] - priorityOrder[b.toLowerCase()]
+        );
       } else if (currentSortBy === "status") {
         // Сортировка статусов в логическом порядке
-        const statusOrder = { "Pending": 0, "In Progress": 1, "Completed": 2, "unknown": 3 };
+        const statusOrder = {
+          Pending: 0,
+          "In Progress": 1,
+          Completed: 2,
+          unknown: 3,
+        };
         groupKeys.sort((a, b) => statusOrder[a] - statusOrder[b]);
       }
+
 
       // Добавляем разделители и задачи в контейнер
       for (let i = 0; i < groupKeys.length; i++) {
         const currentGroupKey = groupKeys[i];
         const tasksInGroup = tasksByGroup[currentGroupKey];
 
+
         // Добавляем разделитель с названием группы
         const divider = document.createElement("div");
         divider.className = getDividerClass(currentSortBy);
+
 
         const groupLabel = document.createElement("span");
         groupLabel.className = "task-group-label";
@@ -348,6 +378,7 @@ async function updateTasksList(tasks) {
 
         divider.appendChild(groupLabel);
         newTasksContainer.appendChild(divider);
+
 
         // Добавляем задачи этой группы
         for (const task of tasksInGroup) {
@@ -626,15 +657,11 @@ async function createTaskElement(task) {
       /*
       console.log("Прослушка на комментарии");
 
-      tasksWS.onmessage = async function (e) {
-        const action = JSON.parse(e.data).action;
-        const data = JSON.parse(e.data).message;
-        console.log("tasksWS.onmessage : ");
-        console.log(data);
-
+      // Заменяем tasksWS.onmessage на подписку к wsClient
+      const commentHandler = async function (data) {
         if (
-          action === "updateComments" &&
-          data.request_id === task.request_id
+          data.action === "updateComments" &&
+          data.taskId === task.request_id
         ) {
           await updateComments(task, commentsContainer, isFirstLoad);
           isFirstLoad = false;
@@ -734,6 +761,11 @@ async function createTaskElement(task) {
       }, 3500);*/
     } else {
       //clearInterval(commentsUpdateInterval);
+      // Unsubscribe from WebSocket messages when closing comments
+      if (task.commentHandler) {
+        window.wsClient.unsubscribe("updateComments", task.commentHandler);
+        task.commentHandler = null;
+      }
       newCommentNotification.style.display = "none"; // Скрываем уведомление при закрытии
     }
     openComments = !openComments;
@@ -1208,6 +1240,21 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
 }
 
 async function handleAddComment(taskId, commentText, userFullName) {
+  if (!commentText || commentText.trim() === "") {
+    return;
+  }
+
+  // Формируем запрос для сервера
+  const data = {
+    taskId: taskId,
+    commentText: commentText,
+    userFullName: userFullName,
+    action: "addComment",
+  };
+
+  // Отправляем через общий клиент вместо tasksWS
+  window.wsClient.send(data);
+
   // Create a properly formatted timestamp (YYYY-MM-DD HH:MM:SS format for MySQL)
   console.log("handleAddComment запущен");
   const now = new Date();
@@ -1462,8 +1509,6 @@ if (newTasks && newTasks.length > 0) {
   newTaskNotification.style.display = "block";
   playNewTaskSound();
 }
-}, 7000);
-*/
 
 // Добавляем обработчик клика для скрытия уведомления
 newTaskNotification.addEventListener("click", async () => {
@@ -2599,24 +2644,32 @@ document.querySelector('.helper-panel-content').addEventListener('click', async 
 
 let currentAbortController = null;
 
-async function getTasksWithFilteringSortingPagination(filters, page = currentPage, limit = limitTasksInPage) {
+async function getTasksWithFilteringSortingPagination(
+  filters,
+  page = currentPage,
+  limit = limitTasksInPage
+) {
   try {
-
+    // Remove the local currentAbortController declaration
     page = page < 1 ? 1 : page;
+
 
     if (currentAbortController) {
       currentAbortController.abort();
       console.log("Предыдущий запрос отменен");
     }
 
+
     currentAbortController = new AbortController();
     const signal = currentAbortController.signal;
+
 
     // Показываем индикатор обновления
     if (updateIndicator) {
       updateIndicator.style.display = "block";
       updateIndicator.style.opacity = "1";
     }
+
 
     // Отправляем запрос с параметрами фильтрации и пагинации
     const response = await fetch("task.php", {
@@ -2630,17 +2683,24 @@ async function getTasksWithFilteringSortingPagination(filters, page = currentPag
         page: page,
         limit: limit,
       }),
-      signal
+      signal,
     });
     console.log("filters: ", filters);
     const result = await response.json();
+
 
     if (!result.success) {
       throw new Error(result.message);
     }
 
-    console.log("getTasksWithFilteringSortingPagination result.data: ", result.data);
-    console.log("getTasksWithFilteringSortingPagination result.pagination: ", result.pagination);
+    console.log(
+      "getTasksWithFilteringSortingPagination result.data: ",
+      result.data
+    );
+    console.log(
+      "getTasksWithFilteringSortingPagination result.pagination: ",
+      result.pagination
+    );
 
     // Здесь добавляем проверку перед установкой currentPage
     if (result.pagination && result.pagination.page > 0) {
@@ -2650,16 +2710,26 @@ async function getTasksWithFilteringSortingPagination(filters, page = currentPag
     updateStatistics(result.pagination.totalTasks, result.statistics);
 
     return { data: result.data, pagination: result.pagination };
+    return { data: result.data, pagination: result.pagination };
   } catch (error) {
     // Проверяем, была ли ошибка вызвана отменой запроса
-    if (error.name === 'AbortError') {
-      console.log('Запрос был отменен');
+    if (error.name === "AbortError") {
+      console.log("Запрос был отменен");
       // Не показываем ошибку пользователю, это ожидаемое поведение
       return { data: [], pagination: {} };
     }
 
+
     console.error("Ошибка при получении заданий:", error);
-    return { data: [], pagination: { currentPage: currentPage, totalPages: 1, totalTasks: 0, limit: limitTasksInPage } };
+    return {
+      data: [],
+      pagination: {
+        currentPage: currentPage,
+        totalPages: 1,
+        totalTasks: 0,
+        limit: limitTasksInPage,
+      },
+    };
   } finally {
     // Скрываем индикатор обновления только если это не отмененный запрос
     if (updateIndicator && currentAbortController.signal.aborted === false) {
