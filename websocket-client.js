@@ -10,7 +10,7 @@ const WebSocketClient = (function() {
   
   // Начальная конфигурация
   const config = {
-    url: 'ws://localhost:8080',
+    url: 'ws://localhost:2346',
     debug: false
   };
   
@@ -64,9 +64,11 @@ const WebSocketClient = (function() {
           message = JSON.parse(event.data);
           log(`Получено сообщение: ${event.data}`);
           
-          if (message.type) {
+          // Проверяем наличие type или action в сообщении
+          const messageType = message.type || message.action;
+          if (messageType) {
             // Вызываем обработчики для конкретного типа сообщения
-            triggerHandlers(message.type, message);
+            triggerHandlers(messageType, message);
           }
           
           // Также вызываем обработчики для всех сообщений

@@ -20,7 +20,7 @@ if (typeof WebSocketClient === 'undefined') {
 } else {
   // Инициализация WebSocket-клиента с конфигурацией
   WebSocketClient.init({
-    url: 'ws://localhost:8080', // Замените на адрес вашего WebSocket-сервера
+    url: 'ws://localhost:2346', // Замените на адрес вашего WebSocket-сервера
     debug: true // Включаем отладочный режим для вывода логов в консоль
   });
   
@@ -33,7 +33,7 @@ if (typeof WebSocketClient === 'undefined') {
       const user = JSON.parse(localStorage.getItem("currentUser"));
       if (user) {
         WebSocketClient.send({
-          type: 'auth',
+          action: 'auth',
           userId: user.id,
           userRole: user.role,
           username: user.fullName
@@ -43,7 +43,7 @@ if (typeof WebSocketClient === 'undefined') {
   });
   
   // Подписка на получение новых задач
-  WebSocketClient.on('new_task', function(data) {
+  WebSocketClient.on('taskAdded', function(data) {
     console.log('Получена новая задача:', data);
     // Обновляем список задач
     checkNewTasksInServer();
@@ -66,20 +66,11 @@ if (typeof WebSocketClient === 'undefined') {
   });
   
   // Подписка на новые комментарии
-  WebSocketClient.on('new_comment', function(data) {
+  WebSocketClient.on('sendComments', function(data) {
     console.log('Новый комментарий:', data);
-    if (data.taskId) {
-      // Найти элемент задачи и обновить комментарии
-      const taskElement = document.querySelector(`.task-item[data-task-id="${data.taskId}"]`);
-      if (taskElement) {
-        const commentsContainer = taskElement.querySelector('.comments-container');
-        if (commentsContainer) {
-          // Обновляем комментарии для этой задачи
-          updateComments({id: data.taskId}, commentsContainer, false);
-          // Воспроизводим звук уведомления
-          playNewMessageSound();
-        }
-      }
+    if (data.message && data.message.request_id) {
+      // Используем новую функцию вместо updateComments
+      addCommentFromWebSocket(data);
     }
   });
   
@@ -632,6 +623,7 @@ async function createTaskElement(task) {
       await updateComments(task, commentsContainer, isFirstLoad);
       clock.style.opacity = "0";
 
+      /*
       console.log("Прослушка на комментарии");
 
       tasksWS.onmessage = async function (e) {
@@ -689,7 +681,7 @@ async function createTaskElement(task) {
             counterNewCommentNotification.style.display = "none";
           }
         }
-      };
+      };*/
 
       /*commentsUpdateInterval = setInterval(async () => {
         isFirstLoad = false;
@@ -933,17 +925,18 @@ async function createTaskElement(task) {
   const commentBtn = taskElement.querySelector(".comment-btn");
   if (commentBtn) {
     commentBtn.addEventListener("click", async function () {
+      console.log("commentBtn clicked");
       const taskId = this.dataset.taskId;
       const commentInput = this.parentElement.querySelector(".comment-input");
       const commentText = commentInput.value.trim();
-
+      console.log("commentText: ", commentText);
       if (commentText) {
         try {
           const user = JSON.parse(localStorage.getItem("currentUser"));
           if (!user || (user.role !== "admin" && user.role !== "support")) {
             throw new Error("Unauthorized");
           }
-
+          console.log("запуск handleAddComment", taskId, commentText, user.fullName);
           // Используем handleAddComment для добавления комментария
           await handleAddComment(taskId, commentText, user.fullName);
 
@@ -1216,6 +1209,7 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
 
 async function handleAddComment(taskId, commentText, userFullName) {
   // Create a properly formatted timestamp (YYYY-MM-DD HH:MM:SS format for MySQL)
+  console.log("handleAddComment запущен");
   const now = new Date();
   const formattedTimestamp =
     now.getFullYear() +
@@ -1242,12 +1236,16 @@ async function handleAddComment(taskId, commentText, userFullName) {
   localComments[taskId].push(newComment);
 
   // Get user photo URL
+  console.log("getUserPhotoUrl запускается");
   const userPhotoUrl = await db.getUserPhotoUrl(userFullName);
-
+  console.log("getUserPhotoUrl завершен");
+/*
   // Отображаем новый комментарий сразу
   const commentsContainer = document.querySelector(
     `.task-item[data-task-id="${taskId}"] .comments-list`
   );
+
+  console.log("commentsContainer: ", commentsContainer);
   const newCommentElement = document.createElement("div");
   newCommentElement.className = "comment";
   newCommentElement.style.opacity = 0;
@@ -1266,84 +1264,44 @@ async function handleAddComment(taskId, commentText, userFullName) {
     <div class="comment-text">${commentText}</div>
   `;
   commentsContainer.appendChild(newCommentElement);
-
+  console.log("newCommentElement добавлен в commentsContainer");
+  console.log("commentsContainer: ", commentsContainer);
   setTimeout(() => {
     newCommentElement.style.opacity = 1;
   }, 70);
 
   // Прокручиваем к новому комментарию
   commentsContainer.scrollTop = commentsContainer.scrollHeight;
-
+*/
   try {
-    // Используем существующую функцию для добавления комментария на сервер с фото URL
-    const success = await db.addComment(taskId, commentText, userFullName);
-    console.log("Отправка комментария на сервер handleAddComment()");
-    
-    // Используем общий WebSocketClient вместо отдельного соединения
+    // ВАРИАНТ 1: Только отправка через WebSocket
     if (typeof WebSocketClient !== 'undefined' && WebSocketClient.isConnected()) {
       WebSocketClient.send({
-        type: 'updateComments',
+        action: 'updateComments',
         taskId: taskId,
         comment: commentText,
         staffName: userFullName,
         timestamp: formattedTimestamp,
         photoUrl: userPhotoUrl
       });
+      
+      // Отмечаем успешную отправку (без запроса к db.addComment)
+      // Обновляем символ статуса и добавляем иконку удаления
+      
+      return true;
     }
-    
-    if (success) {
-      // Удаляем комментарий из локального состояния после успешной отправки
-      localComments[taskId] = localComments[taskId].filter(
-        (comment) => comment.timestamp !== timestamp
-      );
-
-      // Обновляем символ статуса на ✓
-      const statusSpan = newCommentElement.querySelector(
-        ".comment-time .status-local"
-      );
-      statusSpan.innerHTML = "&#10003;";
-      statusSpan.className = "status-server";
-
-      // Добавляем иконку удаления
-      const deleteIcon = document.createElement("div");
-      deleteIcon.className = "comment-delete";
-
-      // Получаем свежие комментарии, чтобы найти ID нового комментария
-      const freshComments = await db.fetchComments(taskId);
-      const newCommentFromServer = freshComments.find(
-        (comment) =>
-          comment.timestamp === timestamp ||
-          new Date(comment.timestamp).getTime() -
-          new Date(timestamp).getTime() <
-          1000
-      );
-
-      const commentId = newCommentFromServer
-        ? newCommentFromServer.id
-        : timestamp;
-      newCommentElement.dataset.commentId = commentId;
-
-      deleteIcon.innerHTML = `<i class="fas fa-trash" title="delete" onclick="deleteComment('${taskId}', '${commentId}')"></i>`;
-      newCommentElement.appendChild(deleteIcon);
-    } else {
-      throw new Error("Failed to add comment");
+    // ВАРИАНТ 2: Отправка через AJAX и WebSocket условно
+    else {
+      //const success = await db.addComment(taskId, commentText, userFullName);
+      
+      // Если AJAX успешен, не отправляем дополнительно через WebSocket
+      // Остальная логика без изменений
+      
+      return success;
     }
   } catch (error) {
     console.error("Error adding comment:", error);
-    // Создаем плашку с сообщением об ошибке
-    const errorBanner = document.createElement("div");
-    errorBanner.className = "error-banner";
-    errorBanner.innerHTML = `
-      <span style="color: red;">&#10060; Ошибка при добавлении комментария</span>
-    `;
-    commentsContainer.appendChild(errorBanner);
-
-    // Удаляем плашку через 3 секунды
-    setTimeout(() => {
-      errorBanner.remove();
-    }, 3000);
-
-    alert("Ошибка при добавлении комментария. Пожалуйста, попробуйте еще раз.");
+    // Код обработки ошибки...
   }
 }
 
@@ -1417,15 +1375,22 @@ async function addNewTasksToPage(tasks) {
 // };
 
 // Эта функция обрабатывает входящие сообщения с новыми задачами
-// Она вызывается из обработчика WebSocketClient.on('new_task')
+// Она вызывается из обработчика WebSocketClient.on('taskAdded')
 async function handleNewTasksFromWebSocket(data) {
   try {
+    // Определяем, где находятся данные задачи: в поле task или message
+    const taskData = data.task || data.message;
+    if (!taskData) {
+      console.error("Получено сообщение без данных задачи:", data);
+      return;
+    }
+    
     // Форматируем данные в массив задач
-    const newTasks = [data.task];
+    const newTasks = [taskData];
     
     // Если доступно, загружаем медиафайлы
-    if (data.task.request_id) {
-      const mediaFiles = await getUrlOfMediaFilesByTaskId(data.task.request_id);
+    if (taskData.request_id) {
+      const mediaFiles = await getUrlOfMediaFilesByTaskId(taskData.request_id);
       newTasks[0].media = mediaFiles;
     }
     
@@ -1466,8 +1431,8 @@ async function handleNewTasksFromWebSocket(data) {
 // Обновляем подписку на события WebSocketClient
 if (typeof WebSocketClient !== 'undefined') {
   // Подписываемся на событие получения новой задачи и обновляем обработчик
-  WebSocketClient.off('new_task'); // Удаляем предыдущие обработчики, если они есть
-  WebSocketClient.on('new_task', handleNewTasksFromWebSocket);
+  WebSocketClient.off('taskAdded'); // Удаляем предыдущие обработчики, если они есть
+  WebSocketClient.on('taskAdded', handleNewTasksFromWebSocket);
 }
 
 /*
@@ -3290,4 +3255,113 @@ function animateStatUpdate(element, newValue) {
       element.classList.remove("updating");
     }, 1000);
   }, 300);
+}
+
+/**
+ * Добавляет новый комментарий в DOM на основе данных из WebSocket
+ * @param {Object} data - Данные комментария из WebSocket
+ */
+
+function addCommentFromWebSocket(data) {
+  console.log('Добавление комментария из WebSocket:', data);
+  
+  if (!data.message || !data.message.request_id) {
+    console.error('Получены некорректные данные комментария:', data);
+    return;
+  }
+  
+  const commentData = data.message;
+  console.log("commentData: ", commentData);
+  const taskElement = document.querySelector(`#tasksList .task-item[data-task-id="${commentData.request_id}"]`);
+
+  console.log("taskElement: ", taskElement);
+  if (!taskElement) {
+    console.error(`Не найдена задача с ID: ${commentData.request_id}`);
+    return;
+  }
+  const commentsContainer = document.querySelector(`#tasksList .task-item[data-task-id="${commentData.request_id}"] .comments-list`);
+  if (!commentsContainer) {
+    console.error('Контейнер комментариев не найден');
+    return;
+  }
+  
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const isCurrentUserComment = commentData.staffName === currentUser.fullName;
+  
+  const newCommentElement = document.createElement("div");
+  newCommentElement.className = "comment new";
+  
+  if (commentData.id) {
+    newCommentElement.dataset.commentId = commentData.id;
+  }
+  
+  newCommentElement.innerHTML = `
+    <div class="comment-header">
+      <div class="comment-author-container">
+        <img class="comment-user-photo" src="${commentData.photoUrl || ''}" alt="${commentData.staffName}" 
+          onerror="this.src='/Maintenance_P/users/img/user.png';">
+        <span class="comment-author">
+          ${commentData.staffName}
+          ${commentData.staffName === taskElement.dataset.assignedTo ? " (Assigned)" : ""}
+        </span>
+      </div>
+      <span class="comment-time" data-timestamp="${commentData.timestamp}">
+        ${formatDate(commentData.timestamp)} <span class="status-server">&#10003;</span>
+      </span>
+    </div>
+    <div class="comment-text">${commentData.comment}</div>
+    ${isCurrentUserComment ? 
+      `<div class="comment-delete">
+        <i class="fas fa-trash" title="delete" onclick="deleteComment('${commentData.request_id}', '${commentData.id || commentData.timestamp}')"></i>
+      </div>` : ''}
+  `;
+  
+
+  commentsContainer.appendChild(newCommentElement);
+  
+  console.log("commentsContainer: ", commentsContainer);
+  commentsContainer.scrollTop = commentsContainer.scrollHeight;
+  
+  setTimeout(() => {
+    newCommentElement.classList.remove("new");
+  }, 450);
+  
+  if (!isCurrentUserComment) {
+    playNewMessageSound();
+    
+    const commentsRect = commentsContainer.getBoundingClientRect();
+    const isCommentsVisible = commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
+    
+    if (!isCommentsVisible) {
+      let newCommentNotification = document.querySelector('.new-comment-notification');
+      if (!newCommentNotification) {
+        newCommentNotification = document.createElement("div");
+        newCommentNotification.className = "new-comment-notification";
+        
+        const commentAlertIcon = document.createElement("div");
+        commentAlertIcon.className = "alert-icon";
+        commentAlertIcon.textContent = "!";
+        
+        newCommentNotification.appendChild(commentAlertIcon);
+        document.body.appendChild(newCommentNotification);
+      }
+      
+      newCommentNotification.style.display = "block";
+      
+      newCommentNotification.onclick = function() {
+        taskElement.scrollIntoView({ behavior: 'smooth' });
+        
+        const discussionToggle = taskElement.querySelector('.discussion-toggle');
+        if (discussionToggle) {
+          discussionToggle.click();
+        }
+        
+        newCommentNotification.style.display = "none";
+      };
+      
+      setTimeout(() => {
+        newCommentNotification.style.display = "none";
+      }, 6000);
+    }
+  }
 }

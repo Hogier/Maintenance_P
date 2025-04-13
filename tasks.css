@@ -1228,7 +1228,7 @@ h1::after {
   line-height: 70px;
   border-radius: 30%;
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+  z-index: 9999;
   cursor: pointer;
   transition: opacity 0.3s ease;
   display: none;
