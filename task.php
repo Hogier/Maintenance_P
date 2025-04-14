@@ -67,7 +67,7 @@ $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp
 // Подключение к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';  // Пустой пароль для XAMPP
+$password = 'root';  // Пустой пароль для XAMPP
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
@@ -288,22 +288,7 @@ if ($action === 'addTask') {
         // Возвращаем пустой массив с success => true
         echo json_encode(['success' => true, 'data' => []]);
     }
-} elseif ($action === 'getUrlOfMediaFilesByTaskId') {
-    $taskId = $_POST['taskId'];
-    $stmt = $conn->prepare("SELECT media FROM tasks WHERE request_id = ?");
-    $stmt->bind_param("s", $taskId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $task = $result->fetch_assoc();
-    
-    if (isset($task['media'])) {
-        $media = json_decode($task['media'], true);
-        echo json_encode(['success' => true, 'data' => $media]);
-    } else {
-        // Возвращаем пустой массив с success => true
-        echo json_encode(['success' => true, 'data' => []]);
-    }
-}elseif ($action === 'getMINIMediaFile') {
+} elseif ($action === 'getMINIMediaFile') {
     error_log("Начало выполнения действия 'getMINIMediaFile'");
     $fileName = $_POST['fileName'];
     $uploadDir = 'uploads/mini/';
@@ -628,7 +613,7 @@ if ($action === 'addTask') {
             $params[] = "%" . $searchValue . "%";
             $types .= "s";
         }
-    } else {  
+    }  
 
     // Применяем фильтры
     // 1. Фильтр по дате
@@ -699,7 +684,7 @@ if ($action === 'addTask') {
         }
     }
     
-    }
+    
 
     if (!empty($whereConditions)) {
         $baseQuery .= " WHERE " . implode(" AND ", $whereConditions);
@@ -814,10 +799,23 @@ if ($action === 'addTask') {
 
     $tasks = $result->fetch_all(MYSQLI_ASSOC);
     error_log("STMT getTasksWithFiltering: tasks: " . json_encode($tasks));
+    
+    // Обновляем этот блок кода
     foreach ($tasks as &$task) {
-        if (isset($task['comments'])) {
-            $task['comments'] = json_decode($task['comments'], true);
+        // Получаем комментарии из task_comments
+        $taskId = $task['request_id'];
+        $commentStmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
+        if ($commentStmt) {
+            $commentStmt->bind_param("s", $taskId);
+            $commentStmt->execute();
+            $commentResult = $commentStmt->get_result();
+            $task['comments'] = $commentResult->fetch_all(MYSQLI_ASSOC);
+            $commentStmt->close();
+        } else {
+            $task['comments'] = [];
         }
+        
+        // Обработка медиа-файлов остается прежней
         if (isset($task['media'])) {
             $task['media'] = json_decode($task['media'], true);
         }
@@ -911,6 +909,88 @@ if ($action === 'addTask') {
         'data' => $tasks
     ]);
     
+    $stmt->close();
+} elseif ($action === 'addComment') {
+    $taskId = $_POST['taskId'] ?? '';
+    $staffName = $_POST['staffName'] ?? '';
+    $text = $_POST['text'] ?? '';
+    $timestamp = $_POST['timestamp'] ?? date('Y-m-d H:i:s');
+    $photoUrl = $_POST['photoUrl'] ?? '';
+    
+    $stmt = $conn->prepare("INSERT INTO task_comments (task_id, staff_name, text, timestamp, photo_url) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $taskId, $staffName, $text, $timestamp, $photoUrl);
+    
+    if ($stmt->execute()) {
+        $commentId = $conn->insert_id;
+        
+        // Возвращаем добавленный комментарий с ID для соответствия формату
+        echo json_encode([
+            'success' => true,
+            'message' => 'Comment added successfully',
+            'comment' => [
+                'id' => $commentId,
+                'taskId' => $taskId,
+                'staffName' => $staffName,
+                'text' => $text,
+                'timestamp' => $timestamp,
+                'photo_url' => $photoUrl
+            ]
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error adding comment: ' . $stmt->error
+        ]);
+    }
+    $stmt->close();
+} elseif ($action === 'deleteComment') {
+    $commentId = $_POST['commentId'] ?? '';
+    $taskId = $_POST['taskId'] ?? '';
+    
+    // Проверяем существование комментария и его принадлежность к указанной задаче
+    $checkStmt = $conn->prepare("SELECT id FROM task_comments WHERE id = ? AND task_id = ?");
+    $checkStmt->bind_param("is", $commentId, $taskId);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+    
+    if ($checkResult->num_rows === 0) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Comment not found or does not belong to the specified task'
+        ]);
+        exit;
+    }
+    $checkStmt->close();
+    
+    // Удаляем комментарий
+    $stmt = $conn->prepare("DELETE FROM task_comments WHERE id = ?");
+    $stmt->bind_param("i", $commentId);
+    
+    if ($stmt->execute()) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Comment deleted successfully'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error deleting comment: ' . $stmt->error
+        ]);
+    }
+    $stmt->close();
+} elseif ($action === 'getComments') {
+    $taskId = $_POST['taskId'] ?? '';
+    
+    $stmt = $conn->prepare("SELECT id, task_id, staff_name as staffName, text, timestamp, photo_url FROM task_comments WHERE task_id = ? ORDER BY timestamp ASC");
+    $stmt->bind_param("s", $taskId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $comments = $result->fetch_all(MYSQLI_ASSOC);
+    
+    echo json_encode([
+        'success' => true,
+        'comments' => $comments
+    ]);
     $stmt->close();
 }
 

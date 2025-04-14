@@ -14,7 +14,7 @@ $ws_worker->onWorkerStart = function($worker) {
     global $conn;
     $host = 'localhost';
     $user = 'root';
-    $password = '';
+    $password = 'root';
     $database = 'maintenancedb';
     
     $conn = new mysqli($host, $user, $password, $database);
@@ -34,6 +34,8 @@ $ws_worker->onMessage = function($connection, $data) use ($ws_worker) {
 
     // Декодируем полученные данные
     $message = json_decode($data, true);
+    
+    error_log("WS - Получено сообщение: " . json_encode($message));
     
     if ($message && isset($message['action']) && $message['action'] === 'getUserTasks') {
         $staff = $message['staff'] ?? '';
@@ -119,10 +121,11 @@ $ws_worker->onMessage = function($connection, $data) use ($ws_worker) {
         error_log("WS - updateComments: " . $taskId . " " . $comment . " " . $staffName . " " . $timestamp);
         foreach($ws_worker->connections as $clientConnection) {
             $clientConnection->send(json_encode([
-                'action' => 'updateComments',
+                'action' => 'sendComments',
                 'message' => [
                     'request_id' => $taskId,
                     'comment' => $comment,
+                    'photoUrl' => $photoUrl,
                     'staffName' => $staffName,
                     'timestamp' => $timestamp
                 ]

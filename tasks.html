@@ -168,6 +168,15 @@
         </div>
 
         <div class="filter-indicator-container">
+
+          <div class="tasks-filter-indicator">
+            <div id="filter-indicator-search" class="applied-filters-indicator">
+              <i class="fas fa-search"></i>
+              <span id="filter-indicator-search-text" class="filters-applied-text"></span>
+            </div>
+            <span id="reset-filter-indicator-search" class="reset-filters-cross">&times;</span>
+          </div>
+
           <div class="tasks-filter-indicator">
             <div id="filter-indicator-by-date" class="applied-filters-indicator">
               <i class="fas fa-filter"></i>
@@ -402,6 +411,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
 <script src="database.js"></script>
+<script src="websocket-client.js"></script>
 <script src="auth.js"></script>
 <script src="dateUtils.js"></script>
 <script src="tasks.js"></script>
