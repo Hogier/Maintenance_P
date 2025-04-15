@@ -6,7 +6,7 @@ try {
     // Параметры подключения
     $host = 'localhost';
     $user = 'root';
-    $password = 'root';
+    $password = '';
     $database = 'maintenancedb';
 
     // Подключение

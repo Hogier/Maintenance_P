@@ -14,7 +14,7 @@ header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
 // Параметры подключения к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = 'root';
+$password = '';
 $database = 'maintenancedb';
 
 // Подключение к базе данных

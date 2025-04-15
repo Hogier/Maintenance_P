@@ -6,6 +6,7 @@ class PortalManager {
     // Check user access before initializing the portal
     if (checkPortalAccess()) {
       this.currentPage = "dashboard";
+      this.isScrolling = false;
       this.init();
     }
   }
@@ -25,6 +26,9 @@ class PortalManager {
 
     // Инициализация видимости элементов фильтрации и сортировки
     this.updateFilterSortVisibility(this.currentPage);
+
+    // Track scrolling state to prevent submenu toggling during scroll
+    this.setupScrollTracking();
   }
 
   // Метод для инициализации счетчика новых заказов
@@ -201,6 +205,22 @@ class PortalManager {
     const menuItem = document.querySelector(`[data-page="${page}"]`);
 
     if (submenu && menuItem) {
+      // Check if sidebar is small screen mode
+      const isSmallScreen = window.innerWidth <= 1024;
+
+      if (isSmallScreen) {
+        // On small screens, make sure the sidebar is visible before showing submenu
+        const sidebar = document.querySelector(".sidebar");
+        if (!sidebar.classList.contains("active")) {
+          document.querySelector(".mobile-menu-button").click();
+        }
+      }
+
+      // If this is triggered by a scroll action, don't toggle the submenu
+      if (this.isScrolling) {
+        return;
+      }
+
       submenu.classList.toggle("active");
       menuItem.classList.toggle("active");
     }
@@ -534,6 +554,34 @@ class PortalManager {
         }
       }
     }
+  }
+
+  // Add scroll tracking
+  setupScrollTracking() {
+    const sidebar = document.querySelector(".sidebar");
+
+    sidebar.addEventListener("scroll", () => {
+      if (!this.isScrolling) {
+        this.isScrolling = true;
+
+        // Reset after scrolling stops
+        clearTimeout(this.scrollTimer);
+        this.scrollTimer = setTimeout(() => {
+          this.isScrolling = false;
+        }, 100);
+      }
+    });
+
+    // Also track touch events for mobile
+    sidebar.addEventListener("touchmove", () => {
+      this.isScrolling = true;
+
+      // Reset after touch ends
+      clearTimeout(this.scrollTimer);
+      this.scrollTimer = setTimeout(() => {
+        this.isScrolling = false;
+      }, 100);
+    });
   }
 }
 

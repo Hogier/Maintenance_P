@@ -33,8 +33,13 @@ body {
   left: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   z-index: 1000;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, visibility 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+  transform: translateX(0);
+  will-change: transform;
+  touch-action: pan-y;
 }
 
 /* Mobile menu button */
@@ -138,6 +143,8 @@ body {
   transform: translateX(100%);
   transition: transform 0.3s ease;
   z-index: 1001;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .submenu.active {
@@ -274,15 +281,39 @@ body {
   .sidebar {
     transform: translateX(-100%);
     visibility: hidden;
+    width: 275px;
+    max-width: 80%;
   }
 
   .sidebar.active {
     transform: translateX(0);
     visibility: visible;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
   }
 
   .mobile-menu-button {
     display: block;
+    transition: left 0.3s ease, background-color 0.3s ease, color 0.3s ease,
+      transform 0.3s ease, padding 0.3s ease;
+  }
+
+  /* Style for close button when menu is open */
+  .mobile-menu-button.menu-open {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    padding: 7px;
+    border-radius: 4px;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .mobile-menu-button.menu-open i {
+    font-size: 1.2rem;
+  }
+
+  .mobile-menu-button.menu-open:hover {
+    transform: scale(1.1);
+    background-color: var(--secondary-color);
   }
 
   .main-content {
@@ -290,7 +321,7 @@ body {
     width: 100%;
   }
 
-  /* Overlay for mobile menu */
+  /* Overlay for mobile menu - improved for swipe animation */
   .sidebar-overlay {
     display: none;
     position: fixed;
@@ -302,6 +333,8 @@ body {
     z-index: 999;
     opacity: 0;
     transition: opacity 0.3s ease;
+    will-change: opacity;
+    touch-action: none;
   }
 
   .sidebar-overlay.active {
@@ -317,12 +350,68 @@ body {
   .construction-container {
     padding-left: 0;
   }
+
+  /* Position the close button (X) to the right when sidebar is active */
+  .sidebar.active + .mobile-menu-button,
+  .sidebar.active ~ .mobile-menu-button {
+    left: auto;
+    right: 15px;
+  }
+
+  /* Add touch hints */
+  .touch-hint {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0 40px 40px 0;
+    z-index: 998;
+    pointer-events: none;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .touch-hint::after {
+    content: "›";
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 24px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Show hint on mobile devices */
+  @media (hover: none) {
+    .touch-hint {
+      display: block;
+    }
+  }
 }
 
 @media (max-width: 768px) {
   .sidebar {
-    width: 80%;
-    max-width: 300px;
+    width: 250px;
+    max-width: 80%;
+  }
+
+  .submenu {
+    width: 100%;
   }
 
   .nav-item {
