@@ -19,6 +19,8 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-controls {
@@ -85,7 +87,8 @@
 }
 
 .calendar-day.today {
-  background-color: #f8f9fa;
+  background-color: rgba(52, 152, 219, 0.1);
+  border: 1px solid rgba(52, 152, 219, 0.3);
 }
 
 .calendar-day.has-events {
@@ -100,20 +103,28 @@
   color: #2c3e50;
 }
 
+.event-dots-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
 .event-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background-color: #3498db;
-  margin-right: 5px;
+  margin-right: 0;
   display: inline-block;
 }
 
-.calendar-events {
-  margin-top: 20px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
+.more-events {
+  font-size: 9px;
+  color: #7f8c8d;
+  display: inline-block;
+  margin-left: 2px;
 }
 
 .event-item {
@@ -344,53 +355,86 @@
 }
 
 @media (max-width: 768px) {
+  .dashboard-container {
+    padding: 15px 10px;
+  }
+
+  .calendar-wrapper {
+    flex-direction: column;
+  }
+
   .calendar-grid {
     border-radius: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(40px, 1fr));
   }
 
   .calendar-weekdays div {
-    padding: 8px;
+    padding: 8px 4px;
     font-size: 12px;
+    text-align: center;
+  }
+
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(40px, 1fr));
   }
 
   .calendar-day {
-    min-height: 80px;
-    padding: 6px;
+    min-height: 70px;
+    padding: 6px 4px;
+    position: relative;
   }
 
   .day-number {
     font-size: 12px;
+    top: 3px;
+    right: 3px;
   }
 
   .event-dot {
     width: 6px;
     height: 6px;
+    margin-top: 20px;
   }
 
   .calendar-events {
     margin-top: 15px;
-    padding: 15px;
+    padding: 15px 10px;
   }
 
   .event-item {
     padding: 6px;
     font-size: 12px;
+    flex-wrap: wrap;
   }
 
   .event-time {
     font-size: 11px;
+    min-width: 70px;
+  }
+
+  .event-title {
+    width: 100%;
+    margin-top: 4px;
   }
 
   .event-type {
     font-size: 10px;
     padding: 1px 4px;
+    margin-top: 4px;
   }
 
   /* Modal adjustments */
   .modal-content {
     width: 95%;
     margin: 10px auto;
-    padding: 15px;
+    max-height: 90vh;
   }
 
   .modal-header {
@@ -408,71 +452,113 @@
   .modal-event-item {
     padding: 10px;
     margin-bottom: 8px;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .modal-event-time {
     min-width: 70px;
     font-size: 12px;
+    margin-bottom: 5px;
   }
 
   .modal-event-title {
     font-size: 14px;
+    margin-bottom: 5px;
   }
 
   .modal-event-description {
     font-size: 12px;
+    width: 100%;
+  }
+
+  .event-dots-container {
+    margin-top: 18px;
+    gap: 2px;
+  }
+
+  .more-events {
+    font-size: 8px;
+  }
+
+  .calendar-day.today {
+    background-color: rgba(52, 152, 219, 0.1);
   }
 }
 
 @media (max-width: 480px) {
-  .calendar-controls {
-    flex-direction: column;
-    align-items: center;
+  .dashboard-container {
+    padding: 10px 5px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 20px;
     text-align: center;
   }
 
+  .calendar-controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 5px;
+  }
+
   .calendar-btn {
-    width: 100%;
-    max-width: 200px;
-    margin: 5px 0;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   .calendar-header h2 {
-    font-size: 16px;
-    margin: 10px 0;
+    font-size: 15px;
+    margin: 0;
+    text-align: center;
   }
 
   .calendar-weekdays div {
-    padding: 6px;
-    font-size: 11px;
+    padding: 5px 2px;
+    font-size: 10px;
+  }
+
+  .calendar-days {
+    grid-auto-rows: minmax(50px, auto);
   }
 
   .calendar-day {
-    min-height: 60px;
-    padding: 4px;
+    min-height: 50px;
+    padding: 3px 2px;
   }
 
   .day-number {
-    font-size: 11px;
+    font-size: 10px;
+    top: 2px;
+    right: 2px;
   }
 
   .event-dot {
     width: 4px;
     height: 4px;
+    margin-top: 18px;
   }
 
   .calendar-events {
     margin-top: 10px;
-    padding: 10px;
+    padding: 10px 5px;
   }
 
   .event-item {
-    padding: 4px;
+    padding: 6px 4px;
     font-size: 11px;
+    margin-bottom: 5px;
   }
 
   .event-time {
     font-size: 10px;
+    min-width: 60px;
+  }
+
+  .event-title {
+    font-size: 11px;
   }
 
   .event-type {
@@ -482,12 +568,14 @@
 
   /* Modal adjustments for very small screens */
   .modal-content {
+    width: 98%;
     margin: 5px auto;
-    padding: 10px;
+    padding: 8px;
+    max-height: 95vh;
   }
 
   .modal-header {
-    padding: 10px;
+    padding: 8px;
   }
 
   .modal-header h2 {
@@ -495,7 +583,7 @@
   }
 
   .modal-body {
-    padding: 10px;
+    padding: 8px;
   }
 
   .modal-event-item {
@@ -517,7 +605,51 @@
   }
 
   .modal-actions button {
-    padding: 8px 16px;
     font-size: 12px;
+    padding: 6px 10px;
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  /* Упрощенный вид для мобильных устройств */
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .event-dots-container {
+    margin-top: 16px;
+    gap: 1px;
+  }
+
+  .more-events {
+    font-size: 7px;
+  }
+
+  /* Добавляем свайп-подсказку */
+  .calendar-grid::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 2px;
+    background: #e1e1e1;
+    border-radius: 1px;
+    opacity: 0.7;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0.3;
+    }
   }
 }

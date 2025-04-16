@@ -4,14 +4,16 @@
 
 .supplies-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 20px;
+  position: relative;
 }
 
 .supplies-header h2 {
   margin: 0;
   color: #333;
+  text-align: center;
 }
 
 .supplies-header button {
@@ -22,6 +24,8 @@
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
+  position: absolute;
+  right: 0;
 }
 
 .supplies-header button:hover {
@@ -31,9 +35,10 @@
 /* Контейнер сетки карточек */
 .supplies-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, 320px);
   gap: 20px;
   position: relative;
+  justify-content: start;
 }
 
 /* Карточка заказа */
@@ -45,6 +50,7 @@
   transition: transform 0.2s, box-shadow 0.2s, margin-bottom 0.3s ease;
   border-left: 4px solid #ccc;
   position: relative;
+  width: 320px;
 }
 
 .supply-card:hover {
@@ -952,4 +958,27 @@
 .filter-status span {
   font-weight: 500;
   color: #3498db;
+}
+
+/* Media queries for responsive cards */
+@media screen and (max-width: 768px) {
+  .supplies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    justify-content: start;
+  }
+
+  .supply-card {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .supplies-grid {
+    grid-template-columns: 1fr;
+    justify-content: start;
+  }
+
+  .supply-card {
+    width: 100%;
+  }
 }

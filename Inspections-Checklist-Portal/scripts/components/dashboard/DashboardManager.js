@@ -3,6 +3,7 @@ export default class DashboardManager {
     this.container = container;
     this.currentDate = new Date();
     this.events = [];
+    this.isMobile = window.innerWidth <= 768;
     this.init();
   }
 
@@ -10,6 +11,19 @@ export default class DashboardManager {
     this.bindEvents();
     this.renderCalendar();
     this.loadEvents();
+
+    // Отслеживаем изменение размера экрана
+    window.addEventListener("resize", this.handleResize.bind(this));
+  }
+
+  handleResize() {
+    const wasMobile = this.isMobile;
+    this.isMobile = window.innerWidth <= 768;
+
+    // Если состояние мобильного вида изменилось, перерисуем календарь
+    if (wasMobile !== this.isMobile) {
+      this.renderCalendar();
+    }
   }
 
   bindEvents() {
@@ -43,11 +57,52 @@ export default class DashboardManager {
     if (addEventBtn) {
       addEventBtn.addEventListener("click", () => this.handleAddEvent());
     }
+
+    // Добавляем поддержку свайпов для смены месяца
+    this.setupSwipeSupport();
+  }
+
+  setupSwipeSupport() {
+    const calendarGrid = this.container.querySelector(".calendar-grid");
+    if (!calendarGrid) return;
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    calendarGrid.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      },
+      { passive: true }
+    );
+
+    calendarGrid.addEventListener(
+      "touchend",
+      (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        this.handleSwipe(touchStartX, touchEndX);
+      },
+      { passive: true }
+    );
+  }
+
+  handleSwipe(startX, endX) {
+    const threshold = 50; // Минимальное расстояние для определения свайпа
+
+    if (startX - endX > threshold) {
+      // Свайп влево - следующий месяц
+      this.changeMonth(1);
+    } else if (endX - startX > threshold) {
+      // Свайп вправо - предыдущий месяц
+      this.changeMonth(-1);
+    }
   }
 
   changeMonth(delta) {
     this.currentDate.setMonth(this.currentDate.getMonth() + delta);
     this.renderCalendar();
+    this.renderEventsList();
   }
 
   renderCalendar() {
@@ -60,6 +115,12 @@ export default class DashboardManager {
 
     const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth();
+
+    // Получаем текущую дату для выделения сегодняшнего дня
+    const today = new Date();
+    const isCurrentMonth =
+      today.getMonth() === month && today.getFullYear() === year;
+    const currentDay = today.getDate();
 
     // Update month and year display
     const monthNames = [
@@ -76,7 +137,25 @@ export default class DashboardManager {
       "November",
       "December",
     ];
-    monthYearElement.textContent = `${monthNames[month]} ${year}`;
+    // Для мобильных устройств используем сокращенные названия месяцев
+    const shortMonthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    monthYearElement.textContent = this.isMobile
+      ? `${shortMonthNames[month]} ${year}`
+      : `${monthNames[month]} ${year}`;
 
     // Clear previous days
     daysContainer.innerHTML = "";
@@ -94,13 +173,18 @@ export default class DashboardManager {
 
     // Add days of month
     for (let day = 1; day <= totalDays; day++) {
-      this.createDayElement(daysContainer, day);
+      const isToday = isCurrentMonth && day === currentDay;
+      this.createDayElement(daysContainer, day, false, isToday);
     }
   }
 
-  createDayElement(container, day, isEmpty = false) {
+  createDayElement(container, day, isEmpty = false, isToday = false) {
     const dayElement = document.createElement("div");
     dayElement.className = "calendar-day";
+
+    if (isToday) {
+      dayElement.classList.add("today");
+    }
 
     if (!isEmpty) {
       const dayNumber = document.createElement("div");
@@ -135,11 +219,29 @@ export default class DashboardManager {
   }
 
   renderDayEvents(dayElement, events) {
-    events.forEach((event) => {
+    // На мобильных устройствах ограничиваем количество отображаемых точек
+    const maxDotsToShow = this.isMobile ? 2 : events.length;
+
+    // Создаем контейнер для точек
+    const dotsContainer = document.createElement("div");
+    dotsContainer.className = "event-dots-container";
+
+    // Добавляем точки событий (не более maxDotsToShow)
+    for (let i = 0; i < Math.min(events.length, maxDotsToShow); i++) {
       const eventDot = document.createElement("div");
-      eventDot.className = `event-dot ${event.type}`;
-      dayElement.appendChild(eventDot);
-    });
+      eventDot.className = `event-dot ${events[i].type}`;
+      dotsContainer.appendChild(eventDot);
+    }
+
+    // Если есть больше событий, чем мы показываем, добавляем индикатор
+    if (events.length > maxDotsToShow && this.isMobile) {
+      const moreIndicator = document.createElement("div");
+      moreIndicator.className = "more-events";
+      moreIndicator.textContent = `+${events.length - maxDotsToShow}`;
+      dotsContainer.appendChild(moreIndicator);
+    }
+
+    dayElement.appendChild(dotsContainer);
   }
 
   async loadEvents() {

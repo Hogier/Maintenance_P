@@ -177,6 +177,22 @@ class PortalManager {
         const submenu = item.closest(".submenu");
         const page = submenu.id.replace("-submenu", "");
         this.changePage(page, tab);
+
+        // Check if we're on large screen (> 1024px)
+        const isLargeScreen = window.innerWidth > 1024;
+
+        // On large screens, keep submenu open
+        if (isLargeScreen) {
+          // Make sure the submenu stays visible
+          submenu.classList.add("active");
+          // Keep the parent menu item active
+          const parentMenuItem = document.querySelector(
+            `[data-page="${page}"]`
+          );
+          if (parentMenuItem) {
+            parentMenuItem.classList.add("active");
+          }
+        }
       });
     });
 
@@ -243,6 +259,24 @@ class PortalManager {
     const section = document.getElementById(`${page}-section`);
     section.classList.add("active");
 
+    // Check if we're on large screen (> 1024px)
+    const isLargeScreen = window.innerWidth > 1024;
+
+    // Don't close sidebar on large screens
+    if (isLargeScreen) {
+      // Save current page to session storage without closing the menu
+      sessionStorage.setItem("currentPage", page);
+    } else {
+      // On small screens, close the mobile menu when changing pages
+      const sidebar = document.querySelector(".sidebar");
+      if (sidebar.classList.contains("active")) {
+        // Only close if it's not a submenu parent
+        if (page !== "inspections" && page !== "construction") {
+          document.querySelector(".mobile-menu-button").click();
+        }
+      }
+    }
+
     // Load component if not loaded yet
     if (!section.hasAttribute("data-loaded")) {
       await this.loadComponent(page, section);
@@ -262,9 +296,6 @@ class PortalManager {
 
     this.currentPage = page;
     console.log("Current page updated to:", this.currentPage);
-
-    // Сохраняем текущую страницу в sessionStorage для восстановления при перезагрузке
-    sessionStorage.setItem("currentPage", page);
 
     // Close submenus if they're open
     if (page !== "inspections" && page !== "construction") {

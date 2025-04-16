@@ -350,30 +350,33 @@ export default class MobileNav {
   }
 
   closeMenu() {
-    this.isOpen = false;
+    // Only close the menu if we're on small screens
+    if (window.innerWidth <= 1024) {
+      this.isOpen = false;
 
-    // Update sidebar
-    this.sidebar.classList.remove("active");
-    this.sidebar.style.transform = "translateX(-100%)";
-    this.sidebar.style.transition = "transform 0.3s ease";
+      // Update sidebar
+      this.sidebar.classList.remove("active");
+      this.sidebar.style.transform = "translateX(-100%)";
+      this.sidebar.style.transition = "transform 0.3s ease";
 
-    // Update overlay
-    this.overlay.classList.remove("active");
-    this.overlay.style.opacity = "0";
+      // Update overlay
+      this.overlay.classList.remove("active");
+      this.overlay.style.opacity = "0";
 
-    // Update button icon
-    this.menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+      // Update button icon
+      this.menuButton.innerHTML = '<i class="fas fa-bars"></i>';
 
-    // Reset button position and class
-    this.menuButton.style.left = "15px";
-    this.menuButton.classList.remove("menu-open");
+      // Reset button position and class
+      this.menuButton.style.left = "15px";
+      this.menuButton.classList.remove("menu-open");
 
-    // Ensure sidebar is hidden after animation
-    setTimeout(() => {
-      if (!this.isOpen) {
-        this.sidebar.style.visibility = "hidden";
-        this.overlay.style.display = "none";
-      }
-    }, 300);
+      // Ensure sidebar is hidden after animation
+      setTimeout(() => {
+        if (!this.isOpen) {
+          this.sidebar.style.visibility = "hidden";
+          this.overlay.style.display = "none";
+        }
+      }, 300);
+    }
   }
 }
