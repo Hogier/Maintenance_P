@@ -39,6 +39,8 @@
   gap: 20px;
   position: relative;
   justify-content: start;
+  grid-auto-rows: min-content;
+  align-items: start;
 }
 
 /* Карточка заказа */
@@ -51,6 +53,9 @@
   border-left: 4px solid #ccc;
   position: relative;
   width: 320px;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
 }
 
 .supply-card:hover {
@@ -964,7 +969,7 @@
 @media screen and (max-width: 768px) {
   .supplies-grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    justify-content: start;
+    justify-content: center;
   }
 
   .supply-card {
@@ -975,7 +980,6 @@
 @media screen and (max-width: 480px) {
   .supplies-grid {
     grid-template-columns: 1fr;
-    justify-content: start;
   }
 
   .supply-card {
