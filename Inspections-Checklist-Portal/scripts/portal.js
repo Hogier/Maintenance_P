@@ -198,11 +198,12 @@ class PortalManager {
 
     // Back buttons in submenus
     document.querySelectorAll(".submenu .back-button").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation(); // Добавляем stopPropagation для предотвращения всплытия события
         const submenu = button.closest(".submenu");
         const page = submenu.id.replace("-submenu", "");
         this.toggleSubmenu(page);
-        this.changePage("dashboard");
+        this.changePage("dashboard", null, true); // Добавляем третий параметр для указания, что это переход из подменю
       });
     });
 
@@ -237,12 +238,24 @@ class PortalManager {
         return;
       }
 
+      // Проверяем, закрывается ли подменю (если оно уже активно)
+      const isClosingSubmenu = submenu.classList.contains("active");
+
       submenu.classList.toggle("active");
       menuItem.classList.toggle("active");
+
+      // Если мы на мобильном устройстве и только что закрыли подменю,
+      // то убедимся, что основное меню остается открытым
+      if (isSmallScreen && isClosingSubmenu) {
+        const sidebar = document.querySelector(".sidebar");
+        if (!sidebar.classList.contains("active")) {
+          document.querySelector(".mobile-menu-button").click();
+        }
+      }
     }
   }
 
-  async changePage(page, tab = null) {
+  async changePage(page, tab = null, fromSubmenu = false) {
     console.log("changePage called with page:", page);
 
     // Update active menu item
@@ -267,11 +280,11 @@ class PortalManager {
       // Save current page to session storage without closing the menu
       sessionStorage.setItem("currentPage", page);
     } else {
-      // On small screens, close the mobile menu when changing pages
+      // На малых экранах, закрываем мобильное меню при смене страниц, но только если это не переход из подменю
       const sidebar = document.querySelector(".sidebar");
       if (sidebar.classList.contains("active")) {
-        // Only close if it's not a submenu parent
-        if (page !== "inspections" && page !== "construction") {
+        // Не закрываем меню если это переход из подменю или если это родительский пункт меню
+        if (!fromSubmenu && page !== "inspections" && page !== "construction") {
           document.querySelector(".mobile-menu-button").click();
         }
       }

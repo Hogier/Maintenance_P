@@ -59,10 +59,18 @@ export default class MobileNav {
       e.stopPropagation();
     });
 
-    // Close menu when clicking submenu items
+    // Close menu when clicking submenu items (но не для кнопок "Назад")
     const submenuItems = this.sidebar.querySelectorAll(".submenu-item");
     submenuItems.forEach((item) => {
       item.addEventListener("click", () => this.closeMenu());
+    });
+
+    // Добавляем отдельный обработчик для кнопок "Назад" в подменю, чтобы предотвратить закрытие меню
+    const backButtons = this.sidebar.querySelectorAll(".submenu .back-button");
+    backButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation(); // Предотвращаем всплытие события
+      });
     });
 
     // Prevent horizontal scrolling
