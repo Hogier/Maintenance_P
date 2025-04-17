@@ -210,3 +210,10 @@ Stack trace:
 2025-04-15 23:31:47 pid:43465 Workerman[php/ws/websocket_server.php] status 
 2025-04-15 23:31:47 pid:43465 Workerman[php/ws/websocket_server.php] not run
 2025-04-15 23:32:30 pid:43532 Workerman[php/ws/websocket_server.php] start in DEBUG mode
+2025-04-17 04:07:44 pid:43532 Workerman[websocket_server.php] stopping ...
+2025-04-17 04:07:44 pid:43532 Workerman[websocket_server.php] stopping ...
+2025-04-17 04:07:44 pid:43532 worker[none:43536] exit with status 13
+2025-04-17 04:07:44 pid:43532 worker[none:43535] exit with status 13
+2025-04-17 04:07:44 pid:43532 worker[none:43534] exit with status 13
+2025-04-17 04:07:44 pid:43532 worker[none:43533] exit with status 13
+2025-04-17 04:07:44 pid:43532 Workerman[websocket_server.php] has been stopped

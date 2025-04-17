@@ -81,14 +81,65 @@
 
 .calendar-day {
   border: 1px solid #e1e1e1;
-  padding: 10px;
+  padding: 10px 5px;
   min-height: 120px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-day:hover .calendar-day-events {
+  opacity: 1;
 }
 
 .calendar-day.today {
-  background-color: rgba(52, 152, 219, 0.1);
-  border: 1px solid rgba(52, 152, 219, 0.3);
+  background-color: rgba(52, 152, 219, 0.15);
+  border: 2px solid #3498db;
+  position: relative;
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+  animation: today-pulse 2s infinite;
+}
+
+@keyframes today-pulse {
+  0% {
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(52, 152, 219, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+  }
+}
+
+/* Добавляем метку "Today" для текущего дня */
+.calendar-day.today::after {
+  content: "Today";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background-color: #3498db;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: bold;
+  opacity: 0.9;
+  z-index: 2;
+}
+
+/* Обновляем стиль номера для текущего дня */
+.calendar-day.today .day-number {
+  font-weight: bold;
+  color: #3498db;
+  font-size: 115%;
 }
 
 .calendar-day.has-events {
@@ -101,52 +152,778 @@
   right: 5px;
   font-weight: bold;
   color: #2c3e50;
+  z-index: 2;
 }
 
 .event-dots-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  margin-top: 20px;
-  justify-content: center;
+  display: none;
 }
 
 .event-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #3498db;
-  margin-right: 0;
-  display: inline-block;
+  display: none;
 }
 
 .more-events {
-  font-size: 9px;
+  font-size: 10px;
   color: #7f8c8d;
-  display: inline-block;
-  margin-left: 2px;
+  text-align: center;
+  margin-top: 2px;
 }
 
-.event-item {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: 5px;
-  background: white;
-  border-radius: 4px;
-  border-left: 4px solid #3498db;
+/* Модальное окно с событиями на день */
+.modal-events-header {
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e1e1e1;
+  padding-bottom: 10px;
 }
 
-.event-time {
-  font-weight: bold;
-  margin-right: 10px;
+.modal-events-header h3 {
+  margin: 0 0 5px;
+  color: #2c3e50;
+  font-size: 18px;
+}
+
+.modal-events-header p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.modal-events-list-items {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Стили для формы добавления/редактирования события */
+.reminder-form {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.form-header {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e1e1e1;
+  padding-bottom: 15px;
+}
+
+.form-header h3 {
+  margin: 0 0 10px;
   color: #2c3e50;
 }
 
-.event-title {
-  flex-grow: 1;
+.selected-date-info {
+  color: #3498db;
+  font-weight: bold;
+  margin: 5px 0 0;
+  font-size: 14px;
 }
 
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-primary {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-secondary {
+  background: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #2980b9;
+}
+
+.btn-secondary:hover {
+  background: #7f8c8d;
+}
+
+/* Стили для разных типов событий */
+.event-dot.reminder,
+.modal-event-item.reminder {
+  border-left-color: #3498db;
+}
+
+.event-dot.inspection,
+.modal-event-item.inspection {
+  border-left-color: #e74c3c;
+}
+
+.event-dot.checklist,
+.modal-event-item.checklist {
+  border-left-color: #2ecc71;
+}
+
+.event-dot.construction,
+.modal-event-item.construction {
+  border-left-color: #f1c40f;
+}
+
+.event-dot.red {
+  background-color: #e74c3c;
+}
+
+.event-dot.green {
+  background-color: #2ecc71;
+}
+
+.event-dot.blue {
+  background-color: #3498db;
+}
+
+.event-dot.orange {
+  background-color: #e67e22;
+}
+
+.event-dot.purple {
+  background-color: #9b59b6;
+}
+
+/* Стили для отображения событий в календаре */
+.calendar-day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 25px;
+  font-size: 12px;
+  flex: 1;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.calendar-event-title {
+  padding: 2px 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 12px;
+  width: 90%;
+  margin: 0 auto;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.1s;
+  color: #333;
+  position: relative;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+}
+
+.calendar-event-title:hover {
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+/* Стили для текста внутри прямоугольника */
+.event-title-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  position: relative;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Обрезаем длинные тексты, когда нет наведения */
+.calendar-event-title:not(:hover) .event-title-text {
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
+/* Для длинных названий при наведении убираем ограничения */
+.calendar-event-title:not(.short-text):hover .event-title-text {
+  text-overflow: clip;
+  overflow: visible;
+  animation: text-scroll 8s linear infinite;
+  max-width: none;
+}
+
+/* Для коротких текстов не применяем анимацию */
+.calendar-event-title.short-text:hover .event-title-text {
+  animation: none;
+}
+
+/* Настраиваем анимацию скроллинга текста */
+@keyframes text-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(0);
+  }
+  45% {
+    transform: translateX(calc(-100% + 50%));
+  }
+  55% {
+    transform: translateX(calc(-100% + 50%));
+  }
+  85% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Цвета для разных типов событий */
+.calendar-event-title.inspection {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #333;
+  border-left: 2px solid #e74c3c;
+}
+
+.calendar-event-title.checklist {
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #333;
+  border-left: 2px solid #2ecc71;
+}
+
+.calendar-event-title.construction {
+  background-color: rgba(241, 196, 15, 0.15);
+  color: #333;
+  border-left: 2px solid #f1c40f;
+}
+
+.calendar-event-title.reminder,
+.calendar-event-title.blue {
+  background-color: rgba(52, 152, 219, 0.15);
+  color: #333;
+  border-left: 2px solid #3498db;
+}
+
+.calendar-event-title.red {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #333;
+  border-left: 2px solid #e74c3c;
+}
+
+.calendar-event-title.green {
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #333;
+  border-left: 2px solid #2ecc71;
+}
+
+.calendar-event-title.orange {
+  background-color: rgba(230, 126, 34, 0.15);
+  color: #333;
+  border-left: 2px solid #e67e22;
+}
+
+.calendar-event-title.purple {
+  background-color: rgba(155, 89, 182, 0.15);
+  color: #333;
+  border-left: 2px solid #9b59b6;
+}
+
+/* Стили для адаптивности */
+@media (max-width: 1024px) {
+  .calendar-wrapper {
+    max-width: 100%;
+  }
+
+  .calendar-controls {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .calendar-btn {
+    padding: 8px 12px;
+  }
+
+  .calendar-header h2 {
+    font-size: 18px;
+  }
+
+  .calendar-weekdays div {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .calendar-day {
+    min-height: 100px;
+    padding: 8px;
+  }
+
+  .day-number {
+    font-size: 14px;
+  }
+
+  .event-type {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 15px 10px;
+  }
+
+  .calendar-wrapper {
+    flex-direction: column;
+  }
+
+  .calendar-grid {
+    border-radius: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(40px, 1fr));
+  }
+
+  .calendar-weekdays div {
+    padding: 8px 4px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(40px, 1fr));
+  }
+
+  .calendar-day {
+    min-height: 70px;
+    padding: 6px 3px;
+    position: relative;
+  }
+
+  .day-number {
+    font-size: 12px;
+    top: 3px;
+    right: 3px;
+  }
+
+  .event-dot {
+    width: 6px;
+    height: 6px;
+    margin-top: 20px;
+  }
+
+  .calendar-events {
+    margin-top: 15px;
+    padding: 15px 10px;
+  }
+
+  .event-item {
+    padding: 6px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .event-time {
+    font-size: 11px;
+    min-width: 70px;
+  }
+
+  .event-title {
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .event-type {
+    font-size: 10px;
+    padding: 1px 4px;
+    margin-top: 4px;
+  }
+
+  /* Modal adjustments */
+  .modal-content {
+    width: 95%;
+    margin: 10px auto;
+    max-height: 90vh;
+  }
+
+  .modal-header {
+    padding: 15px;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .modal-event-item {
+    padding: 10px;
+    margin-bottom: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modal-event-time {
+    min-width: 70px;
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  .modal-event-title {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+
+  .modal-event-description {
+    font-size: 12px;
+    width: 100%;
+  }
+
+  .event-dots-container {
+    margin-top: 18px;
+    gap: 2px;
+  }
+
+  .more-events {
+    font-size: 9px;
+  }
+
+  /* Модификация метки Today для планшетов */
+  .calendar-day.today::after {
+    font-size: 9px;
+    padding: 1px 4px;
+    top: 1px;
+    left: 1px;
+  }
+
+  .reminder-form {
+    padding: 15px;
+  }
+
+  .form-header h3 {
+    font-size: 16px;
+  }
+
+  .selected-date-info {
+    font-size: 13px;
+  }
+
+  .modal-events-header h3 {
+    font-size: 16px;
+  }
+
+  .calendar-event-title {
+    font-size: 11px;
+    padding: 1px 3px;
+    width: 95%;
+    min-height: 20px;
+  }
+
+  .event-title-text {
+    width: 100%;
+  }
+
+  .calendar-day-events {
+    margin-top: 18px;
+    gap: 2px;
+  }
+
+  @keyframes text-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(0);
+    }
+    45% {
+      transform: translateX(calc(-100% + 50%));
+    }
+    55% {
+      transform: translateX(calc(-100% + 50%));
+    }
+    80% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 10px 5px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .calendar-controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 5px;
+  }
+
+  .calendar-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .calendar-header h2 {
+    font-size: 15px;
+    margin: 0;
+    text-align: center;
+  }
+
+  .calendar-weekdays div {
+    padding: 5px 2px;
+    font-size: 10px;
+  }
+
+  .calendar-days {
+    grid-auto-rows: minmax(50px, auto);
+  }
+
+  .calendar-day {
+    min-height: 50px;
+    padding: 3px 2px;
+  }
+
+  .day-number {
+    font-size: 10px;
+    top: 2px;
+    right: 2px;
+  }
+
+  /* Модификация метки Today для мобильных устройств */
+  .calendar-day.today::after {
+    font-size: 8px;
+    padding: 1px 3px;
+    top: 1px;
+    left: 1px;
+  }
+
+  .event-dot {
+    width: 4px;
+    height: 4px;
+    margin-top: 18px;
+  }
+
+  .calendar-events {
+    margin-top: 10px;
+    padding: 10px 5px;
+  }
+
+  .event-item {
+    padding: 6px 4px;
+    font-size: 11px;
+    margin-bottom: 5px;
+  }
+
+  .event-time {
+    font-size: 10px;
+    min-width: 60px;
+  }
+
+  .event-title {
+    font-size: 11px;
+  }
+
+  .event-type {
+    font-size: 9px;
+    padding: 1px 3px;
+  }
+
+  /* Modal adjustments for very small screens */
+  .modal-content {
+    width: 98%;
+    margin: 5px auto;
+    padding: 8px;
+    max-height: 95vh;
+  }
+
+  .modal-header {
+    padding: 8px;
+  }
+
+  .modal-header h2 {
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 8px;
+  }
+
+  .modal-event-item {
+    padding: 8px;
+    margin-bottom: 6px;
+  }
+
+  .modal-event-time {
+    min-width: 60px;
+    font-size: 11px;
+  }
+
+  .modal-event-title {
+    font-size: 12px;
+  }
+
+  .modal-event-description {
+    font-size: 11px;
+  }
+
+  .modal-actions button {
+    font-size: 12px;
+    padding: 6px 10px;
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  /* Упрощенный вид для мобильных устройств */
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .event-dots-container {
+    margin-top: 16px;
+    gap: 1px;
+  }
+
+  .more-events {
+    font-size: 7px;
+  }
+
+  /* Добавляем свайп-подсказку */
+  .calendar-grid::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 2px;
+    background: #e1e1e1;
+    border-radius: 1px;
+    opacity: 0.7;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0.3;
+    }
+  }
+
+  .reminder-form {
+    padding: 10px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .modal-events-list-items {
+    max-height: 50vh;
+  }
+
+  .calendar-event-title {
+    font-size: 10px;
+    padding: 1px 2px;
+    width: 100%;
+    line-height: 1.4;
+    border-left-width: 1px;
+    min-height: 18px;
+  }
+
+  .event-title-text {
+    width: 100%;
+  }
+
+  .calendar-day-events {
+    margin-top: 15px;
+    gap: 1px;
+  }
+
+  @keyframes text-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(0);
+    }
+    45% {
+      transform: translateX(calc(-100% + 50%));
+    }
+    55% {
+      transform: translateX(calc(-100% + 50%));
+    }
+    80% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+}
+
+/* Оставляем стили для type, так как они могут использоваться в модальном окне */
 .event-type {
   padding: 2px 8px;
   border-radius: 12px;
@@ -169,6 +946,7 @@
   color: black;
 }
 
+/* Стили для модального окна */
 .modal {
   display: none;
   position: fixed;
@@ -306,350 +1084,188 @@
   padding: 20px;
 }
 
-/* Responsive styles for calendar */
-@media (max-width: 1024px) {
-  .calendar-wrapper {
-    max-width: 100%;
-  }
-
-  .calendar-controls {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .calendar-btn {
-    padding: 8px 12px;
-  }
-
-  .calendar-header h2 {
-    font-size: 18px;
-  }
-
-  .calendar-weekdays div {
-    padding: 10px;
-    font-size: 14px;
-  }
-
-  .calendar-day {
-    min-height: 100px;
-    padding: 8px;
-  }
-
-  .day-number {
-    font-size: 14px;
-  }
-
-  .event-item {
-    padding: 8px;
-    font-size: 14px;
-  }
-
-  .event-time {
-    font-size: 12px;
-  }
-
-  .event-type {
-    font-size: 11px;
-    padding: 2px 6px;
-  }
+/* Цвета для модального окна */
+.modal-event-item.red {
+  border-left-color: #e74c3c;
 }
 
+.modal-event-item.green {
+  border-left-color: #2ecc71;
+}
+
+.modal-event-item.blue {
+  border-left-color: #3498db;
+}
+
+.modal-event-item.orange {
+  border-left-color: #e67e22;
+}
+
+.modal-event-item.purple {
+  border-left-color: #9b59b6;
+}
+
+/* Styles for "Today's Events" section */
+.current-day-events-container {
+  margin-top: 30px;
+  border-radius: 8px;
+  border: 1px solid #e1e1e1;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.current-day-title {
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  padding: 15px;
+  margin: 0;
+  border-bottom: 1px solid #e1e1e1;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.today-events-list {
+  padding: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.today-event-item {
+  display: flex;
+  padding: 12px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.today-event-item:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.today-event-time {
+  flex: 0 0 80px;
+  font-weight: bold;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+}
+
+.today-event-details {
+  flex: 1;
+  padding: 0 10px;
+}
+
+.today-event-title {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.today-event-description {
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.today-event-actions {
+  display: flex;
+  align-items: center;
+}
+
+.today-event-actions button {
+  background: none;
+  border: none;
+  color: #7f8c8d;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 5px;
+  padding: 5px;
+  transition: color 0.2s;
+}
+
+.today-event-actions button:hover {
+  color: #3498db;
+}
+
+.today-event-item.inspection,
+.today-event-item.reminder.blue,
+.today-event-item.blue {
+  border-left: 4px solid #3498db;
+}
+
+.today-event-item.checklist,
+.today-event-item.reminder.green,
+.today-event-item.green {
+  border-left: 4px solid #2ecc71;
+}
+
+.today-event-item.construction,
+.today-event-item.reminder.orange,
+.today-event-item.orange {
+  border-left: 4px solid #e67e22;
+}
+
+.today-event-item.reminder.red,
+.today-event-item.red {
+  border-left: 4px solid #e74c3c;
+}
+
+.today-event-item.reminder.purple,
+.today-event-item.purple {
+  border-left: 4px solid #9b59b6;
+}
+
+.no-events-message {
+  padding: 30px;
+  text-align: center;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+/* Media queries for the today events section */
 @media (max-width: 768px) {
-  .dashboard-container {
-    padding: 15px 10px;
-  }
-
-  .calendar-wrapper {
-    flex-direction: column;
-  }
-
-  .calendar-grid {
-    border-radius: 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(40px, 1fr));
-  }
-
-  .calendar-weekdays div {
-    padding: 8px 4px;
-    font-size: 12px;
-    text-align: center;
-  }
-
-  .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(40px, 1fr));
-  }
-
-  .calendar-day {
-    min-height: 70px;
-    padding: 6px 4px;
-    position: relative;
-  }
-
-  .day-number {
-    font-size: 12px;
-    top: 3px;
-    right: 3px;
-  }
-
-  .event-dot {
-    width: 6px;
-    height: 6px;
+  .current-day-events-container {
     margin-top: 20px;
   }
 
-  .calendar-events {
-    margin-top: 15px;
-    padding: 15px 10px;
+  .today-event-time {
+    flex: 0 0 60px;
+    font-size: 13px;
   }
 
-  .event-item {
-    padding: 6px;
-    font-size: 12px;
-    flex-wrap: wrap;
-  }
-
-  .event-time {
-    font-size: 11px;
-    min-width: 70px;
-  }
-
-  .event-title {
-    width: 100%;
-    margin-top: 4px;
-  }
-
-  .event-type {
-    font-size: 10px;
-    padding: 1px 4px;
-    margin-top: 4px;
-  }
-
-  /* Modal adjustments */
-  .modal-content {
-    width: 95%;
-    margin: 10px auto;
-    max-height: 90vh;
-  }
-
-  .modal-header {
-    padding: 15px;
-  }
-
-  .modal-header h2 {
-    font-size: 18px;
-  }
-
-  .modal-body {
-    padding: 15px;
-  }
-
-  .modal-event-item {
-    padding: 10px;
-    margin-bottom: 8px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .modal-event-time {
-    min-width: 70px;
-    font-size: 12px;
-    margin-bottom: 5px;
-  }
-
-  .modal-event-title {
+  .today-event-title {
     font-size: 14px;
-    margin-bottom: 5px;
   }
 
-  .modal-event-description {
+  .today-event-description {
     font-size: 12px;
-    width: 100%;
-  }
-
-  .event-dots-container {
-    margin-top: 18px;
-    gap: 2px;
-  }
-
-  .more-events {
-    font-size: 8px;
-  }
-
-  .calendar-day.today {
-    background-color: rgba(52, 152, 219, 0.1);
   }
 }
 
 @media (max-width: 480px) {
-  .dashboard-container {
-    padding: 10px 5px;
+  .today-event-item {
+    flex-direction: column;
+    padding: 10px;
   }
 
-  .dashboard-header h1 {
-    font-size: 20px;
-    text-align: center;
-  }
-
-  .calendar-controls {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    gap: 5px;
-  }
-
-  .calendar-btn {
-    padding: 6px 10px;
-    font-size: 12px;
-  }
-
-  .calendar-header h2 {
-    font-size: 15px;
-    margin: 0;
-    text-align: center;
-  }
-
-  .calendar-weekdays div {
-    padding: 5px 2px;
-    font-size: 10px;
-  }
-
-  .calendar-days {
-    grid-auto-rows: minmax(50px, auto);
-  }
-
-  .calendar-day {
-    min-height: 50px;
-    padding: 3px 2px;
-  }
-
-  .day-number {
-    font-size: 10px;
-    top: 2px;
-    right: 2px;
-  }
-
-  .event-dot {
-    width: 4px;
-    height: 4px;
-    margin-top: 18px;
-  }
-
-  .calendar-events {
-    margin-top: 10px;
-    padding: 10px 5px;
-  }
-
-  .event-item {
-    padding: 6px 4px;
-    font-size: 11px;
+  .today-event-time {
+    flex: none;
     margin-bottom: 5px;
+    justify-content: flex-start;
   }
 
-  .event-time {
-    font-size: 10px;
-    min-width: 60px;
+  .today-event-details {
+    padding: 0;
+    margin-bottom: 10px;
   }
 
-  .event-title {
-    font-size: 11px;
-  }
-
-  .event-type {
-    font-size: 9px;
-    padding: 1px 3px;
-  }
-
-  /* Modal adjustments for very small screens */
-  .modal-content {
-    width: 98%;
-    margin: 5px auto;
-    padding: 8px;
-    max-height: 95vh;
-  }
-
-  .modal-header {
-    padding: 8px;
-  }
-
-  .modal-header h2 {
-    font-size: 16px;
-  }
-
-  .modal-body {
-    padding: 8px;
-  }
-
-  .modal-event-item {
-    padding: 8px;
-    margin-bottom: 6px;
-  }
-
-  .modal-event-time {
-    min-width: 60px;
-    font-size: 11px;
-  }
-
-  .modal-event-title {
-    font-size: 12px;
-  }
-
-  .modal-event-description {
-    font-size: 11px;
-  }
-
-  .modal-actions button {
-    font-size: 12px;
-    padding: 6px 10px;
+  .today-event-actions {
+    justify-content: flex-end;
     width: 100%;
-    margin-top: 5px;
-  }
-
-  /* Упрощенный вид для мобильных устройств */
-  .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-  }
-
-  .event-dots-container {
-    margin-top: 16px;
-    gap: 1px;
-  }
-
-  .more-events {
-    font-size: 7px;
-  }
-
-  /* Добавляем свайп-подсказку */
-  .calendar-grid::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 2px;
-    background: #e1e1e1;
-    border-radius: 1px;
-    opacity: 0.7;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0% {
-      opacity: 0.3;
-    }
-    50% {
-      opacity: 0.7;
-    }
-    100% {
-      opacity: 0.3;
-    }
   }
 }

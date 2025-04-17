@@ -231,6 +231,9 @@ export default class SuppliesManager {
           }
 
           this.renderSupplies();
+
+          // After rendering supplies, fetch receipt counts for each order
+          this.updateReceiptsCounts();
         } else {
           suppliesList.innerHTML =
             '<div class="error">Failed to load supplies orders</div>';
@@ -241,6 +244,72 @@ export default class SuppliesManager {
         suppliesList.innerHTML =
           '<div class="error">Error loading supplies orders</div>';
       });
+  }
+
+  // New method to update receipts counts for all orders
+  updateReceiptsCounts() {
+    // For each order, fetch the receipt count
+    this.supplies.forEach((order) => {
+      this.getReceiptsCount(order.id);
+    });
+  }
+
+  // Get receipts count for a single order
+  getReceiptsCount(orderId) {
+    const formData = new FormData();
+    formData.append("action", "getOrderReceipts");
+    formData.append("order_id", orderId);
+
+    const apiUrl =
+      window.location.origin +
+      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+
+    fetch(apiUrl, {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.text())
+      .then((text) => this.safelyParseJson(text))
+      .then((data) => {
+        if (data && data.success && data.receipts) {
+          const count = data.receipts.length;
+          this.updateReceiptCountBadge(orderId, count);
+        }
+      })
+      .catch((error) => {
+        console.error("Error getting receipts count:", error);
+      });
+  }
+
+  // Update the receipts button with count badge
+  updateReceiptCountBadge(orderId, count) {
+    const button = this.container.querySelector(
+      `.toggle-receipts-btn[data-order-id="${orderId}"]`
+    );
+    if (!button) return;
+
+    // Find the receipt icon (first icon in the button)
+    const receiptIcon = button.querySelector("i:first-of-type");
+    if (!receiptIcon) return;
+
+    // Remove existing badge if any
+    const existingBadge = button.querySelector(".receipts-count");
+    if (existingBadge) {
+      existingBadge.remove();
+    }
+
+    // If count > 0, add badge
+    if (count > 0) {
+      const badge = document.createElement("span");
+      badge.className = "receipts-count";
+      badge.textContent = count;
+
+      // Add the badge right after the receipt icon
+      receiptIcon.insertAdjacentElement("afterend", badge);
+
+      // Set the icon to have position relative for badge positioning
+      receiptIcon.style.position = "relative";
+    }
   }
 
   // Apply filters from UI inputs
@@ -537,6 +606,9 @@ export default class SuppliesManager {
         '<div class="no-supplies">No supplies orders found</div>';
       return;
     }
+
+    // Remove any existing styles that might be affecting the grid
+    suppliesList.classList.remove("has-expanded");
 
     let html = "";
 
@@ -1127,9 +1199,11 @@ export default class SuppliesManager {
       `receipts-section-${orderId}`
     );
     const overlay = document.querySelector(".receipts-overlay");
-    if (!receiptsSection || !overlay) return;
-
     const supplyCard = document.getElementById(`supply-card-${orderId}`);
+    const suppliesList = this.container.querySelector("#supplies-list");
+
+    if (!receiptsSection || !supplyCard) return;
+
     const toggleBtn = supplyCard.querySelector(".toggle-receipts-btn");
     const toggleIcon = toggleBtn
       ? toggleBtn.querySelector(".toggle-icon")
@@ -1148,6 +1222,9 @@ export default class SuppliesManager {
       receiptsSection.classList.add("active");
       overlay.classList.add("active");
 
+      // Use the receipts overlay for background effects instead of modifying the grid
+      suppliesList.classList.add("has-expanded");
+
       // Обновляем кнопку
       if (toggleIcon) toggleIcon.classList.add("rotated");
 
@@ -1163,6 +1240,7 @@ export default class SuppliesManager {
   closeAllReceiptSections() {
     const allReceiptSections = document.querySelectorAll(".receipts-section");
     const overlay = document.querySelector(".receipts-overlay");
+    const suppliesList = this.container.querySelector("#supplies-list");
 
     allReceiptSections.forEach((section) => {
       if (section.classList.contains("active")) {
@@ -1174,6 +1252,11 @@ export default class SuppliesManager {
     // Скрываем оверлей
     if (overlay) {
       overlay.classList.remove("active");
+    }
+
+    // Remove the expanded class from the grid
+    if (suppliesList) {
+      suppliesList.classList.remove("has-expanded");
     }
 
     // Снимаем выделение со всех карточек
@@ -1197,6 +1280,8 @@ export default class SuppliesManager {
     );
     const overlay = document.querySelector(".receipts-overlay");
     const supplyCard = document.getElementById(`supply-card-${orderId}`);
+    const suppliesList = this.container.querySelector("#supplies-list");
+
     if (!receiptsSection || !supplyCard) return;
 
     const toggleBtn = supplyCard.querySelector(".toggle-receipts-btn");
@@ -1212,6 +1297,10 @@ export default class SuppliesManager {
     const anyActive = document.querySelector(".receipts-section.active");
     if (!anyActive && overlay) {
       overlay.classList.remove("active");
+      // Also remove the expanded class from the grid if no active sections
+      if (suppliesList) {
+        suppliesList.classList.remove("has-expanded");
+      }
     }
 
     // Сбрасываем состояние кнопки
@@ -1386,6 +1475,8 @@ export default class SuppliesManager {
           console.log("Файл успешно загружен!");
           // Reload receipts to show the new one
           this.loadReceipts(orderId);
+          // Update the receipt count badge
+          this.getReceiptsCount(orderId);
         } else {
           console.error(
             "Ошибка загрузки файла:",
@@ -1849,6 +1940,8 @@ export default class SuppliesManager {
           console.log("Receipt deletion successful");
           // Reload receipts list
           this.loadReceipts(orderId);
+          // Update the receipt count badge
+          this.getReceiptsCount(orderId);
         } else {
           console.error(
             "Receipt deletion failed:",
