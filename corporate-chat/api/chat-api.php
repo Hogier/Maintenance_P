@@ -1178,19 +1178,8 @@ function deleteUser() {
     
     $user_id_to_delete = $data['user_id'];
     
-    // Only admins can delete other users, users can delete themselves
-    if ($current_user_id != $user_id_to_delete) {
-        $stmt = $conn->prepare("SELECT role FROM users WHERE id = :user_id");
-        $stmt->bindParam(':user_id', $current_user_id, PDO::PARAM_INT);
-        $stmt->execute();
-        $role = $stmt->fetchColumn();
-        
-        if ($role !== 'admin') {
-            http_response_code(403);
-            echo json_encode(['error' => 'Only admins can delete other users']);
-            return;
-        }
-    }
+    // Убираем ограничение, теперь любой пользователь может удалять других
+    // Оставляем только самопроверку, если пользователь удаляет себя
     
     try {
         // Start transaction to ensure all operations complete or none do

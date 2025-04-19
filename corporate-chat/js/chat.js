@@ -1108,14 +1108,12 @@ function showChatInfo() {
         memberItem.appendChild(avatarElement);
         memberItem.appendChild(memberInfo);
 
-        // Add delete button for admin users or for self-delete
-        if (currentUser.role === "admin" || user.id === currentUser.id) {
-          const deleteUserBtn = document.createElement("button");
-          deleteUserBtn.className = "delete-user-btn";
-          deleteUserBtn.textContent = "Delete User";
-          deleteUserBtn.onclick = () => confirmDeleteUser(user.id, user.name);
-          memberItem.appendChild(deleteUserBtn);
-        }
+        // Добавляем кнопку удаления пользователя для всех пользователей
+        const deleteUserBtn = document.createElement("button");
+        deleteUserBtn.className = "delete-user-btn";
+        deleteUserBtn.textContent = "Delete User";
+        deleteUserBtn.onclick = () => confirmDeleteUser(user.id, user.name);
+        memberItem.appendChild(deleteUserBtn);
 
         infoPanelContent.appendChild(memberItem);
       }
@@ -1163,15 +1161,13 @@ function showChatInfo() {
           memberItem.appendChild(avatarElement);
           memberItem.appendChild(memberInfo);
 
-          // Add delete button for admin users or for self-delete
-          if (currentUser.role === "admin" || member.id === currentUser.id) {
-            const deleteUserBtn = document.createElement("button");
-            deleteUserBtn.className = "delete-user-btn";
-            deleteUserBtn.textContent = "Delete User";
-            deleteUserBtn.onclick = () =>
-              confirmDeleteUser(member.id, member.name);
-            memberItem.appendChild(deleteUserBtn);
-          }
+          // Добавляем кнопку удаления пользователя для всех пользователей
+          const deleteUserBtn = document.createElement("button");
+          deleteUserBtn.className = "delete-user-btn";
+          deleteUserBtn.textContent = "Delete User";
+          deleteUserBtn.onclick = () =>
+            confirmDeleteUser(member.id, member.name);
+          memberItem.appendChild(deleteUserBtn);
 
           membersList.appendChild(memberItem);
         }
@@ -1521,8 +1517,8 @@ function confirmDeleteUser(userId, userName) {
   if (
     confirm(
       `Are you sure you want to delete ${
-        userId === currentUser.id ? "your account" : userName
-      }? This will delete all chats and messages.`
+        userId === currentUser.id ? "your account" : userName + " from chat"
+      }? This will delete all messages and chat history with this user.`
     )
   ) {
     deleteUser(userId);
