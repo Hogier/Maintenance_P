@@ -37,6 +37,7 @@ let users = [];
 let directChats = [];
 let groupChats = [];
 let messages = {};
+let onlineStatusInterval = null; // Переменная для хранения интервала обновления статуса
 
 // Check if user is logged in
 document.addEventListener("DOMContentLoaded", async () => {
@@ -126,6 +127,9 @@ async function initializeChat() {
 
   renderChats();
   setupEventListeners();
+
+  // Запускаем обновление статуса
+  startStatusUpdates();
 }
 
 // Display user info in header
@@ -352,7 +356,7 @@ async function fetchUsers() {
   }
 }
 
-// Fetch user chats
+// Fetch chats from server
 async function fetchChats() {
   try {
     // Get direct chats from API
@@ -395,6 +399,9 @@ async function fetchChats() {
 
     // Initialize empty messages object
     messages = {};
+
+    // Обновляем счетчики в заголовках табов
+    updateTabCounters();
   } catch (error) {
     console.error("Error fetching chats:", error);
     // If API fails, initialize with empty arrays
@@ -408,27 +415,38 @@ async function fetchChats() {
 function renderChats() {
   renderDirectMessages();
   renderGroups();
+  updateTabCounters(); // Обновляем счетчики в заголовках разделов
 }
 
 // Get photo URL for a specific user
 async function getUserPhotoUrl(userId) {
   try {
+    console.log(`Fetching photo for user ${userId}`);
     const response = await fetch(`./php/get_user_photo.php?user_id=${userId}`);
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error(
+        `HTTP error fetching photo for user ${userId}: ${response.status}`
+      );
+      return null;
     }
 
     const data = await response.json();
+    console.log(`Photo API response for user ${userId}:`, data);
+
     if (data.success && data.photo_url) {
       // Convert to absolute URL if needed
       let photoUrl = data.photo_url;
       if (photoUrl.startsWith("/") && !photoUrl.startsWith("//")) {
         const baseUrl = window.location.origin;
         photoUrl = baseUrl + photoUrl;
+        console.log(`Converted to absolute URL: ${photoUrl}`);
       }
       return photoUrl;
+    } else {
+      console.log(`No photo found for user ${userId}`);
+      return null;
     }
-    return null;
   } catch (error) {
     console.error(`Error fetching photo for user ${userId}:`, error);
     return null;
@@ -437,11 +455,6 @@ async function getUserPhotoUrl(userId) {
 
 // Create avatar element (photo or initials)
 function createAvatarElement(user, size = "normal") {
-  const avatarDiv = document.createElement("div");
-  avatarDiv.className = `chat-avatar ${
-    size === "small" ? "chat-avatar-small" : ""
-  }`;
-
   // Use initials as default/fallback
   const initials = user.name
     .split(" ")
@@ -449,6 +462,15 @@ function createAvatarElement(user, size = "normal") {
     .join("")
     .substring(0, 2)
     .toUpperCase();
+
+  // Create outer div
+  const avatarDiv = document.createElement("div");
+  avatarDiv.className = `chat-avatar ${
+    size === "small" ? "chat-avatar-small" : ""
+  }`;
+
+  // Set initials as default content
+  avatarDiv.textContent = initials;
 
   // Try to use photo if available
   if (user.photoUrl) {
@@ -458,14 +480,17 @@ function createAvatarElement(user, size = "normal") {
     img.style.objectFit = "cover";
     img.style.width = "100%";
     img.style.height = "100%";
+    img.style.borderRadius = "50%";
+    img.style.position = "absolute";
+    img.style.top = "0";
+    img.style.left = "0";
     img.onerror = function () {
-      avatarDiv.textContent = initials;
+      avatarDiv.textContent = initials; // Fallback to initials on error
     };
+
     avatarDiv.textContent = ""; // Clear any existing content
     avatarDiv.appendChild(img);
   } else {
-    avatarDiv.textContent = initials;
-
     // Try to fetch and cache the photo
     getUserPhotoUrl(user.id).then((photoUrl) => {
       if (photoUrl) {
@@ -476,9 +501,14 @@ function createAvatarElement(user, size = "normal") {
         img.style.objectFit = "cover";
         img.style.width = "100%";
         img.style.height = "100%";
+        img.style.borderRadius = "50%";
+        img.style.position = "absolute";
+        img.style.top = "0";
+        img.style.left = "0";
         img.onerror = function () {
-          avatarDiv.textContent = initials;
+          avatarDiv.textContent = initials; // Fallback to initials on error
         };
+
         avatarDiv.textContent = ""; // Clear any existing content
         avatarDiv.appendChild(img);
       }
@@ -486,6 +516,134 @@ function createAvatarElement(user, size = "normal") {
   }
 
   return avatarDiv;
+}
+
+/**
+ * Create a chat item for direct messages or group list
+ */
+function createChatItem(chat, type) {
+  const chatItem = document.createElement("div");
+  chatItem.className = "chat-item";
+  chatItem.setAttribute("data-chat-id", chat.id);
+  chatItem.setAttribute("data-chat-type", type);
+
+  // Direct message chat
+  if (type === "direct") {
+    const otherUser = chat.users.find((u) => u.id != currentUser.id);
+    if (!otherUser) return null;
+
+    // Find if the user is online
+    const isOnline =
+      users.find((u) => u.id == otherUser.id)?.status === "online";
+
+    // Создаем аватар пользователя напрямую, без вложенности
+    const avatarElement = createAvatarElement(otherUser);
+
+    const chatDetails = document.createElement("div");
+    chatDetails.className = "chat-details";
+
+    const chatName = document.createElement("div");
+    chatName.className = "chat-name";
+    chatName.textContent = otherUser.name;
+
+    const statusIndicator = document.createElement("span");
+    statusIndicator.className = `status-indicator ${
+      isOnline ? "online" : "offline"
+    }`;
+    chatName.appendChild(statusIndicator);
+
+    const lastMessage = document.createElement("div");
+    lastMessage.className = "chat-last-message";
+    lastMessage.textContent = chat.lastMessage
+      ? chat.lastMessage.text
+      : "No messages yet";
+
+    chatDetails.appendChild(chatName);
+    chatDetails.appendChild(lastMessage);
+
+    // Добавляем метаданные чата (время и индикатор непрочитанных сообщений)
+    const chatMeta = document.createElement("div");
+    chatMeta.className = "chat-meta";
+
+    // Добавляем время последнего сообщения
+    if (chat.timestamp) {
+      const chatTime = document.createElement("div");
+      chatTime.className = "chat-time";
+      chatTime.textContent = formatTime(chat.timestamp);
+      chatMeta.appendChild(chatTime);
+    }
+
+    // Добавляем индикатор непрочитанных сообщений
+    if (chat.unreadCount) {
+      const unreadBadge = document.createElement("div");
+      unreadBadge.className = "unread-badge";
+      unreadBadge.textContent = chat.unreadCount;
+      chatMeta.appendChild(unreadBadge);
+    }
+
+    chatItem.appendChild(avatarElement);
+    chatItem.appendChild(chatDetails);
+    chatItem.appendChild(chatMeta);
+  }
+  // Group chat
+  else if (type === "group") {
+    // Создаем аватар группы
+    const avatarDiv = document.createElement("div");
+    avatarDiv.className = "chat-avatar group-avatar";
+    const avatarText = document.createElement("span");
+    avatarText.textContent = chat.name.charAt(0).toUpperCase();
+    avatarDiv.appendChild(avatarText);
+
+    const chatDetails = document.createElement("div");
+    chatDetails.className = "chat-details";
+
+    const chatName = document.createElement("div");
+    chatName.className = "chat-name";
+    chatName.textContent = chat.name;
+
+    const lastMessage = document.createElement("div");
+    lastMessage.className = "chat-last-message";
+    lastMessage.textContent = chat.lastMessage
+      ? chat.lastMessage.text
+      : "No messages yet";
+
+    chatDetails.appendChild(chatName);
+    chatDetails.appendChild(lastMessage);
+
+    // Добавляем метаданные чата (время и индикатор непрочитанных сообщений)
+    const chatMeta = document.createElement("div");
+    chatMeta.className = "chat-meta";
+
+    // Добавляем время последнего сообщения
+    if (chat.timestamp) {
+      const chatTime = document.createElement("div");
+      chatTime.className = "chat-time";
+      chatTime.textContent = formatTime(chat.timestamp);
+      chatMeta.appendChild(chatTime);
+    }
+
+    // Добавляем индикатор непрочитанных сообщений
+    if (chat.unreadCount) {
+      const unreadBadge = document.createElement("div");
+      unreadBadge.className = "unread-badge";
+      unreadBadge.textContent = chat.unreadCount;
+      chatMeta.appendChild(unreadBadge);
+    }
+
+    chatItem.appendChild(avatarDiv);
+    chatItem.appendChild(chatDetails);
+    chatItem.appendChild(chatMeta);
+  }
+
+  chatItem.addEventListener("click", () => {
+    document.querySelectorAll(".chat-item").forEach((item) => {
+      item.classList.remove("active");
+    });
+    chatItem.classList.add("active");
+    selectChat(chat.id, type);
+  });
+
+  return chatItem;
 }
 
 // Render direct messages list
@@ -498,37 +656,24 @@ function renderDirectMessages() {
       const user = users.find((u) => u.id === chat.userId);
       if (!user) return;
 
-      const chatItem = document.createElement("div");
-      chatItem.className = "chat-item";
-      chatItem.dataset.chatId = chat.id;
-      chatItem.dataset.chatType = "direct";
+      // Создаем элемент чата с помощью функции createChatItem
+      const chatItem = createChatItem(
+        {
+          id: chat.id,
+          users: [
+            { id: currentUser.id, name: currentUser.fullName },
+            { id: user.id, name: user.name },
+          ],
+          lastMessage: { text: chat.lastMessage || "No messages yet" },
+          unreadCount: chat.unread,
+          timestamp: chat.timestamp,
+        },
+        "direct"
+      );
 
-      // Create avatar with photo if available
-      const avatarElement = createAvatarElement(user);
-
-      const infoDiv = document.createElement("div");
-      infoDiv.className = "chat-info-preview";
-      infoDiv.innerHTML = `
-        <div class="chat-name">${user.name}</div>
-        <div class="chat-preview">${chat.lastMessage}</div>
-      `;
-
-      const metaDiv = document.createElement("div");
-      metaDiv.className = "chat-meta";
-      metaDiv.innerHTML = `
-        <div class="chat-time">${formatTime(chat.timestamp)}</div>
-        ${chat.unread > 0 ? `<div class="chat-badge">${chat.unread}</div>` : ""}
-      `;
-
-      chatItem.appendChild(avatarElement);
-      chatItem.appendChild(infoDiv);
-      chatItem.appendChild(metaDiv);
-
-      chatItem.addEventListener("click", () => {
-        selectChat(chat.id, "direct");
-      });
-
-      directMessagesList.appendChild(chatItem);
+      if (chatItem) {
+        directMessagesList.appendChild(chatItem);
+      }
     });
 }
 
@@ -558,49 +703,22 @@ function renderGroups() {
   groupChats
     .sort((a, b) => b.timestamp - a.timestamp)
     .forEach((chat) => {
-      const chatItem = document.createElement("div");
-      chatItem.className = "chat-item";
-      chatItem.dataset.chatId = chat.id;
-      chatItem.dataset.chatType = "group";
+      // Создаем элемент чата с помощью функции createChatItem
+      const chatItem = createChatItem(
+        {
+          id: chat.id,
+          name: chat.name,
+          members: chat.members || [],
+          lastMessage: { text: chat.lastMessage || "No messages yet" },
+          unreadCount: chat.unread,
+          timestamp: chat.timestamp,
+        },
+        "group"
+      );
 
-      // Create group avatar
-      const avatarDiv = document.createElement("div");
-      avatarDiv.className = "chat-avatar";
-
-      // Use initials as default
-      const initials = chat.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .substring(0, 2)
-        .toUpperCase();
-
-      avatarDiv.textContent = initials;
-
-      // Add info and meta elements
-      const infoDiv = document.createElement("div");
-      infoDiv.className = "chat-info-preview";
-      infoDiv.innerHTML = `
-        <div class="chat-name">${chat.name}</div>
-        <div class="chat-preview">${chat.lastMessage}</div>
-      `;
-
-      const metaDiv = document.createElement("div");
-      metaDiv.className = "chat-meta";
-      metaDiv.innerHTML = `
-        <div class="chat-time">${formatTime(chat.timestamp)}</div>
-        ${chat.unread > 0 ? `<div class="chat-badge">${chat.unread}</div>` : ""}
-      `;
-
-      chatItem.appendChild(avatarDiv);
-      chatItem.appendChild(infoDiv);
-      chatItem.appendChild(metaDiv);
-
-      chatItem.addEventListener("click", () => {
-        selectChat(chat.id, "group");
-      });
-
-      groupsList.appendChild(chatItem);
+      if (chatItem) {
+        groupsList.appendChild(chatItem);
+      }
     });
 }
 
@@ -676,53 +794,78 @@ function selectChat(chatId, chatType) {
       console.warn(`Group chat not found: ${chatId}`);
     }
   }
+
+  // Обновляем счетчики в заголовках после очистки непрочитанных
+  updateTabCounters();
 }
 
-// Update chat header
+/**
+ * Update chat header with current chat info
+ */
 function updateChatHeader() {
-  if (!currentChat) return;
+  if (!currentChat) {
+    currentChatName.textContent = "Select a chat to start messaging";
+    chatStatus.textContent = "";
+    addUserToChat.classList.add("hidden");
+    messageInput.disabled = true;
+    sendMessageBtn.disabled = true;
+    return;
+  }
 
-  console.log("Updating chat header for:", currentChat);
+  messageInput.disabled = false;
+  sendMessageBtn.disabled = false;
+  messageInput.focus();
 
   if (currentChat.type === "direct") {
+    // Найдем полную информацию о прямом чате
     const chat = directChats.find((c) => c.id === currentChat.id);
-    if (chat) {
-      const user = users.find((u) => u.id === chat.userId);
-      if (user) {
-        console.log("User in chat:", user);
-        currentChatName.textContent = user.name;
-
-        // Remove role/department display
-        chatStatus.textContent = "";
-
-        addUserToChat.classList.add("hidden");
-      } else {
-        console.warn("User not found for direct chat:", chat.userId);
-      }
-    } else {
-      console.warn("Direct chat not found:", currentChat.id);
+    if (!chat) {
+      console.error("Direct chat not found:", currentChat.id);
+      return;
     }
-  } else {
+
+    // Найдем пользователя
+    const user = users.find((u) => u.id === chat.userId);
+    if (!user) {
+      console.error("User not found for direct chat:", chat.userId);
+      return;
+    }
+
+    currentChatName.textContent = user.name || "Unknown User";
+
+    // Проверяем статус пользователя
+    const userStatus = user.status || "offline";
+    chatStatus.textContent = userStatus === "online" ? "Online" : "Offline";
+    chatStatus.className = "";
+    chatStatus.classList.add(
+      userStatus === "online" ? "status-online" : "status-offline"
+    );
+
+    addUserToChat.classList.add("hidden");
+  } else if (currentChat.type === "group") {
+    // Найдем полную информацию о групповом чате
     const chat = groupChats.find((c) => c.id === currentChat.id);
-    if (chat) {
-      currentChatName.textContent = chat.name;
-      const memberCount = chat.members ? chat.members.length : 0;
-      console.log(
-        `Updating header for group ${chat.name} with ${memberCount} members:`,
-        chat.members
-      );
-
-      // Добавление информации о создателе группы
-      if (chat.creator_name) {
-        chatStatus.innerHTML = `${memberCount} members · Created by <span class="creator-name">${chat.creator_name}</span>`;
-      } else {
-        chatStatus.textContent = `${memberCount} members`;
-      }
-
-      addUserToChat.classList.remove("hidden");
-    } else {
-      console.warn("Group chat not found:", currentChat.id);
+    if (!chat) {
+      console.error("Group chat not found:", currentChat.id);
+      return;
     }
+
+    currentChatName.textContent = chat.name || "Group Chat";
+
+    // Получим список членов группы
+    const members = chat.members || [];
+
+    // Обновляем статус с информацией об активных участниках
+    const onlineMembers = members.filter((memberId) => {
+      const user = users.find((u) => u.id == memberId);
+      return user?.status === "online";
+    });
+
+    chatStatus.textContent = `${onlineMembers.length} of ${members.length} members online`;
+    chatStatus.className = "";
+
+    // Показываем кнопку добавления пользователей для групповых чатов
+    addUserToChat.classList.remove("hidden");
   }
 }
 
@@ -1077,21 +1220,79 @@ function renderMessages(chatId) {
 
     if (!isCurrentUser) {
       if (currentChat.type === "direct") {
+        // Для прямого чата, просто найдем пользователя по ID
+        const chat = directChats.find((c) => c.id === currentChat.id);
+        if (chat) {
+          sender = users.find((u) => u.id === chat.userId);
+          if (sender) {
+            senderName = sender.name;
+            // Предварительно загрузим фото пользователя, если его нет
+            if (!sender.photoUrl) {
+              getUserPhotoUrl(sender.id).then((photoUrl) => {
+                if (photoUrl) {
+                  sender.photoUrl = photoUrl;
+                  // Обновим аватар, если он есть на странице
+                  const avatarElement =
+                    messageDiv.querySelector(".chat-avatar");
+                  if (avatarElement) {
+                    const img = document.createElement("img");
+                    img.src = photoUrl;
+                    img.alt = sender.name;
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "cover";
+                    avatarElement.textContent = "";
+                    avatarElement.appendChild(img);
+                  }
+                }
+              });
+            }
+          } else {
+            senderName = "Unknown User";
+          }
+        }
+      } else {
+        // Для группового чата, найдем пользователя в списке пользователей
         sender = users.find((u) => u.id === message.sender);
         senderName = sender ? sender.name : "Unknown User";
-      } else {
-        const chat = groupChats.find((c) => c.id === currentChat.id);
-        if (chat) {
-          sender = users.find((u) => u.id === message.sender);
-          senderName = sender ? sender.name : "Unknown User";
+
+        // Предварительно загрузим фото пользователя, если его нет
+        if (sender && !sender.photoUrl) {
+          getUserPhotoUrl(sender.id).then((photoUrl) => {
+            if (photoUrl) {
+              sender.photoUrl = photoUrl;
+              // Обновим аватар, если он есть на странице
+              const avatarElement = messageDiv.querySelector(".chat-avatar");
+              if (avatarElement) {
+                const img = document.createElement("img");
+                img.src = photoUrl;
+                img.alt = sender.name;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "cover";
+                avatarElement.textContent = "";
+                avatarElement.appendChild(img);
+              }
+            }
+          });
         }
       }
     } else {
       sender = {
         id: currentUser.id,
         name: currentUser.fullName || "You",
-        photoUrl: null, // We'll set this if needed
+        photoUrl: null, // Мы загрузим его, если нужно
       };
+      senderName = "You";
+
+      // Загрузим фото текущего пользователя
+      getUserPhotoFromServer().then((photoUrl) => {
+        if (photoUrl) {
+          sender.photoUrl = photoUrl;
+          // Не нужно обновлять аватар для сообщений текущего пользователя,
+          // так как они не отображаются
+        }
+      });
     }
 
     // Create message container with avatar for incoming messages
@@ -2066,4 +2267,205 @@ async function removeUserFromGroup(userId, groupId) {
     console.error("Error removing user from group:", error);
     alert("Failed to remove user from group: " + error.message);
   }
+}
+
+/**
+ * Start periodic updates for user online status
+ */
+function startStatusUpdates() {
+  // Сначала обновляем статус
+  updateUserStatus();
+
+  // Устанавливаем интервал обновления статуса каждые 30 секунд
+  onlineStatusInterval = setInterval(() => {
+    updateUserStatus();
+    fetchOnlineUsers();
+  }, 30000); // 30 секунд
+
+  // Первоначальное получение статусов пользователей
+  fetchOnlineUsers();
+
+  // Добавляем обработчик для обновления статуса при активности пользователя
+  document.addEventListener("click", updateUserStatus);
+  document.addEventListener("keypress", updateUserStatus);
+}
+
+/**
+ * Update current user's online status
+ */
+async function updateUserStatus() {
+  try {
+    const response = await fetch(
+      "./api/chat-api.php?action=update_user_status",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.error("Error updating user status:", response.statusText);
+    }
+  } catch (error) {
+    console.error("Error updating user status:", error);
+  }
+}
+
+/**
+ * Fetch online users and update UI
+ */
+async function fetchOnlineUsers() {
+  try {
+    const response = await fetch("./api/chat-api.php?action=get_users");
+
+    if (!response.ok) {
+      console.error("Error fetching users status:", response.statusText);
+      return;
+    }
+
+    const data = await response.json();
+    if (!data.success) {
+      console.error("Error in users status response:", data.error);
+      return;
+    }
+
+    // Обновляем список пользователей с их статусами
+    users = data.users;
+
+    // Обновляем отображение статусов в списке контактов
+    updateStatusIndicators();
+  } catch (error) {
+    console.error("Error fetching online users:", error);
+  }
+}
+
+/**
+ * Update status indicators for all users in the UI
+ */
+function updateStatusIndicators() {
+  // Обновляем индикаторы в списке прямых сообщений
+  const userElements = document.querySelectorAll(
+    '.chat-item[data-chat-type="direct"]'
+  );
+  userElements.forEach((element) => {
+    const userId = element.getAttribute("data-chat-id");
+    const user = users.find((u) => u.id == userId);
+
+    if (user) {
+      // Находим или создаем элемент статуса
+      let statusIndicator = element.querySelector(".status-indicator");
+      if (!statusIndicator) {
+        statusIndicator = document.createElement("span");
+        statusIndicator.className = "status-indicator";
+
+        // Найдем имя пользователя и вставим индикатор после него
+        const nameElement = element.querySelector(".chat-name");
+        if (nameElement) {
+          nameElement.appendChild(statusIndicator);
+        } else {
+          element.appendChild(statusIndicator);
+        }
+      }
+
+      // Устанавливаем класс в зависимости от статуса
+      statusIndicator.className =
+        "status-indicator " + (user.status === "online" ? "online" : "offline");
+    }
+  });
+
+  // Если открыт чат, обновляем статус в заголовке
+  if (currentChat) {
+    updateChatHeader();
+  }
+}
+
+// Clean up when unloading the page
+window.addEventListener("beforeunload", () => {
+  // Clear the status update interval
+  if (onlineStatusInterval) {
+    clearInterval(onlineStatusInterval);
+  }
+});
+
+// Добавляем функцию для обновления счетчиков непрочитанных сообщений в заголовках разделов
+function updateTabCounters() {
+  // Подсчет непрочитанных сообщений в личных чатах
+  const directUnreadCount = directChats.reduce(
+    (sum, chat) => sum + (chat.unread || 0),
+    0
+  );
+
+  // Подсчет непрочитанных сообщений в групповых чатах
+  const groupUnreadCount = groupChats.reduce(
+    (sum, chat) => sum + (chat.unread || 0),
+    0
+  );
+
+  // Обновляем значки для разделов
+  updateTabCounter("direct", directUnreadCount);
+  updateTabCounter("groups", groupUnreadCount);
+}
+
+// Функция для обновления счетчика на конкретной вкладке
+function updateTabCounter(tabName, count) {
+  const tabButton = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+  if (!tabButton) return;
+
+  // Удаляем старый счетчик, если он существует
+  const existingCounter = tabButton.querySelector(".tab-counter");
+  if (existingCounter) {
+    existingCounter.remove();
+  }
+
+  // Добавляем новый счетчик, если есть непрочитанные сообщения
+  if (count > 0) {
+    const counter = document.createElement("span");
+    counter.className = "tab-counter";
+    counter.textContent = count;
+
+    // Добавляем всплывающую подсказку с количеством непрочитанных сообщений
+    let tooltipText = "";
+    if (tabName === "direct") {
+      tooltipText = `${count} непрочитанных личных сообщений`;
+    } else {
+      tooltipText = `${count} непрочитанных групповых сообщений`;
+    }
+    counter.setAttribute("title", tooltipText);
+
+    tabButton.appendChild(counter);
+  }
+}
+
+// Функция для обработки новых сообщений (добавить её, если она ещё не существует)
+function handleNewMessage(chatData) {
+  // Код обработки уведомления о новом сообщении
+
+  // Обновляем счетчики в заголовках после получения новых сообщений
+  updateTabCounters();
+}
+
+// Добавляем вызов updateTabCounters в функцию для обновления непрочитанных сообщений
+function markMessagesAsRead(chatId) {
+  if (!chatId) return;
+
+  // Обновляем счетчик непрочитанных сообщений
+  if (chatId.startsWith("d")) {
+    const chat = directChats.find((c) => c.id === chatId);
+    if (chat) {
+      chat.unread = 0;
+    }
+  } else if (chatId.startsWith("g")) {
+    const chat = groupChats.find((c) => c.id === chatId);
+    if (chat) {
+      chat.unread = 0;
+    }
+  }
+
+  // Обновляем UI
+  renderChats();
+
+  // Обновляем счетчики на вкладках
+  updateTabCounters();
 }

@@ -112,7 +112,7 @@
 
 .tab-btn {
   flex: 1;
-  padding: 10px;
+  padding: 10px 25px 10px 10px; /* Увеличиваем правый отступ для всех табов */
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -120,11 +120,43 @@
   font-weight: 500;
   color: #5f6368;
   transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tab-btn.active {
   border-bottom: 2px solid #4a86e8;
   color: #4a86e8;
+}
+
+.tab-counter {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #4a86e8;
+  color: white;
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Специальный отступ для счетчика в Direct Messages */
+.tab-btn[data-tab="direct"] {
+  padding-right: 35px; /* Ещё больше отступа для Direct Messages */
+}
+
+.tab-btn.active .tab-counter {
+  background-color: #3b78e7;
 }
 
 .chat-list {
@@ -140,17 +172,21 @@
   padding: 15px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #e1e4e8;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  margin-bottom: 2px;
+  border-radius: 12px;
 }
 
 .chat-item:hover {
   background-color: #edf2fd;
+  border-radius: 12px;
+  transform: translateX(3px);
 }
 
 .chat-item.active {
   background-color: #e8f0fe;
+  border-radius: 12px;
 }
 
 .chat-avatar {
@@ -169,12 +205,13 @@
 }
 
 .chat-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  border-radius: 50% !important;
 }
 
 .chat-avatar-small {
@@ -189,11 +226,14 @@
 }
 
 .chat-name {
-  font-weight: 500;
-  margin-bottom: 5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.chat-name .status-indicator {
+  margin-left: 8px;
 }
 
 .chat-preview {
@@ -204,17 +244,25 @@
   text-overflow: ellipsis;
 }
 
+.chat-details {
+  flex: 1;
+  min-width: 0;
+  margin-right: 10px;
+}
+
 .chat-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  margin-left: 5px;
+  justify-content: center;
+  min-width: 45px;
 }
 
 .chat-time {
   font-size: 12px;
   color: #5f6368;
   margin-bottom: 5px;
+  white-space: nowrap;
 }
 
 .chat-badge {
@@ -227,6 +275,20 @@
   align-items: center;
   justify-content: center;
   font-size: 11px;
+}
+
+.unread-badge {
+  background-color: #4a86e8;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  margin-left: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Main Chat Area Styles */
@@ -447,12 +509,13 @@
 }
 
 .member-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  border-radius: 50% !important;
 }
 
 .member-info {
@@ -722,6 +785,16 @@
   border: 2px solid white;
   transition: all 0.25s ease;
   background-color: #5a97f3;
+}
+
+.user-selection-item .chat-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  border-radius: 50% !important;
 }
 
 .user-selection-item:hover .chat-avatar {
@@ -1236,4 +1309,33 @@
     margin-right: 0;
     font-size: 16px;
   }
+}
+
+/* Status Indicators */
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.status-indicator.online {
+  background-color: #4caf50; /* Green for online */
+  box-shadow: 0 0 5px #4caf50;
+}
+
+.status-indicator.offline {
+  background-color: #f44336; /* Red for offline */
+}
+
+.status-online {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.status-offline {
+  color: #f44336;
+  font-weight: 500;
 }

@@ -143,6 +143,14 @@ switch ($action) {
     case 'getuserdetails':
         getUserDetails();
         break;
+    case 'update_user_status':
+    case 'updateuserstatus':
+        updateUserStatus();
+        break;
+    case 'get_online_users':
+    case 'getonlineusers':
+        getOnlineUsers();
+        break;
     default:
         http_response_code(404);
         debug_log("Invalid action: '" . $action . "'");
@@ -158,14 +166,41 @@ function getUsers() {
     $currentUserId = $_SESSION['user_id'];
     
     try {
-        // Get all active users except current user
-        $sql = "SELECT id, full_name, email, role, department FROM users WHERE id != :current_user_id";
+        // Get all active users except current user with their online status
+        $sql = "SELECT u.id, u.full_name, u.email, u.role, u.department, 
+                COALESCE(os.status, 'offline') as status
+                FROM users u
+                LEFT JOIN user_online_status os ON u.id = os.user_id
+                WHERE u.id != :current_user_id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':current_user_id', $currentUserId, PDO::PARAM_INT);
         $stmt->execute();
         
         $users = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            // Check if user is online (activity within last 5 minutes)
+            $status = $row['status'];
+            if ($status === 'online') {
+                // Validate if the user is truly online (activity in last 5 minutes)
+                $checkActivitySql = "SELECT * FROM user_online_status 
+                                    WHERE user_id = :user_id AND status = 'online' 
+                                    AND last_activity > DATE_SUB(NOW(), INTERVAL 5 MINUTE)";
+                $activityStmt = $conn->prepare($checkActivitySql);
+                $activityStmt->bindParam(':user_id', $row['id'], PDO::PARAM_INT);
+                $activityStmt->execute();
+                
+                if ($activityStmt->rowCount() === 0) {
+                    // User has been inactive for more than 5 minutes
+                    $status = 'offline';
+                    
+                    // Update status to offline in database
+                    $updateSql = "UPDATE user_online_status SET status = 'offline' WHERE user_id = :user_id";
+                    $updateStmt = $conn->prepare($updateSql);
+                    $updateStmt->bindParam(':user_id', $row['id'], PDO::PARAM_INT);
+                    $updateStmt->execute();
+                }
+            }
+            
             $users[] = [
                 'id' => $row['id'],
                 'name' => $row['full_name'],
@@ -173,7 +208,7 @@ function getUsers() {
                 'role' => $row['role'],
                 'department' => $row['department'],
                 'avatar' => './assets/user-avatar.png', // Default avatar
-                'status' => 'online'
+                'status' => $status
             ];
         }
         
@@ -1512,6 +1547,76 @@ function getUserDetails() {
         ];
         
         echo json_encode(['success' => true, 'user' => $userData]);
+        exit;
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+/**
+ * Update user online status
+ */
+function updateUserStatus() {
+    global $conn;
+    $userId = $_SESSION['user_id'];
+    
+    try {
+        // Check if record exists
+        $checkSql = "SELECT * FROM user_online_status WHERE user_id = :user_id";
+        $checkStmt = $conn->prepare($checkSql);
+        $checkStmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $checkStmt->execute();
+        
+        if ($checkStmt->rowCount() > 0) {
+            // Update existing record
+            $updateSql = "UPDATE user_online_status SET status = 'online', last_activity = NOW() WHERE user_id = :user_id";
+            $updateStmt = $conn->prepare($updateSql);
+            $updateStmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $updateStmt->execute();
+        } else {
+            // Insert new record
+            $insertSql = "INSERT INTO user_online_status (user_id, status) VALUES (:user_id, 'online')";
+            $insertStmt = $conn->prepare($insertSql);
+            $insertStmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $insertStmt->execute();
+        }
+        
+        echo json_encode(['success' => true]);
+        exit;
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+/**
+ * Get list of online users
+ */
+function getOnlineUsers() {
+    global $conn;
+    
+    try {
+        // Get users who are active in the last 5 minutes
+        $sql = "SELECT u.id, u.full_name 
+                FROM users u
+                JOIN user_online_status os ON u.id = os.user_id
+                WHERE os.status = 'online' 
+                AND os.last_activity > DATE_SUB(NOW(), INTERVAL 5 MINUTE)";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        
+        $onlineUsers = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $onlineUsers[] = [
+                'id' => $row['id'],
+                'name' => $row['full_name']
+            ];
+        }
+        
+        echo json_encode(['success' => true, 'online_users' => $onlineUsers]);
         exit;
     } catch (PDOException $e) {
         http_response_code(500);

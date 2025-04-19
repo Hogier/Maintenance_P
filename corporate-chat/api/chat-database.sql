@@ -63,6 +63,15 @@ CREATE TABLE IF NOT EXISTS `chat_message_read` (
   KEY `fk_chat_message_read_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Table for tracking user online status
+CREATE TABLE IF NOT EXISTS `user_online_status` (
+  `user_id` INT(11) NOT NULL,
+  `last_activity` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `status` ENUM('online', 'offline') NOT NULL DEFAULT 'offline',
+  PRIMARY KEY (`user_id`),
+  CONSTRAINT `fk_user_online_status_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Add foreign key constraints
 ALTER TABLE `chat_direct`
   ADD CONSTRAINT `fk_chat_direct_user1` FOREIGN KEY (`user1_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
