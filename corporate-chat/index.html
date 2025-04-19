@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corporate Chat | Alcuin School</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="../main.css" />
+  </head>
+  <body>
+    <div class="header-container">
+      <div class="user-profile-account">
+        <div class="profile-user-info">
+          <div class="avatar-container">
+            <span id="userAvatar">👤</span>
+          </div>
+          <div class="user-details">
+            <span id="userName"></span>
+            <span class="user-department"></span>
+          </div>
+        </div>
+        <button id="logoutButton">
+          <span class="logout-icon">↪</span>
+          <span class="logout-text">Logout</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-container">
+      <div class="sidebar">
+        <div class="search-box">
+          <input
+            type="text"
+            placeholder="Search users or groups"
+            id="searchUsers"
+          />
+          <button id="createGroupBtn">+</button>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="direct">
+            Direct Messages
+          </button>
+          <button class="tab-btn" data-tab="groups">Groups</button>
+        </div>
+        <div class="chat-list" id="directMessagesList">
+          <!-- Direct messages will be loaded here -->
+        </div>
+        <div class="chat-list hidden" id="groupsList">
+          <!-- Groups will be loaded here -->
+        </div>
+      </div>
+
+      <div class="main-chat">
+        <div class="chat-header">
+          <div class="chat-info">
+            <h2 id="currentChatName">Select a chat to start messaging</h2>
+            <span id="chatStatus"></span>
+          </div>
+          <div class="chat-actions">
+            <button id="addUserToChat" class="hidden">Add User</button>
+            <button id="viewChatInfo">Info</button>
+          </div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+          <!-- Messages will be loaded here -->
+          <div class="welcome-message">
+            <h3>Welcome to Corporate Chat</h3>
+            <p>Select a conversation from the sidebar to start chatting</p>
+          </div>
+        </div>
+
+        <div class="message-input-container">
+          <textarea
+            id="messageInput"
+            placeholder="Type a message..."
+            disabled
+          ></textarea>
+          <button id="sendMessage" disabled>Send</button>
+        </div>
+      </div>
+
+      <div class="info-panel hidden" id="infoPanel">
+        <div class="info-header">
+          <h3>Chat Information</h3>
+          <button id="closeInfoPanel">×</button>
+        </div>
+        <div class="info-content" id="infoPanelContent">
+          <!-- Chat information will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for creating a new group -->
+    <div class="modal hidden" id="createGroupModal">
+      <div class="modal-content">
+        <span class="close-modal" id="closeGroupModal">×</span>
+        <h2>Create New Group</h2>
+        <div class="form-group">
+          <label for="groupName">Group Name:</label>
+          <input type="text" id="groupName" placeholder="Enter group name" />
+        </div>
+        <div class="form-group">
+          <label>Select Users:</label>
+          <div class="user-selection" id="userSelection">
+            <!-- Users will be loaded here -->
+          </div>
+        </div>
+        <button id="createGroupConfirm">Create Group</button>
+      </div>
+    </div>
+
+    <!-- Modal for adding users to an existing chat -->
+    <div class="modal hidden" id="addUserModal">
+      <div class="modal-content">
+        <span class="close-modal" id="closeAddUserModal">×</span>
+        <h2>Add Users to Chat</h2>
+        <div class="form-group">
+          <div class="user-selection" id="addUserSelection">
+            <!-- Users will be loaded here -->
+          </div>
+        </div>
+        <button id="addUserConfirm">Add Selected Users</button>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="overlay"></div>
+
+    <script src="../database.js"></script>
+    <script src="../authUser.js"></script>
+    <script src="js/user-profile-init.js"></script>
+    <script src="js/chat.js"></script>
+  </body>
+</html>

@@ -11,12 +11,24 @@
       onload="this.rel='stylesheet'"
     />
     <link rel="stylesheet" href="events.css" />
+    <link rel="stylesheet" href="room-scheduler.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
   </head>
   <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-button">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Swipe hint for mobile -->
+    <div class="touch-hint"></div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay"></div>
+
     <div class="header-container">
       <div class="user-profile-account">
         <div class="profile-user-info">
@@ -35,8 +47,25 @@
       </div>
     </div>
 
-    <div class="nav-buttons">
-      <a href="main.html" class="back-button">Back to Main</a>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar-navigation">
+      <!-- Remove the close button for sidebar -->
+      <!-- <button class="sidebar-close-btn"><i class="fas fa-times"></i></button> -->
+
+      <div class="menu-back-button">
+        <a href="main.html" class="sidebar-back-button">Back to Main Menu</a>
+      </div>
+
+      <div class="sidebar-menu">
+        <div class="sidebar-menu-item active" data-section="events">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Event Management</span>
+        </div>
+        <div class="sidebar-menu-item" data-section="room-scheduler">
+          <i class="fas fa-door-open"></i>
+          <span>Room Scheduler</span>
+        </div>
+      </div>
     </div>
 
     <div class="events-container">
@@ -621,8 +650,8 @@
     <script src="database.js"></script>
     <script src="dateUtils.js"></script>
     <script src="events.js"></script>
+    <script src="room-scheduler.js"></script>
     <script src="user-profile.js"></script>
-
-    <!-- <script src="user-profile.js"></script> -->
+    <script src="mobileNav.js"></script>
   </body>
 </html>

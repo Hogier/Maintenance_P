@@ -3147,3 +3147,193 @@ To see complete event details, please visit the Event Management System.
     );
   }
 }
+
+// Sidebar Navigation Functionality
+document.addEventListener("DOMContentLoaded", function () {
+  // Sidebar menu items functionality
+  const sidebarItems = document.querySelectorAll(".sidebar-menu-item");
+
+  sidebarItems.forEach((item) => {
+    item.addEventListener("click", function () {
+      // Remove active class from all items
+      sidebarItems.forEach((i) => i.classList.remove("active"));
+
+      // Add active class to clicked item
+      this.classList.add("active");
+
+      // Get data-section attribute value
+      const section = this.getAttribute("data-section");
+
+      // Handle section switching
+      if (section === "events") {
+        document.querySelector(".events-container").style.display = "grid";
+
+        // If room scheduler content exists, hide it
+        const roomScheduler = document.querySelector(
+          ".room-scheduler-container"
+        );
+        if (roomScheduler) {
+          roomScheduler.style.display = "none";
+        }
+      } else if (section === "room-scheduler") {
+        document.querySelector(".events-container").style.display = "none";
+
+        // Check if room scheduler content exists
+        let roomScheduler = document.querySelector(".room-scheduler-container");
+
+        // If room scheduler doesn't exist yet, create message
+        if (!roomScheduler) {
+          roomScheduler = document.createElement("div");
+          roomScheduler.className = "room-scheduler-container";
+          roomScheduler.innerHTML = `
+                        <div class="coming-soon">
+                            <h2>Room Scheduler</h2>
+                            <p>This feature is coming soon!</p>
+                        </div>
+                    `;
+          document.querySelector(".events-container").after(roomScheduler);
+
+          // Apply similar margin as events-container
+          roomScheduler.style.marginLeft = "250px";
+        }
+
+        roomScheduler.style.display = "block";
+      }
+    });
+  });
+
+  // Responsive sidebar toggle for mobile
+  const addToggleButton = function () {
+    if (
+      window.innerWidth <= 768 &&
+      !document.querySelector(".sidebar-toggle")
+    ) {
+      const toggleButton = document.createElement("button");
+      toggleButton.className = "sidebar-toggle";
+      toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
+      document.body.appendChild(toggleButton);
+
+      toggleButton.addEventListener("click", function () {
+        document
+          .querySelector(".sidebar-navigation")
+          .classList.toggle("active");
+      });
+    } else if (
+      window.innerWidth > 768 &&
+      document.querySelector(".sidebar-toggle")
+    ) {
+      document.querySelector(".sidebar-toggle").remove();
+    }
+  };
+
+  // Add toggle button on load if needed
+  addToggleButton();
+
+  // Handle window resize
+  window.addEventListener("resize", addToggleButton);
+});
+
+// Sidebar Mobile Toggle Functionality
+document.addEventListener("DOMContentLoaded", function () {
+  // Add mobile toggle button for sidebar
+  const addToggleButton = function () {
+    if (!document.querySelector(".sidebar-toggle")) {
+      const toggleButton = document.createElement("button");
+      toggleButton.className = "sidebar-toggle";
+      toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
+      document.body.appendChild(toggleButton);
+
+      toggleButton.addEventListener("click", function () {
+        document
+          .querySelector(".sidebar-navigation")
+          .classList.toggle("active");
+      });
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener("click", function (e) {
+        const sidebar = document.querySelector(".sidebar-navigation");
+        const toggle = document.querySelector(".sidebar-toggle");
+
+        if (
+          window.innerWidth <= 768 &&
+          sidebar.classList.contains("active") &&
+          !sidebar.contains(e.target) &&
+          e.target !== toggle &&
+          !toggle.contains(e.target)
+        ) {
+          sidebar.classList.remove("active");
+        }
+      });
+    }
+  };
+
+  // Add toggle button on load
+  addToggleButton();
+
+  // Existing sidebar menu items functionality
+  const sidebarItems = document.querySelectorAll(".sidebar-menu-item");
+
+  sidebarItems.forEach((item) => {
+    item.addEventListener("click", function () {
+      // Remove active class from all items
+      sidebarItems.forEach((i) => i.classList.remove("active"));
+
+      // Add active class to clicked item
+      this.classList.add("active");
+
+      // Get data-section attribute value
+      const section = this.getAttribute("data-section");
+
+      // Handle section switching
+      if (section === "events") {
+        document.querySelector(".events-container").style.display = "grid";
+
+        // If room scheduler content exists, hide it
+        const roomScheduler = document.querySelector(
+          ".room-scheduler-container"
+        );
+        if (roomScheduler) {
+          roomScheduler.style.display = "none";
+        }
+      } else if (section === "room-scheduler") {
+        document.querySelector(".events-container").style.display = "none";
+
+        // Check if room scheduler content exists
+        let roomScheduler = document.querySelector(".room-scheduler-container");
+
+        // If room scheduler doesn't exist yet, create message
+        if (!roomScheduler) {
+          roomScheduler = document.createElement("div");
+          roomScheduler.className = "room-scheduler-container";
+          roomScheduler.innerHTML = `
+                        <div class="coming-soon">
+                            <h2>Room Scheduler</h2>
+                            <p>This feature is coming soon!</p>
+                        </div>
+                    `;
+          document.querySelector(".events-container").after(roomScheduler);
+
+          // Apply similar margin/padding as events-container
+          roomScheduler.style.marginLeft = "280px";
+          roomScheduler.style.marginTop = "60px";
+          roomScheduler.style.padding = "20px";
+
+          // Adjust for mobile
+          if (window.innerWidth <= 768) {
+            roomScheduler.style.marginLeft = "0";
+            roomScheduler.style.marginTop = "120px";
+          }
+        }
+
+        roomScheduler.style.display = "block";
+
+        // Close sidebar on mobile after selection
+        if (window.innerWidth <= 768) {
+          document
+            .querySelector(".sidebar-navigation")
+            .classList.remove("active");
+        }
+      }
+    });
+  });
+});

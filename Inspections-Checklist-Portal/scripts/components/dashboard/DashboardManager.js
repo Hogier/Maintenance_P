@@ -232,9 +232,10 @@ export default class DashboardManager {
     // Sort events by time
     events.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Limit the number of events to show based on device
+    // Always show exactly 2 events on mobile, and up to 3 on desktop
     const maxEventsToShow = this.isMobile ? 2 : 3;
     const visibleEvents = events.slice(0, maxEventsToShow);
+    const hasMoreEvents = events.length > maxEventsToShow;
 
     // Create container for event titles
     const eventsContainer = document.createElement("div");
@@ -246,45 +247,70 @@ export default class DashboardManager {
       const eventTitle = document.createElement("div");
       eventTitle.className = "calendar-event-title";
 
-      // Определяем, является ли название коротким
+      // Determine if the title is short
       const isShortTitle = event.title.length <= 15;
-
-      // Создаем вложенный span для текста с полным названием события
-      const textSpan = document.createElement("span");
-      textSpan.className = "event-title-text";
-
-      // Используем полное название события для анимации
-      textSpan.textContent = event.title;
-
-      eventTitle.appendChild(textSpan);
-
-      // Добавляем класс для коротких названий
       if (isShortTitle) {
         eventTitle.classList.add("short-text");
       }
 
-      // Применяем цвет события
-      if (event.color) {
-        eventTitle.classList.add(event.color);
-      } else {
+      // Add type-specific class
+      if (event.type) {
         eventTitle.classList.add(event.type);
       }
+      // Add color class if present
+      if (event.color) {
+        eventTitle.classList.add(event.color);
+      }
 
-      // Добавляем полный текст в атрибут title для отображения тултипа
-      eventTitle.setAttribute("title", event.title);
+      const titleText = document.createElement("div");
+      titleText.className = "event-title-text";
+      titleText.textContent = event.title;
+      eventTitle.appendChild(titleText);
 
       eventsContainer.appendChild(eventTitle);
     }
 
-    // Add "more" indicator if needed
-    if (events.length > maxEventsToShow) {
-      const moreIndicator = document.createElement("div");
-      moreIndicator.className = "more-events";
-      moreIndicator.textContent = `+${events.length - maxEventsToShow} more`;
-      eventsContainer.appendChild(moreIndicator);
+    // Add "more events" indicator if there are additional events
+    if (hasMoreEvents) {
+      const moreEvents = document.createElement("div");
+      moreEvents.className = "more-events";
+      moreEvents.textContent = `+${events.length - maxEventsToShow} more`;
+      eventsContainer.appendChild(moreEvents);
     }
 
     dayElement.appendChild(eventsContainer);
+
+    // Also add event dots for mobile view
+    if (this.isMobile) {
+      const dotsContainer = document.createElement("div");
+      dotsContainer.className = "event-dots-container";
+
+      // Always show dots for visible events on mobile
+      for (let i = 0; i < Math.min(visibleEvents.length, 2); i++) {
+        const event = visibleEvents[i];
+        const dot = document.createElement("span");
+        dot.className = "event-dot";
+
+        if (event.type) {
+          dot.classList.add(event.type);
+        }
+        if (event.color) {
+          dot.classList.add(event.color);
+        }
+
+        dotsContainer.appendChild(dot);
+      }
+
+      // Add "more" indicator if needed
+      if (hasMoreEvents) {
+        const moreDot = document.createElement("span");
+        moreDot.className = "event-dot more";
+        moreDot.textContent = "+";
+        dotsContainer.appendChild(moreDot);
+      }
+
+      dayElement.appendChild(dotsContainer);
+    }
   }
 
   async loadEvents() {

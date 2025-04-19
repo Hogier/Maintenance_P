@@ -76,18 +76,20 @@
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: minmax(120px, auto);
+  grid-auto-rows: minmax(120px, 120px);
 }
 
 .calendar-day {
   border: 1px solid #e1e1e1;
   padding: 10px 5px;
-  min-height: 120px;
+  height: 120px;
   position: relative;
   display: flex;
   flex-direction: column;
   cursor: pointer;
   transition: all 0.2s;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .calendar-day:hover {
@@ -324,32 +326,29 @@
 .calendar-day-events {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-top: 25px;
-  font-size: 12px;
-  flex: 1;
-  opacity: 1;
+  overflow-y: hidden;
+  margin-top: 20px;
+  opacity: 0.9;
   transition: opacity 0.2s;
+  flex: 1;
+  max-height: 70px;
 }
 
 .calendar-event-title {
-  padding: 2px 5px;
+  background-color: #3498db;
+  color: white;
+  padding: 3px 6px;
   border-radius: 3px;
-  overflow: hidden;
-  white-space: nowrap;
+  margin-bottom: 3px;
   font-size: 12px;
-  width: 90%;
-  margin: 0 auto;
-  text-align: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.1s;
-  color: #333;
   position: relative;
-  cursor: default;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 22px;
+  cursor: pointer;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 22px;
+  line-height: 16px;
 }
 
 .calendar-event-title:hover {
@@ -359,15 +358,10 @@
 
 /* Стили для текста внутри прямоугольника */
 .event-title-text {
-  display: inline-block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
-  position: relative;
-  transition: all 0.3s ease;
-  font-weight: bold;
-  text-align: center;
 }
 
 /* Обрезаем длинные тексты, когда нет наведения */
@@ -527,14 +521,15 @@
   }
 
   .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(40px, 1fr));
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(100px, 100px);
   }
 
   .calendar-day {
-    min-height: 70px;
-    padding: 6px 3px;
-    position: relative;
+    padding: 5px;
+    height: 100px;
+    min-height: 100px;
+    box-sizing: border-box;
   }
 
   .day-number {
@@ -544,9 +539,49 @@
   }
 
   .event-dot {
-    width: 6px;
-    height: 6px;
-    margin-top: 20px;
+    display: flex;
+    gap: 3px;
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    justify-content: center;
+  }
+
+  .event-dot.more {
+    font-size: 8px;
+    line-height: 6px;
+    text-align: center;
+    color: #fff;
+    background-color: #95a5a6;
+  }
+
+  .event-dot.reminder {
+    background-color: #3498db;
+  }
+  .event-dot.inspection {
+    background-color: #2ecc71;
+  }
+  .event-dot.checklist {
+    background-color: #f39c12;
+  }
+  .event-dot.construction {
+    background-color: #e74c3c;
+  }
+  .event-dot.red {
+    background-color: #e74c3c;
+  }
+  .event-dot.green {
+    background-color: #2ecc71;
+  }
+  .event-dot.blue {
+    background-color: #3498db;
+  }
+  .event-dot.orange {
+    background-color: #f39c12;
+  }
+  .event-dot.purple {
+    background-color: #9b59b6;
   }
 
   .calendar-events {
@@ -652,10 +687,13 @@
   }
 
   .calendar-event-title {
-    font-size: 11px;
-    padding: 1px 3px;
-    width: 95%;
-    min-height: 20px;
+    font-size: 10px;
+    padding: 2px 4px;
+    margin-bottom: 2px;
+    height: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .event-title-text {
@@ -663,8 +701,23 @@
   }
 
   .calendar-day-events {
-    margin-top: 18px;
-    gap: 2px;
+    margin-top: 15px;
+    max-height: 50px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .calendar-event-title:nth-child(n + 3) {
+    display: none;
+  }
+
+  .more-events {
+    font-size: 9px;
+    color: #7f8c8d;
+    text-align: center;
+    margin-top: 1px;
+    height: 12px;
   }
 
   @keyframes text-scroll {
@@ -728,8 +781,10 @@
   }
 
   .calendar-day {
-    min-height: 50px;
-    padding: 3px 2px;
+    padding: 3px;
+    height: 80px;
+    min-height: 80px;
+    box-sizing: border-box;
   }
 
   .day-number {
@@ -747,9 +802,13 @@
   }
 
   .event-dot {
-    width: 4px;
-    height: 4px;
-    margin-top: 18px;
+    width: 5px;
+    height: 5px;
+  }
+
+  .event-dot.more {
+    font-size: 7px;
+    line-height: 5px;
   }
 
   .calendar-events {
@@ -829,12 +888,13 @@
   }
 
   .event-dots-container {
-    margin-top: 16px;
-    gap: 1px;
+    bottom: 3px;
   }
 
   .more-events {
-    font-size: 7px;
+    font-size: 8px;
+    margin-top: 1px;
+    height: 10px;
   }
 
   /* Добавляем свайп-подсказку */
@@ -884,12 +944,10 @@
   }
 
   .calendar-event-title {
-    font-size: 10px;
-    padding: 1px 2px;
-    width: 100%;
-    line-height: 1.4;
-    border-left-width: 1px;
-    min-height: 18px;
+    font-size: 9px;
+    padding: 1px 3px;
+    margin-bottom: 1px;
+    height: 14px;
   }
 
   .event-title-text {
@@ -897,8 +955,8 @@
   }
 
   .calendar-day-events {
-    margin-top: 15px;
-    gap: 1px;
+    margin-top: 10px;
+    max-height: 40px;
   }
 
   @keyframes text-scroll {
