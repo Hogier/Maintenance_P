@@ -127,11 +127,21 @@ switch ($action) {
         break;
     case 'remove_user_from_group':
     case 'removeuserfromgroup':
+        debug_log("Calling removeUserFromGroup function");
         removeUserFromGroup();
         break;
     case 'delete_user':
     case 'deleteuser':
         deleteUser();
+        break;
+    case 'search':
+    case 'search_chats':
+    case 'searchchats':
+        searchChats();
+        break;
+    case 'get_user_details':
+    case 'getuserdetails':
+        getUserDetails();
         break;
     default:
         http_response_code(404);
@@ -367,7 +377,8 @@ function getGroupChats() {
                    (SELECT COUNT(*) FROM chat_messages 
                     WHERE group_id = cg.id 
                     AND sender_id != :current_user_id 
-                    AND is_read = 0) as unread
+                    AND is_read = 0) as unread,
+                   (SELECT full_name FROM users WHERE id = cg.created_by) as creator_name
             FROM chat_groups cg
             INNER JOIN chat_group_members cgm ON cg.id = cgm.group_id
             WHERE cgm.user_id = :current_user_id
@@ -396,6 +407,7 @@ function getGroupChats() {
                 'id' => 'g' . $row['id'],
                 'name' => $row['name'],
                 'members' => $members,
+                'created_by' => intval($row['created_by']),
                 'lastMessage' => $row['lastMessage'] ?? 'No messages yet',
                 'timestamp' => $row['timestamp'] ?? $row['created_at'],
                 'unread' => intval($row['unread'] ?? 0)
@@ -831,10 +843,17 @@ function createGroup() {
         $conn->commit();
         
         // Get the new group info
+        $userStmt = $conn->prepare("SELECT full_name FROM users WHERE id = :user_id");
+        $userStmt->bindParam(':user_id', $current_user_id, PDO::PARAM_INT);
+        $userStmt->execute();
+        $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+        
         $groupInfo = [
             'id' => 'g' . $group_id,
             'name' => $group_name,
             'members' => $members,
+            'created_by' => $current_user_id,
+            'creator_name' => $user['full_name'] ?? 'Unknown',
             'lastMessage' => 'Group created',
             'timestamp' => date('Y-m-d H:i:s'),
             'unread' => 0
@@ -997,36 +1016,51 @@ function removeUserFromGroup() {
     global $conn;
     $current_user_id = $_SESSION['user_id'];
     
+    // Add debug logging
+    debug_log("removeUserFromGroup function called");
+    
     // Check if request is POST
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
-        echo json_encode(['error' => 'Method not allowed. Use POST.']);
+        echo json_encode(['success' => false, 'error' => 'Method not allowed. Use POST.']);
         return;
     }
-    
-    // Get request body
-    $data = json_decode(file_get_contents('php://input'), true);
-    
-    // Validate required fields
-    if (!isset($data['group_id']) || !isset($data['user_id'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Group ID and user ID are required']);
-        return;
-    }
-    
-    $group_id_str = $data['group_id'];
-    $user_id_to_remove = $data['user_id'];
-    
-    // Extract numeric group ID
-    if (!preg_match('/^g(\d+)$/', $group_id_str, $matches)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid group ID format']);
-        return;
-    }
-    
-    $group_id = intval($matches[1]);
     
     try {
+        // Get request body
+        $raw_data = file_get_contents('php://input');
+        debug_log("Raw input data: " . $raw_data);
+        
+        $data = json_decode($raw_data, true);
+        if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+            debug_log("JSON decode error: " . json_last_error_msg());
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Invalid JSON: ' . json_last_error_msg()]);
+            return;
+        }
+        
+        debug_log("removeUserFromGroup received data: " . json_encode($data));
+        
+        // Validate required fields
+        if (!isset($data['group_id']) || !isset($data['user_id'])) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Group ID and user ID are required']);
+            return;
+        }
+        
+        $group_id_str = $data['group_id'];
+        $user_id_to_remove = $data['user_id'];
+        debug_log("Attempting to remove user $user_id_to_remove from group $group_id_str");
+        
+        // Extract numeric group ID
+        if (!preg_match('/^g(\d+)$/', $group_id_str, $matches)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Invalid group ID format']);
+            return;
+        }
+        
+        $group_id = intval($matches[1]);
+        
         // Check group exists
         $groupStmt = $conn->prepare("SELECT * FROM chat_groups WHERE id = :group_id");
         $groupStmt->bindParam(':group_id', $group_id, PDO::PARAM_INT);
@@ -1034,7 +1068,7 @@ function removeUserFromGroup() {
         
         if ($groupStmt->rowCount() === 0) {
             http_response_code(404);
-            echo json_encode(['error' => 'Group not found']);
+            echo json_encode(['success' => false, 'error' => 'Group not found']);
             return;
         }
         
@@ -1324,5 +1358,164 @@ function deleteUser() {
         $conn->rollBack();
         http_response_code(500);
         echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    }
+}
+
+/**
+ * Search for users and groups
+ */
+function searchChats() {
+    global $conn;
+    $current_user_id = $_SESSION['user_id'];
+    
+    // Get search term from request
+    $search_term = isset($_GET['query']) ? trim($_GET['query']) : '';
+    
+    debug_log("Search term: " . $search_term);
+    
+    if (empty($search_term)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Search term is required']);
+        exit;
+    }
+    
+    try {
+        // Add wildcard to search term for partial matches
+        $search_pattern = '%' . $search_term . '%';
+        
+        // Search for users
+        $userStmt = $conn->prepare("
+            SELECT id, full_name, email, role, department 
+            FROM users 
+            WHERE full_name LIKE :search_term 
+            AND id != :current_user_id
+            ORDER BY full_name
+            LIMIT 20
+        ");
+        $userStmt->bindParam(':search_term', $search_pattern, PDO::PARAM_STR);
+        $userStmt->bindParam(':current_user_id', $current_user_id, PDO::PARAM_INT);
+        $userStmt->execute();
+        
+        $users = [];
+        while ($row = $userStmt->fetch(PDO::FETCH_ASSOC)) {
+            $users[] = [
+                'id' => $row['id'],
+                'name' => $row['full_name'],
+                'email' => $row['email'],
+                'role' => $row['role'],
+                'department' => $row['department'],
+                'type' => 'user'
+            ];
+        }
+        
+        // Search for groups the user is a member of
+        $groupStmt = $conn->prepare("
+            SELECT g.id, g.name, g.created_by,
+                   COUNT(gm.id) as member_count,
+                   (SELECT full_name FROM users WHERE id = g.created_by) as creator_name
+            FROM chat_groups g
+            JOIN chat_group_members gm ON g.id = gm.group_id
+            WHERE g.name LIKE :search_term
+            AND gm.user_id = :current_user_id
+            GROUP BY g.id
+            ORDER BY g.name
+            LIMIT 10
+        ");
+        $groupStmt->bindParam(':search_term', $search_pattern, PDO::PARAM_STR);
+        $groupStmt->bindParam(':current_user_id', $current_user_id, PDO::PARAM_INT);
+        $groupStmt->execute();
+        
+        $groups = [];
+        while ($row = $groupStmt->fetch(PDO::FETCH_ASSOC)) {
+            // Get group members
+            $memberStmt = $conn->prepare("
+                SELECT u.id 
+                FROM chat_group_members cgm
+                JOIN users u ON cgm.user_id = u.id
+                WHERE cgm.group_id = :group_id
+            ");
+            $memberStmt->bindParam(':group_id', $row['id'], PDO::PARAM_INT);
+            $memberStmt->execute();
+            
+            $members = [];
+            while ($member = $memberStmt->fetch(PDO::FETCH_ASSOC)) {
+                $members[] = $member['id'];
+            }
+            
+            $groups[] = [
+                'id' => 'g' . $row['id'],
+                'name' => $row['name'],
+                'members' => $members,
+                'memberCount' => $row['member_count'],
+                'created_by' => $row['created_by'],
+                'creator_name' => $row['creator_name'],
+                'type' => 'group'
+            ];
+        }
+        
+        // Combine results
+        $results = [
+            'success' => true,
+            'query' => $search_term,
+            'users' => $users,
+            'groups' => $groups
+        ];
+        
+        debug_log("Search results: " . count($users) . " users, " . count($groups) . " groups");
+        echo json_encode($results);
+        exit;
+        
+    } catch (PDOException $e) {
+        debug_log("Search error: " . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+/**
+ * Get details for a specific user by ID
+ */
+function getUserDetails() {
+    global $conn;
+    
+    // Get user ID from request
+    $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : null;
+    
+    if (!$user_id) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'User ID is required']);
+        exit;
+    }
+    
+    try {
+        // Get user details
+        $stmt = $conn->prepare("SELECT id, full_name, email, role, department FROM users WHERE id = :user_id");
+        $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$user) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'User not found']);
+            exit;
+        }
+        
+        // Format user data for response
+        $userData = [
+            'id' => $user['id'],
+            'name' => $user['full_name'],
+            'email' => $user['email'],
+            'role' => $user['role'],
+            'department' => $user['department']
+        ];
+        
+        echo json_encode(['success' => true, 'user' => $userData]);
+        exit;
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+        exit;
     }
 }

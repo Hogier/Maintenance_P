@@ -28,6 +28,7 @@ const userNameElement = document.getElementById("userName");
 const userDepartmentElement = document.querySelector(".user-department");
 const userAvatarElement = document.getElementById("userAvatar");
 const logoutButton = document.getElementById("logoutButton");
+const backToMainMenuBtn = document.getElementById("backToMainMenu");
 
 // State variables
 let currentUser = null;
@@ -76,6 +77,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function initializeChat() {
   if (!currentUser) return;
 
+  console.log("Initializing chat for user:", currentUser.id);
+
   // Create server-side session
   try {
     const response = await fetch("./api/create_session.php", {
@@ -96,12 +99,31 @@ async function initializeChat() {
     if (!result.success) {
       throw new Error(result.error || "Failed to create session");
     }
+
+    console.log("Session created successfully");
   } catch (error) {
     console.error("Error creating session:", error);
   }
 
   await fetchUsers();
   await fetchChats();
+  console.log(
+    "After fetchChats: Direct chats:",
+    directChats.length,
+    "Group chats:",
+    groupChats.length
+  );
+
+  // Debug log all group members
+  groupChats.forEach((group, index) => {
+    console.log(
+      `Group ${index + 1}: ${group.name} (${group.id}) has ${
+        group.members.length
+      } members:`,
+      group.members
+    );
+  });
+
   renderChats();
   setupEventListeners();
 }
@@ -300,6 +322,7 @@ function checkAuth() {
 // Fetch all users
 async function fetchUsers() {
   try {
+    console.log("Fetching users...");
     // Fetch users from API
     const response = await fetch("./api/chat-api.php?action=get_users");
     if (!response.ok) {
@@ -507,24 +530,30 @@ function renderDirectMessages() {
 
       directMessagesList.appendChild(chatItem);
     });
-
-  // Add option to start new chat
-  const newChatItem = document.createElement("div");
-  newChatItem.className = "chat-item";
-  newChatItem.innerHTML = `
-    <div class="chat-avatar">+</div>
-    <div class="chat-info-preview">
-      <div class="chat-name">New Conversation</div>
-      <div class="chat-preview">Start a new direct message</div>
-    </div>
-  `;
-  newChatItem.addEventListener("click", showNewChatOptions);
-  directMessagesList.appendChild(newChatItem);
 }
 
 // Render groups list
 function renderGroups() {
+  // Clear only the group list items but keep the header with the button
+  const groupHeader = groupsList.querySelector(".group-header");
   groupsList.innerHTML = "";
+
+  // Re-add the group header
+  if (groupHeader) {
+    groupsList.appendChild(groupHeader);
+  } else {
+    // Create the header if it doesn't exist
+    const newGroupHeader = document.createElement("div");
+    newGroupHeader.className = "group-header";
+    newGroupHeader.innerHTML =
+      '<button id="createGroupBtn" class="create-group-btn">+ Create New Group</button>';
+    groupsList.appendChild(newGroupHeader);
+
+    // Reattach event listener for the new button
+    document
+      .getElementById("createGroupBtn")
+      .addEventListener("click", showCreateGroupModal);
+  }
 
   groupChats
     .sort((a, b) => b.timestamp - a.timestamp)
@@ -595,6 +624,8 @@ function formatTime(timestamp) {
 
 // Select a chat
 function selectChat(chatId, chatType) {
+  console.log(`Selecting chat: ${chatId} (${chatType})`);
+
   // Update UI to show selected chat
   document.querySelectorAll(".chat-item").forEach((item) => {
     item.classList.remove("active");
@@ -605,10 +636,13 @@ function selectChat(chatId, chatType) {
   );
   if (chatItem) {
     chatItem.classList.add("active");
+  } else {
+    console.warn(`Chat item not found in DOM: ${chatId} (${chatType})`);
   }
 
   // Update current chat
   currentChat = { id: chatId, type: chatType };
+  console.log("Current chat updated:", currentChat);
 
   // Update chat header
   updateChatHeader();
@@ -626,12 +660,20 @@ function selectChat(chatId, chatType) {
     if (chat) {
       chat.unread = 0;
       renderDirectMessages();
+    } else {
+      console.warn(`Direct chat not found: ${chatId}`);
     }
   } else {
     const chat = groupChats.find((c) => c.id === chatId);
     if (chat) {
       chat.unread = 0;
+      console.log(
+        `Selected group chat: ${chat.name} with ${chat.members.length} members:`,
+        chat.members
+      );
       renderGroups();
+    } else {
+      console.warn(`Group chat not found: ${chatId}`);
     }
   }
 }
@@ -639,6 +681,8 @@ function selectChat(chatId, chatType) {
 // Update chat header
 function updateChatHeader() {
   if (!currentChat) return;
+
+  console.log("Updating chat header for:", currentChat);
 
   if (currentChat.type === "direct") {
     const chat = directChats.find((c) => c.id === currentChat.id);
@@ -652,15 +696,32 @@ function updateChatHeader() {
         chatStatus.textContent = "";
 
         addUserToChat.classList.add("hidden");
+      } else {
+        console.warn("User not found for direct chat:", chat.userId);
       }
+    } else {
+      console.warn("Direct chat not found:", currentChat.id);
     }
   } else {
     const chat = groupChats.find((c) => c.id === currentChat.id);
     if (chat) {
       currentChatName.textContent = chat.name;
-      const memberCount = chat.members.length;
-      chatStatus.textContent = `${memberCount} members`;
+      const memberCount = chat.members ? chat.members.length : 0;
+      console.log(
+        `Updating header for group ${chat.name} with ${memberCount} members:`,
+        chat.members
+      );
+
+      // Добавление информации о создателе группы
+      if (chat.creator_name) {
+        chatStatus.innerHTML = `${memberCount} members · Created by <span class="creator-name">${chat.creator_name}</span>`;
+      } else {
+        chatStatus.textContent = `${memberCount} members`;
+      }
+
       addUserToChat.classList.remove("hidden");
+    } else {
+      console.warn("Group chat not found:", currentChat.id);
     }
   }
 }
@@ -703,6 +764,7 @@ async function loadMessages(chatId) {
 }
 
 // Show new chat options (when clicking "New Conversation")
+// This function is kept for compatibility but is no longer directly accessed from the UI
 function showNewChatOptions() {
   // Display a modal or dropdown with user list to start a new conversation
   const userList = document.createElement("div");
@@ -1125,13 +1187,24 @@ function showChatInfo() {
       const membersList = document.createElement("div");
       membersList.className = "members-list";
 
-      // Add header
+      // Add group creator info
+      if (chat.created_by && chat.creator_name) {
+        const creatorInfo = document.createElement("div");
+        creatorInfo.className = "creator-info";
+        creatorInfo.innerHTML = `<strong>Group created by:</strong> ${chat.creator_name}`;
+        infoPanelContent.appendChild(creatorInfo);
+      }
+
+      // Debug log
+      console.log("Group members:", chat.members);
+
+      // Add header with correct member count
       const header = document.createElement("h4");
       header.textContent = `${chat.members.length} Members`;
       infoPanelContent.appendChild(header);
 
-      // Add members
-      chat.members.forEach((memberId) => {
+      // Add members - ensure we're properly getting each member's info
+      const memberPromises = chat.members.map(async (memberId) => {
         let member;
         if (memberId === currentUser.id) {
           member = {
@@ -1140,6 +1213,36 @@ function showChatInfo() {
           };
         } else {
           member = users.find((u) => u.id === memberId);
+
+          // If member not found in existing users array, try to fetch user data
+          if (!member) {
+            console.log(
+              `Member ID ${memberId} not found in users array, attempting to fetch user data`
+            );
+            try {
+              const response = await fetch(
+                `./api/chat-api.php?action=get_user_details&user_id=${memberId}`
+              );
+              if (response.ok) {
+                const userData = await response.json();
+                if (userData.success && userData.user) {
+                  member = {
+                    id: userData.user.id,
+                    name: userData.user.name || userData.user.full_name,
+                  };
+                  // Add to users array to cache for future use
+                  if (!users.find((u) => u.id === member.id)) {
+                    users.push(member);
+                  }
+                }
+              }
+            } catch (error) {
+              console.error(
+                `Error fetching user data for ID ${memberId}:`,
+                error
+              );
+            }
+          }
         }
 
         if (member) {
@@ -1150,11 +1253,15 @@ function showChatInfo() {
           const avatarElement = createAvatarElement(member);
           avatarElement.className = "member-avatar"; // Use member-avatar class for styling
 
+          // Check if this member is the creator/admin
+          const isCreator = chat.created_by === member.id;
+
           const memberInfo = document.createElement("div");
           memberInfo.className = "member-info";
           memberInfo.innerHTML = `
             <div class="member-name">
-              ${member.name}${member.id === currentUser.id ? " (You)" : ""}
+              ${member.name}${member.id === currentUser.id ? " (You)" : ""} 
+              ${isCreator ? '<span class="admin-badge">Admin</span>' : ""}
             </div>
           `;
 
@@ -1169,11 +1276,20 @@ function showChatInfo() {
             confirmDeleteUser(member.id, member.name);
           memberItem.appendChild(deleteUserBtn);
 
-          membersList.appendChild(memberItem);
+          return memberItem;
         }
+        return null;
       });
 
-      infoPanelContent.appendChild(membersList);
+      // Wait for all member items to be created, then add them to the list
+      Promise.all(memberPromises).then((memberItems) => {
+        memberItems
+          .filter((item) => item !== null)
+          .forEach((item) => {
+            membersList.appendChild(item);
+          });
+        infoPanelContent.appendChild(membersList);
+      });
     }
   }
 
@@ -1186,38 +1302,81 @@ function showCreateGroupModal() {
   groupNameInput.value = "";
   userSelection.innerHTML = "";
 
+  // Clear the filter input
+  const userFilterInput = document.getElementById("userFilter");
+  if (userFilterInput) {
+    userFilterInput.value = "";
+  }
+
   // Add user checkboxes
-  users.forEach((user) => {
-    const userItem = document.createElement("div");
-    userItem.className = "user-selection-item";
-
-    // Create checkbox
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "user-selection-checkbox";
-    checkbox.id = `user-${user.id}`;
-    checkbox.value = user.id;
-
-    // Create label
-    const label = document.createElement("label");
-    label.htmlFor = `user-${user.id}`;
-    label.className = "user-selection-name";
-    label.textContent = user.name;
-
-    // Create avatar
-    const avatarElement = createAvatarElement(user, "small");
-
-    // Add to user item
-    userItem.appendChild(checkbox);
-    userItem.appendChild(avatarElement);
-    userItem.appendChild(label);
-
-    userSelection.appendChild(userItem);
-  });
+  populateUserSelection(users);
 
   // Show modal
   overlay.classList.remove("hidden");
   createGroupModal.classList.remove("hidden");
+}
+
+// Populate user selection with filtered users
+function populateUserSelection(usersToShow) {
+  userSelection.innerHTML = "";
+
+  if (usersToShow.length === 0) {
+    const noResults = document.createElement("div");
+    noResults.className = "no-results";
+    noResults.textContent = "No users found matching your search.";
+    userSelection.appendChild(noResults);
+    return;
+  }
+
+  usersToShow.forEach((user) => {
+    const userItem = document.createElement("div");
+    userItem.className = "user-selection-item";
+    userItem.dataset.userId = user.id;
+
+    // Create user info container (avatar + name)
+    const userInfo = document.createElement("div");
+    userInfo.className = "user-info";
+
+    // Create avatar
+    const avatarElement = createAvatarElement(user, "small");
+
+    // Create label
+    const userName = document.createElement("div");
+    userName.className = "user-selection-name";
+    userName.textContent = user.name;
+
+    // Add avatar and name to user info
+    userInfo.appendChild(avatarElement);
+    userInfo.appendChild(userName);
+
+    // Add to user item
+    userItem.appendChild(userInfo);
+
+    // Add click handler to toggle selection
+    userItem.addEventListener("click", function () {
+      this.classList.toggle("selected");
+    });
+
+    userSelection.appendChild(userItem);
+  });
+}
+
+// Filter users in the selection based on search term
+function filterUserSelection(searchTerm) {
+  searchTerm = searchTerm.toLowerCase().trim();
+
+  if (!searchTerm) {
+    // Show all users if search term is empty
+    populateUserSelection(users);
+    return;
+  }
+
+  // Filter users by name
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchTerm)
+  );
+
+  populateUserSelection(filteredUsers);
 }
 
 // Create a new group
@@ -1229,8 +1388,8 @@ async function createGroup() {
   }
 
   const selectedUsers = Array.from(
-    userSelection.querySelectorAll('input[type="checkbox"]:checked')
-  ).map((checkbox) => parseInt(checkbox.value));
+    userSelection.querySelectorAll(".user-selection-item.selected")
+  ).map((item) => parseInt(item.dataset.userId));
 
   if (selectedUsers.length === 0) {
     alert("Please select at least one user");
@@ -1289,98 +1448,182 @@ function showAddUserModal() {
   // Clear previous values
   addUserSelection.innerHTML = "";
 
-  // Add user checkboxes (exclude existing members)
-  users
-    .filter((user) => !chat.members.includes(user.id))
-    .forEach((user) => {
-      const userItem = document.createElement("div");
-      userItem.className = "user-selection-item";
-
-      // Create checkbox
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "user-selection-checkbox";
-      checkbox.id = `add-user-${user.id}`;
-      checkbox.value = user.id;
-
-      // Create label
-      const label = document.createElement("label");
-      label.htmlFor = `add-user-${user.id}`;
-      label.className = "user-selection-name";
-      label.textContent = user.name;
-
-      // Create avatar
-      const avatarElement = createAvatarElement(user, "small");
-
-      // Add to user item
-      userItem.appendChild(checkbox);
-      userItem.appendChild(avatarElement);
-      userItem.appendChild(label);
-
-      addUserSelection.appendChild(userItem);
-    });
-
-  // Show message if no users to add
-  if (addUserSelection.children.length === 0) {
-    addUserSelection.innerHTML = "<p>All users are already in this group</p>";
+  // Clear the filter input
+  const addUserFilterInput = document.getElementById("addUserFilter");
+  if (addUserFilterInput) {
+    addUserFilterInput.value = "";
   }
+
+  // Get users not in the group
+  const availableUsers = users.filter(
+    (user) => !chat.members.includes(user.id)
+  );
+
+  // Populate the user selection
+  populateAddUserSelection(availableUsers);
 
   // Show modal
   overlay.classList.remove("hidden");
   addUserModal.classList.remove("hidden");
 }
 
+// Populate add user selection with filtered users
+function populateAddUserSelection(usersToShow) {
+  addUserSelection.innerHTML = "";
+
+  if (usersToShow.length === 0) {
+    addUserSelection.innerHTML = "<p>No users available to add</p>";
+    return;
+  }
+
+  usersToShow.forEach((user) => {
+    const userItem = document.createElement("div");
+    userItem.className = "user-selection-item";
+    userItem.dataset.userId = user.id;
+
+    // Create user info container (avatar + name)
+    const userInfo = document.createElement("div");
+    userInfo.className = "user-info";
+
+    // Create avatar
+    const avatarElement = createAvatarElement(user, "small");
+
+    // Create label
+    const userName = document.createElement("div");
+    userName.className = "user-selection-name";
+    userName.textContent = user.name;
+
+    // Add avatar and name to user info
+    userInfo.appendChild(avatarElement);
+    userInfo.appendChild(userName);
+
+    // Add to user item
+    userItem.appendChild(userInfo);
+
+    // Add click handler to toggle selection
+    userItem.addEventListener("click", function () {
+      this.classList.toggle("selected");
+    });
+
+    addUserSelection.appendChild(userItem);
+  });
+}
+
+// Filter users in the add user selection based on search term
+function filterAddUserSelection(searchTerm) {
+  if (!currentChat || currentChat.type !== "group") return;
+
+  const chat = groupChats.find((c) => c.id === currentChat.id);
+  if (!chat) return;
+
+  searchTerm = searchTerm.toLowerCase().trim();
+
+  // Get users not in the group
+  const availableUsers = users.filter(
+    (user) => !chat.members.includes(user.id)
+  );
+
+  if (!searchTerm) {
+    // Show all available users if search term is empty
+    populateAddUserSelection(availableUsers);
+    return;
+  }
+
+  // Filter users by name
+  const filteredUsers = availableUsers.filter((user) =>
+    user.name.toLowerCase().includes(searchTerm)
+  );
+
+  populateAddUserSelection(filteredUsers);
+}
+
 // Add users to existing chat
-function addUsersToChat() {
+async function addUsersToChat() {
   if (!currentChat || currentChat.type !== "group") return;
 
   const chat = groupChats.find((c) => c.id === currentChat.id);
   if (!chat) return;
 
   const selectedUsers = Array.from(
-    addUserSelection.querySelectorAll('input[type="checkbox"]:checked')
-  ).map((checkbox) => parseInt(checkbox.value));
+    addUserSelection.querySelectorAll(".user-selection-item.selected")
+  ).map((item) => parseInt(item.dataset.userId));
 
   if (selectedUsers.length === 0) {
     alert("Please select at least one user");
     return;
   }
 
-  // Add users to members
-  chat.members.push(...selectedUsers);
+  try {
+    // Отправляем запрос к API для добавления пользователей на сервере
+    const response = await fetch(
+      "./api/chat-api.php?action=add_users_to_group",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          group_id: currentChat.id,
+          user_ids: selectedUsers,
+        }),
+      }
+    );
 
-  // Add message
-  const userNames = selectedUsers
-    .map((userId) => {
-      const user = users.find((u) => u.id === userId);
-      return user ? user.name : "Unknown User";
-    })
-    .join(", ");
+    if (!response.ok) {
+      throw new Error(`Failed to add users to group: ${response.status}`);
+    }
 
-  const newMessage = {
-    sender: currentUser.id,
-    text: `Added ${userNames} to the group`,
-    timestamp: new Date(),
-  };
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || "Failed to add users to group");
+    }
 
-  messages[currentChat.id].push(newMessage);
+    console.log("Users added to group successfully:", result);
 
-  // Update last message
-  chat.lastMessage = newMessage.text;
-  chat.timestamp = new Date();
+    // Обновляем локальные данные
+    chat.members.push(...selectedUsers);
 
-  // Hide modal
-  overlay.classList.add("hidden");
-  addUserModal.classList.add("hidden");
+    // Получаем имена добавленных пользователей для сообщения
+    const userNames = selectedUsers
+      .map((userId) => {
+        const user = users.find((u) => u.id === userId);
+        return user ? user.name : "Unknown User";
+      })
+      .join(", ");
 
-  // Update UI
-  renderGroups();
-  loadMessages(currentChat.id);
-  updateChatHeader();
+    // Создаем сообщение о добавлении пользователей
+    const newMessage = {
+      sender: currentUser.id,
+      text: `Added ${userNames} to the group`,
+      timestamp: new Date(),
+    };
 
-  // If info panel is open, update it
-  if (!infoPanel.classList.contains("hidden")) {
-    showChatInfo();
+    if (!messages[currentChat.id]) {
+      messages[currentChat.id] = [];
+    }
+
+    messages[currentChat.id].push(newMessage);
+
+    // Обновляем последнее сообщение группы
+    chat.lastMessage = newMessage.text;
+    chat.timestamp = new Date();
+
+    // Скрываем модальное окно
+    overlay.classList.add("hidden");
+    addUserModal.classList.add("hidden");
+
+    // Обновляем UI
+    renderGroups();
+    await loadMessages(currentChat.id);
+    updateChatHeader();
+
+    // Если панель информации открыта, обновляем её
+    if (!infoPanel.classList.contains("hidden")) {
+      showChatInfo();
+    }
+  } catch (error) {
+    console.error("Error adding users to group:", error);
+    alert("Failed to add users to group: " + error.message);
   }
 }
 
@@ -1404,37 +1647,132 @@ function switchTab(tabName) {
 
 // Filter chats by search term
 function filterChats(searchTerm) {
-  searchTerm = searchTerm.toLowerCase();
+  if (!searchTerm || searchTerm.trim() === "") {
+    // Show all chats if search term is empty
+    fetchChats().then(() => {
+      renderChats();
+    });
+    return;
+  }
 
-  // Filter direct messages
-  const directElements = directMessagesList.querySelectorAll(".chat-item");
-  directElements.forEach((element) => {
-    if (element.querySelector(".chat-name")) {
-      const name = element
-        .querySelector(".chat-name")
-        .textContent.toLowerCase();
-      if (name.includes(searchTerm) || name === "New Conversation") {
-        element.style.display = "";
-      } else {
-        element.style.display = "none";
-      }
-    }
-  });
+  // Show loading state
+  directMessagesList.innerHTML =
+    '<div class="chat-item"><div class="chat-name">Searching...</div></div>';
+  groupsList.innerHTML =
+    '<div class="chat-item"><div class="chat-name">Searching...</div></div>';
 
-  // Filter groups
-  const groupElements = groupsList.querySelectorAll(".chat-item");
-  groupElements.forEach((element) => {
-    if (element.querySelector(".chat-name")) {
-      const name = element
-        .querySelector(".chat-name")
-        .textContent.toLowerCase();
-      if (name.includes(searchTerm)) {
-        element.style.display = "";
-      } else {
-        element.style.display = "none";
+  // Call the search API
+  fetch(
+    `./api/chat-api.php?action=search&query=${encodeURIComponent(searchTerm)}`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
       }
-    }
-  });
+      return response.json();
+    })
+    .then((data) => {
+      if (!data.success) {
+        throw new Error(data.error || "Search failed");
+      }
+
+      console.log("Search results:", data);
+
+      // Render search results
+      renderSearchResults(data);
+    })
+    .catch((error) => {
+      console.error("Search error:", error);
+      directMessagesList.innerHTML = `<div class="chat-item"><div class="chat-name">Search error: ${error.message}</div></div>`;
+      groupsList.innerHTML = "";
+    });
+}
+
+// Render search results
+function renderSearchResults(data) {
+  // Clear current lists
+  directMessagesList.innerHTML = "";
+  groupsList.innerHTML = "";
+
+  // Render users in direct messages tab
+  if (data.users && data.users.length > 0) {
+    data.users.forEach((user) => {
+      const chatItem = document.createElement("div");
+      chatItem.className = "chat-item";
+      chatItem.dataset.userId = user.id;
+
+      // Create avatar
+      const userObj = {
+        id: user.id,
+        name: user.name,
+      };
+      const avatarElement = createAvatarElement(userObj);
+
+      const infoDiv = document.createElement("div");
+      infoDiv.className = "chat-info-preview";
+      infoDiv.innerHTML = `
+        <div class="chat-name">${user.name}</div>
+        <div class="chat-preview">${
+          user.department || user.role || "Start a new conversation"
+        }</div>
+      `;
+
+      chatItem.appendChild(avatarElement);
+      chatItem.appendChild(infoDiv);
+
+      // Add click handler to start new chat
+      chatItem.addEventListener("click", () => {
+        createNewDirectChat(user);
+      });
+
+      directMessagesList.appendChild(chatItem);
+    });
+  } else {
+    directMessagesList.innerHTML =
+      '<div class="chat-item"><div class="chat-name">No users found</div></div>';
+  }
+
+  // Render groups
+  if (data.groups && data.groups.length > 0) {
+    data.groups.forEach((group) => {
+      const chatItem = document.createElement("div");
+      chatItem.className = "chat-item";
+      chatItem.dataset.chatId = group.id;
+      chatItem.dataset.chatType = "group";
+
+      // Create group avatar (first two letters of group name)
+      const avatarDiv = document.createElement("div");
+      avatarDiv.className = "chat-avatar";
+      avatarDiv.textContent = group.name.substring(0, 2).toUpperCase();
+
+      const infoDiv = document.createElement("div");
+      infoDiv.className = "chat-info-preview";
+      infoDiv.innerHTML = `
+        <div class="chat-name">${group.name}</div>
+        <div class="chat-preview">${group.memberCount} members • Created by ${group.creator_name}</div>
+      `;
+
+      chatItem.appendChild(avatarDiv);
+      chatItem.appendChild(infoDiv);
+
+      // Add click handler
+      chatItem.addEventListener("click", () => {
+        selectChat(group.id, "group");
+      });
+
+      groupsList.appendChild(chatItem);
+    });
+  } else {
+    groupsList.innerHTML =
+      '<div class="chat-item"><div class="chat-name">No groups found</div></div>';
+  }
+
+  // Switch to the appropriate tab if we have results in one but not the other
+  if (data.users.length > 0 && data.groups.length === 0) {
+    switchTab("direct");
+  } else if (data.users.length === 0 && data.groups.length > 0) {
+    switchTab("groups");
+  }
 }
 
 // Set up event listeners
@@ -1451,8 +1789,21 @@ function setupEventListeners() {
     filterChats(searchUsersInput.value);
   });
 
+  // Add search placeholder to guide users
+  searchUsersInput.placeholder = "Search for users or groups...";
+
   // Create group button
   createGroupBtn.addEventListener("click", showCreateGroupModal);
+
+  // User filter in the Create Group modal
+  document.getElementById("userFilter")?.addEventListener("input", (e) => {
+    filterUserSelection(e.target.value);
+  });
+
+  // User filter in the Add Users to Chat modal
+  document.getElementById("addUserFilter")?.addEventListener("input", (e) => {
+    filterAddUserSelection(e.target.value);
+  });
 
   // Send message
   sendMessageBtn.addEventListener("click", sendMessage);
@@ -1487,7 +1838,9 @@ function setupEventListeners() {
     addUserModal.classList.add("hidden");
   });
 
-  addUserConfirmBtn.addEventListener("click", addUsersToChat);
+  addUserConfirmBtn.addEventListener("click", async () => {
+    await addUsersToChat();
+  });
 
   // Close modals when clicking overlay
   overlay.addEventListener("click", () => {
@@ -1507,6 +1860,17 @@ function setupEventListeners() {
     );
     dynamicModals.forEach((modal) => modal.remove());
   });
+
+  // Back to main menu button event
+  backToMainMenuBtn.addEventListener("click", () => {
+    // Add a small animation effect
+    backToMainMenuBtn.classList.add("clicked");
+
+    // Wait for animation to finish before redirecting
+    setTimeout(() => {
+      window.location.href = "../main.html";
+    }, 200);
+  });
 }
 
 // Create API file to handle chat functionality
@@ -1514,14 +1878,25 @@ function setupEventListeners() {
 
 // Confirm delete user
 function confirmDeleteUser(userId, userName) {
-  if (
-    confirm(
-      `Are you sure you want to delete ${
-        userId === currentUser.id ? "your account" : userName + " from chat"
-      }? This will delete all messages and chat history with this user.`
-    )
-  ) {
-    deleteUser(userId);
+  // Проверяем, в каком контексте происходит удаление
+  if (currentChat && currentChat.type === "group") {
+    // Удаление пользователя из группы
+    if (
+      confirm(`Are you sure you want to remove ${userName} from this group?`)
+    ) {
+      removeUserFromGroup(userId, currentChat.id);
+    }
+  } else {
+    // Удаление пользователя из системы (для индивидуального чата)
+    if (
+      confirm(
+        `Are you sure you want to delete ${
+          userId === currentUser.id ? "your account" : "chat with " + userName
+        }? This will delete all messages and chat history with this user.`
+      )
+    ) {
+      deleteUser(userId);
+    }
   }
 }
 
@@ -1568,12 +1943,8 @@ async function deleteUser(userId) {
     // If current chat was with deleted user, clear current chat
     if (
       currentChat &&
-      ((currentChat.type === "direct" &&
-        directChats.find(
-          (c) => c.id === currentChat.id && c.userId === userId
-        )) ||
-        (currentChat.type === "group" &&
-          !groupChats.find((c) => c.id === currentChat.id)))
+      currentChat.type === "direct" &&
+      directChats.find((c) => c.id === currentChat.id && c.userId === userId)
     ) {
       currentChat = null;
       messagesContainer.innerHTML = "";
@@ -1585,5 +1956,114 @@ async function deleteUser(userId) {
   } catch (error) {
     console.error("Error deleting user:", error);
     alert("Failed to delete user: " + error.message);
+  }
+}
+
+// Удаление пользователя из группы
+async function removeUserFromGroup(userId, groupId) {
+  try {
+    console.log(`Removing user ${userId} from group ${groupId}`);
+
+    // Проверяем, имеет ли groupId префикс 'g'
+    const formattedGroupId = groupId.startsWith("g") ? groupId : `g${groupId}`;
+    console.log(`Formatted group ID: ${formattedGroupId}`);
+
+    // Build a clear URL
+    const url = `./api/chat-api.php?action=removeuserfromgroup`;
+    console.log(`Making request to: ${url}`);
+
+    const payload = {
+      user_id: userId,
+      group_id: formattedGroupId,
+    };
+    console.log(`Request payload:`, payload);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    // Log the response status
+    console.log(`Response status: ${response.status} ${response.statusText}`);
+
+    // Get the raw response text for debugging
+    const responseText = await response.text();
+    console.log(`Raw response: ${responseText}`);
+
+    // Parse the response
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (err) {
+      console.error("Error parsing response:", err);
+      throw new Error(`Invalid JSON response: ${responseText}`);
+    }
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to remove user from group");
+    }
+
+    console.log("User removed from group successfully:", result);
+
+    // Обновляем данные группы
+    const chat = groupChats.find((c) => c.id === groupId);
+    if (chat && !result.group_deleted) {
+      // Удаляем пользователя из списка участников
+      chat.members = chat.members.filter((id) => id !== userId);
+
+      // Добавляем сообщение об удалении пользователя
+      const removedUser = users.find((u) => u.id === userId);
+      const userName = removedUser ? removedUser.name : "Unknown User";
+
+      const newMessage = {
+        sender: currentUser.id,
+        text: `${userName} has been removed from the group`,
+        timestamp: new Date(),
+      };
+
+      if (!messages[groupId]) {
+        messages[groupId] = [];
+      }
+
+      messages[groupId].push(newMessage);
+
+      // Обновляем последнее сообщение группы
+      chat.lastMessage = newMessage.text;
+      chat.timestamp = new Date();
+    }
+
+    // Если группа была удалена после удаления пользователя
+    if (result.group_deleted) {
+      // Удаляем группу из списка
+      groupChats = groupChats.filter((g) => g.id !== groupId);
+
+      // Если текущая группа была удалена, очищаем текущий чат
+      if (currentChat && currentChat.id === groupId) {
+        currentChat = null;
+        messagesContainer.innerHTML = "";
+        currentChatName.textContent = "";
+        chatStatus.textContent = "";
+        viewChatInfoBtn.classList.add("hidden");
+        addUserToChat.classList.add("hidden");
+      }
+    } else {
+      // Обновляем UI
+      renderGroups();
+      if (currentChat && currentChat.id === groupId) {
+        loadMessages(groupId);
+        updateChatHeader();
+      }
+    }
+
+    // Если панель информации открыта, обновляем её
+    if (!infoPanel.classList.contains("hidden")) {
+      showChatInfo();
+    }
+  } catch (error) {
+    console.error("Error removing user from group:", error);
+    alert("Failed to remove user from group: " + error.message);
   }
 }

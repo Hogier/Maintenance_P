@@ -9,6 +9,10 @@
   </head>
   <body>
     <div class="header-container">
+      <button id="backToMainMenu" class="back-button">
+        <span class="back-icon">←</span>
+        <span class="back-text">Главное меню</span>
+      </button>
       <div class="user-profile-account">
         <div class="profile-user-info">
           <div class="avatar-container">
@@ -34,7 +38,6 @@
             placeholder="Search users or groups"
             id="searchUsers"
           />
-          <button id="createGroupBtn">+</button>
         </div>
         <div class="tabs">
           <button class="tab-btn active" data-tab="direct">
@@ -46,6 +49,11 @@
           <!-- Direct messages will be loaded here -->
         </div>
         <div class="chat-list hidden" id="groupsList">
+          <div class="group-header">
+            <button id="createGroupBtn" class="create-group-btn">
+              + Create New Group
+            </button>
+          </div>
           <!-- Groups will be loaded here -->
         </div>
       </div>
@@ -102,6 +110,13 @@
         </div>
         <div class="form-group">
           <label>Select Users:</label>
+          <div class="user-filter-container">
+            <input
+              type="text"
+              id="userFilter"
+              placeholder="Search by name or surname..."
+            />
+          </div>
           <div class="user-selection" id="userSelection">
             <!-- Users will be loaded here -->
           </div>
@@ -116,6 +131,13 @@
         <span class="close-modal" id="closeAddUserModal">×</span>
         <h2>Add Users to Chat</h2>
         <div class="form-group">
+          <div class="user-filter-container">
+            <input
+              type="text"
+              id="addUserFilter"
+              placeholder="Search by name or surname..."
+            />
+          </div>
           <div class="user-selection" id="addUserSelection">
             <!-- Users will be loaded here -->
           </div>
