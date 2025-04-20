@@ -164,6 +164,9 @@ class PortalManager {
           this.changePage("dashboard");
           // Then open the submenu
           setTimeout(() => this.toggleSubmenu("construction"), 100);
+        } else if (page === "chat") {
+          // Перенаправляем на страницу чата
+          window.location.href = "/Maintenance_P/corporate-chat/index.html";
         } else {
           this.changePage(page);
         }

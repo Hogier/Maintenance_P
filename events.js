@@ -355,13 +355,19 @@ function updateCalendar() {
 // Функция загрузки событий
 async function loadEvents() {
   try {
-    const response = await fetch("events_db.php", {
+    // Get current user from localStorage
+    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
+
+    // Create the request with user information
+    const response = await fetch("php/events.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
         action: "getEvents",
+        userId: currentUser.id || "",
+        userFullName: currentUser.fullName || "",
       }),
     });
 

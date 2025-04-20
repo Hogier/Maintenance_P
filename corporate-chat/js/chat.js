@@ -47,6 +47,9 @@ let onlineUsersRefreshInterval = null; // Переменная для хране
 // Check if user is logged in
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    // Сбрасываем счетчик непрочитанных сообщений при открытии чата
+    resetUnreadMessagesCount();
+
     // Check login status
     const loggedIn = checkAuth();
     if (!loggedIn) {
@@ -2732,7 +2735,7 @@ function handleNewMessage(chatData) {
 
 // Добавляем вызов updateTabCounters в функцию для обновления непрочитанных сообщений
 function markMessagesAsRead(chatId) {
-  if (!chatId) return;
+  if (!chatId || !currentUser) return;
 
   // Обновляем счетчик непрочитанных сообщений
   if (chatId.startsWith("d")) {
@@ -2747,9 +2750,63 @@ function markMessagesAsRead(chatId) {
     }
   }
 
+  // Отправляем запрос к API для обновления статуса чтения сообщений
+  const chatDbId = parseInt(chatId.substring(1));
+  const chatType = chatId.startsWith("d") ? "direct" : "group";
+
+  const data = {
+    chat_id: chatDbId,
+    chat_type: chatType,
+    user_id: currentUser.id,
+  };
+
+  fetch("./api/chat-api.php?action=mark_messages_read", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => response.json())
+    .then((result) => {
+      if (result.success) {
+        console.log("Messages marked as read successfully");
+      } else {
+        console.error("Error marking messages as read:", result.error);
+      }
+    })
+    .catch((error) => {
+      console.error("Error marking messages as read:", error);
+    });
+
   // Обновляем UI
   renderChats();
 
   // Обновляем счетчики на вкладках
   updateTabCounters();
+}
+
+// Функция для сброса счетчика непрочитанных сообщений
+function resetUnreadMessagesCount() {
+  // Обнуляем счетчик непрочитанных сообщений
+  // При открытии чата считаем, что пользователь просмотрел все сообщения
+  // Внутри чата markMessagesAsRead обрабатывает прочтение сообщений
+
+  // Отправляем запрос для получения обновленного количества непрочитанных сообщений
+  try {
+    const userId = currentUser ? currentUser.id : null;
+    if (!userId) return;
+
+    // Делаем запрос к API, чтобы убедиться, что у нас актуальное значение
+    fetch(`./api/chat-api.php?action=get_unread_count&user_id=${userId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Updated unread messages count:", data);
+      })
+      .catch((error) => {
+        console.error("Error updating unread count:", error);
+      });
+  } catch (error) {
+    console.error("Error in resetUnreadMessagesCount:", error);
+  }
 }

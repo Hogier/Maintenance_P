@@ -2472,3 +2472,83 @@ h1::after {
   padding: 0 10px;
   color: #535353;
 }
+
+.cart-badge-mini {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Стили для значка уведомлений чата */
+.chat-badge-container {
+  position: absolute;
+  top: 8px;
+  left: 28px;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  z-index: 10;
+}
+
+.chat-badge-mini {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+}
+
+.nav-item:hover {
+  background-color: var(--secondary-color);
+}
+
+/* Стили для элементов меню с баджами */
+.nav-item.has-badge {
+  position: relative;
+}
+
+/* Стили для элемента меню с активным уведомлением */
+.nav-item.has-notification {
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.nav-item.has-notification:hover {
+  background-color: rgba(231, 76, 60, 0.2);
+}
+
+/* Медиа-запросы для отображения значка уведомлений на мобильных устройствах */
+@media (max-width: 768px) {
+  .chat-badge-container {
+    top: 8px;
+    left: 23px;
+  }
+
+  .chat-badge-mini {
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+  }
+}
