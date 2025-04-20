@@ -83,7 +83,6 @@ h1::after {
   border-radius: 3px;
 }
 
-
 .date-filter {
   display: flex;
   gap: 10px;
@@ -2534,9 +2533,6 @@ h1::after {
   color: #666;
 }
 
-
-
-
 .task-date-divider,
 .task-priority-divider,
 .task-status-divider,
@@ -2556,10 +2552,9 @@ h1::after {
 .task-status-divider::after,
 .task-assignment-divider::before,
 .task-assignment-divider::after {
-  content: '';
+  content: "";
   flex: 1;
   border-bottom: 1px solid #b8b8b8;
-  ;
 }
 /*
 .task-date-label {
@@ -2572,9 +2567,9 @@ h1::after {
 }
 */
 
-#tasksList .task-date-divider:first-of-type ,
-#tasksList .task-priority-divider:first-of-type ,
-#tasksList .task-status-divider:first-of-type ,
+#tasksList .task-date-divider:first-of-type,
+#tasksList .task-priority-divider:first-of-type,
+#tasksList .task-status-divider:first-of-type,
 #tasksList .task-assignment-divider:first-of-type {
   margin-top: 5px;
 }
@@ -2596,5 +2591,3 @@ h1::after {
   padding: 0 10px;
   color: #535353;
 }
-
-

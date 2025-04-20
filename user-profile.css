@@ -66,7 +66,7 @@
   font-family: Arial, sans-serif;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
-  
+
 .user-profile .profile-user-info {
   display: flex;
   justify-content: center;
@@ -74,7 +74,6 @@
   width: 75%;
   gap: 0px;
   background-color: rgba(255, 255, 255, 0.9);
-
 }
 .avatar-container {
   width: 35px;
@@ -219,8 +218,8 @@
 }
 
 .user-profile .profile-user-info p {
-color: #333;
-font-size: 12px;
+  color: #333;
+  font-size: 12px;
 }
 
 .user-tasks h3 {
@@ -294,7 +293,6 @@ font-size: 12px;
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-
 .modal-content {
   background-color: #fefefe;
   margin: 15% auto;
@@ -316,7 +314,6 @@ font-size: 12px;
   font-weight: bold;
   cursor: pointer;
 }
-
 
 .drop-area {
   border: 2px dashed #ccc;
@@ -409,7 +406,7 @@ font-size: 12px;
 .profile-task-status {
   margin-bottom: 5px;
   display: flex;
-  align-items:flex-start;
+  align-items: flex-start;
 }
 
 .profile-task-status-text {
@@ -420,7 +417,8 @@ font-size: 12px;
   line-height: 34px;
 }
 
-.status-container, .status-container-maintenance {
+.status-container,
+.status-container-maintenance {
   position: absolute;
   top: 0;
   left: 0;
@@ -434,33 +432,36 @@ font-size: 12px;
   width: 120px;
   line-height: 26px;
   text-align: center;
-
 }
-  
+
 .status-container-maintenance {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.pending-active, .in-progress-active, .completed-active {
+.pending-active,
+.in-progress-active,
+.completed-active {
   box-shadow: 0 0 10px rgb(163, 177, 187);
 }
 
-.status-container-maintenance.pending:hover, .pending-active {
+.status-container-maintenance.pending:hover,
+.pending-active {
   background-color: #ff5445fc;
   color: #fff;
 }
 
-.status-container-maintenance.in-progress:hover, .in-progress-active {
+.status-container-maintenance.in-progress:hover,
+.in-progress-active {
   background-color: #e1d400;
   color: #fff;
 }
 
-.status-container-maintenance.completed:hover, .completed-active {
+.status-container-maintenance.completed:hover,
+.completed-active {
   background-color: #12bb1a;
   color: #fff;
 }
-
 
 .status-edit {
   visibility: hidden;
@@ -488,7 +489,7 @@ font-size: 12px;
   opacity: 1; /* Конечная прозрачность */
 }
 
-.status-edit.pending {  
+.status-edit.pending {
   background-color: #ff5445fc;
   color: #fff;
 }
@@ -516,7 +517,6 @@ font-size: 12px;
   position: relative;
   z-index: 3200;
 }
-
 
 .task-assigned {
   margin-bottom: 10px;
@@ -764,7 +764,6 @@ font-size: 12px;
   transition: max-height 0.3s ease;
 }
 
-
 .settings-icon {
   position: absolute;
   top: 12px;
@@ -787,11 +786,13 @@ font-size: 12px;
   position: fixed;
   top: 0;
   right: -100px;
-  z-index: 3001; 
+  z-index: 3001;
   transition: right 0.6s ease;
 }
 
-.filter-button, .sort-button, .search-button {
+.filter-button,
+.sort-button,
+.search-button {
   width: 50px;
   height: 50px;
   position: relative;
@@ -806,17 +807,17 @@ font-size: 12px;
   align-items: center;
   margin-bottom: 18px;
   transition: width 0.3s ease, height 0.3s ease;
-
 }
 
-.filter-button img, .sort-button img, .search-button img {
+.filter-button img,
+.sort-button img,
+.search-button img {
   position: absolute;
   bottom: 10px;
   right: 10px;
   width: 28px;
   height: 28px;
   cursor: pointer;
-
 }
 
 .filters-list {
@@ -826,7 +827,6 @@ font-size: 12px;
   width: 280px;
   right: 46px;
   padding: 10px;
-  
 }
 
 .filters-list label {
@@ -863,12 +863,12 @@ font-size: 12px;
 button.order {
   position: relative;
   display: inline-block;
-    /*left: -30px;*/
-    /*top: 10px;*/
-    width: 30px;
-    height: 30px;
-    border: 0px;
-    background: rgba(0, 0, 0, 0);
+  /*left: -30px;*/
+  /*top: 10px;*/
+  width: 30px;
+  height: 30px;
+  border: 0px;
+  background: rgba(0, 0, 0, 0);
 }
 
 button.order img {
@@ -922,9 +922,6 @@ button.order img {
   text-align: center;
   vertical-align: middle;
 }
-
-
-
 
 .search-input {
   position: absolute;
@@ -1021,7 +1018,10 @@ button.order img {
   background-color: #1976d2;
 }
 
-.status-container-maintenance:not(.pending-active):not(.in-progress-active):not(.completed-active) ~ .profile-task-item {
+.status-container-maintenance:not(.pending-active):not(.in-progress-active):not(
+    .completed-active
+  )
+  ~ .profile-task-item {
   margin-bottom: 10px; /* Уменьшаем отступ */
 }
 
@@ -1033,12 +1033,13 @@ button.order img {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 3px solid rgb(150, 167, 180) ;
+  border: 3px solid rgb(150, 167, 180);
   opacity: 0;
   transition: opacity 0.3s ease, border 0.3s ease;
 }
 
-.profile-hour-hand, .profile-minute-hand {
+.profile-hour-hand,
+.profile-minute-hand {
   position: absolute;
   background-color: rgb(150, 167, 180);
   transform-origin: bottom center;
@@ -1052,7 +1053,7 @@ button.order img {
   width: 1px;
   height: 4px;
   transform: translate(-50%, -50%) rotate(45deg);
-  animation: rotateHourHand 20s linear infinite; 
+  animation: rotateHourHand 20s linear infinite;
 }
 
 .profile-minute-hand {
@@ -1072,7 +1073,6 @@ button.order img {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
 
 @keyframes rotateHourHand {
   from {

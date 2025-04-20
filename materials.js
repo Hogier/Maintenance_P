@@ -249,6 +249,13 @@ function loadMaterialsContent() {
             <div class="user-orders" id="userOrdersContainer">
                 <div class="user-orders-header">
                     <h3>Your previous orders</h3>
+                    <div class="orders-sorting">
+                        <select id="orderSortBy" class="order-sort-select">
+                            <option value="date_desc">Newest first</option>
+                            <option value="date_asc">Oldest first</option>
+                            <option value="status">Sort by status</option>
+                        </select>
+                    </div>
                     <button type="button" class="toggle-orders-btn" id="toggleOrdersBtn">
                         <i class="fas ${toggleIconClass}" id="toggleOrdersIcon"></i>
                         <span id="toggleOrdersText">${toggleText}</span>
@@ -1583,6 +1590,18 @@ function loadUserOrders() {
 
   const userId = getUserIdFromSession();
 
+  // Initialize the sort change event handler
+  const sortSelect = document.getElementById("orderSortBy");
+  if (sortSelect) {
+    sortSelect.addEventListener("change", function () {
+      // If we already have orders loaded, just re-sort and display them
+      const ordersData = window.cachedOrders;
+      if (ordersData && ordersData.length > 0) {
+        displayUserOrders(ordersData);
+      }
+    });
+  }
+
   if (!userId) {
     console.warn("User ID not found in session, checking localStorage");
     // Fallback to localStorage
@@ -1618,6 +1637,8 @@ function fetchUserOrders(userId, ordersList) {
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
+        // Cache the orders data for re-sorting
+        window.cachedOrders = data.data;
         displayUserOrders(data.data);
       } else {
         ordersList.innerHTML = `<div class="error-message">${
@@ -1646,6 +1667,12 @@ function displayUserOrders(orders) {
     if (toggleBtn) {
       toggleBtn.style.display = "none";
     }
+
+    // Скрываем сортировку, если нет заказов
+    const sortSelect = document.getElementById("orderSortBy");
+    if (sortSelect) {
+      sortSelect.style.display = "none";
+    }
     return;
   }
 
@@ -1655,9 +1682,46 @@ function displayUserOrders(orders) {
     toggleBtn.style.display = "flex";
   }
 
+  // Показываем сортировку, если она была скрыта
+  const sortSelect = document.getElementById("orderSortBy");
+  if (sortSelect) {
+    sortSelect.style.display = "block";
+  }
+
+  // Sort orders based on current sorting selection
+  const sortValue = sortSelect ? sortSelect.value : "date_desc";
+
+  // Sort the orders array based on the selected sort option
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (sortValue === "date_desc") {
+      return new Date(b.created_at) - new Date(a.created_at);
+    } else if (sortValue === "date_asc") {
+      return new Date(a.created_at) - new Date(b.created_at);
+    } else if (sortValue === "status") {
+      // Define status priority order (you can adjust as needed)
+      const statusPriority = {
+        pending: 1,
+        processing: 2,
+        approved: 3,
+        delivered: 4,
+        completed: 5,
+        rejected: 6,
+        cancelled: 7,
+      };
+
+      // Compare by status priority, then by date if statuses are the same
+      if (statusPriority[a.status] !== statusPriority[b.status]) {
+        return statusPriority[a.status] - statusPriority[b.status];
+      } else {
+        return new Date(b.created_at) - new Date(a.created_at);
+      }
+    }
+    return 0;
+  });
+
   let html = '<div class="orders-grid">';
 
-  orders.forEach((order) => {
+  sortedOrders.forEach((order) => {
     // Format date
     const orderDate = new Date(order.created_at);
     const formattedDate =

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Message Example</title>
+    <link rel="stylesheet" href="css/modern-chat.css" />
+    <style>
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+        padding: 20px;
+        background-color: #f5f7fa;
+      }
+
+      .messages-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+      }
+
+      h1 {
+        text-align: center;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        font-size: 20px;
+      }
+
+      .message {
+        max-width: 80%;
+      }
+
+      .message.outgoing {
+        align-self: flex-end;
+      }
+
+      .message.incoming {
+        align-self: flex-start;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Пример компактного отображения сообщений</h1>
+
+    <div class="messages-container">
+      <!-- Группа 1: сообщения от другого пользователя -->
+      <div
+        class="message incoming first-in-group last-in-group"
+        data-sender-id="user1"
+      >
+        <div class="message-header">
+          <div class="chat-avatar">
+            <span>DP</span>
+          </div>
+          <div class="message-sender">Dmytro Palchykov</div>
+        </div>
+        <div class="message-bubble">Hello!</div>
+        <div class="message-time">13:13</div>
+      </div>
+
+      <!-- Группа 2: сообщения от текущего пользователя -->
+      <div
+        class="message outgoing first-in-group last-in-group"
+        data-sender-id="currentUser"
+      >
+        <div class="message-bubble">как твои дела</div>
+        <div class="message-time">13:18</div>
+      </div>
+
+      <!-- Группа 3: серия сообщений от другого пользователя -->
+      <div class="message incoming first-in-group" data-sender-id="user1">
+        <div class="message-header">
+          <div class="chat-avatar">
+            <span>DP</span>
+          </div>
+          <div class="message-sender">Dmytro Palchykov</div>
+        </div>
+        <div class="message-bubble">я в порядке как ты</div>
+      </div>
+
+      <div class="message incoming same-sender" data-sender-id="user1">
+        <div class="message-bubble">привет</div>
+      </div>
+
+      <div
+        class="message incoming same-sender last-in-group"
+        data-sender-id="user1"
+      >
+        <div class="message-bubble">пока</div>
+        <div class="message-time">13:35</div>
+      </div>
+
+      <!-- Группа 4: сообщение от текущего пользователя -->
+      <div
+        class="message outgoing first-in-group last-in-group"
+        data-sender-id="currentUser"
+      >
+        <div class="message-bubble">что ты делаешь?</div>
+        <div class="message-time">13:40</div>
+      </div>
+
+      <!-- Группа 5: длинное сообщение для проверки -->
+      <div
+        class="message incoming first-in-group last-in-group"
+        data-sender-id="user2"
+      >
+        <div class="message-header">
+          <div class="chat-avatar">
+            <span>JS</span>
+          </div>
+          <div class="message-sender">John Smith</div>
+        </div>
+        <div class="message-bubble">
+          Это более длинное сообщение, чтобы проверить, как выглядит отображение
+          имени и аватара. Текст должен корректно отображаться, не перекрывая
+          информацию о пользователе.
+        </div>
+        <div class="message-time">13:45</div>
+      </div>
+    </div>
+  </body>
+</html>

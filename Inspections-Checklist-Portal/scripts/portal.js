@@ -6,6 +6,7 @@ class PortalManager {
     // Check user access before initializing the portal
     if (checkPortalAccess()) {
       this.currentPage = "dashboard";
+      this.isScrolling = false;
       this.init();
     }
   }
@@ -25,6 +26,9 @@ class PortalManager {
 
     // Инициализация видимости элементов фильтрации и сортировки
     this.updateFilterSortVisibility(this.currentPage);
+
+    // Track scrolling state to prevent submenu toggling during scroll
+    this.setupScrollTracking();
   }
 
   // Метод для инициализации счетчика новых заказов
@@ -173,16 +177,33 @@ class PortalManager {
         const submenu = item.closest(".submenu");
         const page = submenu.id.replace("-submenu", "");
         this.changePage(page, tab);
+
+        // Check if we're on large screen (> 1024px)
+        const isLargeScreen = window.innerWidth > 1024;
+
+        // On large screens, keep submenu open
+        if (isLargeScreen) {
+          // Make sure the submenu stays visible
+          submenu.classList.add("active");
+          // Keep the parent menu item active
+          const parentMenuItem = document.querySelector(
+            `[data-page="${page}"]`
+          );
+          if (parentMenuItem) {
+            parentMenuItem.classList.add("active");
+          }
+        }
       });
     });
 
     // Back buttons in submenus
     document.querySelectorAll(".submenu .back-button").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation(); // Добавляем stopPropagation для предотвращения всплытия события
         const submenu = button.closest(".submenu");
         const page = submenu.id.replace("-submenu", "");
         this.toggleSubmenu(page);
-        this.changePage("dashboard");
+        this.changePage("dashboard", null, true); // Добавляем третий параметр для указания, что это переход из подменю
       });
     });
 
@@ -201,12 +222,40 @@ class PortalManager {
     const menuItem = document.querySelector(`[data-page="${page}"]`);
 
     if (submenu && menuItem) {
+      // Check if sidebar is small screen mode
+      const isSmallScreen = window.innerWidth <= 1024;
+
+      if (isSmallScreen) {
+        // On small screens, make sure the sidebar is visible before showing submenu
+        const sidebar = document.querySelector(".sidebar");
+        if (!sidebar.classList.contains("active")) {
+          document.querySelector(".mobile-menu-button").click();
+        }
+      }
+
+      // If this is triggered by a scroll action, don't toggle the submenu
+      if (this.isScrolling) {
+        return;
+      }
+
+      // Проверяем, закрывается ли подменю (если оно уже активно)
+      const isClosingSubmenu = submenu.classList.contains("active");
+
       submenu.classList.toggle("active");
       menuItem.classList.toggle("active");
+
+      // Если мы на мобильном устройстве и только что закрыли подменю,
+      // то убедимся, что основное меню остается открытым
+      if (isSmallScreen && isClosingSubmenu) {
+        const sidebar = document.querySelector(".sidebar");
+        if (!sidebar.classList.contains("active")) {
+          document.querySelector(".mobile-menu-button").click();
+        }
+      }
     }
   }
 
-  async changePage(page, tab = null) {
+  async changePage(page, tab = null, fromSubmenu = false) {
     console.log("changePage called with page:", page);
 
     // Update active menu item
@@ -222,6 +271,24 @@ class PortalManager {
 
     const section = document.getElementById(`${page}-section`);
     section.classList.add("active");
+
+    // Check if we're on large screen (> 1024px)
+    const isLargeScreen = window.innerWidth > 1024;
+
+    // Don't close sidebar on large screens
+    if (isLargeScreen) {
+      // Save current page to session storage without closing the menu
+      sessionStorage.setItem("currentPage", page);
+    } else {
+      // На малых экранах, закрываем мобильное меню при смене страниц, но только если это не переход из подменю
+      const sidebar = document.querySelector(".sidebar");
+      if (sidebar.classList.contains("active")) {
+        // Не закрываем меню если это переход из подменю или если это родительский пункт меню
+        if (!fromSubmenu && page !== "inspections" && page !== "construction") {
+          document.querySelector(".mobile-menu-button").click();
+        }
+      }
+    }
 
     // Load component if not loaded yet
     if (!section.hasAttribute("data-loaded")) {
@@ -242,9 +309,6 @@ class PortalManager {
 
     this.currentPage = page;
     console.log("Current page updated to:", this.currentPage);
-
-    // Сохраняем текущую страницу в sessionStorage для восстановления при перезагрузке
-    sessionStorage.setItem("currentPage", page);
 
     // Close submenus if they're open
     if (page !== "inspections" && page !== "construction") {
@@ -543,6 +607,34 @@ class PortalManager {
         }
       }
     }
+  }
+
+  // Add scroll tracking
+  setupScrollTracking() {
+    const sidebar = document.querySelector(".sidebar");
+
+    sidebar.addEventListener("scroll", () => {
+      if (!this.isScrolling) {
+        this.isScrolling = true;
+
+        // Reset after scrolling stops
+        clearTimeout(this.scrollTimer);
+        this.scrollTimer = setTimeout(() => {
+          this.isScrolling = false;
+        }, 100);
+      }
+    });
+
+    // Also track touch events for mobile
+    sidebar.addEventListener("touchmove", () => {
+      this.isScrolling = true;
+
+      // Reset after touch ends
+      clearTimeout(this.scrollTimer);
+      this.scrollTimer = setTimeout(() => {
+        this.isScrolling = false;
+      }, 100);
+    });
   }
 }
 

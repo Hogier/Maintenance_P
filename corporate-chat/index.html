@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corporate Chat | Alcuin School</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/modern-chat.css" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="header-container">
+      <button id="backToMainMenu" class="back-button">
+        <span class="back-icon">←</span>
+        <span class="back-text">Главное меню</span>
+      </button>
+      <div class="user-profile-account">
+        <div class="profile-user-info">
+          <div class="avatar-container">
+            <span id="userAvatar">👤</span>
+          </div>
+          <div class="user-details">
+            <span id="userName"></span>
+            <span class="user-department"></span>
+          </div>
+        </div>
+        <button id="logoutButton">
+          <span class="logout-icon">↪</span>
+          <span class="logout-text">Logout</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-container">
+      <div class="sidebar">
+        <div class="search-box">
+          <input
+            type="text"
+            placeholder="Search users or groups"
+            id="searchUsers"
+          />
+        </div>
+
+        <!-- Новый раздел для отображения пользователей онлайн -->
+        <div class="online-users-section">
+          <h3 class="online-users-title">Online Users</h3>
+          <div class="online-users-container" id="onlineUsersContainer">
+            <!-- Онлайн пользователи будут отображаться здесь -->
+          </div>
+          <div class="online-users-navigation">
+            <button class="nav-button prev" id="prevOnlineUsers">
+              &#10094;
+            </button>
+            <button class="nav-button next" id="nextOnlineUsers">
+              &#10095;
+            </button>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="direct">
+            Direct Messages
+          </button>
+          <button class="tab-btn" data-tab="groups">Groups</button>
+        </div>
+        <div class="chat-list" id="directMessagesList">
+          <!-- Direct messages will be loaded here -->
+        </div>
+        <div class="chat-list hidden" id="groupsList">
+          <div class="group-header">
+            <button id="createGroupBtn" class="create-group-btn">
+              + Create New Group
+            </button>
+          </div>
+          <!-- Groups will be loaded here -->
+        </div>
+      </div>
+
+      <div class="main-chat">
+        <div class="chat-header">
+          <div class="chat-info">
+            <h2 id="currentChatName">Select a chat to start messaging</h2>
+            <span id="chatStatus"></span>
+          </div>
+          <div class="chat-actions">
+            <button id="addUserToChat" class="hidden">Add User</button>
+            <button id="viewChatInfo">Info</button>
+          </div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+          <!-- Messages will be loaded here -->
+          <div class="welcome-message">
+            <img src="images/AlcuinSchool_800x600.jpg" alt="Alcuin School" />
+            <h3>Welcome to Corporate Chat</h3>
+            <p>Select a conversation from the sidebar to start chatting</p>
+          </div>
+        </div>
+
+        <div class="message-input-container">
+          <div class="file-upload-wrapper">
+            <div class="file-upload-button">
+              <i class="fa fa-paperclip"></i>
+              <div class="file-upload-progress">
+                <div class="file-upload-progress-bar"></div>
+              </div>
+            </div>
+            <input
+              type="file"
+              class="file-upload-input"
+              id="fileUpload"
+              accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+            />
+            <div class="upload-preview">
+              <div class="upload-preview-content">
+                <div class="upload-preview-icon">📎</div>
+                <div class="upload-preview-details">
+                  <div class="upload-preview-name">Attach a file</div>
+                  <div class="upload-preview-size">Max size: 10MB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <textarea
+            id="messageInput"
+            placeholder="Type a message..."
+            disabled
+          ></textarea>
+          <button id="sendMessage" disabled>Send</button>
+        </div>
+      </div>
+
+      <div class="info-panel hidden" id="infoPanel">
+        <div class="info-header">
+          <h3>Chat Information</h3>
+          <button id="closeInfoPanel">×</button>
+        </div>
+        <div class="info-content" id="infoPanelContent">
+          <!-- Chat information will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for creating a new group -->
+    <div class="modal hidden" id="createGroupModal">
+      <div class="modal-content">
+        <span class="close-modal" id="closeGroupModal">×</span>
+        <h2>Create New Group</h2>
+        <div class="form-group">
+          <label for="groupName">Group Name:</label>
+          <input type="text" id="groupName" placeholder="Enter group name" />
+        </div>
+        <div class="form-group">
+          <label>Select Users:</label>
+          <div class="user-filter-container">
+            <input
+              type="text"
+              id="userFilter"
+              placeholder="Search by name or surname..."
+            />
+          </div>
+          <div class="user-selection" id="userSelection">
+            <!-- Users will be loaded here -->
+          </div>
+        </div>
+        <button id="createGroupConfirm">Create Group</button>
+      </div>
+    </div>
+
+    <!-- Modal for adding users to an existing chat -->
+    <div class="modal hidden" id="addUserModal">
+      <div class="modal-content">
+        <span class="close-modal" id="closeAddUserModal">×</span>
+        <h2>Add Users to Chat</h2>
+        <div class="form-group">
+          <div class="user-filter-container">
+            <input
+              type="text"
+              id="addUserFilter"
+              placeholder="Search by name or surname..."
+            />
+          </div>
+          <div class="user-selection" id="addUserSelection">
+            <!-- Users will be loaded here -->
+          </div>
+        </div>
+        <button id="addUserConfirm">Add Selected Users</button>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="overlay"></div>
+
+    <script src="../database.js"></script>
+    <script src="../authUser.js"></script>
+    <script src="js/user-profile-init.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/chat-ui-enhancements.js"></script>
+    <script src="js/chat-file-upload.js"></script>
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </body>
+</html>

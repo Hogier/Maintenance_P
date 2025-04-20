@@ -109,10 +109,12 @@ let filters = {
 };
 
 
+
 let tasksStatistics = {
   totalTasks: 0,
   pendingTasks: 0,
   inProgressTasks: 0,
+
   completedTasks: 0
 };
 

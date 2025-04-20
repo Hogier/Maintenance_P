@@ -708,16 +708,58 @@
 
 .user-orders-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  position: relative;
 }
 
 .user-orders-header h3 {
-  font-size: 18px;
   margin: 0;
-  color: #2c3e50;
+  font-size: 18px;
+  color: #333;
+}
+
+/* Styles for the orders sorting dropdown */
+.orders-sorting {
+  margin: 0 15px;
+  flex-grow: 1;
+  max-width: 200px;
+}
+
+.order-sort-select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 13px;
+  width: 100%;
+  color: #555;
+}
+
+.order-sort-select:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 3px rgba(33, 150, 243, 0.3);
+}
+
+/* Style for sorting option on mobile */
+@media (max-width: 768px) {
+  .user-orders-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .orders-sorting {
+    margin: 10px 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .toggle-orders-btn {
+    margin-top: 10px;
+    align-self: flex-end;
+  }
 }
 
 .toggle-orders-btn {

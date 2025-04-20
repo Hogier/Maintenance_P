@@ -6,5 +6,6 @@
   },
   "liveServer.settings.port": 5504,
   "liveServer.settings.root": "/",
-  "liveServer.settings.CustomBrowser": "chrome"
+  "liveServer.settings.CustomBrowser": "chrome",
+  "terminal.integrated.defaultLocation": "view"
 }
