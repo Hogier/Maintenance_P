@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Corporate Chat | Alcuin School</title>
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/modern-chat.css" />
     <link rel="stylesheet" href="../main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div class="header-container">
@@ -39,6 +46,23 @@
             id="searchUsers"
           />
         </div>
+
+        <!-- Новый раздел для отображения пользователей онлайн -->
+        <div class="online-users-section">
+          <h3 class="online-users-title">Online Users</h3>
+          <div class="online-users-container" id="onlineUsersContainer">
+            <!-- Онлайн пользователи будут отображаться здесь -->
+          </div>
+          <div class="online-users-navigation">
+            <button class="nav-button prev" id="prevOnlineUsers">
+              &#10094;
+            </button>
+            <button class="nav-button next" id="nextOnlineUsers">
+              &#10095;
+            </button>
+          </div>
+        </div>
+
         <div class="tabs">
           <button class="tab-btn active" data-tab="direct">
             Direct Messages
@@ -73,12 +97,36 @@
         <div class="messages-container" id="messagesContainer">
           <!-- Messages will be loaded here -->
           <div class="welcome-message">
+            <img src="images/AlcuinSchool_800x600.jpg" alt="Alcuin School" />
             <h3>Welcome to Corporate Chat</h3>
             <p>Select a conversation from the sidebar to start chatting</p>
           </div>
         </div>
 
         <div class="message-input-container">
+          <div class="file-upload-wrapper">
+            <div class="file-upload-button">
+              <i class="fa fa-paperclip"></i>
+              <div class="file-upload-progress">
+                <div class="file-upload-progress-bar"></div>
+              </div>
+            </div>
+            <input
+              type="file"
+              class="file-upload-input"
+              id="fileUpload"
+              accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+            />
+            <div class="upload-preview">
+              <div class="upload-preview-content">
+                <div class="upload-preview-icon">📎</div>
+                <div class="upload-preview-details">
+                  <div class="upload-preview-name">Attach a file</div>
+                  <div class="upload-preview-size">Max size: 10MB</div>
+                </div>
+              </div>
+            </div>
+          </div>
           <textarea
             id="messageInput"
             placeholder="Type a message..."
@@ -152,5 +200,12 @@
     <script src="../authUser.js"></script>
     <script src="js/user-profile-init.js"></script>
     <script src="js/chat.js"></script>
+    <script src="js/chat-ui-enhancements.js"></script>
+    <script src="js/chat-file-upload.js"></script>
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
   </body>
 </html>

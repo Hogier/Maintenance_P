@@ -29,6 +29,10 @@ const userDepartmentElement = document.querySelector(".user-department");
 const userAvatarElement = document.getElementById("userAvatar");
 const logoutButton = document.getElementById("logoutButton");
 const backToMainMenuBtn = document.getElementById("backToMainMenu");
+// Элементы для раздела онлайн-пользователей
+const onlineUsersContainer = document.getElementById("onlineUsersContainer");
+const prevOnlineUsersBtn = document.getElementById("prevOnlineUsers");
+const nextOnlineUsersBtn = document.getElementById("nextOnlineUsers");
 
 // State variables
 let currentUser = null;
@@ -38,6 +42,7 @@ let directChats = [];
 let groupChats = [];
 let messages = {};
 let onlineStatusInterval = null; // Переменная для хранения интервала обновления статуса
+let onlineUsersRefreshInterval = null; // Переменная для хранения интервала обновления блока онлайн-пользователей
 
 // Check if user is logged in
 document.addEventListener("DOMContentLoaded", async () => {
@@ -127,6 +132,12 @@ async function initializeChat() {
 
   renderChats();
   setupEventListeners();
+
+  // Настраиваем навигацию для раздела онлайн-пользователей
+  setupOnlineUsersNavigation();
+
+  // Скрываем кнопку Info, пока не выбран чат
+  viewChatInfoBtn.classList.add("hidden");
 
   // Запускаем обновление статуса
   startStatusUpdates();
@@ -772,6 +783,11 @@ function selectChat(chatId, chatType) {
   messageInput.disabled = false;
   sendMessageBtn.disabled = false;
 
+  // If info panel is open, update its content for the new chat
+  if (!infoPanel.classList.contains("hidden")) {
+    showChatInfo();
+  }
+
   // Clear unread count
   if (chatType === "direct") {
     const chat = directChats.find((c) => c.id === chatId);
@@ -807,6 +823,7 @@ function updateChatHeader() {
     currentChatName.textContent = "Select a chat to start messaging";
     chatStatus.textContent = "";
     addUserToChat.classList.add("hidden");
+    viewChatInfoBtn.classList.add("hidden"); // Скрываем кнопку Info
     messageInput.disabled = true;
     sendMessageBtn.disabled = true;
     return;
@@ -815,6 +832,7 @@ function updateChatHeader() {
   messageInput.disabled = false;
   sendMessageBtn.disabled = false;
   messageInput.focus();
+  viewChatInfoBtn.classList.remove("hidden"); // Показываем кнопку Info, когда выбран чат
 
   if (currentChat.type === "direct") {
     // Найдем полную информацию о прямом чате
@@ -871,8 +889,12 @@ function updateChatHeader() {
 
 // Load chat messages
 async function loadMessages(chatId) {
+  if (!chatId) return;
+
   try {
-    // Make API call to get messages from server
+    // Mark messages as read when loading
+    markMessagesAsRead(chatId);
+
     const response = await fetch(
       `./api/chat-api.php?action=get_messages&chat_id=${chatId}`
     );
@@ -886,23 +908,57 @@ async function loadMessages(chatId) {
       throw new Error(result.error || "Failed to load messages");
     }
 
-    console.log("Messages loaded successfully:", result);
+    if (result.messages) {
+      // Fetch file information for messages that have files
+      const messagesWithFiles = result.messages.filter((msg) => msg.has_file);
 
-    // Update local messages data
-    if (result.messages && Array.isArray(result.messages)) {
+      if (messagesWithFiles.length > 0) {
+        // Fetch file data for each message with has_file flag
+        const filePromises = messagesWithFiles.map(async (msg) => {
+          try {
+            const fileResponse = await fetch(
+              `./api/chat-api.php?action=get_file_by_message&message_id=${msg.id}`
+            );
+
+            if (!fileResponse.ok) {
+              throw new Error(`Failed to load file: ${fileResponse.status}`);
+            }
+
+            const fileResult = await fileResponse.json();
+            if (fileResult.success && fileResult.file) {
+              // Attach file data to the message object
+              return {
+                messageId: msg.id,
+                file: fileResult.file,
+              };
+            }
+          } catch (err) {
+            console.error(`Error loading file for message ${msg.id}:`, err);
+          }
+          return null;
+        });
+
+        // Wait for all file data requests to complete
+        const fileResults = await Promise.all(filePromises);
+
+        // Attach file data to corresponding messages
+        fileResults.forEach((fileData) => {
+          if (fileData) {
+            const msgIndex = result.messages.findIndex(
+              (msg) => msg.id === fileData.messageId
+            );
+            if (msgIndex !== -1) {
+              result.messages[msgIndex].file = fileData.file;
+            }
+          }
+        });
+      }
+
       messages[chatId] = result.messages;
+      renderMessages(chatId);
     }
-
-    // Render messages
-    renderMessages(chatId);
   } catch (error) {
     console.error("Error loading messages:", error);
-    messagesContainer.innerHTML = `
-      <div class="error-message">
-        <h3>Error loading messages</h3>
-        <p>${error.message}</p>
-      </div>
-    `;
   }
 }
 
@@ -1019,15 +1075,14 @@ async function createNewDirectChat(user) {
 
     // If we didn't find an existing chat, create one
     const createResponse = await fetch(
-      `./api/chat-api.php?action=send_message`,
+      `/Maintenance_P/corporate-chat/api/chat-api.php?action=create_direct_chat`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          chat_id: `dnew_${user.id}`,
-          message: "Hello!", // Initial message to create chat
+          user_id: user.id,
         }),
       }
     );
@@ -1206,140 +1261,77 @@ function renderMessages(chatId) {
 
   messagesContainer.innerHTML = "";
   let lastSenderId = null;
+  let lastMessageTime = null;
 
-  messages[chatId].forEach((message) => {
+  messages[chatId].forEach((message, index) => {
     const isCurrentUser = message.sender === currentUser.id;
     const isPending = message.pending === true;
 
     const messageDiv = document.createElement("div");
     messageDiv.className = `message ${isCurrentUser ? "outgoing" : "incoming"}`;
 
-    // Get sender info for avatar and name
-    let sender = null;
-    let senderName = "";
+    // Добавляем атрибуты для группировки сообщений
+    messageDiv.setAttribute("data-sender-id", message.sender);
 
-    if (!isCurrentUser) {
-      if (currentChat.type === "direct") {
-        // Для прямого чата, просто найдем пользователя по ID
-        const chat = directChats.find((c) => c.id === currentChat.id);
-        if (chat) {
-          sender = users.find((u) => u.id === chat.userId);
-          if (sender) {
-            senderName = sender.name;
-            // Предварительно загрузим фото пользователя, если его нет
-            if (!sender.photoUrl) {
-              getUserPhotoUrl(sender.id).then((photoUrl) => {
-                if (photoUrl) {
-                  sender.photoUrl = photoUrl;
-                  // Обновим аватар, если он есть на странице
-                  const avatarElement =
-                    messageDiv.querySelector(".chat-avatar");
-                  if (avatarElement) {
-                    const img = document.createElement("img");
-                    img.src = photoUrl;
-                    img.alt = sender.name;
-                    img.style.width = "100%";
-                    img.style.height = "100%";
-                    img.style.objectFit = "cover";
-                    avatarElement.textContent = "";
-                    avatarElement.appendChild(img);
-                  }
-                }
-              });
-            }
-          } else {
-            senderName = "Unknown User";
-          }
-        }
-      } else {
-        // Для группового чата, найдем пользователя в списке пользователей
-        sender = users.find((u) => u.id === message.sender);
-        senderName = sender ? sender.name : "Unknown User";
+    // Проверка, это первое сообщение от пользователя или нет
+    const isSameSender = lastSenderId === message.sender;
 
-        // Предварительно загрузим фото пользователя, если его нет
-        if (sender && !sender.photoUrl) {
-          getUserPhotoUrl(sender.id).then((photoUrl) => {
-            if (photoUrl) {
-              sender.photoUrl = photoUrl;
-              // Обновим аватар, если он есть на странице
-              const avatarElement = messageDiv.querySelector(".chat-avatar");
-              if (avatarElement) {
-                const img = document.createElement("img");
-                img.src = photoUrl;
-                img.alt = sender.name;
-                img.style.width = "100%";
-                img.style.height = "100%";
-                img.style.objectFit = "cover";
-                avatarElement.textContent = "";
-                avatarElement.appendChild(img);
-              }
-            }
-          });
-        }
-      }
+    // Проверка времени сообщений для группировки
+    const messageTime = new Date(message.timestamp);
+    const isTimeClose =
+      lastMessageTime && messageTime - lastMessageTime < 5 * 60 * 1000; // 5 минут
+
+    // Добавляем классы для группировки
+    if (isSameSender && isTimeClose) {
+      messageDiv.classList.add("same-sender");
     } else {
-      sender = {
-        id: currentUser.id,
-        name: currentUser.fullName || "You",
-        photoUrl: null, // Мы загрузим его, если нужно
-      };
-      senderName = "You";
+      const messageHeader = document.createElement("div");
+      messageHeader.className = "message-header";
 
-      // Загрузим фото текущего пользователя
-      getUserPhotoFromServer().then((photoUrl) => {
-        if (photoUrl) {
-          sender.photoUrl = photoUrl;
-          // Не нужно обновлять аватар для сообщений текущего пользователя,
-          // так как они не отображаются
-        }
-      });
-    }
-
-    // Create message container with avatar for incoming messages
-    if (!isCurrentUser) {
-      // Show sender name only on first message from this sender
-      const showSenderInfo = message.sender !== lastSenderId;
-
-      // Create avatar if new sender or after a gap
-      if (showSenderInfo && sender) {
-        const headerDiv = document.createElement("div");
-        headerDiv.className = "message-header";
-
-        // Add avatar
-        if (sender) {
-          const avatarElement = createAvatarElement(sender, "small");
-          headerDiv.appendChild(avatarElement);
-        }
+      // Get user info for the sender
+      const sender = users.find((user) => user.id === message.sender);
+      if (sender) {
+        // Create avatar
+        const avatar = createAvatarElement(sender, "small");
+        messageHeader.appendChild(avatar);
 
         // Add sender name
-        const senderNameDiv = document.createElement("div");
-        senderNameDiv.className = "message-sender";
-        senderNameDiv.textContent = senderName;
-        headerDiv.appendChild(senderNameDiv);
+        const senderName = document.createElement("div");
+        senderName.className = "message-sender";
+        senderName.textContent = sender.fullName || `User ${sender.id}`;
+        messageHeader.appendChild(senderName);
 
-        messageDiv.appendChild(headerDiv);
+        messageDiv.appendChild(messageHeader);
       }
     }
 
-    // Add message content
-    const bubbleDiv = document.createElement("div");
-    bubbleDiv.className = `message-bubble ${isPending ? "pending" : ""}`;
-    bubbleDiv.textContent = message.text;
-    messageDiv.appendChild(bubbleDiv);
+    const messageBubble = document.createElement("div");
+    messageBubble.className = "message-bubble";
+    if (isPending) {
+      messageBubble.classList.add("pending");
+    }
+    messageBubble.textContent = message.text;
+    messageDiv.appendChild(messageBubble);
 
-    // Add timestamp
-    const timeDiv = document.createElement("div");
-    timeDiv.className = "message-time";
-    timeDiv.textContent = isPending
-      ? "Sending..."
-      : formatTime(message.timestamp);
-    messageDiv.appendChild(timeDiv);
+    // Handle file attachments if the message has a file
+    if (message.has_file && message.file) {
+      const fileAttachment = createFileAttachment(message.file);
+      messageDiv.appendChild(fileAttachment);
+    }
+
+    const messageTimeElement = document.createElement("div");
+    messageTimeElement.className = "message-time";
+    messageTimeElement.textContent = formatTime(message.timestamp);
+    messageDiv.appendChild(messageTimeElement);
 
     messagesContainer.appendChild(messageDiv);
+
+    // Update tracking for message grouping
     lastSenderId = message.sender;
+    lastMessageTime = messageTime;
   });
 
-  // Scroll to bottom
+  // Scroll to the bottom of the messages container
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
@@ -1512,9 +1504,20 @@ function showCreateGroupModal() {
   // Add user checkboxes
   populateUserSelection(users);
 
-  // Show modal
+  // Отображаем модальное окно
   overlay.classList.remove("hidden");
   createGroupModal.classList.remove("hidden");
+  createGroupModal.style.visibility = "visible";
+  createGroupModal.style.opacity = "1";
+
+  // Для отладки добавляем информацию о видимости модального окна
+  console.log("Create Group Modal visibility:", {
+    overlayHidden: overlay.classList.contains("hidden"),
+    modalHidden: createGroupModal.classList.contains("hidden"),
+    modalDisplay: window.getComputedStyle(createGroupModal).display,
+    modalOpacity: window.getComputedStyle(createGroupModal).opacity,
+    modalVisibility: window.getComputedStyle(createGroupModal).visibility,
+  });
 }
 
 // Populate user selection with filtered users
@@ -1641,10 +1644,26 @@ async function createGroup() {
 
 // Show add user to chat modal
 function showAddUserModal() {
-  if (!currentChat || currentChat.type !== "group") return;
+  if (!currentChat || currentChat.type !== "group") {
+    console.error("Cannot add users: No active group chat selected");
+    return;
+  }
 
   const chat = groupChats.find((c) => c.id === currentChat.id);
-  if (!chat) return;
+  if (!chat) {
+    console.error("Cannot add users: Group chat not found", currentChat.id);
+    return;
+  }
+
+  // Проверка наличия DOM-элементов
+  if (!addUserSelection || !overlay || !addUserModal) {
+    console.error("Required DOM elements not found:", {
+      addUserSelection: !!addUserSelection,
+      overlay: !!overlay,
+      addUserModal: !!addUserModal,
+    });
+    return;
+  }
 
   // Clear previous values
   addUserSelection.innerHTML = "";
@@ -1655,17 +1674,32 @@ function showAddUserModal() {
     addUserFilterInput.value = "";
   }
 
-  // Get users not in the group
+  // Проверяем, есть ли доступные пользователи
   const availableUsers = users.filter(
     (user) => !chat.members.includes(user.id)
   );
 
+  console.log("Available users to add:", availableUsers.length);
+
   // Populate the user selection
   populateAddUserSelection(availableUsers);
 
-  // Show modal
+  // Сначала отображаем overlay, затем модальное окно
   overlay.classList.remove("hidden");
   addUserModal.classList.remove("hidden");
+
+  // Убеждаемся, что модальное окно получило все необходимые стили
+  addUserModal.style.visibility = "visible";
+  addUserModal.style.opacity = "1";
+
+  // Для отладки добавляем информацию о видимости модального окна
+  console.log("Modal visibility:", {
+    overlayHidden: overlay.classList.contains("hidden"),
+    modalHidden: addUserModal.classList.contains("hidden"),
+    modalDisplay: window.getComputedStyle(addUserModal).display,
+    modalOpacity: window.getComputedStyle(addUserModal).opacity,
+    modalVisibility: window.getComputedStyle(addUserModal).visibility,
+  });
 }
 
 // Populate add user selection with filtered users
@@ -1698,12 +1732,25 @@ function populateAddUserSelection(usersToShow) {
     userInfo.appendChild(avatarElement);
     userInfo.appendChild(userName);
 
+    // Добавляем индикатор выбора
+    const selectionIndicator = document.createElement("div");
+    selectionIndicator.className = "selection-indicator";
+    selectionIndicator.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+
     // Add to user item
     userItem.appendChild(userInfo);
+    userItem.appendChild(selectionIndicator);
 
     // Add click handler to toggle selection
     userItem.addEventListener("click", function () {
       this.classList.toggle("selected");
+      // Для отладки
+      console.log(
+        `User ${user.name} (${user.id}) selected: ${this.classList.contains(
+          "selected"
+        )}`
+      );
     });
 
     addUserSelection.appendChild(userItem);
@@ -1770,44 +1817,57 @@ async function addUsersToChat() {
       }
     );
 
+    const result = await response.json();
+
+    // Проверяем код ответа и сообщение об ошибке
     if (!response.ok) {
-      throw new Error(`Failed to add users to group: ${response.status}`);
+      console.error("API Error:", result);
+      throw new Error(
+        `Failed to add users to group: ${response.status}${
+          result.error ? " - " + result.error : ""
+        }`
+      );
     }
 
-    const result = await response.json();
     if (!result.success) {
+      console.error("API Error:", result);
       throw new Error(result.error || "Failed to add users to group");
     }
 
     console.log("Users added to group successfully:", result);
 
     // Обновляем локальные данные
-    chat.members.push(...selectedUsers);
+    // Используем только тех пользователей, которых фактически добавили
+    if (result.added_users && Array.isArray(result.added_users)) {
+      chat.members.push(...result.added_users);
 
-    // Получаем имена добавленных пользователей для сообщения
-    const userNames = selectedUsers
-      .map((userId) => {
-        const user = users.find((u) => u.id === userId);
-        return user ? user.name : "Unknown User";
-      })
-      .join(", ");
+      // Получаем имена добавленных пользователей для сообщения
+      const userNames = result.added_users
+        .map((userId) => {
+          const user = users.find((u) => u.id === userId);
+          return user ? user.name : "Unknown User";
+        })
+        .join(", ");
 
-    // Создаем сообщение о добавлении пользователей
-    const newMessage = {
-      sender: currentUser.id,
-      text: `Added ${userNames} to the group`,
-      timestamp: new Date(),
-    };
+      // Создаем сообщение о добавлении пользователей только если были добавлены пользователи
+      if (result.added_users.length > 0) {
+        const newMessage = {
+          sender: currentUser.id,
+          text: `Added ${userNames} to the group`,
+          timestamp: new Date(),
+        };
 
-    if (!messages[currentChat.id]) {
-      messages[currentChat.id] = [];
+        if (!messages[currentChat.id]) {
+          messages[currentChat.id] = [];
+        }
+
+        messages[currentChat.id].push(newMessage);
+
+        // Обновляем последнее сообщение группы
+        chat.lastMessage = newMessage.text;
+        chat.timestamp = new Date();
+      }
     }
-
-    messages[currentChat.id].push(newMessage);
-
-    // Обновляем последнее сообщение группы
-    chat.lastMessage = newMessage.text;
-    chat.timestamp = new Date();
 
     // Скрываем модальное окно
     overlay.classList.add("hidden");
@@ -2009,10 +2069,28 @@ function setupEventListeners() {
   // Send message
   sendMessageBtn.addEventListener("click", sendMessage);
   messageInput.addEventListener("keypress", (e) => {
+    // При нажатии Enter без Shift отправляем сообщение
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
+    // При нажатии Enter с Shift просто добавляем перенос строки
+  });
+
+  // Добавляем автоматическую регулировку высоты текстового поля
+  messageInput.addEventListener("input", function () {
+    // Сохраняем прокрутку
+    const scrollTop = this.scrollTop;
+
+    // Если пользователь набрал слишком много текста, прокрутка будет работать
+    if (this.scrollHeight > 80) {
+      this.style.overflowY = "auto";
+    } else {
+      this.style.overflowY = "hidden";
+    }
+
+    // Восстанавливаем прокрутку
+    this.scrollTop = scrollTop;
   });
 
   // View chat info
@@ -2027,40 +2105,69 @@ function setupEventListeners() {
   addUserToChat.addEventListener("click", showAddUserModal);
 
   // Modal buttons
-  closeGroupModalBtn.addEventListener("click", () => {
-    overlay.classList.add("hidden");
-    createGroupModal.classList.add("hidden");
+  closeGroupModalBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeAllModals();
   });
 
   createGroupConfirmBtn.addEventListener("click", createGroup);
 
-  closeAddUserModalBtn.addEventListener("click", () => {
-    overlay.classList.add("hidden");
-    addUserModal.classList.add("hidden");
+  closeAddUserModalBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeAllModals();
   });
 
-  addUserConfirmBtn.addEventListener("click", async () => {
+  addUserConfirmBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
     await addUsersToChat();
   });
 
-  // Close modals when clicking overlay
-  overlay.addEventListener("click", () => {
-    overlay.classList.add("hidden");
-    createGroupModal.classList.add("hidden");
-    addUserModal.classList.add("hidden");
+  // Дополнительные обработчики клавиатуры для модальных окон
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeAllModals();
+    }
+  });
 
-    // Also close any other modal that might be open
+  // Close modals when clicking overlay
+  overlay.addEventListener("click", (e) => {
+    // Проверяем, что клик был именно на оверлее, а не на контенте модального окна
+    if (e.target === overlay) {
+      closeAllModals();
+    }
+  });
+
+  // Функция для закрытия всех модальных окон
+  function closeAllModals() {
+    overlay.classList.add("hidden");
+
+    // Закрываем известные модальные окна
+    if (createGroupModal) {
+      createGroupModal.classList.add("hidden");
+      createGroupModal.style.visibility = "hidden";
+      createGroupModal.style.opacity = "0";
+    }
+
+    if (addUserModal) {
+      addUserModal.classList.add("hidden");
+      addUserModal.style.visibility = "hidden";
+      addUserModal.style.opacity = "0";
+    }
+
+    // Закрываем другие модальные окна
     const openModals = document.querySelectorAll(".modal:not(.hidden)");
     openModals.forEach((modal) => {
       modal.classList.add("hidden");
+      modal.style.visibility = "hidden";
+      modal.style.opacity = "0";
     });
 
-    // Remove any dynamically created modals
+    // Удаляем динамически созданные модальные окна
     const dynamicModals = document.querySelectorAll(
       ".modal:not(#createGroupModal):not(#addUserModal)"
     );
     dynamicModals.forEach((modal) => modal.remove());
-  });
+  }
 
   // Back to main menu button event
   backToMainMenuBtn.addEventListener("click", () => {
@@ -2151,7 +2258,7 @@ async function deleteUser(userId) {
       messagesContainer.innerHTML = "";
       currentChatName.textContent = "";
       chatStatus.textContent = "";
-      viewChatInfoBtn.classList.add("hidden");
+      viewChatInfoBtn.classList.add("hidden"); // Скрываем кнопку Info
       addUserToChat.classList.add("hidden");
     }
   } catch (error) {
@@ -2247,7 +2354,7 @@ async function removeUserFromGroup(userId, groupId) {
         messagesContainer.innerHTML = "";
         currentChatName.textContent = "";
         chatStatus.textContent = "";
-        viewChatInfoBtn.classList.add("hidden");
+        viewChatInfoBtn.classList.add("hidden"); // Скрываем кнопку Info, когда нет активного чата
         addUserToChat.classList.add("hidden");
       }
     } else {
@@ -2281,6 +2388,12 @@ function startStatusUpdates() {
     updateUserStatus();
     fetchOnlineUsers();
   }, 30000); // 30 секунд
+
+  // Устанавливаем интервал обновления блока онлайн-пользователей каждые 2 минуты
+  onlineUsersRefreshInterval = setInterval(() => {
+    // Обновляем список случайных онлайн-пользователей
+    updateOnlineUsersSection();
+  }, 120000); // 2 минуты
 
   // Первоначальное получение статусов пользователей
   fetchOnlineUsers();
@@ -2336,9 +2449,175 @@ async function fetchOnlineUsers() {
 
     // Обновляем отображение статусов в списке контактов
     updateStatusIndicators();
+
+    // Обновляем раздел онлайн-пользователей
+    updateOnlineUsersSection();
   } catch (error) {
     console.error("Error fetching online users:", error);
   }
+}
+
+/**
+ * Обновляет раздел онлайн-пользователей случайной выборкой из 30 человек
+ */
+function updateOnlineUsersSection() {
+  if (!onlineUsersContainer) return;
+
+  // Отбираем только пользователей со статусом "online"
+  const onlineUsers = users.filter((user) => user.status === "online");
+
+  // Если нет пользователей онлайн, показываем сообщение
+  if (onlineUsers.length === 0) {
+    onlineUsersContainer.innerHTML =
+      '<div class="no-online-users">No users online</div>';
+    return;
+  }
+
+  // Выбираем случайных 30 пользователей (или меньше, если онлайн меньше 30)
+  let displayUsers = [...onlineUsers];
+  if (displayUsers.length > 30) {
+    // Перемешиваем массив и берем первые 30 элементов
+    displayUsers = shuffleArray(displayUsers).slice(0, 30);
+  }
+
+  // Очищаем контейнер
+  onlineUsersContainer.innerHTML = "";
+
+  // Добавляем пользователей
+  displayUsers.forEach((user) => {
+    const userItem = createOnlineUserItem(user);
+    onlineUsersContainer.appendChild(userItem);
+  });
+
+  // Настраиваем навигацию, если есть много пользователей
+  setupOnlineUsersNavigation();
+}
+
+/**
+ * Создает элемент для отображения онлайн-пользователя
+ */
+function createOnlineUserItem(user) {
+  const userItem = document.createElement("div");
+  userItem.className = "online-user-item";
+  userItem.setAttribute("data-user-id", user.id);
+
+  // Создаем аватар
+  const avatarContainer = document.createElement("div");
+  avatarContainer.className = "online-user-avatar";
+
+  // Инициалы (будут показаны, если нет фото)
+  const initials = user.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+  avatarContainer.textContent = initials;
+
+  // Пробуем добавить фото, если есть
+  if (user.photoUrl) {
+    const img = document.createElement("img");
+    img.src = user.photoUrl;
+    img.alt = user.name;
+
+    // Очищаем контейнер и добавляем фото
+    avatarContainer.textContent = "";
+    avatarContainer.appendChild(img);
+  } else {
+    // Пытаемся загрузить фото
+    getUserPhotoUrl(user.id).then((photoUrl) => {
+      if (photoUrl) {
+        user.photoUrl = photoUrl;
+        const img = document.createElement("img");
+        img.src = photoUrl;
+        img.alt = user.name;
+
+        avatarContainer.textContent = "";
+        avatarContainer.appendChild(img);
+      }
+    });
+  }
+
+  // Добавляем индикатор статуса к элементу пользователя (не к аватару)
+  const statusIndicator = document.createElement("div");
+  statusIndicator.className = "online-status-indicator";
+  userItem.appendChild(statusIndicator);
+
+  // Добавляем только имя пользователя (первое слово)
+  const userName = document.createElement("div");
+  userName.className = "online-user-name";
+
+  // Получаем только первое слово (имя) из полного имени
+  const firstName = user.name.split(" ")[0];
+  userName.textContent = firstName;
+
+  // Собираем всё вместе
+  userItem.appendChild(avatarContainer);
+  userItem.appendChild(userName);
+
+  // Добавляем обработчик клика для открытия чата с этим пользователем
+  userItem.addEventListener("click", () => {
+    createOrSelectDirectChat(user);
+  });
+
+  return userItem;
+}
+
+/**
+ * Настраивает навигацию для онлайн-пользователей
+ */
+function setupOnlineUsersNavigation() {
+  if (!onlineUsersContainer || !prevOnlineUsersBtn || !nextOnlineUsersBtn)
+    return;
+
+  // Скрываем кнопки на устройствах с тач-интерфейсом (они могут свайпать)
+  const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+  if (!isTouch) {
+    prevOnlineUsersBtn.addEventListener("click", () => {
+      // Прокручиваем влево на ширину 5 пользователей
+      onlineUsersContainer.scrollBy({
+        left: -300, // примерно 5 пользователей
+        behavior: "smooth",
+      });
+    });
+
+    nextOnlineUsersBtn.addEventListener("click", () => {
+      // Прокручиваем вправо на ширину 5 пользователей
+      onlineUsersContainer.scrollBy({
+        left: 300, // примерно 5 пользователей
+        behavior: "smooth",
+      });
+    });
+  }
+}
+
+/**
+ * Создает или выбирает существующий прямой чат с пользователем
+ */
+function createOrSelectDirectChat(user) {
+  // Проверяем, существует ли уже чат с этим пользователем
+  const existingChat = directChats.find((chat) => chat.userId === user.id);
+
+  if (existingChat) {
+    // Если чат уже существует, выбираем его
+    selectChat(existingChat.id, "direct");
+  } else {
+    // Если чата нет, создаем новый
+    createNewDirectChat(user);
+  }
+}
+
+/**
+ * Функция для перемешивания массива (алгоритм Фишера–Йетса)
+ */
+function shuffleArray(array) {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
 }
 
 /**
@@ -2386,6 +2665,11 @@ window.addEventListener("beforeunload", () => {
   // Clear the status update interval
   if (onlineStatusInterval) {
     clearInterval(onlineStatusInterval);
+  }
+
+  // Clear the online users refresh interval
+  if (onlineUsersRefreshInterval) {
+    clearInterval(onlineUsersRefreshInterval);
   }
 });
 

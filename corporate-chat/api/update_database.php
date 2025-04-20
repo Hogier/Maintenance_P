@@ -55,4 +55,22 @@ try {
     debug_log("Error creating table or index: " . $e->getMessage());
     die("Error: " . $e->getMessage());
 }
+
+// Include the file tables SQL
+$chatFilesSql = file_get_contents(__DIR__ . '/chat-files-database.sql');
+
+// Execute the file tables SQL
+if (!$conn->multi_query($chatFilesSql)) {
+    die(json_encode([
+        'success' => false,
+        'error' => 'Failed to create chat files tables: ' . $conn->error
+    ]));
+}
+
+// Process all results from multi_query
+do {
+    if ($result = $conn->store_result()) {
+        $result->free();
+    }
+} while ($conn->more_results() && $conn->next_result());
 ?> 

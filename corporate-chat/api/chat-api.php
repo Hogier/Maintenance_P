@@ -151,6 +151,16 @@ switch ($action) {
     case 'getonlineusers':
         getOnlineUsers();
         break;
+    case 'create_direct_chat':
+    case 'createdirectchat':
+        createDirectChat();
+        break;
+    case 'get_file_by_message':
+        getFileByMessage($conn);
+        break;
+    case 'get_file':
+        getFile($conn);
+        break;
     default:
         http_response_code(404);
         debug_log("Invalid action: '" . $action . "'");
@@ -940,20 +950,37 @@ function addUsersToGroup() {
     $group_id = intval($matches[1]);
     
     try {
-        // Check if current user is a member and an admin
-        $checkStmt = $conn->prepare("
+        // Сначала проверяем, является ли пользователь участником группы
+        $checkMemberStmt = $conn->prepare("
             SELECT * FROM chat_group_members 
-            WHERE group_id = :group_id AND user_id = :user_id AND is_admin = 1
+            WHERE group_id = :group_id AND user_id = :user_id
         ");
-        $checkStmt->bindParam(':group_id', $group_id, PDO::PARAM_INT);
-        $checkStmt->bindParam(':user_id', $current_user_id, PDO::PARAM_INT);
-        $checkStmt->execute();
+        $checkMemberStmt->bindParam(':group_id', $group_id, PDO::PARAM_INT);
+        $checkMemberStmt->bindParam(':user_id', $current_user_id, PDO::PARAM_INT);
+        $checkMemberStmt->execute();
         
-        if ($checkStmt->rowCount() === 0) {
+        if ($checkMemberStmt->rowCount() === 0) {
             http_response_code(403);
-            echo json_encode(['error' => 'Only group admins can add users']);
+            echo json_encode(['success' => false, 'error' => 'You must be a member of the group to add users']);
             return;
         }
+        
+        // Проверяем, является ли пользователь администратором (для логирования)
+        $checkAdminStmt = $conn->prepare("
+            SELECT is_admin FROM chat_group_members 
+            WHERE group_id = :group_id AND user_id = :user_id
+        ");
+        $checkAdminStmt->bindParam(':group_id', $group_id, PDO::PARAM_INT);
+        $checkAdminStmt->bindParam(':user_id', $current_user_id, PDO::PARAM_INT);
+        $checkAdminStmt->execute();
+        $isAdmin = false;
+        
+        if ($row = $checkAdminStmt->fetch(PDO::FETCH_ASSOC)) {
+            $isAdmin = (bool)$row['is_admin'];
+        }
+        
+        // Логируем информацию о пользователе и его правах
+        debug_log("User ID: $current_user_id is adding users to group $group_id. Is admin: " . ($isAdmin ? "yes" : "no"));
         
         // Begin transaction
         $conn->beginTransaction();
@@ -966,7 +993,7 @@ function addUsersToGroup() {
         if ($groupStmt->rowCount() === 0) {
             $conn->rollBack();
             http_response_code(404);
-            echo json_encode(['error' => 'Group not found']);
+            echo json_encode(['success' => false, 'error' => 'Group not found']);
             return;
         }
         
@@ -1040,7 +1067,7 @@ function addUsersToGroup() {
     } catch (PDOException $e) {
         $conn->rollBack();
         http_response_code(500);
-        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
     }
 }
 
@@ -1103,7 +1130,7 @@ function removeUserFromGroup() {
         
         if ($groupStmt->rowCount() === 0) {
             http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'Group not found']);
+            echo json_encode(['error' => 'Group not found']);
             return;
         }
         
@@ -1599,26 +1626,169 @@ function getOnlineUsers() {
     global $conn;
     
     try {
-        // Get users who are active in the last 5 minutes
-        $sql = "SELECT u.id, u.full_name 
-                FROM users u
-                JOIN user_online_status os ON u.id = os.user_id
+        $sql = "SELECT u.id, u.full_name, 
+                COALESCE(os.status, 'offline') as status
+                FROM users u 
+                LEFT JOIN user_online_status os ON u.id = os.user_id
                 WHERE os.status = 'online' 
                 AND os.last_activity > DATE_SUB(NOW(), INTERVAL 5 MINUTE)";
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         
-        $onlineUsers = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $onlineUsers[] = [
+        $users = [];
+        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $users[] = [
                 'id' => $row['id'],
-                'name' => $row['full_name']
+                'name' => $row['full_name'],
+                'status' => $row['status']
             ];
         }
         
-        echo json_encode(['success' => true, 'online_users' => $onlineUsers]);
+        echo json_encode(['success' => true, 'users' => $users]);
         exit;
-    } catch (PDOException $e) {
+    } catch(PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+/**
+ * Get file attachment for a message
+ */
+function getFileByMessage($conn) {
+    if (!isset($_GET['message_id'])) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Message ID is required'
+        ]);
+        return;
+    }
+    
+    $message_id = (int)$_GET['message_id'];
+    
+    // Get file for the message
+    $stmt = $conn->prepare("
+        SELECT f.*, m.sender_id 
+        FROM chat_files f
+        JOIN chat_messages m ON f.message_id = m.id
+        WHERE f.message_id = ?
+    ");
+    
+    $stmt->bind_param("i", $message_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No file found for this message'
+        ]);
+        return;
+    }
+    
+    // Return the file data
+    $file = $result->fetch_assoc();
+    
+    echo json_encode([
+        'success' => true,
+        'file' => $file
+    ]);
+}
+
+/**
+ * Get file by ID
+ */
+function getFile($conn) {
+    if (!isset($_GET['file_id'])) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'File ID is required'
+        ]);
+        return;
+    }
+    
+    $file_id = (int)$_GET['file_id'];
+    
+    // Get file data
+    $stmt = $conn->prepare("
+        SELECT f.*, m.sender_id 
+        FROM chat_files f
+        JOIN chat_messages m ON f.message_id = m.id
+        WHERE f.id = ?
+    ");
+    
+    $stmt->bind_param("i", $file_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'File not found'
+        ]);
+        return;
+    }
+    
+    // Return the file data
+    $file = $result->fetch_assoc();
+    
+    echo json_encode([
+        'success' => true,
+        'file' => $file
+    ]);
+}
+
+/**
+ * Create a direct chat between two users
+ */
+function createDirectChat() {
+    global $conn;
+    $currentUserId = $_SESSION['user_id'];
+    
+    // Get the user_id from the POST data
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!isset($data['user_id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Missing user_id parameter']);
+        exit;
+    }
+    
+    $otherUserId = $data['user_id'];
+    
+    try {
+        // Check if chat already exists (in either direction)
+        $sql = "SELECT id FROM chat_direct 
+                WHERE (user1_id = :current_user_id AND user2_id = :other_user_id)
+                OR (user1_id = :other_user_id AND user2_id = :current_user_id)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':current_user_id', $currentUserId, PDO::PARAM_INT);
+        $stmt->bindParam(':other_user_id', $otherUserId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        if ($stmt->rowCount() > 0) {
+            // Chat already exists, return its ID
+            $chatId = $stmt->fetchColumn();
+            debug_log("Direct chat already exists with ID: " . $chatId);
+            echo json_encode(['success' => true, 'chat_id' => $chatId]);
+            exit;
+        }
+        
+        // Create new chat
+        $sql = "INSERT INTO chat_direct (user1_id, user2_id) VALUES (:user1_id, :user2_id)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':user1_id', $currentUserId, PDO::PARAM_INT);
+        $stmt->bindParam(':user2_id', $otherUserId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $chatId = $conn->lastInsertId();
+        debug_log("Created new direct chat with ID: " . $chatId);
+        
+        // Return the chat information
+        echo json_encode(['success' => true, 'chat_id' => $chatId]);
+        exit;
+    } catch(PDOException $e) {
+        debug_log("Error creating direct chat: " . $e->getMessage());
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
         exit;
