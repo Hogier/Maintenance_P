@@ -191,6 +191,38 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
       });
+
+    // Обработчик для выбора цвета скатерти
+    const tableclothColorSelect = document.getElementById("tableclothColor");
+    if (tableclothColorSelect) {
+      tableclothColorSelect.addEventListener("change", function () {
+        const selectedColor = this.value;
+        if (selectedColor) {
+          if (selectedColor === "white") {
+            // Для белого цвета используем серый фон и темный текст
+            this.style.color = "#333";
+            this.style.backgroundColor = "#e6e6e6";
+          } else {
+            // Для других цветов используем цвет текста и фона с прозрачностью
+            this.style.color = selectedColor;
+            this.style.backgroundColor = selectedColor + "20";
+          }
+          this.style.fontWeight = "bold";
+        } else {
+          this.style.color = "";
+          this.style.backgroundColor = "";
+          this.style.fontWeight = "";
+        }
+      });
+
+      // Применяем стиль сразу, если цвет уже выбран
+      if (tableclothColorSelect.value) {
+        const selectedColor = tableclothColorSelect.value;
+        tableclothColorSelect.style.color = selectedColor;
+        tableclothColorSelect.style.backgroundColor = selectedColor + "20";
+        tableclothColorSelect.style.fontWeight = "bold";
+      }
+    }
   }
 
   // Обработчик для стульев
@@ -460,8 +492,23 @@ function showEventModal(event) {
       }
 
       // Tablecloth color
-      form.querySelector("#tableclothColor").value =
-        event.tablecloth_color || "";
+      const tableclothColorSelect = form.querySelector("#tableclothColor");
+      tableclothColorSelect.value = event.tablecloth_color || "";
+
+      // Применяем стиль к выбранному цвету скатерти
+      if (event.tablecloth_color) {
+        if (event.tablecloth_color === "white") {
+          // Для белого цвета используем серый фон и темный текст
+          tableclothColorSelect.style.color = "#333";
+          tableclothColorSelect.style.backgroundColor = "#e6e6e6";
+        } else {
+          // Для других цветов используем цвет текста и фона с прозрачностью
+          tableclothColorSelect.style.color = event.tablecloth_color;
+          tableclothColorSelect.style.backgroundColor =
+            event.tablecloth_color + "20";
+        }
+        tableclothColorSelect.style.fontWeight = "bold";
+      }
     }
 
     // Handle chairs
@@ -988,56 +1035,57 @@ function formatCreationDate(dateTimeString) {
 
 // Обновляем функцию проверки статуса
 function canChangeStatus(event, newStatus) {
-  // Если статус одобрения "rejected", разрешаем установить статус "cancelled"
-  if (event.approved === "rejected" && newStatus === "cancelled") {
-    return true;
+  // Правила зависимостей между статусами:
+  // 1. Approved approval → можно выбрать Pending или Cancelled
+  // 2. После завершения события можно выбрать Completed (только если approval = Approved)
+
+  // Если статус одобрения "rejected", разрешаем установить только статус "cancelled"
+  if (event.approved === "rejected") {
+    return newStatus === "cancelled";
   }
 
-  // First check if the event is approved
+  // Если статус не одобрен, нельзя менять статус события
   if (event.approved !== "approved") {
-    return false; // Cannot change status if not approved
+    return false;
   }
 
-  // For "completed" status, we need to check against the end date and time
-  const now = new Date();
+  // Для "completed" статуса проверяем дату окончания события
+  if (newStatus === "completed") {
+    try {
+      // Используем форматирование для ввода из dateUtils
+      const dateStr = event.endDate;
+      const timeStr = event.endTime || "23:59";
 
-  switch (newStatus) {
-    case "cancelled":
-      return true; // Можно отменить в любое время
-    case "completed":
-      try {
-        // Используем форматирование для ввода из dateUtils
-        const dateStr = event.endDate;
-        const timeStr = event.endTime || "23:59";
+      // Создаем ISO строку в формате YYYY-MM-DDTHH:MM
+      const endDateTimeStr = `${dateStr}T${timeStr}`;
 
-        // Создаем ISO строку в формате YYYY-MM-DDTHH:MM
-        const endDateTimeStr = `${dateStr}T${timeStr}`;
+      // Создаем объект Date
+      const endDate = new Date(endDateTimeStr);
 
-        // Создаем объект Date
-        const endDate = new Date(endDateTimeStr);
-
-        // Убедимся, что дата валидная
-        if (isNaN(endDate.getTime())) {
-          console.error("Invalid end date or time:", endDateTimeStr);
-          return false;
-        }
-
-        console.log("Event end date check:", {
-          eventName: event.name,
-          endDate: endDate.toISOString(),
-          now: now.toISOString(),
-          canComplete: now >= endDate,
-        });
-
-        // Разрешаем установку статуса "completed" если текущее время после времени окончания
-        return now >= endDate;
-      } catch (error) {
-        console.error("Error checking end date:", error);
-        return false; // При ошибке парсинга не разрешаем изменение
+      // Убедимся, что дата валидная
+      if (isNaN(endDate.getTime())) {
+        console.error("Invalid end date or time:", endDateTimeStr);
+        return false;
       }
-    default:
-      return true; // Для других статусов (pending)
+
+      const now = new Date();
+      console.log("Event end date check:", {
+        eventName: event.name,
+        endDate: endDate.toISOString(),
+        now: now.toISOString(),
+        canComplete: now >= endDate,
+      });
+
+      // Разрешаем установку статуса "completed" если текущее время после времени окончания
+      return now >= endDate;
+    } catch (error) {
+      console.error("Error checking end date:", error);
+      return false; // При ошибке парсинга не разрешаем изменение
+    }
   }
+
+  // Для других статусов (pending, cancelled) при approval = approved
+  return true;
 }
 
 // Обновляем функцию создания галереи изображений
@@ -1244,10 +1292,15 @@ function createEventElement(event) {
 
     // Добавляем информацию о скатерти, если она указана
     if (event.tablecloth_color) {
+      const colorStyle =
+        event.tablecloth_color === "white"
+          ? `color: #333; background-color: #e6e6e6;`
+          : `color: ${event.tablecloth_color}; background-color: ${event.tablecloth_color}20;`;
+
       tablesAndChairsHtml += `
             <div class="equipment-item">
                 <span class="equipment-label">Tablecloth:</span>
-                <span class="equipment-value color-value">${event.tablecloth_color}</span>
+                <span class="equipment-value color-value" style="${colorStyle}">${event.tablecloth_color}</span>
             </div>`;
     }
   }
@@ -1285,7 +1338,8 @@ function createEventElement(event) {
             <select class="status-select" 
                     onchange="updateEventStatus(${event.id}, this.value)" 
                     data-event-id="${event.id}"
-                    data-status="${event.status || "pending"}">
+                    data-status="${event.status || "pending"}"
+                    ${event.approved !== "approved" ? "disabled" : ""}>
               <option value="pending" ${
                 event.status === "pending" ? "selected" : ""
               }>Pending</option>
@@ -1878,7 +1932,9 @@ async function updateEventStatus(eventId, newStatus, skipCheck = false) {
 
     // Проверяем разрешение на изменение статуса, если не установлен skipCheck
     if (!skipCheck && !canChangeStatus(event, newStatus)) {
-      alert("You cannot change the status for this event.");
+      alert(
+        "You cannot change the status for this event based on current approval status."
+      );
       // Сбрасываем выбор к предыдущему значению
       const statusSelect = document.querySelector(
         `select[data-event-id="${eventId}"]`
@@ -1925,9 +1981,26 @@ async function updateEventStatus(eventId, newStatus, skipCheck = false) {
     if (statusSelect) {
       statusSelect.value = newStatus;
       statusSelect.setAttribute("data-status", newStatus);
+
+      // При смене на "completed", проверяем доступность
+      if (newStatus === "completed") {
+        // Для completed должен быть approval = approved
+        if (event.approved !== "approved") {
+          alert("Event must be approved to mark as completed.");
+          // Сбрасываем выбор к предыдущему значению
+          statusSelect.value = "pending";
+          event.status = "pending";
+          return;
+        }
+      }
     }
 
     showNotification(`Event status updated to ${newStatus}`);
+
+    // Перезагружаем события с сервера для обновления всего UI
+    if (!skipCheck) {
+      await loadEvents();
+    }
   } catch (error) {
     console.error("Error updating event status:", error);
     alert("Failed to update event status");
@@ -1949,10 +2022,16 @@ async function updateEventApproval(eventId, approvalStatus) {
       throw new Error("Event not found");
     }
 
-    // Check if the current user is an admin
+    // Check if the current user is authorized to change approval status
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!currentUser || currentUser.role !== "admin") {
-      alert("You do not have permission to approve events");
+    if (!currentUser) {
+      window.location.href = "loginUser.html";
+      return;
+    }
+
+    // Only Jana Haigood can change approval status
+    if (currentUser.fullName !== "Jana Haigood") {
+      alert("Only Jana Haigood can change approval status");
 
       // Reset approval select to previous value
       const approvalSelect = document.querySelector(
@@ -2004,31 +2083,35 @@ async function updateEventApproval(eventId, approvalStatus) {
     if (statusSelect) {
       const options = statusSelect.querySelectorAll("option");
 
-      // Disable status options if not approved
-      options.forEach((option) => {
-        option.disabled = approvalStatus !== "approved";
-      });
+      // Зависимости между статусами:
+      let updateStatus = true;
+      if (approvalStatus === "pending") {
+        // Pending approval → Pending status
+        await updateEventStatus(eventId, "pending", true);
+      } else if (approvalStatus === "rejected") {
+        // Rejected approval → Cancelled status
+        await updateEventStatus(eventId, "cancelled", true);
+      } else if (approvalStatus === "approved") {
+        // Approved approval → Pending status (с возможностью выбрать Cancelled)
+        // При изменении статуса на "approved", устанавливаем статус события "pending"
+        await updateEventStatus(eventId, "pending", true);
 
-      // При изменении статуса на "approved", устанавливаем статус события "pending" если он был "cancelled"
-      if (approvalStatus === "approved" && event.status === "cancelled") {
-        updateEventStatus(eventId, "pending", true);
-      }
-
-      // Если статус одобрения "rejected", автоматически устанавливаем статус события "cancelled"
-      if (approvalStatus === "rejected") {
-        updateEventStatus(eventId, "cancelled", true);
+        // Включаем возможность выбора других статусов
+        options.forEach((option) => {
+          // Для completed проверим доступность на основе времени окончания
+          if (option.value === "completed") {
+            option.disabled = !canChangeStatus(event, "completed");
+          } else {
+            option.disabled = false;
+          }
+        });
       }
     }
 
-    showNotification(
-      `Event ${
-        approvalStatus === "approved"
-          ? "approved"
-          : approvalStatus === "rejected"
-          ? "rejected and cancelled"
-          : "approval status updated"
-      } successfully`
-    );
+    showNotification(`Event approval status updated to ${approvalStatus}`);
+
+    // Перезагружаем события с сервера для обновления всего UI
+    await loadEvents();
   } catch (error) {
     console.error("Error updating event approval:", error);
     alert("Failed to update event approval status");
@@ -3036,7 +3119,12 @@ function emailEvent(eventId) {
       tablesInfo += `- Round Tables: ${event.tablesRoundCount}\n`;
     }
     if (event.tablecloth_color) {
-      tablesInfo += `- Tablecloth color: ${event.tablecloth_color}\n`;
+      const colorStyle =
+        event.tablecloth_color === "white"
+          ? `color: #333; font-weight: bold; background-color: #e6e6e6; padding: 2px 5px; border-radius: 3px;`
+          : `color: ${event.tablecloth_color}; font-weight: bold;`;
+
+      tablesInfo += `- Tablecloth color: <span style="${colorStyle}">${event.tablecloth_color}</span>\n`;
     }
   }
 

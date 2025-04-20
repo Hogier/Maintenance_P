@@ -1094,6 +1094,30 @@ body {
   border-color: #94a3b8;
 }
 
+.tablecloth-selection select option[value="white"] {
+  background-color: #e6e6e6;
+  color: #333;
+}
+
+.tablecloth-selection select option[value="red"] {
+  background-color: #ffcccc;
+  color: red;
+}
+
+.tablecloth-selection select option[value="blue"] {
+  background-color: #ccccff;
+  color: blue;
+}
+
+.tablecloth-selection select option[value="black"] {
+  background-color: #333;
+  color: white;
+}
+
+.tablecloth-selection select:focus option:checked {
+  font-weight: bold;
+}
+
 /* Общие стили для кнопок действий */
 .action-button {
   padding: 10px 20px;
@@ -1496,11 +1520,10 @@ input[type="date"]:invalid::before {
 }
 
 .equipment-value.color-value {
-  color: #3b82f6; /* синий цвет для цвета скатерти */
   font-weight: 600;
-  padding: 3px 8px; /* Увеличиваем отступы с 2px 6px до 3px 8px */
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 5px; /* Увеличиваем скругление с 4px до 5px */
+  padding: 3px 8px;
+  border-radius: 5px;
+  transition: color 0.3s, background-color 0.3s;
 }
 
 /* Сетка изображений */
