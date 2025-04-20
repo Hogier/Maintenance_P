@@ -1,8 +1,8 @@
 export const config = {
   db: {
-    host: "localhost",
-    user: "root",
-    password: "root",
-    database: "maintenancedb",
+    host: "macan.cityhost.com.ua",
+    user: "chff6ee508",
+    password: "73b6bd56cf",
+    database: "chff6ee508",
   },
 };

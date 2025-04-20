@@ -44,7 +44,7 @@ class PortalManager {
 
     const apiUrl =
       window.location.origin +
-      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+      "/Inspections-Checklist-Portal/api/supplies-api.php";
 
     fetch(apiUrl, {
       method: "POST",
@@ -261,7 +261,16 @@ class PortalManager {
       const html = await response.text();
       section.innerHTML = html;
 
-      const module = await import(`./components/${page}/${page}Manager.js`);
+      let module;
+      try {
+        // Сначала пробуем загрузить файл с маленькой буквы, как в оригинале
+        module = await import(`./components/${page}/${page}Manager.js`);
+      } catch (importError) {
+        // Если не удалось, пробуем вариант с большой буквы
+        const capitalizedPage = page.charAt(0).toUpperCase() + page.slice(1);
+        module = await import(`./components/${page}/${capitalizedPage}Manager.js`);
+      }
+
       if (module.default) {
         const manager = new module.default(section);
         // Store the manager instance on the container element for later access

@@ -196,7 +196,7 @@ export default class SuppliesManager {
     // Используем правильный относительный путь к API
     const apiUrl =
       window.location.origin +
-      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+      "/Inspections-Checklist-Portal/api/supplies-api.php";
     console.log("Loading supplies from API:", apiUrl);
     console.log("With filters:", this.filters);
 
@@ -704,7 +704,7 @@ export default class SuppliesManager {
     // Используем правильный относительный путь к API
     const apiUrl =
       window.location.origin +
-      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+      "/Inspections-Checklist-Portal/api/supplies-api.php";
     console.log(
       `Updating order ${orderId} status to ${status} via API:`,
       apiUrl
@@ -752,7 +752,7 @@ export default class SuppliesManager {
 
     const apiUrl =
       window.location.origin +
-      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+      "/Inspections-Checklist-Portal/api/supplies-api.php";
 
     fetch(apiUrl, {
       method: "POST",
@@ -1236,7 +1236,7 @@ export default class SuppliesManager {
 
     const apiUrl =
       window.location.origin +
-      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+      "/Inspections-Checklist-Portal/api/supplies-api.php";
 
     fetch(apiUrl, {
       method: "POST",
@@ -1353,7 +1353,7 @@ export default class SuppliesManager {
 
     const apiUrl =
       window.location.origin +
-      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+      "/Inspections-Checklist-Portal/api/supplies-api.php";
 
     console.log("Отправка файла на API:", apiUrl);
 
@@ -1827,7 +1827,7 @@ export default class SuppliesManager {
 
     const apiUrl =
       window.location.origin +
-      "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+      "/Inspections-Checklist-Portal/api/supplies-api.php";
     console.log("Sending delete request to API:", apiUrl);
 
     fetch(apiUrl, {

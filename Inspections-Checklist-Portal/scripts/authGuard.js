@@ -14,7 +14,7 @@ function checkPortalAccess() {
   // If no user is logged in, redirect to login page
   if (!user) {
     window.location.href =
-      "/Maintenance_P/loginUser.html?redirect=/Maintenance_P/Inspections-Checklist-Portal/";
+      "/loginUser.html?redirect=/Inspections-Checklist-Portal/";
     return false;
   }
 
@@ -22,7 +22,7 @@ function checkPortalAccess() {
   if (user.role !== "admin") {
     // Redirect directly to login page instead of showing an alert
     window.location.href =
-      "/Maintenance_P/loginUser.html?redirect=/Maintenance_P/Inspections-Checklist-Portal/";
+      "/loginUser.html?redirect=/Inspections-Checklist-Portal/";
     return false;
   }
 

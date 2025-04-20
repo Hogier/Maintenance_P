@@ -7,9 +7,9 @@ class AccessCodeManager {
         try {
             // Подключаемся к базе данных
             $this->db = new PDO(
-                "mysql:host=localhost;dbname=maintenancedb;charset=utf8",
-                "root",
-                "root",
+                "mysql:host=macan.cityhost.com.ua;dbname=chff6ee508;charset=utf8",
+                "chff6ee508",
+                "73b6bd56cf",
                 array(
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

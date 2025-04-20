@@ -15,70 +15,51 @@ if (!checkAuth()) {
 
 // Подключение и инициализация WebSocket-клиента
 // Проверяем, загружен ли уже WebSocketClient
-if (typeof WebSocketClient === 'undefined') {
-  console.error('WebSocketClient не найден. Убедитесь, что websocket-client.js подключен к странице.');
-} else {
-  // Инициализация WebSocket-клиента с конфигурацией
-  WebSocketClient.init({
-    url: 'ws://localhost:2346', // Замените на адрес вашего WebSocket-сервера
-    debug: true // Включаем отладочный режим для вывода логов в консоль
-  });
-  
-  // Подписка на событие соединения
-  WebSocketClient.on('connection', function(data) {
-    console.log('WebSocket соединение: ', data.status);
-    if (data.status === 'connected') {
-      // Можно выполнить действия после успешного подключения
-      // Например, отправить идентификатор пользователя
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (user) {
-        WebSocketClient.send({
-          action: 'auth',
-          userId: user.id,
-          userRole: user.role,
-          username: user.fullName
-        });
-      }
-    }
-  });
-  
-  // Подписка на получение новых задач
-  WebSocketClient.on('taskAdded', function(data) {
-    console.log('Получена новая задача:', data);
-    // Обновляем список задач
-    checkNewTasksInServer();
-    // Воспроизводим звук уведомления
-    playNewTaskSound();
-  });
-  
-  // Подписка на обновление задач
-  WebSocketClient.on('task_update', function(data) {
-    console.log('Обновление задачи:', data);
-    // Обновляем задачу в пользовательском интерфейсе
-    if (data.taskId) {
-      // Можно обновить конкретную задачу или просто перезагрузить весь список
-      const filteredObj = getTasksWithFilteringSortingPagination(filters);
-      filteredObj.then(result => {
-        updateTasksList(result.data);
-        updatePagination(result.pagination);
-      });
-    }
-  });
-  
-  // Подписка на новые комментарии
-  WebSocketClient.on('sendComments', function(data) {
-    console.log('Новый комментарий:', data);
-    if (data.message && data.message.request_id) {
-      // Используем новую функцию вместо updateComments
-      addCommentFromWebSocket(data);
-    }
-  });
-  
-  // Подписка на ошибки
-  WebSocketClient.on('error', function(data) {
-    console.error('WebSocket ошибка:', data);
-  });
-}
+
+// if (typeof WebSocketClient === 'undefined') {
+//   console.error('WebSocketClient не найден. Убедитесь, что websocket-client.js подключен к странице.');
+// }
+
+// Инициализация WebSocketClient заменена на инициализацию PusherClient в блоке DOMContentLoaded
+// WebSocketClient.init({
+//   url: window.location.protocol === 'https:' ? 'wss://maintenance-portal.pp.ua:2346' : 'ws://maintenance-portal.pp.ua:2346',
+//   debug: false
+// });
+
+// Обработчики событий больше не регистрируются здесь
+// WebSocketClient.on('connection', function(data) {
+//   if (data.status === 'connected') {
+//     console.log('Соединение с WebSocket установлено');
+//     WebSocketClient.send({
+//       action: 'getUserTasks',
+//       staff: document.querySelector('.user-fullname').textContent
+//     });
+//   } else {
+//     console.log('Соединение с WebSocket потеряно');
+//   }
+// });
+
+// Обработчик событий перенесен в инициализацию PusherClient
+// WebSocketClient.on('taskAdded', function(data) {
+//   handleNewTasksFromWebSocket(data);
+// });
+
+// Обработчик обновления задачи
+// WebSocketClient.on('task_update', function(data) {
+//   console.log('Получено обновление задачи:', data);
+//   // Обновление статуса задачи
+//   if (data.task_id && data.status) {
+//     updateTaskStatusInUI(data.task_id, data.status);
+//   }
+// });
+
+// WebSocketClient.on('sendComments', function(data) {
+//   addCommentFromWebSocket(data);
+// });
+
+// WebSocketClient.on('error', function(data) {
+//   console.error('Ошибка WebSocket:', data.error);
+// });
 
 // Добавим отображение имени авторизованного сотрудника
 const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -127,11 +108,12 @@ let filters = {
   },
 };
 
+
 let tasksStatistics = {
   totalTasks: 0,
   pendingTasks: 0,
   inProgressTasks: 0,
-  completedTasks: 0,
+  completedTasks: 0
 };
 
 let currentPage = 1;
@@ -206,45 +188,38 @@ function groupTasksByFilter(tasks, filterBy) {
   tasks.forEach(task => {
     let groupKey;
 
-
     // Определяем ключ группировки в зависимости от фильтра
     switch (filterBy) {
       case "date":
         // Группировка по дате, как в оригинальном коде
-        groupKey = new Date(task.timestamp).toLocaleDateString("ru-RU");
+        groupKey = new Date(task.timestamp).toLocaleDateString('ru-RU');
         break;
-
 
       case "priority":
         // Группировка по приоритету
         groupKey = task.priority || "unknown";
         break;
 
-
       case "status":
         // Группировка по статусу
         groupKey = task.status || "unknown";
         break;
-
 
       case "assignment":
         // Группировка по назначению
         groupKey = task.assigned_to ? "assigned" : "unassigned";
         break;
 
-
       default:
         // По умолчанию группируем по дате
-        groupKey = new Date(task.timestamp).toLocaleDateString("ru-RU");
+        groupKey = new Date(task.timestamp).toLocaleDateString('ru-RU');
     }
-
 
     if (!tasksByGroup[groupKey]) {
       tasksByGroup[groupKey] = [];
     }
     tasksByGroup[groupKey].push(task);
   });
-
 
   return tasksByGroup;
 }
@@ -255,34 +230,30 @@ function getGroupDisplayName(groupKey, filterBy) {
     case "date":
       return formatDisplayDate(groupKey);
 
-
     case "priority":
       // Форматируем название приоритета для отображения
       const priorityNames = {
-        urgent: "Urgent Priority",
-        high: "High Priority",
-        medium: "Medium Priority",
-        low: "Low Priority",
-        unknown: "Unknown Priority",
+        "urgent": "Urgent Priority",
+        "high": "High Priority",
+        "medium": "Medium Priority",
+        "low": "Low Priority",
+        "unknown": "Unknown Priority"
       };
       return priorityNames[groupKey.toLowerCase()] || groupKey;
-
 
     case "status":
       // Форматируем название статуса
       const statusNames = {
-        Pending: "Pending Tasks",
+        "Pending": "Pending Tasks",
         "In Progress": "Tasks In Progress",
-        Completed: "Completed Tasks",
-        unknown: "Unknown Status",
+        "Completed": "Completed Tasks",
+        "unknown": "Unknown Status"
       };
       return statusNames[groupKey] || groupKey;
-
 
     case "assignment":
       // Форматируем название назначения
       return groupKey === "assigned" ? "Assigned Tasks" : "Unassigned Tasks";
-
 
     default:
       return groupKey;
@@ -326,51 +297,31 @@ async function updateTasksList(tasks) {
       // Определяем текущий тип сортировки
       const currentSortBy = filters.sort.by || "date";
 
-
       // Группируем задачи по соответствующему фильтру
       const tasksByGroup = groupTasksByFilter(tasks, currentSortBy);
-
 
       // Получаем ключи групп и сортируем их соответствующим образом
       let groupKeys = Object.keys(tasksByGroup);
 
-
       // Сортируем ключи в зависимости от типа фильтра
       if (currentSortBy === "priority") {
         // Сортировка приоритетов в логическом порядке
-        const priorityOrder = {
-          urgent: 0,
-          high: 1,
-          medium: 2,
-          low: 3,
-          unknown: 4,
-        };
-        groupKeys.sort(
-          (a, b) =>
-            priorityOrder[a.toLowerCase()] - priorityOrder[b.toLowerCase()]
-        );
+        const priorityOrder = { "urgent": 0, "high": 1, "medium": 2, "low": 3, "unknown": 4 };
+        groupKeys.sort((a, b) => priorityOrder[a.toLowerCase()] - priorityOrder[b.toLowerCase()]);
       } else if (currentSortBy === "status") {
         // Сортировка статусов в логическом порядке
-        const statusOrder = {
-          Pending: 0,
-          "In Progress": 1,
-          Completed: 2,
-          unknown: 3,
-        };
+        const statusOrder = { "Pending": 0, "In Progress": 1, "Completed": 2, "unknown": 3 };
         groupKeys.sort((a, b) => statusOrder[a] - statusOrder[b]);
       }
-
 
       // Добавляем разделители и задачи в контейнер
       for (let i = 0; i < groupKeys.length; i++) {
         const currentGroupKey = groupKeys[i];
         const tasksInGroup = tasksByGroup[currentGroupKey];
 
-
         // Добавляем разделитель с названием группы
         const divider = document.createElement("div");
         divider.className = getDividerClass(currentSortBy);
-
 
         const groupLabel = document.createElement("span");
         groupLabel.className = "task-group-label";
@@ -378,7 +329,6 @@ async function updateTasksList(tasks) {
 
         divider.appendChild(groupLabel);
         newTasksContainer.appendChild(divider);
-
 
         // Добавляем задачи этой группы
         for (const task of tasksInGroup) {
@@ -657,11 +607,15 @@ async function createTaskElement(task) {
       /*
       console.log("Прослушка на комментарии");
 
-      // Заменяем tasksWS.onmessage на подписку к wsClient
-      const commentHandler = async function (data) {
+      tasksWS.onmessage = async function (e) {
+        const action = JSON.parse(e.data).action;
+        const data = JSON.parse(e.data).message;
+        console.log("tasksWS.onmessage : ");
+        console.log(data);
+
         if (
-          data.action === "updateComments" &&
-          data.taskId === task.request_id
+          action === "updateComments" &&
+          data.request_id === task.request_id
         ) {
           await updateComments(task, commentsContainer, isFirstLoad);
           isFirstLoad = false;
@@ -761,11 +715,6 @@ async function createTaskElement(task) {
       }, 3500);*/
     } else {
       //clearInterval(commentsUpdateInterval);
-      // Unsubscribe from WebSocket messages when closing comments
-      if (task.commentHandler) {
-        window.wsClient.unsubscribe("updateComments", task.commentHandler);
-        task.commentHandler = null;
-      }
       newCommentNotification.style.display = "none"; // Скрываем уведомление при закрытии
     }
     openComments = !openComments;
@@ -1183,7 +1132,7 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
           <div class="comment-header">
             <div class="comment-author-container">
               <img class="comment-user-photo" src="${userPhotoUrl}" alt="${comment.staffName
-        }" onerror="this.src='/Maintenance_P/users/img/user.png';">
+        }" onerror="this.src='/users/img/user.png';">
               <span class="comment-author">
                 ${comment.staffName}
                 ${comment.staffName === task.assigned_to ? " (Assigned)" : ""}
@@ -1197,8 +1146,7 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
           ${comment.staffName === currentUser.fullName
           ? `
             <div class="comment-delete">
-            <i class="fas fa-trash" title="delete" onclick="deleteComment('${task.request_id
-          }', '${comment.id || comment.timestamp}')"></i>
+            <i class="fas fa-trash" title="delete" onclick="deleteComment('${task.request_id}', '${comment.id || comment.timestamp}')"></i>
             </div>
           `
           : ""
@@ -1239,118 +1187,6 @@ async function updateComments(task, commentsContainer, isFirstLoad) {
   }
 }
 
-async function handleAddComment(taskId, commentText, userFullName) {
-  if (!commentText || commentText.trim() === "") {
-    return;
-  }
-
-  // Формируем запрос для сервера
-  const data = {
-    taskId: taskId,
-    commentText: commentText,
-    userFullName: userFullName,
-    action: "addComment",
-  };
-
-  // Отправляем через общий клиент вместо tasksWS
-  window.wsClient.send(data);
-
-  // Create a properly formatted timestamp (YYYY-MM-DD HH:MM:SS format for MySQL)
-  console.log("handleAddComment запущен");
-  const now = new Date();
-  const formattedTimestamp =
-    now.getFullYear() +
-    "-" +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(now.getDate()).padStart(2, "0") +
-    " " +
-    String(now.getHours()).padStart(2, "0") +
-    ":" +
-    String(now.getMinutes()).padStart(2, "0") +
-    ":" +
-    String(now.getSeconds()).padStart(2, "0");
-
-  // Keep ISO format for display
-  const timestamp = now.toISOString();
-
-  const newComment = { staffName: userFullName, text: commentText, timestamp };
-
-  // Сохраняем новый комментарий в локальном состоянии
-  if (!localComments[taskId]) {
-    localComments[taskId] = [];
-  }
-  localComments[taskId].push(newComment);
-
-  // Get user photo URL
-  console.log("getUserPhotoUrl запускается");
-  const userPhotoUrl = await db.getUserPhotoUrl(userFullName);
-  console.log("getUserPhotoUrl завершен");
-/*
-  // Отображаем новый комментарий сразу
-  const commentsContainer = document.querySelector(
-    `.task-item[data-task-id="${taskId}"] .comments-list`
-  );
-
-  console.log("commentsContainer: ", commentsContainer);
-  const newCommentElement = document.createElement("div");
-  newCommentElement.className = "comment";
-  newCommentElement.style.opacity = 0;
-  newCommentElement.style.transition = "opacity 350ms";
-  console.log("Создание мгновенного комментария");
-  newCommentElement.innerHTML = `
-    <div class="comment-header">
-      <div class="comment-author-container">
-        <img class="comment-user-photo" src="${userPhotoUrl}" alt="${userFullName}" onerror="this.src='/Maintenance_P/users/img/user.png';">
-        <span class="comment-author">${userFullName}</span>
-      </div>
-      <span class="comment-time" data-timestamp="${timestamp}">${formatDate(
-    new Date()
-  )} <span class="status-local">&#128337;</span></span>
-    </div>
-    <div class="comment-text">${commentText}</div>
-  `;
-  commentsContainer.appendChild(newCommentElement);
-  console.log("newCommentElement добавлен в commentsContainer");
-  console.log("commentsContainer: ", commentsContainer);
-  setTimeout(() => {
-    newCommentElement.style.opacity = 1;
-  }, 70);
-
-  // Прокручиваем к новому комментарию
-  commentsContainer.scrollTop = commentsContainer.scrollHeight;
-*/
-  try {
-    // ВАРИАНТ 1: Только отправка через WebSocket
-    if (typeof WebSocketClient !== 'undefined' && WebSocketClient.isConnected()) {
-      WebSocketClient.send({
-        action: 'updateComments',
-        taskId: taskId,
-        comment: commentText,
-        staffName: userFullName,
-        timestamp: formattedTimestamp,
-        photoUrl: userPhotoUrl
-      });
-      
-      // Отмечаем успешную отправку (без запроса к db.addComment)
-      // Обновляем символ статуса и добавляем иконку удаления
-      
-      return true;
-    }
-    // ВАРИАНТ 2: Отправка через AJAX и WebSocket условно
-    else {
-      //const success = await db.addComment(taskId, commentText, userFullName);
-      
-      // Если AJAX успешен, не отправляем дополнительно через WebSocket
-      // Остальная логика без изменений
-      
-      return success;
-    }
-  } catch (error) {
-    console.error("Error adding comment:", error);
-    // Код обработки ошибки...
-  }
-}
 
 async function addNewTasksToPage(tasks) {
   if (!Array.isArray(tasks)) return;
@@ -1423,6 +1259,7 @@ async function addNewTasksToPage(tasks) {
 
 // Эта функция обрабатывает входящие сообщения с новыми задачами
 // Она вызывается из обработчика WebSocketClient.on('taskAdded')
+/*
 async function handleNewTasksFromWebSocket(data) {
   try {
     // Определяем, где находятся данные задачи: в поле task или message
@@ -1481,7 +1318,7 @@ if (typeof WebSocketClient !== 'undefined') {
   WebSocketClient.off('taskAdded'); // Удаляем предыдущие обработчики, если они есть
   WebSocketClient.on('taskAdded', handleNewTasksFromWebSocket);
 }
-
+*/
 /*
 setInterval(async () => {
 const newTasks = await checkNewTasksInServer();
@@ -1509,6 +1346,8 @@ if (newTasks && newTasks.length > 0) {
   newTaskNotification.style.display = "block";
   playNewTaskSound();
 }
+}, 7000);
+*/
 
 // Добавляем обработчик клика для скрытия уведомления
 newTaskNotification.addEventListener("click", async () => {
@@ -1570,7 +1409,7 @@ window.deleteComment = async function (taskId, commentId) {
     try {
       // Находим соответствующий элемент комментария по data-comment-id
       const commentElement = document.querySelector(
-        `.task-item[data-task-id="${taskId}"] .comment[data-comment-id="${commentId}"]`
+        `#tasksList .task-item[data-task-id="${taskId}"] .comment[data-comment-id="${commentId}"]`
       );
 
       if (commentElement) {
@@ -2033,7 +1872,7 @@ async function getNotCompletedTasksForLastWeek() {
 
     // Получаем сырой текст ответа
     const rawResponse = await response.text();
-
+    console.log("getNotCompletedTasksForLastWeek: ", rawResponse);
     // Пробуем распарсить JSON
     let result;
     try {
@@ -2092,6 +1931,8 @@ let notCompletedTasks = (async () => {
 })();
 
 function updateAlertTasksListHeight(taskElement) {
+  console.log(`[Pusher] Обновление высоты для задачи #${taskElement.dataset.taskId}, до:`, taskElement.style.height);
+  
   const alertTasksList = document.getElementById("notCompletedTasksList");
   const alertTasks = document.querySelector(".alert-tasks");
   const closeAlertTasks = document.getElementById("closeAlertTasks");
@@ -2122,6 +1963,7 @@ function updateAlertTasksListHeight(taskElement) {
     }, 650);
   }
   //alertTasks.style.transition = "height 0.5s ease-in-out, opacity 0.5s ease-in-out";
+  console.log(`[Pusher] Высота обновлена для задачи #${taskElement.dataset.taskId}, после:`, taskElement.style.height);
 }
 
 ////////////// HELPER PANEL //////////////
@@ -2397,19 +2239,19 @@ async function getUserPhotoUrl(username) {
         formData.get("role") === "admin" ||
         formData.get("role") === "support"
       ) {
-        photoPath = `/Maintenance_P/users/img/${photoFileName}`;
+        photoPath = `/users/img/${photoFileName}`;
       } else {
-        photoPath = `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
+        photoPath = `/maintenance_staff/img/${photoFileName}`;
       }
 
       return photoPath;
     } else {
       console.error("Ошибка получения фото:", data.message);
-      return `/Maintenance_P/users/img/user.png`;
+      return `/users/img/user.png`;
     }
   } catch (error) {
     console.error("Ошибка получения фото:", error);
-    return `/Maintenance_P/users/img/user.png`;
+    return `/users/img/user.png`;
   }
 }
 
@@ -2644,32 +2486,24 @@ document.querySelector('.helper-panel-content').addEventListener('click', async 
 
 let currentAbortController = null;
 
-async function getTasksWithFilteringSortingPagination(
-  filters,
-  page = currentPage,
-  limit = limitTasksInPage
-) {
+async function getTasksWithFilteringSortingPagination(filters, page = currentPage, limit = limitTasksInPage) {
   try {
-    // Remove the local currentAbortController declaration
-    page = page < 1 ? 1 : page;
 
+    page = page < 1 ? 1 : page;
 
     if (currentAbortController) {
       currentAbortController.abort();
       console.log("Предыдущий запрос отменен");
     }
 
-
     currentAbortController = new AbortController();
     const signal = currentAbortController.signal;
-
 
     // Показываем индикатор обновления
     if (updateIndicator) {
       updateIndicator.style.display = "block";
       updateIndicator.style.opacity = "1";
     }
-
 
     // Отправляем запрос с параметрами фильтрации и пагинации
     const response = await fetch("task.php", {
@@ -2683,24 +2517,17 @@ async function getTasksWithFilteringSortingPagination(
         page: page,
         limit: limit,
       }),
-      signal,
+      signal
     });
     console.log("filters: ", filters);
     const result = await response.json();
-
 
     if (!result.success) {
       throw new Error(result.message);
     }
 
-    console.log(
-      "getTasksWithFilteringSortingPagination result.data: ",
-      result.data
-    );
-    console.log(
-      "getTasksWithFilteringSortingPagination result.pagination: ",
-      result.pagination
-    );
+    console.log("getTasksWithFilteringSortingPagination result.data: ", result.data);
+    console.log("getTasksWithFilteringSortingPagination result.pagination: ", result.pagination);
 
     // Здесь добавляем проверку перед установкой currentPage
     if (result.pagination && result.pagination.page > 0) {
@@ -2710,26 +2537,16 @@ async function getTasksWithFilteringSortingPagination(
     updateStatistics(result.pagination.totalTasks, result.statistics);
 
     return { data: result.data, pagination: result.pagination };
-    return { data: result.data, pagination: result.pagination };
   } catch (error) {
     // Проверяем, была ли ошибка вызвана отменой запроса
-    if (error.name === "AbortError") {
-      console.log("Запрос был отменен");
+    if (error.name === 'AbortError') {
+      console.log('Запрос был отменен');
       // Не показываем ошибку пользователю, это ожидаемое поведение
       return { data: [], pagination: {} };
     }
 
-
     console.error("Ошибка при получении заданий:", error);
-    return {
-      data: [],
-      pagination: {
-        currentPage: currentPage,
-        totalPages: 1,
-        totalTasks: 0,
-        limit: limitTasksInPage,
-      },
-    };
+    return { data: [], pagination: { currentPage: currentPage, totalPages: 1, totalTasks: 0, limit: limitTasksInPage } };
   } finally {
     // Скрываем индикатор обновления только если это не отмененный запрос
     if (updateIndicator && currentAbortController.signal.aborted === false) {
@@ -3369,7 +3186,7 @@ function addCommentFromWebSocket(data) {
     <div class="comment-header">
       <div class="comment-author-container">
         <img class="comment-user-photo" src="${commentData.photoUrl || ''}" alt="${commentData.staffName}" 
-          onerror="this.src='/Maintenance_P/users/img/user.png';">
+          onerror="this.src='/users/img/user.png';">
         <span class="comment-author">
           ${commentData.staffName}
           ${commentData.staffName === taskElement.dataset.assignedTo ? " (Assigned)" : ""}
@@ -3433,5 +3250,351 @@ function addCommentFromWebSocket(data) {
         newCommentNotification.style.display = "none";
       }, 6000);
     }
+  }
+}
+
+// Инициализация PusherClient для получения событий в реальном времени
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("[Pusher] Инициализация PusherClient...");
+  // Инициализация Pusher
+  PusherClient.init({
+    key: '16f6b338124ef7c54632',
+    cluster: 'eu',
+    channelName: 'maintenance-channel',
+    debug: true
+  });
+  
+  // Подписываемся на события новых задач
+  PusherClient.on('taskAdded', function(data) {
+    console.log("[Pusher] Получено уведомление о новой задаче:", data);
+    handleNewTaskFromPusher(data);
+  });
+  
+  // Подписываемся на события новых комментариев
+  PusherClient.on('sendComments', function(data) {
+    console.log("[Pusher] Получено уведомление о новом комментарии:", data);
+    addCommentFromPusher(data);
+  });
+  
+  // Подписываемся на события соединения
+  PusherClient.on('connection', function(data) {
+    if (data.status === 'connected') {
+      console.log("[Pusher] Соединение с Pusher установлено успешно");
+    } else {
+      console.log("[Pusher] Соединение с Pusher разорвано");
+    }
+  });
+  
+  // Подписываемся на события ошибок
+  PusherClient.on('error', function(error) {
+    console.error("[Pusher] Ошибка Pusher:", error);
+  });
+  
+  console.log("[Pusher] Подписка на события Pusher настроена");
+});
+
+// Функция обработки новой задачи от Pusher
+async function handleNewTaskFromPusher(data) {
+  try {
+    console.log("[Pusher] Начало обработки новой задачи:", data);
+    
+    // Если data содержит message (для совместимости с прошлым форматом)
+    const taskData = data.message || data;
+    
+    if (!taskData) {
+      console.error("[Pusher] Получены некорректные данные задачи:", data);
+      return;
+    }
+    
+    console.log(`[Pusher] Обработка задачи #${taskData.request_id} от ${taskData.staff}`);
+    
+    // Форматируем данные в массив задач
+    const newTasks = [taskData];
+    
+    // Если доступно, загружаем медиафайлы
+    if (taskData.request_id) {
+      console.log(`[Pusher] Загрузка медиафайлов для задачи #${taskData.request_id}`);
+      const mediaFiles = await getUrlOfMediaFilesByTaskId(taskData.request_id);
+      newTasks[0].media = mediaFiles;
+      console.log(`[Pusher] Медиафайлы для задачи #${taskData.request_id} загружены:`, mediaFiles);
+    }
+    
+    console.log("[Pusher] Подготовлены новые задачи:", newTasks);
+
+    // Проверяем, показываем ли мы страницу с задачами на сегодня
+    const currentDateString = currentDate.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const showedPageWithTodayTasks =
+      tasksCurrentFilter === "today" ||
+      tasksCurrentFilter === "all" ||
+      (tasksCurrentFilter === "custom" &&
+        currentDateString === getDallasDate());
+        
+    console.log(`[Pusher] Текущий фильтр: ${tasksCurrentFilter}, показываем задачи на сегодня: ${showedPageWithTodayTasks}`);
+
+    // Добавляем задачи на страницу, если показываем задачи на сегодня
+    if (newTasks && showedPageWithTodayTasks) {
+      console.log(`[Pusher] Добавление новых задач на страницу...`);
+      await addNewTasksToPage(newTasks);
+      clientTasks = [...newTasks, ...clientTasks];
+      clientTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      console.log(`[Pusher] Задачи добавлены на страницу, всего задач: ${clientTasks.length}`);
+    } else {
+      console.log(`[Pusher] Задачи не добавлены на страницу из-за текущих фильтров`);
+    }
+
+    // Показываем уведомление о новых задачах
+    if (newTasks && newTasks.length > 0) {
+      counterNewTaskNotification = newTasks.length;
+      alertIcon.textContent =
+        counterNewTaskNotification > 1 ? counterNewTaskNotification : "!";
+      newTaskNotification.style.display = "block";
+      console.log(`[Pusher] Отображение уведомления о ${counterNewTaskNotification} новых задачах`);
+      playNewTaskSound();
+    }
+    
+    // Обновляем статистику
+    console.log(`[Pusher] Обновление статистики задач`);
+    updateStatistics();
+    
+    // Показываем уведомление в интерфейсе
+    showNotification(`Новая задача: ${taskData.details}`, 'info');
+    console.log(`[Pusher] Обработка новой задачи #${taskData.request_id} завершена`);
+  } catch (error) {
+    console.error("[Pusher] Ошибка при обработке новой задачи:", error);
+  }
+}
+
+// Функция обработки нового комментария от Pusher
+function addCommentFromPusher(data) {
+  try {
+    console.log("[Pusher] Получено новое уведомление о комментарии:", data);
+    // Проигрываем звук уведомления
+    playNewMessageSound();
+    
+    // Если data содержит message (для совместимости с прошлым форматом)
+    const commentData = data.message || data;
+    
+    if (!commentData || !commentData.request_id) {
+      console.error("[Pusher] Получены некорректные данные комментария:", data);
+      return;
+    }
+    
+    console.log(`[Pusher] Обработка комментария для задачи #${commentData.request_id} от ${commentData.staffName}`);
+    
+    const taskId = commentData.request_id;
+    const comment = commentData.comment;
+    const staffName = commentData.staffName;
+    const timestamp = commentData.timestamp;
+    const photoUrl = commentData.photoUrl || '';
+    
+    // Находим элемент задачи и добавляем комментарий
+    const taskElement = document.querySelector(`#tasksList .task-item[data-task-id="${taskId}"]`);
+    if (taskElement) {
+      console.log(`[Pusher] Найден элемент задачи #${taskId} для добавления комментария`);
+      const commentsContainer = taskElement.querySelector('.comments-list');
+      if (commentsContainer) {
+        console.log(`[Pusher] Найден контейнер комментариев для задачи #${taskId}`);
+        // Создаем элемент комментария
+        const commentElement = createCommentElement(comment, staffName, timestamp, photoUrl, taskId);
+        
+        // Добавляем класс для анимации нового комментария
+        commentElement.classList.add("new");
+        
+        // Проверяем, является ли комментарий от текущего пользователя
+        const currentUser = document.querySelector('.user-fullname')?.textContent || '';
+        const isCurrentUserComment = staffName === currentUser;
+        console.log(`[Pusher] Комментарий от текущего пользователя: ${isCurrentUserComment}`);
+        
+        commentsContainer.appendChild(commentElement);
+        console.log(`[Pusher] Комментарий успешно добавлен в DOM`);
+        
+        // Прокручиваем контейнер к последнему сообщению
+        commentsContainer.scrollTop = commentsContainer.scrollHeight;
+        
+        // Убираем класс анимации через некоторое время
+        setTimeout(() => {
+          commentElement.classList.remove("new");
+        }, 450);
+        
+        // Обновляем высоту контейнера
+        //updateAlertTasksListHeight(taskElement);
+        
+        // Показываем уведомление
+        showNotification(`Новый комментарий от ${staffName}: ${comment}`, 'info');
+        
+        // Если комментарий от другого пользователя и не виден на экране - показываем дополнительное уведомление
+        if (!isCurrentUserComment) {
+          const commentsRect = commentsContainer.getBoundingClientRect();
+          const isCommentsVisible = commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
+          
+          if (!isCommentsVisible) {
+            let newCommentNotification = document.querySelector('.new-comment-notification');
+            if (!newCommentNotification) {
+              newCommentNotification = document.createElement("div");
+              newCommentNotification.className = "new-comment-notification";
+              
+              const commentAlertIcon = document.createElement("div");
+              commentAlertIcon.className = "alert-icon";
+              commentAlertIcon.textContent = "!";
+              
+              newCommentNotification.appendChild(commentAlertIcon);
+              document.body.appendChild(newCommentNotification);
+            }
+            
+            newCommentNotification.style.display = "block";
+            console.log(`[Pusher] Показано всплывающее уведомление о новом комментарии`);
+            
+            newCommentNotification.onclick = function() {
+              taskElement.scrollIntoView({ behavior: 'smooth' });
+              console.log(`[Pusher] Прокрутка к комментарию по клику на уведомление`);
+              
+              const discussionToggle = taskElement.querySelector('.discussion-toggle');
+              if (discussionToggle) {
+                discussionToggle.click();
+              }
+              
+              newCommentNotification.style.display = "none";
+            };
+            
+            setTimeout(() => {
+              newCommentNotification.style.display = "none";
+              console.log(`[Pusher] Автоматическое скрытие уведомления о комментарии через 6 секунд`);
+            }, 6000);
+          }
+        }
+      } else {
+        console.error(`[Pusher] Контейнер комментариев не найден для задачи #${taskId}`);
+      }
+    } else {
+      console.error(`[Pusher] Элемент задачи #${taskId} не найден в DOM`);
+    }
+  } catch (error) {
+    console.error("[Pusher] Ошибка при обработке нового комментария:", error);
+  }
+}
+
+// Функция для отправки комментария
+async function handleAddComment(taskId, commentText, userFullName) {
+  if (!commentText.trim()) {
+    return;
+  }
+  
+  console.log(`[Pusher] Начало отправки комментария для задачи #${taskId} от ${userFullName}`);
+  
+  try {
+    // Получаем URL фото пользователя
+    const photoUrl = await getUserPhotoUrl(userFullName);
+    console.log(`[Pusher] Получен URL фото пользователя: ${photoUrl ? 'доступен' : 'недоступен'}`);
+    
+    // Отправляем комментарий через Pusher
+    try {
+      console.log(`[Pusher] Отправка комментария через PusherClient.addComment()`);
+      const result = await PusherClient.addComment(taskId, commentText, userFullName, photoUrl);
+      console.log(`[Pusher] Комментарий успешно отправлен через Pusher:`, result);
+      
+      // НЕ ДОБАВЛЯЕМ комментарий локально, ждем его прихода через Pusher
+      // Pusher вернет комментарий всем, включая отправителя
+      
+    } catch (error) {
+      console.error("[Pusher] Ошибка при отправке комментария через Pusher, используем fetch:", error);
+      const response = await db.addComment(taskId, commentText, userFullName);
+      console.log("[Pusher] Результат отправки через fetch API:", response);
+      
+      // Только если не удалось отправить через Pusher, добавляем локально
+      const timestamp = new Date().toISOString();
+      createCommentElement(commentText, userFullName, timestamp, photoUrl, taskId);
+    }
+
+    // Очищаем поле ввода в любом случае
+    const commentInput = document.querySelector(`#comment-input-${taskId}`);
+    if (commentInput) {
+      commentInput.value = '';
+      console.log(`[Pusher] Поле ввода комментария очищено`);
+    }
+  } catch (error) {
+    console.error("[Pusher] Общая ошибка при отправке комментария:", error);
+    showNotification("Не удалось отправить комментарий. Пожалуйста, попробуйте еще раз.", "error");
+  }
+}
+
+// Создание элемента комментария
+function createCommentElement(text, author, timestamp, photoUrl = '', taskId) {
+  console.log(`[Pusher] Создание элемента комментария для задачи #${taskId} от ${author}`);
+  
+  // Создаем элемент комментария
+  const newCommentElement = document.createElement("div");
+  newCommentElement.className = "comment";
+  newCommentElement.style.opacity = 0;
+  newCommentElement.style.transition = "opacity 350ms";
+  
+  // Используем ту же структуру HTML, что в старой функции
+  newCommentElement.innerHTML = `
+    <div class="comment-header">
+      <div class="comment-author-container">
+        <img class="comment-user-photo" src="${photoUrl}" alt="${author}" onerror="this.src='/users/img/user.png';">
+        <span class="comment-author">${author}</span>
+      </div>
+      <span class="comment-time" data-timestamp="${timestamp}">${formatDate(new Date(timestamp))} <span class="status-server">&#10003;</span></span>
+    </div>
+    <div class="comment-text">${text}</div>
+  `;
+  
+  // Добавляем анимацию появления
+  setTimeout(() => {
+    newCommentElement.style.opacity = 1;
+  }, 70);
+  
+  // Найдем контейнер комментариев и добавим в него новый элемент
+  const commentsContainer = document.querySelector(
+    `#tasksList .task-item[data-task-id="${taskId}"] .comments-list`
+  );
+  
+  if (commentsContainer) {
+    commentsContainer.appendChild(newCommentElement);
+    console.log(`[Pusher] Комментарий добавлен в DOM для задачи #${taskId}`);
+    // Прокручиваем к новому комментарию
+    commentsContainer.scrollTop = commentsContainer.scrollHeight;
+  } else {
+    console.error(`[Pusher] Контейнер для комментариев не найден для задачи #${taskId}`);
+  }
+  
+  return newCommentElement;
+}
+
+// Получение списка задач для пользователя
+async function getUserTasks(staff) {
+  try {
+    const response = await PusherClient.getUserTasks(staff);
+    if (response.success) {
+      return response.data || [];
+    } else {
+      console.error("Ошибка при получении задач:", response.message);
+      return [];
+    }
+  } catch (error) {
+    console.error("Ошибка при загрузке задач:", error);
+    return [];
+  }
+}
+
+// Добавление новой задачи
+async function addNewTask(taskData) {
+  try {
+    const response = await PusherClient.addTask(taskData);
+    if (response.success) {
+      showNotification("Задача успешно добавлена", "success");
+      return true;
+    } else {
+      showNotification("Ошибка при добавлении задачи: " + response.message, "error");
+      return false;
+    }
+  } catch (error) {
+    console.error("Ошибка при добавлении задачи:", error);
+    showNotification("Ошибка при добавлении задачи", "error");
+    return false;
   }
 }

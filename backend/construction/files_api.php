@@ -6,7 +6,7 @@ include_once '../../includes/functions.php';
 // Define the upload directory relative to the document root
 // IMPORTANT: Ensure this directory exists and is writable by the web server.
 // Example assumes script is in /backend/construction/ and uploads are in /uploads/construction_files/
-$upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/Maintenance_P/uploads/construction_files/'; // Adjust path as needed
+$upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/construction_files/'; // Adjust path as needed
 if (!is_dir($upload_dir)) {
     mkdir($upload_dir, 0775, true); // Create directory if it doesn't exist
 }

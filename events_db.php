@@ -19,8 +19,8 @@ ini_set('error_log', '/Applications/XAMPP/xamppfiles/logs/php_error.log');
 // В начале файла добавим константы для путей
 define('UPLOAD_DIR', __DIR__ . '/uploads');
 define('UPLOAD_MINI_DIR', UPLOAD_DIR . '/mini');
-define('WEB_UPLOAD_PATH', '/maintenance_P/uploads');
-define('WEB_UPLOAD_MINI_PATH', '/maintenance_P/uploads/mini');
+define('WEB_UPLOAD_PATH', '/uploads');
+define('WEB_UPLOAD_MINI_PATH', '/uploads/mini');
 
 // Улучшенная функция логирования
 function debug_log($message, $data = null) {
@@ -163,10 +163,10 @@ try {
     ]);
 
     // Параметры подключения к базе данных
-    $host = 'localhost';
-    $user = 'root';     // Пользователь MySQL
-    $password = 'root';     // Пароль для MySQL
-    $database = 'maintenancedb';
+    $host = 'macan.cityhost.com.ua';
+    $user = 'chff6ee508';     // Пользователь MySQL
+    $password = '73b6bd56cf';     // Пароль для MySQL
+    $database = 'chff6ee508';
 
     // Подключение к базе данных
     try {

@@ -5,18 +5,18 @@ ini_set('display_errors', 1);
 try {
     // Подключаемся к MySQL без указания базы данных
     $pdo = new PDO(
-        "mysql:host=localhost",
-        "root",
-        "root",
+        "mysql:host=macan.cityhost.com.ua",
+        "chff6ee508",
+        "73b6bd56cf",
         array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
     );
 
     // Создаем базу данных
-    $pdo->exec("CREATE DATABASE IF NOT EXISTS maintenancedb CHARACTER SET utf8 COLLATE utf8_general_ci");
+    $pdo->exec("CREATE DATABASE IF NOT EXISTS chff6ee508 CHARACTER SET utf8 COLLATE utf8_general_ci");
     echo "<p style='color: green;'>База данных создана успешно!</p>";
 
     // Подключаемся к созданной базе данных
-    $pdo->exec("USE maintenancedb");
+    $pdo->exec("USE chff6ee508");
     
     // Создаем таблицу
     $sql = "

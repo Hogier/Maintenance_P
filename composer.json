@@ -1,1 +1,2 @@
-{"name":"maintenance/portal","description":"Maintenance Portal","require":{"phpmailer/phpmailer":"^6.9","workerman/workerman":"^4.2"},"config":{"vendor-dir":"vendor","optimize-autoloader":true}}
+{"name":"maintenance/portal","description":"Maintenance Portal","require":{"phpmailer/phpmailer":"^6.9","workerman/workerman":"^3.5.31",
+        "pusher/pusher-php-server": "^7.2"},"config":{"vendor-dir":"vendor","optimize-autoloader":true,"platform":{"php":"7.4.33"}}}

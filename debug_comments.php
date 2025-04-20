@@ -7,10 +7,10 @@ header('Content-Type: text/html; charset=utf-8');
 echo "<h1>Debug Comment Functionality</h1>";
 
 // Database connection
-$host = 'localhost';
-$user = 'root';
-$password = 'root';
-$database = 'maintenancedb';
+$host = 'macan.cityhost.com.ua';
+$user = 'chff6ee508';
+$password = '73b6bd56cf';
+$database = 'chff6ee508';
 
 $conn = new mysqli($host, $user, $password, $database);
 if ($conn->connect_error) {
@@ -36,7 +36,7 @@ echo "<p>Using task ID: $taskId for testing</p>";
 $staffName = "Debug User";
 $commentText = "Debug comment - " . date('Y-m-d H:i:s');
 $timestamp = date('Y-m-d H:i:s');
-$photoUrl = '/Maintenance_P/users/img/user.png';
+$photoUrl = '/users/img/user.png';
 
 echo "<h2>Testing Direct Insert:</h2>";
 
@@ -90,7 +90,7 @@ try {
     echo "<pre>" . print_r($postData, true) . "</pre>";
     
     curl_setopt_array($curlHandle, [
-        CURLOPT_URL => 'http://localhost/Maintenance_P/comments.php',
+        CURLOPT_URL => 'http://maintenance-portal.pp.ua/comments.php',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POSTFIELDS => http_build_query($postData),
         CURLOPT_POST => true

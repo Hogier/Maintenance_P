@@ -9,10 +9,10 @@ header('Content-Type: text/html; charset=utf-8');
 echo "<h1>MySQL Timestamp Format Testing</h1>";
 
 // Database connection
-$host = 'localhost';
-$user = 'root';
-$password = 'root';
-$database = 'maintenancedb';
+$host = 'macan.cityhost.com.ua';
+$user = 'chff6ee508';
+$password = '73b6bd56cf';
+$database = 'chff6ee508';
 
 $conn = new mysqli($host, $user, $password, $database);
 if ($conn->connect_error) {

@@ -5,7 +5,9 @@ let events = [];
 
 ///////////////////////////////////////////////////////
 
-const eventsWS = new WebSocket("ws://localhost:2346");
+// Используем стандартный порт и путь /ws/ для WebSocket
+const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const eventsWS = new WebSocket(`${protocol}//${window.location.host}/ws/`);
 
 window.onload = function () {
   eventsWS.onopen = function () {
@@ -31,7 +33,7 @@ function showCommentNotification(comment) {
   if (comment.userPhotoUrl) {
     // Создаем структуру с фото и именем пользователя
     headerElement.innerHTML = `
-      <img class="notification-user-photo" src="${comment.userPhotoUrl}" alt="${comment.author}" onerror="this.src='/Maintenance_P/users/img/user.png';">
+      <img class="notification-user-photo" src="${comment.userPhotoUrl}" alt="${comment.author}" onerror="this.src='/users/img/user.png';">
       <span>${comment.author}</span>
     `;
   } else {
@@ -957,19 +959,19 @@ async function getUserPhotoUrl(username) {
         formData.get("role") === "admin" ||
         formData.get("role") === "support"
       ) {
-        photoPath = `/Maintenance_P/users/img/${photoFileName}`;
+        photoPath = `/users/img/${photoFileName}`;
       } else {
-        photoPath = `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
+        photoPath = `/maintenance_staff/img/${photoFileName}`;
       }
 
       return photoPath;
     } else {
       console.error("Ошибка получения фото:", data.message);
-      return `/Maintenance_P/users/img/user.png`;
+      return `/users/img/user.png`;
     }
   } catch (error) {
     console.error("Ошибка получения фото:", error);
-    return `/Maintenance_P/users/img/user.png`;
+    return `/users/img/user.png`;
   }
 }
 
@@ -1409,7 +1411,7 @@ function createEventElement(event) {
                           // Используем userPhotoUrl из комментария, если доступно
                           const userPhotoUrl =
                             comment.userPhotoUrl ||
-                            `/Maintenance_P/users/img/user.png`;
+                            `/users/img/user.png`;
 
                           return `
                             <div class="comment-item" data-comment-id="${
@@ -1419,7 +1421,7 @@ function createEventElement(event) {
                                     <div class="comment-author-container">
                                         <img class="comment-user-photo" src="${userPhotoUrl}" alt="${
                             comment.author
-                          }" onerror="this.src='/Maintenance_P/users/img/user.png';">
+                          }" onerror="this.src='/users/img/user.png';">
                                         <span class="comment-author">${
                                           comment.author
                                         }</span>
@@ -1696,7 +1698,7 @@ async function addComment(event, eventId) {
         commentElement.innerHTML = `
           <div class="comment-header">
             <div class="comment-author-container">
-              <img class="comment-user-photo" src="${userPhotoUrl}" alt="${author}" onerror="this.src='/Maintenance_P/users/img/user.png';">
+              <img class="comment-user-photo" src="${userPhotoUrl}" alt="${author}" onerror="this.src='/users/img/user.png';">
               <span class="comment-author">${author}</span>
             </div>
             <span class="comment-date">${formattedDate}</span>
@@ -2050,7 +2052,7 @@ async function addEventComment(eventId, comment) {
     const author = comment.author;
     const serverDateStr = comment.date;
     const userPhotoUrl =
-      comment.userPhotoUrl || "/Maintenance_P/users/img/user.png";
+      comment.userPhotoUrl || "/users/img/user.png";
 
     // Создаем объект нового комментария
     const newComment = {
@@ -2092,7 +2094,7 @@ async function addEventComment(eventId, comment) {
         commentElement.innerHTML = `
           <div class="comment-header">
             <div class="comment-author-container">
-              <img class="comment-user-photo" src="${userPhotoUrl}" alt="${author}" onerror="this.src='/Maintenance_P/users/img/user.png';">
+              <img class="comment-user-photo" src="${userPhotoUrl}" alt="${author}" onerror="this.src='/users/img/user.png';">
               <span class="comment-author">${author}</span>
             </div>
             <span class="comment-date">${formattedDate}</span>

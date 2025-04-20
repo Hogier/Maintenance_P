@@ -442,7 +442,7 @@ class SuppliesAPI {
             $fileSize = filesize($filepath);
             
             // Generate a web-accessible path
-            $webPath = '/Maintenance_P/uploads/receipts/' . $orderId . '/' . $filename;
+            $webPath = '/uploads/receipts/' . $orderId . '/' . $filename;
             
             error_log("File successfully moved. Web path: $webPath");
             

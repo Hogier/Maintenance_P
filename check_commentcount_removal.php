@@ -9,10 +9,10 @@ header('Content-Type: text/html; charset=utf-8');
 echo "<h1>Проверка удаления столбца commentCount</h1>";
 
 // Параметры подключения к базе данных
-$host = 'localhost';
-$user = 'root';
-$password = 'root';
-$database = 'maintenancedb';
+$host = 'macan.cityhost.com.ua';
+$user = 'chff6ee508';
+$password = '73b6bd56cf';
+$database = 'chff6ee508';
 
 // Подключение к базе данных
 $conn = new mysqli($host, $user, $password, $database);
@@ -78,7 +78,7 @@ $checkTaskStmt->close();
 $commentText = "Тестовый комментарий после удаления поля commentCount - " . date('Y-m-d H:i:s');
 $staffName = "Тестовый пользователь";
 $timestamp = date('Y-m-d H:i:s');
-$photoUrl = "/Maintenance_P/users/img/user.png";
+$photoUrl = "/users/img/user.png";
 
 $addCommentStmt = $conn->prepare("INSERT INTO task_comments (task_id, staff_name, text, timestamp, photo_url) VALUES ('TEST123', ?, ?, ?, ?)");
 $addCommentStmt->bind_param("ssss", $staffName, $commentText, $timestamp, $photoUrl);

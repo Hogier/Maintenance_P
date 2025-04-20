@@ -181,7 +181,7 @@
             formData.append("staffName", staffName);
             formData.append("commentText", commentText);
             formData.append("timestamp", new Date().toISOString());
-            formData.append("photoUrl", "/Maintenance_P/users/img/user.png");
+            formData.append("photoUrl", "/users/img/user.png");
 
             const response = await fetch("comments.php", {
               method: "POST",

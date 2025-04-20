@@ -1,10 +1,10 @@
 <?php
 try {
     // Параметры подключения к базе данных
-    $host = 'localhost';
-    $dbname = 'maintenancedb';
-    $username = 'root';
-    $password = 'root';
+    $host = 'macan.cityhost.com.ua';
+    $dbname = 'chff6ee508';
+    $username = 'chff6ee508';
+    $password = '73b6bd56cf';
     $charset = 'utf8';
 
     // Создание DSN (Data Source Name)

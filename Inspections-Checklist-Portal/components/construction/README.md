@@ -41,7 +41,7 @@ components/construction/
 
    ```php
    $host = 'localhost';
-   $dbname = 'maintenancedb';
+   $dbname = 'chff6ee508';
    $user = 'root';
    $password = 'root';
    ```

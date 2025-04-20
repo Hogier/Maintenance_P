@@ -1,5 +1,5 @@
 // Инициализация базы данных
-const dbName = "maintenanceDB";
+const dbName = "chff6ee508";
 const dbVersion = 1;
 
 // Создаем класс для работы с базой данных
@@ -621,19 +621,19 @@ class Database {
           formData.get("role") === "admin" ||
           formData.get("role") === "support"
         ) {
-          photoPath = `/Maintenance_P/users/img/${photoFileName}`;
+          photoPath = `/users/img/${photoFileName}`;
         } else {
-          photoPath = `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
+          photoPath = `/maintenance_staff/img/${photoFileName}`;
         }
 
         return photoPath;
       } else {
         console.error("Ошибка получения фото:", data.message);
-        return `/Maintenance_P/users/img/user.png`;
+        return `/users/img/user.png`;
       }
     } catch (error) {
       console.error("Ошибка получения фото:", error);
-      return `/Maintenance_P/users/img/user.png`;
+      return `/users/img/user.png`;
     }
   }
   /*

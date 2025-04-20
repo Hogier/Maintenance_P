@@ -10,4 +10,4 @@ define('SMTP_FROM_NAME', 'Access Code System');
 
 // Application settings
 define('CODE_EXPIRATION_DAYS', 30);
-define('REGISTRATION_URL', '/Maintenance_P/register.html'); 
+define('REGISTRATION_URL', '/register.html'); 

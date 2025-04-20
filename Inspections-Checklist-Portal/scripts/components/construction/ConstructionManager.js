@@ -602,7 +602,7 @@ export default class ConstructionManager {
   // Методы для работы с подрядчиками
   async loadContractors() {
     // Определяем URL API
-    const apiUrl = "/Maintenance_P/backend/construction/contractors_api.php";
+    const apiUrl = "/backend/construction/contractors_api.php";
     // Возможно, стоит вынести URL в конфигурацию или константы
 
     try {
@@ -649,7 +649,7 @@ export default class ConstructionManager {
   async loadEmployeesForContractor(contractorId) {
     try {
       const response = await fetch(
-        `/Maintenance_P/backend/construction/contractor_employees_api.php?contractor_id=${contractorId}`
+        `/backend/construction/contractor_employees_api.php?contractor_id=${contractorId}`
       );
       if (!response.ok) {
         console.error(
@@ -943,7 +943,7 @@ export default class ConstructionManager {
     if (confirm("Are you sure you want to delete this employee?")) {
       try {
         const response = await fetch(
-          `/Maintenance_P/backend/construction/contractor_employees_api.php?id=${employeeId}`,
+          `/backend/construction/contractor_employees_api.php?id=${employeeId}`,
           {
             method: "DELETE",
           }
@@ -1017,7 +1017,7 @@ export default class ConstructionManager {
   async addEmployeeToContractor(data) {
     try {
       const response = await fetch(
-        "/Maintenance_P/backend/construction/contractor_employees_api.php",
+        "/backend/construction/contractor_employees_api.php",
         {
           method: "POST",
           headers: {
@@ -1042,7 +1042,7 @@ export default class ConstructionManager {
   async updateEmployee(employeeId, data) {
     try {
       const response = await fetch(
-        `/Maintenance_P/backend/construction/contractor_employees_api.php?id=${employeeId}`,
+        `/backend/construction/contractor_employees_api.php?id=${employeeId}`,
         {
           method: "PUT",
           headers: {
@@ -1069,7 +1069,7 @@ export default class ConstructionManager {
     // TODO: Implement filtering/status checking if backend returns all projects
     try {
       const response = await fetch(
-        "/Maintenance_P/backend/construction/projects_api.php"
+        "/backend/construction/projects_api.php"
       ); // Полный путь до API
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1104,7 +1104,7 @@ export default class ConstructionManager {
     // TODO: Implement filtering/status checking if backend returns all projects
     try {
       const response = await fetch(
-        "/Maintenance_P/backend/construction/projects_api.php"
+        "/backend/construction/projects_api.php"
       ); // Полный путь до API
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -3226,7 +3226,7 @@ export default class ConstructionManager {
           // Путь относительно корня сайта
           `${window.location.origin}/${imageSrc}`,
           // Путь относительно Inspections-Checklist-Portal
-          `${window.location.origin}/Maintenance_P/Inspections-Checklist-Portal/${imageSrc}`,
+          `${window.location.origin}/Inspections-Checklist-Portal/${imageSrc}`,
           // Путь с другим расширением
           `${imageSrc.replace(/\.\w+$/, ".jpg")}`,
           `${imageSrc.replace(/\.\w+$/, ".jpeg")}`,
@@ -3480,7 +3480,7 @@ export default class ConstructionManager {
       console.log("Final data to send:", data);
 
       const apiUrl =
-        "/Maintenance_P/backend/construction/projects_api.php" +
+        "/backend/construction/projects_api.php" +
         (projectId ? `?id=${projectId}` : ""); // Полный путь до API
       const method = projectId ? "PUT" : "POST";
 
@@ -4685,7 +4685,7 @@ export default class ConstructionManager {
       return;
     }
 
-    const apiUrl = "/Maintenance_P/backend/construction/contractors_api.php";
+    const apiUrl = "/backend/construction/contractors_api.php";
     console.log("ConstructionManager: Creating contractor...", data);
     try {
       const response = await fetch(apiUrl, {
@@ -4740,7 +4740,7 @@ export default class ConstructionManager {
   }
 
   async updateContractor(id, data) {
-    const updateUrl = `/Maintenance_P/backend/construction/contractors_api.php?id=${id}`;
+    const updateUrl = `/backend/construction/contractors_api.php?id=${id}`;
     console.log(`ConstructionManager: Updating contractor ID: ${id}`, data);
     try {
       // 1. Отправляем PUT запрос на обновление
@@ -4766,7 +4766,7 @@ export default class ConstructionManager {
 
       // 2. Запрашиваем обновленные данные с сервера GET-запросом
       console.log(`Fetching updated data for contractor ID: ${id}`);
-      const getUrl = `/Maintenance_P/backend/construction/contractors_api.php?id=${id}`;
+      const getUrl = `/backend/construction/contractors_api.php?id=${id}`;
       const getResponse = await fetch(getUrl);
 
       if (!getResponse.ok) {
@@ -4830,7 +4830,7 @@ export default class ConstructionManager {
 
   async deleteContractor(id) {
     if (confirm("Are you sure you want to delete this contractor?")) {
-      const apiUrl = `/Maintenance_P/backend/construction/contractors_api.php?id=${id}`;
+      const apiUrl = `/backend/construction/contractors_api.php?id=${id}`;
       console.log(`ConstructionManager: Deleting contractor ID: ${id}`);
       try {
         const response = await fetch(apiUrl, {

@@ -1,9 +1,9 @@
 <?php
 // Параметры подключения к базе данных
-$host = 'localhost';
-$db = 'maintenancedb'; // Название вашей базы данных
-$user = 'root';        // Пользователь MySQL (обычно root в XAMPP)
-$pass = 'root';            // Пароль (обычно пустой в XAMPP)
+$host = 'macan.cityhost.com.ua';
+$db = 'chff6ee508'; // Название вашей базы данных
+$user = 'chff6ee508';        // Пользователь MySQL (обычно root в XAMPP)
+$pass = '73b6bd56cf';            // Пароль (обычно пустой в XAMPP)
 $charset = 'utf8mb4';  // Кодировка
 
 // Настройка DSN

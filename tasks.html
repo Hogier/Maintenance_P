@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="tasks.css" />
-    <link rel="stylesheet" href="user-profile.css" />
-    <link rel="stylesheet" href="materials.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
-    <title>Maintenance Tasks</title>
-    <script>
-      // Initialize user ID from localStorage when the document loads
-      document.addEventListener("DOMContentLoaded", function () {
-        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-        if (currentUser && currentUser.id) {
-          document.body.setAttribute("data-user-id", currentUser.id);
-        }
-      });
-    </script>
-  </head>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="tasks.css" />
+  <link rel="stylesheet" href="user-profile.css" />
+  <link rel="stylesheet" href="materials.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <title>Maintenance Tasks</title>
+  <script>
+    // Initialize user ID from localStorage when the document loads
+    document.addEventListener("DOMContentLoaded", function () {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (currentUser && currentUser.id) {
+        document.body.setAttribute("data-user-id", currentUser.id);
+      }
+    });
+  </script>
+  <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+</head>
 
 <body>
+
+  <!-- Затемнение для мобильного меню -->
+  <div class="sidebar-overlay"></div>
+
   <nav class="sidebar">
     <div class="back-to-main">
-      <a href="/Maintenance_P/main.html" class="back-button">
+      <a href="main.html" class="back-button">
         <i class="fas fa-arrow-left"></i>
         <span>Back to Main Menu</span>
       </a>
@@ -38,7 +41,7 @@
               <span id="userAvatar">👤</span>
             </div>
             <div class="user-details">
-                <span id="userName"></span>
+              <span id="userName"></span>
             </div>
             <button style="display: none;" id="logoutButton">
               <span class="logout-icon">↪</span>
@@ -53,7 +56,7 @@
         <i class="fas fa-tasks"></i>
         <span>Maintenance Tasks</span>
       </li>
-      
+
       <!-- Добавляем контейнер для подменю -->
       <div class="tasks-submenu-section">
         <li class="nav-item" data-page="filter">
@@ -76,16 +79,16 @@
           <li class="submenu-item">
             <div class="sort-container">
               <div class="sort-direction"><img src="images/order.png" alt="sort-direction"></div>
-            <select id="sidebar-sort">
-              <option value="date">by Date</option>
-              <option value="status">by Status</option>
-              <option value="priority">by Priority</option>
-              <option value="assignment">by Assignment</option>
-            </select>
+              <select id="sidebar-sort">
+                <option value="date">by Date</option>
+                <option value="status">by Status</option>
+                <option value="priority">by Priority</option>
+                <option value="assignment">by Assignment</option>
+              </select>
           </li>
         </ul>
       </div>
-      
+
       <li class="nav-item" data-page="materials">
         <i class="fas fa-boxes"></i>
         <span>Supplies</span>
@@ -126,6 +129,11 @@
 
   <div class="main-content">
     <header>
+
+      <button class="mobile-menu-button">
+        <i class="fas fa-bars"></i>
+      </button>
+
       <h1>Maintenance Tasks</h1>
       <div class="current-time">
         <span id="dallasTime"></span>
@@ -214,27 +222,27 @@
           <div class="pagination-container"></div>
         </div>
       </main>
-      </div>
     </div>
-    
-    <div class="task-stats">
-      <div class="stat-item">
-        <span class="stat-label">Total Tasks:</span>
-        <span id="totalTasks" class="stat-value">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Pending:</span>
-        <span id="pendingTasks" class="stat-value">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">In Progress:</span>
-        <span id="inProgressTasks" class="stat-value">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Completed:</span>
-        <span id="completedTasks" class="stat-value">0</span>
-      </div>
+  </div>
+
+  <div class="task-stats">
+    <div class="stat-item">
+      <span class="stat-label">Total Tasks:</span>
+      <span id="totalTasks" class="stat-value">0</span>
     </div>
+    <div class="stat-item">
+      <span class="stat-label">Pending:</span>
+      <span id="pendingTasks" class="stat-value">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">In Progress:</span>
+      <span id="inProgressTasks" class="stat-value">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Completed:</span>
+      <span id="completedTasks" class="stat-value">0</span>
+    </div>
+  </div>
   </div>
 
   <div id="actionContainer" class="action-container">
@@ -286,120 +294,120 @@
           <img src="images/order.png" alt="Order Asc" />
         </button>
 
-      <div class="sort-list">
-        <div class="sort-list-item">
-          <label for="sort-date">Sort by </label>
-          <select id="sort-date">
-            <option value="Date">Date</option>
-            <option value="Status">Status</option>
-            <option value="Priority">Priority</option>
-            <option value="Assigned">Assigned</option>
-          </select>
+        <div class="sort-list">
+          <div class="sort-list-item">
+            <label for="sort-date">Sort by </label>
+            <select id="sort-date">
+              <option value="Date">Date</option>
+              <option value="Status">Status</option>
+              <option value="Priority">Priority</option>
+              <option value="Assigned">Assigned</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div id="searchButton" class="search-button">
-    <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
-    <img src="images/search.png" alt="Search" />
-  </div>
-</div>
-<div class="main-dashboard">
-  <div class="user-dashboard">
-    <span class="close-button">×</span>
-    <div class="settings-icon">
-      <img id="settingsIcon" src="images/00settings.png" alt="Settings" />
+    <div id="searchButton" class="search-button">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search..." />
+      <img src="images/search.png" alt="Search" />
     </div>
+  </div>
+  <div class="main-dashboard">
+    <div class="user-dashboard">
+      <span class="close-button">×</span>
+      <div class="settings-icon">
+        <img id="settingsIcon" src="images/00settings.png" alt="Settings" />
+      </div>
 
-    <div class="user-profile">
-      <div class="user-photo">
-        <div class="user-photo-container">
-          <img src="#" />
+      <div class="user-profile">
+        <div class="user-photo">
+          <div class="user-photo-container">
+            <img src="#" />
+          </div>
+          <div class="change-photo" id="changePhotoButton">&#128247;</div>
         </div>
-        <div class="change-photo" id="changePhotoButton">&#128247;</div>
+        <div class="profile-user-info">
+          <h2 id="dashboardUserName"></h2>
+          <p id="dashboardUserEmail"></p>
+          <!-- Добавьте другие данные о пользователе здесь -->
+        </div>
       </div>
-      <div class="profile-user-info">
-        <h2 id="dashboardUserName"></h2>
-        <p id="dashboardUserEmail"></p>
-        <!-- Добавьте другие данные о пользователе здесь -->
+      <div class="user-tasks">
+        <div class="menu-header">
+          <div id="userTasks" class="menu-header-item">
+            <h3 id="TasksListHeader"></h3>
+          </div>
+          <div id="events" class="menu-header-item">
+            <h3>Events</h3>
+          </div>
+        </div>
+        <div class="info-content"></div>
       </div>
+      <div class="loading-overlay" id="loadingOverlay"></div>
+      <div class="loading-indicator" id="loadingIndicator"></div>
     </div>
-    <div class="user-tasks">
-      <div class="menu-header">
-        <div id="userTasks" class="menu-header-item">
-          <h3 id="TasksListHeader"></h3>
-        </div>
-        <div id="events" class="menu-header-item">
-          <h3>Events</h3>
-        </div>
-      </div>
-      <div class="info-content"></div>
-    </div>
-    <div class="loading-overlay" id="loadingOverlay"></div>
-    <div class="loading-indicator" id="loadingIndicator"></div>
   </div>
-</div>
-<div class="overlay" id="overlay"></div>
+  <div class="overlay" id="overlay"></div>
 
-<!-- Модальное окно для загрузки фотографии -->
-<div class="modal" id="photoModal">
-  <div class="modal-content">
-    <span class="close-modal" id="closeModalButton">×</span>
-    <h2>Upload photo</h2>
-    <div class="drop-area" id="dropArea">
-      <span id="fileName">Drag and drop or click to select a file</span>
-      <input type="file" id="photoInput" accept="image/*" hidden />
+  <!-- Модальное окно для загрузки фотографии -->
+  <div class="modal" id="photoModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModalButton">×</span>
+      <h2>Upload photo</h2>
+      <div class="drop-area" id="dropArea">
+        <span id="fileName">Drag and drop or click to select a file</span>
+        <input type="file" id="photoInput" accept="image/*" hidden />
+      </div>
+      <button id="uploadPhotoButton">Confirm</button>
     </div>
-    <button id="uploadPhotoButton">Confirm</button>
   </div>
-</div>
-<div class="settings-modal" id="settingsModal">
-  <div class="settings-modal-content">
-    <span class="settings-close">&times;</span>
-    <h2>Profile Settings</h2>
-    <div class="settings-form-group">
-      <label for="settingsEmail">Email:</label>
-      <input type="email" id="settingsEmail" disabled />
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-modal-content">
+      <span class="settings-close">&times;</span>
+      <h2>Profile Settings</h2>
+      <div class="settings-form-group">
+        <label for="settingsEmail">Email:</label>
+        <input type="email" id="settingsEmail" disabled />
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsFullName">Full Name:</label>
+        <input type="text" id="settingsFullName" />
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsDepartment">Department:</label>
+        <select id="settingsDepartment">
+          <option value="teaching">Teaching Staff</option>
+          <option value="admin">Administration</option>
+          <option value="support">Support Staff</option>
+          <option value="parents">Parents Club</option>
+        </select>
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsBuilding">Building:</label>
+        <select id="settingsBuilding">
+          <option value="westWing">West Wing</option>
+          <option value="southWing">South Wing</option>
+          <option value="northWing">North Wing</option>
+          <option value="upperSchool">Upper School</option>
+          <option value="GFB">GFB</option>
+          <option value="WLFA">WLFA</option>
+          <option value="Administration">Administration</option>
+        </select>
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsRoom">Room:</label>
+        <select id="settingsRoom"></select>
+      </div>
+      <div class="settings-form-group">
+        <label for="settingsStaffType">Staff Type:</label>
+        <select id="settingsStaffType">
+          <option value="mainTeacher">Main Teacher</option>
+          <option value="assistant">Teaching Assistant</option>
+        </select>
+      </div>
+      <button class="settings-save-btn">Save Changes</button>
     </div>
-    <div class="settings-form-group">
-      <label for="settingsFullName">Full Name:</label>
-      <input type="text" id="settingsFullName" />
-    </div>
-    <div class="settings-form-group">
-      <label for="settingsDepartment">Department:</label>
-      <select id="settingsDepartment">
-        <option value="teaching">Teaching Staff</option>
-        <option value="admin">Administration</option>
-        <option value="support">Support Staff</option>
-        <option value="parents">Parents Club</option>
-      </select>
-    </div>
-    <div class="settings-form-group">
-      <label for="settingsBuilding">Building:</label>
-      <select id="settingsBuilding">
-        <option value="westWing">West Wing</option>
-        <option value="southWing">South Wing</option>
-        <option value="northWing">North Wing</option>
-        <option value="upperSchool">Upper School</option>
-        <option value="GFB">GFB</option>
-        <option value="WLFA">WLFA</option>
-        <option value="Administration">Administration</option>
-      </select>
-    </div>
-    <div class="settings-form-group">
-      <label for="settingsRoom">Room:</label>
-      <select id="settingsRoom"></select>
-    </div>
-    <div class="settings-form-group">
-      <label for="settingsStaffType">Staff Type:</label>
-      <select id="settingsStaffType">
-        <option value="mainTeacher">Main Teacher</option>
-        <option value="assistant">Teaching Assistant</option>
-      </select>
-    </div>
-    <button class="settings-save-btn">Save Changes</button>
   </div>
-</div>
   <!-- Вспомогательная панель -->
   <div class="helper-panel">
     <div class="helper-panel-close">&times;</div>
@@ -409,25 +417,92 @@
     </div>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
-<script src="database.js"></script>
-<script src="websocket-client.js"></script>
-<script src="auth.js"></script>
-<script src="dateUtils.js"></script>
-<script src="tasks.js"></script>
-<script src="materials.js"></script>
-<script src="user-profile.js"></script>
-<script>
-  // Обновление времени каждую секунду
-  function updateDallasTime() {
-    const timeElement = document.getElementById("dallasTime");
-    timeElement.textContent = getDallasDateTime();
-  }
+  <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
+  <script src="database.js"></script>
+ <!-- <script src="websocket-client.js"></script>-->
+  <script src="pusher-client.js"></script>
+  <script src="auth.js"></script>
+  <script src="dateUtils.js"></script>
+  <script src="tasks.js"></script>
+  <script src="materials.js"></script>
+  <script src="user-profile.js"></script>
 
-  setInterval(updateDallasTime, 1000);
-  updateDallasTime(); // Первоначальное обновление
-</script>
-  
+  <script>
+    // Обновление времени каждую секунду
+    function updateDallasTime() {
+      const timeElement = document.getElementById("dallasTime");
+      timeElement.textContent = getDallasDateTime();
+    }
+
+    setInterval(updateDallasTime, 1000);
+    updateDallasTime(); // Первоначальное обновление
+  </script>
+
+  <!-- Скрипт для мобильного меню -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const mobileMenuButton = document.querySelector('.mobile-menu-button');
+      const sidebar = document.querySelector('.sidebar');
+      const sidebarOverlay = document.querySelector('.sidebar-overlay');
+      const helperPanel = document.querySelector('.helper-panel');
+      
+      // Функция для установки left у helper-panel в зависимости от ширины sidebar
+      function setHelperPanelPosition() {
+        const sidebarWidth = sidebar.offsetWidth;
+        helperPanel.style.left = sidebarWidth + 'px';
+      }
+      
+      // Вызываем функцию только при загрузке страницы
+      setHelperPanelPosition();
+      
+      // И при изменении размера окна
+      window.addEventListener('resize', setHelperPanelPosition);
+      
+      mobileMenuButton.addEventListener('click', function () {
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+        document.body.classList.toggle('menu-open');
+      });
+      
+      sidebarOverlay.addEventListener('click', function () {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        document.body.classList.remove('menu-open');
+      });
+
+      let touchStartX = 0;
+      let touchEndX = 0;
+      
+      const swipeThreshold = 100;
+      
+      document.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+      }, false);
+      
+      document.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      }, false);
+      
+      function handleSwipe() {
+        const swipeDistance = touchEndX - touchStartX;
+        
+        if (Math.abs(swipeDistance) > swipeThreshold) {
+          if (swipeDistance > 0 && !sidebar.classList.contains('active')) {
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+            document.body.classList.add('menu-open');
+          }
+          
+          if (swipeDistance < 0 && sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('menu-open');
+          }
+        }
+      }
+    });
+  </script>
 </body>
 
 </html>

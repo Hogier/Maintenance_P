@@ -4,6 +4,16 @@ use Workerman\Worker;
 
 // Создаём WebSocket сервер
 $ws_worker = new Worker("websocket://0.0.0.0:2346");
+// Установка SSL сертификата для WSS
+$ws_worker->transport = 'ssl';
+$ws_worker->context = [
+    'ssl' => [
+        'local_cert'  => '/home/username/www/maintenance-portal.pp.ua/ssl/certificate.crt',
+        'local_pk'    => '/home/username/www/maintenance-portal.pp.ua/ssl/private.key',
+        'verify_peer' => false,
+        'ca_file'     => '/home/username/www/maintenance-portal.pp.ua/ssl/ca_bundle.crt',
+    ]
+];
 $ws_worker->count = 4;
 
 // Глобальное соединение с БД
@@ -12,10 +22,10 @@ $conn = null;
 // Инициализация соединения с БД при запуске воркера
 $ws_worker->onWorkerStart = function($worker) {
     global $conn;
-    $host = 'localhost';
-    $user = 'root';
-    $password = 'root';
-    $database = 'maintenancedb';
+    $host = 'macan.cityhost.com.ua';
+    $user = 'chff6ee508';
+    $password = '73b6bd56cf';
+    $database = 'chff6ee508';
     
     $conn = new mysqli($host, $user, $password, $database);
     if ($conn->connect_error) {

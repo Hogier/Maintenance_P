@@ -10,9 +10,14 @@ const WebSocketClient = (function() {
   
   // Начальная конфигурация
   const config = {
-    url: 'ws://localhost:2346',
+    url: 'ws://maintenance-portal.pp.ua:2346',
     debug: false
   };
+  
+  // Автоматическое определение протокола если страница загружена через HTTPS
+  if (window.location.protocol === 'https:') {
+    config.url = 'wss://maintenance-portal.pp.ua:2346';
+  }
   
   // Приватные методы
   function log(message) {

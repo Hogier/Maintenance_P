@@ -12,10 +12,10 @@ header("Cache-Control: max-age=604800, public");
 header("Expires: " . gmdate("D, d M Y H:i:s", time() + 604800) . " GMT");
 
 // Параметры подключения к базе данных
-$host = 'localhost';
-$user = 'root';
-$password = 'root';
-$database = 'maintenancedb';
+$host = 'macan.cityhost.com.ua';
+$user = 'chff6ee508';
+$password = '73b6bd56cf';
+$database = 'chff6ee508';
 
 // Подключение к базе данных
 $conn = new mysqli($host, $user, $password, $database);
@@ -72,7 +72,7 @@ if ($action === 'addUserPhoto') {
         }
 
         // Получаем путь к корневой директории сайта
-        $rootPath = $_SERVER['DOCUMENT_ROOT'] . '/Maintenance_P';
+        $rootPath = $_SERVER['DOCUMENT_ROOT'] . '';
         
         // Формируем абсолютные пути
         if ($role === 'user' || $role === 'admin' || $role === 'support') {

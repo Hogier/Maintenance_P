@@ -12,10 +12,10 @@ header('Content-Type: text/html; charset=utf-8');
 echo "<h1>Проверка исправлений системы комментариев</h1>";
 
 // Параметры подключения к БД
-$host = 'localhost';
-$user = 'root';
-$password = 'root';
-$database = 'maintenancedb';
+$host = 'macan.cityhost.com.ua';
+$user = 'chff6ee508';
+$password = '73b6bd56cf';
+$database = 'chff6ee508';
 
 // Подключение к БД
 $conn = new mysqli($host, $user, $password, $database);
@@ -73,7 +73,7 @@ if ($taskCheckResult->num_rows == 0) {
 $staffName = "Test User";
 $commentText = "Test comment added at " . date('Y-m-d H:i:s');
 $timestamp = date('Y-m-d H:i:s');
-$photoUrl = "/Maintenance_P/users/img/user.png";
+$photoUrl = "/users/img/user.png";
 
 // Имитируем прямой вызов API добавления комментария
 echo "<h3>Тест 1: Прямое добавление комментария в таблицу task_comments</h3>";

@@ -1478,7 +1478,7 @@ function sendOrderToInspectionsPortal(orderData) {
   // Определяем путь к API относительно текущего домена
   const apiUrl =
     window.location.origin +
-    "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php";
+    "/Inspections-Checklist-Portal/api/supplies-api.php";
   console.log("Sending request to API:", apiUrl);
 
   // Send data to Inspections Portal supplies API

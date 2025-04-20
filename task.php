@@ -65,10 +65,10 @@ if (!is_writable($miniDir)) {
 $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp3'];
 
 // Подключение к базе данных
-$host = 'localhost';
-$user = 'root';
-$password = 'root';  // Пустой пароль для XAMPP
-$database = 'maintenancedb';
+$host = 'macan.cityhost.com.ua';
+$user = 'chff6ee508';
+$password = '73b6bd56cf';  // Пустой пароль для XAMPP
+$database = 'chff6ee508';
 
 $conn = new mysqli($host, $user, $password, $database);
 if ($conn->connect_error) {
@@ -112,16 +112,31 @@ if ($action === 'addTask') {
 
                 // Проверка ошибок при загрузке
                 if ($fileError !== UPLOAD_ERR_OK) {
-                    $errorMessage = match($fileError) {
-                        UPLOAD_ERR_INI_SIZE => "The uploaded file exceeds the upload_max_filesize directive in php.ini",
-                        UPLOAD_ERR_FORM_SIZE => "The uploaded file exceeds the MAX_FILE_SIZE directive in the HTML form",
-                        UPLOAD_ERR_PARTIAL => "The uploaded file was only partially uploaded",
-                        UPLOAD_ERR_NO_FILE => "No file was uploaded",
-                        UPLOAD_ERR_NO_TMP_DIR => "Missing a temporary folder",
-                        UPLOAD_ERR_CANT_WRITE => "Failed to write file to disk",
-                        UPLOAD_ERR_EXTENSION => "A PHP extension stopped the file upload",
-                        default => "Unknown upload error"
-                    };
+                    switch ($fileError) {
+                        case UPLOAD_ERR_INI_SIZE:
+                            $errorMessage = "The uploaded file exceeds the upload_max_filesize directive in php.ini";
+                            break;
+                        case UPLOAD_ERR_FORM_SIZE:
+                            $errorMessage = "The uploaded file exceeds the MAX_FILE_SIZE directive in the HTML form";
+                            break;
+                        case UPLOAD_ERR_PARTIAL:
+                            $errorMessage = "The uploaded file was only partially uploaded";
+                            break;
+                        case UPLOAD_ERR_NO_FILE:
+                            $errorMessage = "No file was uploaded";
+                            break;
+                        case UPLOAD_ERR_NO_TMP_DIR:
+                            $errorMessage = "Missing a temporary folder";
+                            break;
+                        case UPLOAD_ERR_CANT_WRITE:
+                            $errorMessage = "Failed to write file to disk";
+                            break;
+                        case UPLOAD_ERR_EXTENSION:
+                            $errorMessage = "A PHP extension stopped the file upload";
+                            break;
+                        default:
+                            $errorMessage = "Unknown upload error";
+                    }
                     error_log("File upload error: $errorMessage");
                     echo json_encode(['success' => false, 'message' => "Error uploading file $fileName: $errorMessage"]);
                     exit;

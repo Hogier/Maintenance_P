@@ -1,8 +1,8 @@
 <?php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', 'root');
-define('DB_NAME', 'maintenancedb');
+define('DB_HOST', 'macan.cityhost.com.ua');
+define('DB_USER', 'chff6ee508');
+define('DB_PASS', '73b6bd56cf');
+define('DB_NAME', 'chff6ee508');
 
 function getDBConnection() {
     try {

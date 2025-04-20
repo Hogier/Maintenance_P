@@ -794,8 +794,8 @@ async function loadUserPhoto() {
         currentUser.role === "user" ||
         currentUser.role === "admin" ||
         currentUser.role === "support"
-          ? `url("/Maintenance_P/users/img/${photoFileName}")`
-          : `url("/Maintenance_P/maintenance_staff/img/${photoFileName}")`;
+          ? `url("/users/img/${photoFileName}")`
+          : `url("/maintenance_staff/img/${photoFileName}")`;
       avatarContainer.style.backgroundSize = "cover";
       avatarContainer.style.backgroundPosition = "center";
       avatarContainer.innerHTML = ``;
@@ -804,8 +804,8 @@ async function loadUserPhoto() {
       currentUser.role === "user" ||
       currentUser.role === "admin" ||
       currentUser.role === "support"
-        ? `/Maintenance_P/users/img/${photoFileName}`
-        : `/Maintenance_P/maintenance_staff/img/${photoFileName}`;
+        ? `/users/img/${photoFileName}`
+        : `/maintenance_staff/img/${photoFileName}`;
     // Добавляем проверку и выводим значение backgroundImage
     if (avatarContainer) {
     } else {

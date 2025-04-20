@@ -135,7 +135,7 @@ echo "<h2>URL Information</h2>";
 echo "<p>Host: " . $_SERVER['HTTP_HOST'] . "</p>";
 echo "<p>Script: " . $_SERVER['SCRIPT_NAME'] . "</p>";
 echo "<p>API Path (absolute): " . realpath($apiPath) . "</p>";
-echo "<p>API URL (recommended): " . "http://" . $_SERVER['HTTP_HOST'] . "/Maintenance_P/Inspections-Checklist-Portal/api/supplies-api.php" . "</p>";
+echo "<p>API URL (recommended): " . "http://" . $_SERVER['HTTP_HOST'] . "/Inspections-Checklist-Portal/api/supplies-api.php" . "</p>";
 
 // Информация о текущих настройках PHP
 echo "<h2>PHP Settings</h2>";

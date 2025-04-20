@@ -4,10 +4,10 @@ ini_set('display_errors', 1);
 
 try {
     // Параметры подключения
-    $host = 'localhost';
-    $user = 'root';
-    $password = 'root';
-    $database = 'maintenancedb';
+    $host = 'macan.cityhost.com.ua';
+    $user = 'chff6ee508';
+    $password = '73b6bd56cf';
+    $database = 'chff6ee508';
 
     // Подключение
     $conn = new mysqli($host, $user, $password);

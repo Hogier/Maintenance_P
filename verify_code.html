@@ -202,7 +202,7 @@
           }
 
           try {
-            const response = await fetch("/Maintenance_P/api/verify_code.php", {
+            const response = await fetch("/api/verify_code.php", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -214,7 +214,7 @@
             if (data.success) {
               // Set registration access flag
               sessionStorage.setItem("registrationAccess", "true");
-              window.location.replace("/Maintenance_P/register.html");
+              window.location.replace("/register.html");
               return;
             }
             showMessage(data.message || "Error verifying code", data.success);

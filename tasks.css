@@ -127,7 +127,7 @@ h1::after {
   box-shadow: var(--task-item-shadow);
   transition: all 0.3s ease;
   animation: fadeIn 0.3s ease-in-out;
-  border-left: 3px solid var(--accent-color);
+  border-left: 2px solid #cdcdcd;
   position: relative;
   overflow: hidden;
 }
@@ -191,7 +191,7 @@ h1::after {
 .task-details {
   position: relative;
   top: -5px;
-  left: 5px;
+  left: -3px;
   z-index: 100;
   background-color: var(--task-detail-bg);
   padding: 14px 16px;
@@ -283,7 +283,7 @@ h1::after {
   z-index: 99;
   position: relative;
   top: -10px;
-  left: 5px;
+  left: -3px;
 }
 
 .priority-low {
@@ -537,6 +537,7 @@ h1::after {
 
 .status-select {
   padding: 6px 12px;
+  margin-left: 5px;
   border: 1px solid #ddd;
   border-radius: 12px;
   font-size: 14px;
@@ -1161,6 +1162,7 @@ h1::after {
   background-color: white;
   border-radius: 2px;
   transform-origin: bottom center;
+  opacity: 0;
 }
 
 .discussion-toggle-clock .hour-hand,
@@ -1418,6 +1420,7 @@ h1::after {
   left: 0;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   z-index: 2800;
   transition: transform 0.3s ease;
 }
@@ -1425,18 +1428,19 @@ h1::after {
 /* Mobile menu button */
 .mobile-menu-button {
   display: none;
-  position: fixed;
-  top: 15px;
-  left: 15px;
   z-index: 1001;
-  background: var(--primary-color);
+  background: linear-gradient(45deg, #5a81a8, #3498db);
   color: white;
   border: none;
   padding: 10px;
   border-radius: 5px;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transform: scale(1);
   transition: all 0.3s ease;
+}
+
+.mobile-menu-button:hover {
+  transform: scale(1.05);
 }
 
 .mobile-menu-button i {
@@ -1612,12 +1616,13 @@ h1::after {
   font-size: 16px;
 }
 
+.search-input-wrapper {
+  position: relative;
+  width: 200px;
+}
+
 /* Responsive styles */
 @media (max-width: 1024px) {
-  header {
-    width: 100%;
-  }
-
   .sidebar {
     transform: translateX(-100%);
     visibility: hidden;
@@ -1646,7 +1651,7 @@ h1::after {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    z-index: 2799;
     opacity: 0;
     transition: opacity 0.3s ease;
   }
@@ -1660,11 +1665,130 @@ h1::after {
     left: 0;
     width: 100%;
   }
+  
+  /* Новые стили для мобильной версии */
+  .current-time, header h1 {
+    display: none;
+  }
+  
+  .mobile-menu-button i {
+    font-size: 1rem;
+  }
+  
+  header {
+    width: 100%;
+    padding: 5px 10px;
+  }
+  
+  .search-type {
+    height: 35px;
+    width: 60px;
+  }
+  
+  .search-input-wrapper {
+    height: 35px;
+    width: 150px;
+  }
+  
+  .tasks-search-button {
+    height: 35px;
+    margin: 0px 0 0 4px;
+  }
+  
+  /* Адаптация helper-panel для мобильной версии */
+  .helper-panel {
+    width: 80%;
+    max-width: 300px;
+  }
+  
+  /* Стили для task-details на мобильных */
+
+  .task-details {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    top: -5px;
+    left: -3px;
+    z-index: 100;
+    background-color: var(--task-detail-bg);
+    padding: 8px 8px;
+    margin: 8px 0 0 0;
+    border-radius: 10px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #334155;
+    white-space: normal;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  /* Стили для task-location на мобильных */
+  .task-location {
+    position: relative;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(223, 226, 239, 0);
+    padding: 0px 0px;
+    border-radius: 12px 4px 4px 12px;
+    font-size: 13px;
+    color: #aab6bc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 20px;
+    border-radius: 12px;
+    box-shadow: inset 0px -2px 4px rgba(0, 0, 0, 0);
+    max-width: 100%;
+  }
+  
+  /* Отключение стрелки у location на мобильных */
+  .task-location:before {
+    border-bottom-color: transparent;
+  }
+
+  .task-action-container {
+    flex-direction: column;
+    gap: 15px;
+    margin: 12px 0 16px 0;
+  }
+
+  .discussion-toggle {
+    margin: 20px auto 0px auto;
+  }
+
+  .status-select{
+    width: 120px;
+  }
+
+  .alert-tasks-list-header p {
+    font-size: 14px;
+  }
+
+  .task-status {
+    width: 100%;
+  }
+
+  #closeAlertTasks {
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+  }
+
+  .container {
+    padding: 60px 20px 40px 20px;
+  }
+
+  .tasks-container {
+    padding: 15px 20px;
+  }
 }
 
 @media (max-width: 768px) {
   .sidebar {
-    width: 80%;
+    width: 45%;
     max-width: 300px;
   }
 
@@ -1686,9 +1810,9 @@ h1::after {
   position: fixed;
   visibility: hidden;
   top: 0;
-  left: var(--sidebar-width);
   /* Начальная позиция - сразу за сайдбаром */
-  width: var(--sidebar-width);
+  width: 42%;
+  max-width: 300px;
   height: 100vh;
   background-color: var(--secondary-color);
   transform: translateX(-100%);
@@ -2134,11 +2258,6 @@ h1::after {
   background-color: white;
   font-size: 14px;
   color: #333;
-}
-
-.search-input-wrapper {
-  position: relative;
-  width: 200px;
 }
 
 .tasks-search-input {

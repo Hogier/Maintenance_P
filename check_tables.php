@@ -9,10 +9,10 @@ header('Content-Type: text/html; charset=utf-8');
 echo "<h1>Tasks and Comments Tables Check</h1>";
 
 // Database connection
-$host = 'localhost';
-$user = 'root';
-$password = 'root';
-$database = 'maintenancedb';
+$host = 'macan.cityhost.com.ua';
+$user = 'chff6ee508';
+$password = '73b6bd56cf';
+$database = 'chff6ee508';
 
 $conn = new mysqli($host, $user, $password, $database);
 if ($conn->connect_error) {
@@ -122,7 +122,7 @@ echo "<p>Using task ID: {$taskId}</p>";
 echo "<p>Comment timestamp: {$timestamp}</p>";
 
 // Call comments.php directly using curl
-$curl = curl_init('http://localhost/Maintenance_P/comments.php');
+$curl = curl_init('http://maintenance-portal.pp.ua/comments.php');
 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($curl, CURLOPT_POST, true);
 curl_setopt($curl, CURLOPT_POSTFIELDS, [

@@ -1,45 +1,51 @@
 // Создаем WebSocket соединение
-const requestWS = new WebSocket("ws://localhost:2346");
+// const requestWS = new WebSocket("wss://macan.cityhost.com.ua:2346");
 
 // database.js уже создает глобальную переменную db
 // const db = new Database();
 
 window.onload = function () {
-  // При открытии соединения
-  requestWS.onopen = function () {
-    console.log("Подключено к WebSocket серверу");
-  };
+  // Инициализируем Pusher
+  PusherClient.init({
+    key: '16f6b338124ef7c54632',
+    cluster: 'eu',
+    channelName: 'maintenance-channel',
+    debug: true
+  });
+  
+  // Подписываемся на события соединения
+  PusherClient.on('connection', function(data) {
+    if (data.status === 'connected') {
+      console.log("Соединение с Pusher установлено");
+    } else {
+      console.log("Соединение с Pusher разорвано");
+    }
+  });
 
-  // При получении сообщения
-  requestWS.onmessage = function (e) {
+  // Подписываемся на события получения задач
+  PusherClient.on('taskAdded', function(data) {
     try {
-      const response = JSON.parse(e.data);
-      console.log("Получен ответ:", response);
+      console.log("Получен ответ:", data);
 
-      if (response.type === "tasks") {
+      if (data.type === "tasks") {
         // Обработка полученных задач
-        const tasks = response.data;
+        const tasks = data.data;
         console.log("Получены задачи:", tasks);
         // Здесь можно вызвать функцию для отображения задач
         displayUserTasks(tasks);
-      } else if (response.type === "error") {
-        console.error("Ошибка сервера:", response.message);
+      } else if (data.type === "error") {
+        console.error("Ошибка сервера:", data.message);
       }
     } catch (error) {
-      console.error("Ошибка парсинга JSON:", error);
-      console.log("Полученные данные:", e.data);
+      console.error("Ошибка обработки данных:", error);
+      console.log("Полученные данные:", data);
     }
-  };
+  });
 
-  // При ошибке
-  requestWS.onerror = function (e) {
-    console.error("WebSocket ошибка: " + e.message);
-  };
-
-  // При закрытии соединения
-  requestWS.onclose = function () {
-    console.log("Соединение закрыто");
-  };
+  // Подписываемся на события ошибок
+  PusherClient.on('error', function(data) {
+    console.error("Pusher ошибка:", data.error);
+  });
 };
 
 // В начале файла добавим функцию для проверки текущего пользователя
@@ -477,7 +483,8 @@ document
           console.log("mediaFiles.length: " + mediaFiles.length);
           console.log("Array.from(mediaFiles): " + Array.from(mediaFiles));
 
-          requestWS.send(JSON.stringify({ ...requestData, action: "addTask" }));
+          // Отправляем задачу через Pusher без дополнительной сериализации
+          await PusherClient.addTask(requestData);
 
           showConfirmationModal(requestData.requestId);
 
