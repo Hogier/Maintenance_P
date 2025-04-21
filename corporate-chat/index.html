@@ -6,6 +6,7 @@
     <title>Corporate Chat | Alcuin School</title>
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/modern-chat.css" />
+    <link rel="stylesheet" href="css/sidebar.css" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,27 +14,60 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
   </head>
   <body>
-    <div class="header-container">
-      <button id="backToMainMenu" class="back-button">
-        <span class="back-icon">←</span>
-        <span class="back-text">Главное меню</span>
-      </button>
-      <div class="user-profile-account">
-        <div class="profile-user-info">
-          <div class="avatar-container">
-            <span id="userAvatar">👤</span>
-          </div>
-          <div class="user-details">
-            <span id="userName"></span>
-            <span class="user-department"></span>
-          </div>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-button">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Swipe hint for mobile -->
+    <div class="touch-hint"></div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar-navigation">
+      <div class="menu-back-button">
+        <a href="../main.html" class="sidebar-back-button">Back to Main Menu</a>
+      </div>
+
+      <div class="sidebar-menu">
+        <div
+          class="sidebar-menu-item maintenance-request"
+          data-section="maintenance-request"
+        >
+          <i class="fas fa-tools"></i>
+          <span>Submit Maintenance Request</span>
         </div>
-        <button id="logoutButton">
-          <span class="logout-icon">↪</span>
-          <span class="logout-text">Logout</span>
-        </button>
+        <div
+          class="sidebar-menu-item event-request"
+          data-section="event-request"
+        >
+          <i class="fas fa-calendar-alt"></i>
+          <span>Event Request</span>
+        </div>
+        <div
+          class="sidebar-menu-item maintenance-staff"
+          data-section="maintenance-staff"
+        >
+          <i class="fas fa-hard-hat"></i>
+          <span>Maintenance Staff Portal</span>
+        </div>
+        <div class="sidebar-menu-item inspections" data-section="inspections">
+          <i class="fas fa-clipboard-check"></i>
+          <span>Inspections & Checklist</span>
+        </div>
+        <div class="sidebar-menu-item active" data-section="chat">
+          <i class="fas fa-comments"></i>
+          <span>Chat</span>
+        </div>
       </div>
     </div>
 
@@ -202,10 +236,6 @@
     <script src="js/chat.js"></script>
     <script src="js/chat-ui-enhancements.js"></script>
     <script src="js/chat-file-upload.js"></script>
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-    />
+    <script src="js/sidebar.js"></script>
   </body>
 </html>

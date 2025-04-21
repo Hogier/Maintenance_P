@@ -24,11 +24,12 @@ const closeAddUserModalBtn = document.getElementById("closeAddUserModal");
 const addUserSelection = document.getElementById("addUserSelection");
 const addUserConfirmBtn = document.getElementById("addUserConfirm");
 const overlay = document.getElementById("overlay");
-const userNameElement = document.getElementById("userName");
-const userDepartmentElement = document.querySelector(".user-department");
-const userAvatarElement = document.getElementById("userAvatar");
-const logoutButton = document.getElementById("logoutButton");
-const backToMainMenuBtn = document.getElementById("backToMainMenu");
+// Remove references to header elements since we removed the header
+// const userNameElement = document.getElementById("userName");
+// const userDepartmentElement = document.querySelector(".user-department");
+// const userAvatarElement = document.getElementById("userAvatar");
+// const logoutButton = document.getElementById("logoutButton");
+// const backToMainMenuBtn = document.getElementById("backToMainMenu");
 // Элементы для раздела онлайн-пользователей
 const onlineUsersContainer = document.getElementById("onlineUsersContainer");
 const prevOnlineUsersBtn = document.getElementById("prevOnlineUsers");
@@ -146,112 +147,15 @@ async function initializeChat() {
   startStatusUpdates();
 }
 
-// Display user info in header
+// Display user info - empty implementation since header is removed
 function displayUserInfo() {
-  if (!currentUser) return;
-
-  console.log("Current user data:", currentUser);
-
-  // Set user name and department
-  userNameElement.textContent = currentUser.fullName || "User";
-
-  // Remove role/department display
-  userDepartmentElement.textContent = "";
-
-  // Load user photo if available
-  loadUserPhoto();
+  console.log("User info display skipped - header elements removed");
 }
 
-// Load user photo
+// Load user photo - empty implementation since header is removed
 async function loadUserPhoto() {
-  try {
-    if (!currentUser || !currentUser.id) {
-      console.log("Current user not available for photo loading");
-      userAvatarElement.textContent = "👤";
-      return;
-    }
-
-    console.log("Loading photo for user:", currentUser.id);
-    const userPhoto = await getUserPhotoFromServer();
-    console.log("User photo response:", userPhoto);
-
-    if (userPhoto) {
-      // Create image element
-      const img = document.createElement("img");
-
-      // Check if the URL is relative or absolute
-      if (userPhoto.startsWith("/") || userPhoto.startsWith("http")) {
-        img.src = userPhoto;
-      } else {
-        // For relative URLs, construct the path relative to current page location
-        img.src = userPhoto;
-      }
-
-      console.log("Loading image from:", img.src);
-
-      // Add load/error event handlers to debug image loading
-      img.onload = function () {
-        console.log("✅ Image loaded successfully:", img.src);
-      };
-
-      img.onerror = function () {
-        console.error("❌ Image failed to load:", img.src);
-        console.log("Trying alternate URL format...");
-
-        // Try lowercase version of the URL as a fallback
-        const lowerCaseUrl = img.src.replace(
-          /\/Maintenance_P\//i,
-          "/maintenance_p/"
-        );
-        if (lowerCaseUrl !== img.src) {
-          console.log("Trying lowercase URL:", lowerCaseUrl);
-          img.src = lowerCaseUrl;
-        } else {
-          // Fall back to initials
-          if (currentUser && currentUser.fullName) {
-            const initials = currentUser.fullName
-              .split(" ")
-              .map((name) => name.charAt(0))
-              .join("")
-              .substring(0, 2)
-              .toUpperCase();
-            userAvatarElement.textContent = initials;
-          } else {
-            userAvatarElement.textContent = "👤";
-          }
-        }
-      };
-
-      img.alt = "User Avatar";
-      img.style.width = "100%";
-      img.style.height = "100%";
-      img.style.borderRadius = "50%";
-      img.style.objectFit = "cover";
-
-      // Replace text avatar with image
-      userAvatarElement.textContent = "";
-      console.log("Adding image to avatar element:", userAvatarElement);
-      userAvatarElement.appendChild(img);
-      console.log("Avatar element after append:", userAvatarElement.innerHTML);
-    } else {
-      console.log("No photo URL returned, using initials");
-      // If no photo, show initials
-      if (currentUser && currentUser.fullName) {
-        const initials = currentUser.fullName
-          .split(" ")
-          .map((name) => name.charAt(0))
-          .join("")
-          .substring(0, 2)
-          .toUpperCase();
-        userAvatarElement.textContent = initials;
-      } else {
-        userAvatarElement.textContent = "👤";
-      }
-    }
-  } catch (error) {
-    console.error("Error loading user photo:", error);
-    userAvatarElement.textContent = "👤";
-  }
+  console.log("User photo loading skipped - header elements removed");
+  return;
 }
 
 // Get user photo from server
@@ -305,18 +209,9 @@ async function getUserPhotoFromServer() {
   }
 }
 
-// Setup logout button
+// Setup logout button - empty implementation since header is removed
 function setupLogoutButton() {
-  if (logoutButton) {
-    logoutButton.addEventListener("click", function () {
-      // Clear local storage
-      localStorage.removeItem("currentUser");
-      localStorage.removeItem("maintenanceStaffAuth");
-
-      // Also clear server-side session by redirecting to logout script
-      window.location.href = "./php/logout.php";
-    });
-  }
+  console.log("Logout button setup skipped - header elements removed");
 }
 
 // Check user authentication
@@ -2173,15 +2068,15 @@ function setupEventListeners() {
   }
 
   // Back to main menu button event
-  backToMainMenuBtn.addEventListener("click", () => {
-    // Add a small animation effect
-    backToMainMenuBtn.classList.add("clicked");
+  // backToMainMenuBtn.addEventListener("click", () => {
+  //   // Add a small animation effect
+  //   backToMainMenuBtn.classList.add("clicked");
 
-    // Wait for animation to finish before redirecting
-    setTimeout(() => {
-      window.location.href = "../main.html";
-    }, 200);
-  });
+  //   // Wait for animation to finish before redirecting
+  //   setTimeout(() => {
+  //     window.location.href = "../main.html";
+  //   }, 200);
+  // });
 }
 
 // Create API file to handle chat functionality
