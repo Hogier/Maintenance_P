@@ -73,6 +73,7 @@ let tasksCurrentFilter = "today"; // возможные значения: 'today
 let currentDate = new Date(getDallasDate());
 let checkDate = currentDate.toISOString().split("T")[0];
 
+let numOfComments = 0;
 let newCommentsPosition = [];
 
 let localComments = {};
@@ -3432,17 +3433,21 @@ function addCommentFromPusher(data) {
         if (!isCurrentUserComment) {
           const commentsRect = commentsContainer.getBoundingClientRect();
           const isCommentsVisible = commentsRect.top >= 0 && commentsRect.bottom <= window.innerHeight;
+          const isCommentsExpanded = commentsContainer.classList.contains('expanded');
           
-          if (!isCommentsVisible) {
+          if (!isCommentsVisible || !isCommentsExpanded) {
             let newCommentNotification = document.querySelector('.new-comment-notification');
             if (!newCommentNotification) {
               newCommentNotification = document.createElement("div");
               newCommentNotification.className = "new-comment-notification";
-              
-              const commentAlertIcon = document.createElement("div");
+              const commentAlertIcon = document.createElement("div");              
+
               commentAlertIcon.className = "alert-icon";
-              commentAlertIcon.textContent = "!";
-              
+              numOfComments++;
+              if (numOfComments > 0) {
+                commentAlertIcon.textContent = numOfComments === 1 ?  "!" : numOfComments;
+              }
+              console.log(`[Pusher] commentAlertIcon  ${commentAlertIcon.textContent}`);
               newCommentNotification.appendChild(commentAlertIcon);
               document.body.appendChild(newCommentNotification);
             }
@@ -3451,21 +3456,22 @@ function addCommentFromPusher(data) {
             console.log(`[Pusher] Показано всплывающее уведомление о новом комментарии`);
             
             newCommentNotification.onclick = function() {
+              numOfComments--;
+              if (numOfComments < 0) {
+                numOfComments = 0;
+              }
+
               taskElement.scrollIntoView({ behavior: 'smooth' });
               console.log(`[Pusher] Прокрутка к комментарию по клику на уведомление`);
               
               const discussionToggle = taskElement.querySelector('.discussion-toggle');
-              if (discussionToggle) {
+              const commentsList = taskElement.querySelector('.comments-list');
+              if (!commentsList.classList.contains('expanded')) {
                 discussionToggle.click();
               }
               
               newCommentNotification.style.display = "none";
             };
-            
-            setTimeout(() => {
-              newCommentNotification.style.display = "none";
-              console.log(`[Pusher] Автоматическое скрытие уведомления о комментарии через 6 секунд`);
-            }, 6000);
           }
         }
       } else {

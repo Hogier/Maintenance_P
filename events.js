@@ -61,6 +61,8 @@ function showCommentNotification(comment) {
   }, 6000); // Уведомление исчезнет через 6 секунд
 }
 
+// Удаляем старый код работы с eventsWS
+/*
 eventsWS.onmessage = function (e) {
   try {
     const data = JSON.parse(e.data);
@@ -94,6 +96,52 @@ eventsWS.onmessage = function (e) {
     console.error("Error processing WebSocket message:", error);
   }
 };
+*/
+
+// Инициализация Pusher
+document.addEventListener("DOMContentLoaded", function() {
+  // Настройка Pusher клиента
+  PusherClient.init({
+    debug: true, // Для отладки, в production можно установить в false
+    channelName: 'maintenance-channel'
+  });
+
+  // Подписка на событие о новых комментариях
+  PusherClient.on('eventCommentAdded', function(data) {
+    try {
+      console.log('[Pusher] Получено событие eventCommentAdded:', data);
+      
+      // Получаем данные комментария
+      const comment = data.message || data;
+      
+      // Получаем текущего пользователя
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      const currentUserName = currentUser.fullName
+        ? currentUser.fullName
+        : currentUser.username;
+      
+      // Проверяем, что комментарий не от текущего пользователя
+      if (comment.author != currentUserName) {
+        // Показываем уведомление
+        showCommentNotification(comment);
+        
+        // Если комментарий адресован текущему открытому событию, добавляем его в список
+        const openedEventElement = document.querySelector(
+          '.event-item[style*="display: block"]'
+        );
+        
+        if (openedEventElement) {
+          const eventId = openedEventElement.getAttribute("data-event-id");
+          if (eventId === comment.eventId) {
+            addEventComment(eventId, comment);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[Pusher] Ошибка при обработке события eventCommentAdded:', error);
+    }
+  });
+});
 
 // Добавляем обработчик для кнопки закрытия
 document
@@ -1681,102 +1729,121 @@ async function addComment(event, eventId) {
       author: author,
       date: serverDateStr,
       userPhotoUrl: userPhotoUrl, // Добавляем URL фото
+      eventDate: document.querySelector(".event-date")?.textContent || ''
     };
 
-    // Отправляем запрос на сервер
-    const formData = new FormData();
-    formData.append("action", "addComment");
-    formData.append("commentData", JSON.stringify(commentData));
+    try {
+      // Сначала пробуем отправить через Pusher
+      console.log('[Pusher] Отправка комментария через PusherClient');
+      const result = await PusherClient.addEventComment(
+        eventId, 
+        commentText, 
+        author, 
+        commentData.eventDate, 
+        userPhotoUrl
+      );
+      console.log('[Pusher] Результат отправки через Pusher:', result);
+      
+      // Очищаем поле ввода
+      commentInput.value = "";
+      
+      // НЕ добавляем комментарий локально - ждем его прихода через Pusher
+      
+    } catch (pusherError) {
+      console.error('[Pusher] Ошибка при отправке через Pusher, использую обычный fetch:', pusherError);
+      
+      // Если Pusher не сработал, отправляем через обычный fetch
+      const formData = new FormData();
+      formData.append("action", "addComment");
+      formData.append("commentData", JSON.stringify(commentData));
 
-    const response = await fetch("events_db.php", {
-      method: "POST",
-      body: formData,
-    });
+      const response = await fetch("events_db.php", {
+        method: "POST",
+        body: formData,
+      });
 
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(result.message || "Failed to add comment");
-    }
-    console.log("Comment added successfully");
-    console.log(commentData);
-    commentData.action = "addEventComment";
-    commentData.eventDate = document.querySelector(".event-date").textContent;
-    eventsWS.send(JSON.stringify(commentData));
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || "Failed to add comment");
+      }
+      
+      console.log("Comment added successfully via fetch");
+      
+      // Находим событие в массиве
+      const currentEvent = events.find((e) => String(e.id) === String(eventId));
+      if (!currentEvent) throw new Error("Event not found");
 
-    // Находим событие в массиве
-    const currentEvent = events.find((e) => String(e.id) === String(eventId));
-    if (!currentEvent) throw new Error("Event not found");
+      // Добавляем комментарий в массив комментариев события
+      if (!currentEvent.comments) {
+        currentEvent.comments = [];
+      }
 
-    // Добавляем комментарий в массив комментариев события
-    if (!currentEvent.comments) {
-      currentEvent.comments = [];
-    }
+      const newComment = {
+        id: result.commentId,
+        text: commentText,
+        author: author,
+        date: serverDateStr,
+        userPhotoUrl: userPhotoUrl,
+      };
 
-    const newComment = {
-      id: result.commentId,
-      text: commentText,
-      author: author,
-      date: serverDateStr,
-      userPhotoUrl: userPhotoUrl,
-    };
+      currentEvent.comments.push(newComment);
 
-    currentEvent.comments.push(newComment);
+      // Очищаем поле ввода
+      commentInput.value = "";
 
-    // Очищаем поле ввода
-    commentInput.value = "";
+      // Обновляем отображение комментариев в DOM
+      const eventElement = document.querySelector(
+        `.event-item[data-event-id="${eventId}"]`
+      );
 
-    // Обновляем отображение комментариев в DOM
-    const eventElement = document.querySelector(
-      `.event-item[data-event-id="${eventId}"]`
-    );
+      if (eventElement) {
+        const commentsList = eventElement.querySelector(".comments-list");
 
-    if (eventElement) {
-      const commentsList = eventElement.querySelector(".comments-list");
+        if (commentsList) {
+          // Используем форматированную дату напрямую, а не через formatDate
+          const formattedDate = localDate.toLocaleString("en-US", {
+            timeZone: "America/Chicago",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          });
 
-      if (commentsList) {
-        // Используем форматированную дату напрямую, а не через formatDate
-        const formattedDate = localDate.toLocaleString("en-US", {
-          timeZone: "America/Chicago",
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
-
-        // Создаем элемент нового комментария
-        const commentElement = document.createElement("div");
-        commentElement.className = "comment-item";
-        commentElement.setAttribute("data-comment-id", result.commentId);
-        commentElement.innerHTML = `
-          <div class="comment-header">
-            <div class="comment-author-container">
-              <img class="comment-user-photo" src="${userPhotoUrl}" alt="${author}" onerror="this.src='/users/img/user.png';">
-              <span class="comment-author">${author}</span>
+          // Создаем элемент нового комментария
+          const commentElement = document.createElement("div");
+          commentElement.className = "comment-item";
+          commentElement.setAttribute("data-comment-id", result.commentId);
+          commentElement.innerHTML = `
+            <div class="comment-header">
+              <div class="comment-author-container">
+                <img class="comment-user-photo" src="${userPhotoUrl}" alt="${author}" onerror="this.src='/users/img/user.png';">
+                <span class="comment-author">${author}</span>
+              </div>
+              <span class="comment-date">${formattedDate}</span>
+              <div class="comment-actions">
+                <button class="comment-edit" onclick="editComment(event, '${eventId}', '${result.commentId}')">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="comment-delete" onclick="deleteComment(event, '${eventId}', '${result.commentId}')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </div>
-            <span class="comment-date">${formattedDate}</span>
-            <div class="comment-actions">
-              <button class="comment-edit" onclick="editComment(event, '${eventId}', '${result.commentId}')">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="comment-delete" onclick="deleteComment(event, '${eventId}', '${result.commentId}')">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-          <div class="comment-text">${commentText}</div>
-        `;
+            <div class="comment-text">${commentText}</div>
+          `;
 
-        // Добавляем комментарий в список
-        commentsList.appendChild(commentElement);
+          // Добавляем комментарий в список
+          commentsList.appendChild(commentElement);
 
-        // Прокручиваем к новому комментарию
-        commentsList.scrollTop = commentsList.scrollHeight;
+          // Прокручиваем к новому комментарию
+          commentsList.scrollTop = commentsList.scrollHeight;
 
-        // Воспроизведем звук нового сообщения, если есть функция
-        if (typeof playNewMessageSound === "function") {
-          playNewMessageSound();
+          // Воспроизведем звук нового сообщения, если есть функция
+          if (typeof playNewMessageSound === "function") {
+            playNewMessageSound();
+          }
         }
       }
     }

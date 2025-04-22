@@ -1218,8 +1218,8 @@ h1::after {
 
 .new-comment-notification {
   position: fixed;
-  top: 20px;
-  left: 20px;
+  bottom: 55px;
+  right: 10px;
   width: 70px;
   height: 70px;
   background: linear-gradient(135deg, #bf83ff, #2196f3);
@@ -1233,7 +1233,6 @@ h1::after {
   cursor: pointer;
   transition: opacity 0.3s ease;
   display: none;
-  left: 20px;
   width: 70px;
   height: 70px;
   background: linear-gradient(135deg, #bf83ff, #2196f3);
