@@ -9,6 +9,7 @@
   let sidebarNav;
   let sidebarOverlay;
   let mobileMenuButton;
+  let closeSidebarButton;
   let touchHint;
   let chatWindow;
 
@@ -17,6 +18,7 @@
     sidebarNav = document.querySelector(".sidebar-navigation");
     sidebarOverlay = document.querySelector(".sidebar-overlay");
     mobileMenuButton = document.querySelector(".mobile-menu-button");
+    closeSidebarButton = document.querySelector(".close-sidebar-button");
     touchHint = document.querySelector(".touch-hint");
     chatWindow = document.querySelector(".chat-window");
 
@@ -25,6 +27,9 @@
 
     // Инициализация стилей чат-контейнера при загрузке страницы
     initChatContainerStyles();
+
+    // Позиционирование кнопки закрытия
+    updateCloseButtonPosition();
   });
 
   // Инициализация стилей чат-контейнера в соответствии с размером экрана
@@ -44,11 +49,27 @@
     }
   }
 
+  // Функция для обновления позиции кнопки закрытия
+  function updateCloseButtonPosition() {
+    if (!closeSidebarButton) return;
+
+    const sidebarWidth =
+      window.innerWidth <= 768 ? Math.min(window.innerWidth * 0.8, 280) : 300;
+
+    // Позиционируем кнопку правее края меню с отступом
+    closeSidebarButton.style.left = `${sidebarWidth + 5}px`;
+  }
+
   // Set up event listeners for sidebar navigation
   function setupEventListeners() {
     // Mobile menu button
     if (mobileMenuButton) {
-      mobileMenuButton.addEventListener("click", toggleSidebar);
+      mobileMenuButton.addEventListener("click", openSidebar);
+    }
+
+    // Close sidebar button
+    if (closeSidebarButton) {
+      closeSidebarButton.addEventListener("click", closeSidebar);
     }
 
     // Overlay click to close sidebar
@@ -73,106 +94,73 @@
     // Add touch swipe gestures for mobile
     setupTouchGestures();
 
-    // Toggle sidebar when menu button is clicked
-    if (mobileMenuButton) {
-      mobileMenuButton.addEventListener("click", function () {
-        sidebarNav.classList.toggle("sidebar-open");
-        sidebarOverlay.classList.toggle("active");
-        document.body.classList.toggle("sidebar-active");
-
-        // Adjust chat container margin when sidebar is toggled
-        const chatContainer = document.querySelector(".chat-container");
-        if (chatContainer) {
-          if (sidebarNav.classList.contains("sidebar-open")) {
-            if (window.innerWidth > 768) {
-              // Используем отступ слева в соответствии с CSS
-              chatContainer.style.marginLeft = "calc(300px + 20px)";
-              chatContainer.style.width = "calc(90% - 300px)";
-            }
-          } else {
-            if (window.innerWidth > 768) {
-              // Сохраняем значения из CSS
-              chatContainer.style.marginLeft = "calc(300px + 20px)";
-              chatContainer.style.width = "calc(90% - 300px)";
-            }
-          }
-        }
-      });
-    }
-
-    // Close sidebar when overlay is clicked
-    if (sidebarOverlay) {
-      sidebarOverlay.addEventListener("click", function () {
-        sidebarNav.classList.remove("sidebar-open");
-        sidebarOverlay.classList.remove("active");
-        document.body.classList.remove("sidebar-active");
-
-        // Reset chat container margin
-        const chatContainer = document.querySelector(".chat-container");
-        if (chatContainer && window.innerWidth > 768) {
-          // Сохраняем значения из CSS
-          chatContainer.style.marginLeft = "calc(300px + 20px)";
-          chatContainer.style.width = "calc(90% - 300px)";
-        }
-      });
+    // Для мобильных устройств
+    if (window.innerWidth <= 768) {
+      if (mobileMenuButton) {
+        mobileMenuButton.addEventListener("click", function () {
+          openSidebar();
+        });
+      }
     }
 
     // Adjust layout when window is resized
     window.addEventListener("resize", function () {
       const chatContainer = document.querySelector(".chat-container");
 
+      // Обновляем позицию кнопки закрытия при изменении размера окна
+      updateCloseButtonPosition();
+
       if (window.innerWidth <= 768) {
-        sidebarNav.classList.remove("sidebar-open");
-        sidebarOverlay.classList.remove("active");
-        document.body.classList.remove("sidebar-active");
+        // Не удаляем классы active, если меню открыто
+        if (!sidebarNav.classList.contains("active")) {
+          closeSidebar(); // Закрываем сайдбар только если он был закрыт
+        }
 
         if (chatContainer) {
           chatContainer.style.marginLeft = "1%";
           chatContainer.style.width = "98%";
         }
-      } else if (window.innerWidth <= 992) {
-        if (chatContainer) {
-          chatContainer.style.marginLeft = "calc(300px + 10px)";
-          chatContainer.style.width = "calc(95% - 300px)";
-        }
       } else {
+        // При переходе на десктоп всегда закрываем мобильное меню
+        closeSidebar();
+
         if (chatContainer) {
-          chatContainer.style.marginLeft = "calc(300px + 20px)";
-          chatContainer.style.width = "calc(90% - 300px)";
+          if (window.innerWidth <= 992) {
+            chatContainer.style.marginLeft = "calc(300px + 10px)";
+            chatContainer.style.width = "calc(95% - 300px)";
+          } else {
+            chatContainer.style.marginLeft = "calc(300px + 20px)";
+            chatContainer.style.width = "calc(90% - 300px)";
+          }
         }
       }
     });
-  }
-
-  // Toggle sidebar visibility
-  function toggleSidebar() {
-    if (sidebarNav.classList.contains("active")) {
-      closeSidebar();
-    } else {
-      openSidebar();
-    }
-
-    // Toggle menu button icon
-    if (mobileMenuButton) {
-      mobileMenuButton.classList.toggle("menu-open");
-    }
   }
 
   // Open sidebar
   function openSidebar() {
     sidebarNav.classList.add("active");
     sidebarOverlay.classList.add("active");
+    document.body.classList.add("sidebar-active");
     document.body.style.overflow = "hidden"; // Prevent scrolling
+
+    // Добавляем класс active для кнопки закрытия
+    if (closeSidebarButton) {
+      updateCloseButtonPosition();
+      closeSidebarButton.classList.add("active");
+    }
   }
 
   // Close sidebar
   function closeSidebar() {
     sidebarNav.classList.remove("active");
     sidebarOverlay.classList.remove("active");
+    document.body.classList.remove("sidebar-active");
     document.body.style.overflow = ""; // Enable scrolling
 
-    if (mobileMenuButton) {
-      mobileMenuButton.classList.remove("menu-open");
+    // Удаляем класс active для кнопки закрытия
+    if (closeSidebarButton) {
+      closeSidebarButton.classList.remove("active");
     }
   }
 
@@ -255,7 +243,7 @@
     // Handle swipe to close sidebar
     function handleSidebarSwipe() {
       if (touchStartX - touchEndX > minSwipeDistance) {
-        // Swipe left inside sidebar
+        // Swipe left on sidebar
         closeSidebar();
       }
     }

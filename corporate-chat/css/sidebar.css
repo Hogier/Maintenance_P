@@ -160,6 +160,49 @@
   transform: scale(1.1);
 }
 
+/* Кнопка закрытия бокового меню */
+.close-sidebar-button {
+  position: fixed;
+  top: 10px; /* Немного поднимем */
+  left: auto;
+  z-index: 9900;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  width: 25px;
+  height: 30px;
+  padding: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color, #2c3e50); /* Цвет как у боковой панели */
+  border-radius: 4px; /* Прямоугольная */
+  transition: all 0.3s ease;
+  border: none; /* Убираем рамку */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: scale(0) translateX(0);
+}
+
+.close-sidebar-button.active {
+  display: flex;
+  opacity: 1;
+  transform: scale(1) translateX(0);
+}
+
+.close-sidebar-button:hover {
+  background: var(--secondary-color, #34495e); /* Цвет при наведении */
+  transform: scale(1.05) translateX(0); /* Небольшое увеличение */
+}
+
+.close-sidebar-button:active {
+  transform: scale(0.95) translateX(0);
+}
+
+.close-sidebar-button:focus {
+  outline: none;
+}
+
 /* Mobile responsive design */
 .mobile-menu-button {
   display: none;
@@ -260,37 +303,54 @@
 /* Media queries for responsive design */
 @media screen and (max-width: 768px) {
   .mobile-menu-button {
+    display: block;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 9500;
+  }
+
+  /* Скрываем кнопку меню при открытии сайдбара */
+  body.sidebar-active .mobile-menu-button {
+    display: none;
+  }
+
+  /* Показываем кнопку закрытия при открытии сайдбара */
+  body.sidebar-active .close-sidebar-button {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
   .sidebar-navigation {
     transform: translateX(-100%);
-    width: 280px;
-    max-width: 90%;
-    z-index: 1000;
-    transition: transform 0.3s ease, visibility 0.3s ease;
-    visibility: hidden;
-    will-change: transform;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    transition: transform 0.3s ease;
+    width: 80%;
+    max-width: 280px;
   }
 
   .sidebar-navigation.active {
     transform: translateX(0);
-    visibility: visible;
-    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Обеспечиваем, чтобы контент не перекрывал меню на мобильных устройствах */
+  .chat-container {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 15px !important;
+  }
+
+  /* Добавим отступ сверху для контента, чтобы кнопка меню не перекрывала */
+  .chat-container .main-chat {
+    margin-top: 50px;
+  }
+
+  /* Убедимся, что сайдбар имеет отображение под кнопкой меню */
+  .sidebar-navigation.active .sidebar-menu-item:first-child {
+    margin-top: 20px;
   }
 
   .sidebar-overlay {
     will-change: opacity;
     -webkit-tap-highlight-color: transparent;
-  }
-
-  .chat-container {
-    width: 98%;
-    margin-left: 1%;
   }
 
   .header-container {
@@ -302,6 +362,22 @@
     .touch-hint {
       display: block;
     }
+  }
+
+  /* Для мобильных устройств с маленьким экраном корректируем позицию */
+  .close-sidebar-button {
+    position: fixed;
+    top: 15px;
+    left: auto; /* Отменяем предыдущее значение */
+    z-index: 9900;
+    color: white;
+    background: #2c3e50; /* Синий цвет как в event портале */
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .close-sidebar-button {
+    display: none !important;
   }
 }
 
