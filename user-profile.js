@@ -24,7 +24,6 @@ const buildingRooms = {
   Administration: ["Office 1", "Office 2", "Office 3"],
 };
 
-
 document.addEventListener("DOMContentLoaded", async function () {
   const user = JSON.parse(localStorage.getItem("currentUser"));
   const maintenanceStaff = JSON.parse(
@@ -51,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const userDashboard = document.querySelector(".user-dashboard");
   const headerContainer = document.querySelector(".header-container");
+  const profileUserInfo = document.querySelector(".profile-user-info");
   const closeButton = document.querySelector(".close-button");
   const changePhotoButton = document.getElementById("changePhotoButton");
   const photoModal = document.getElementById("photoModal");
@@ -75,6 +75,16 @@ document.addEventListener("DOMContentLoaded", async function () {
       ? "Your requests"
       : "Your tasks";
   TasksListHeader.textContent = titleForTasksList;
+
+  // Add click event to profile in sidebar
+  profileUserInfo.addEventListener("click", function () {
+    userDashboard.classList.add("active");
+    console.log("userDashboard.offsetWidth", userDashboard.offsetWidth);
+    actionContainer.style.right = `${userDashboard.offsetWidth + 10}px`;
+    overlay.style.display = "block";
+    overlay.style.opacity = "1";
+    overlay.style.pointerEvents = "auto";
+  });
 
   headerContainer.addEventListener("click", function () {
     userDashboard.classList.add("active");
