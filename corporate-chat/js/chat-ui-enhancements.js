@@ -385,3 +385,129 @@ const addCustomStyles = () => {
 
 // Добавляем стили при загрузке документа
 document.addEventListener("DOMContentLoaded", addCustomStyles);
+
+/**
+ * Обработка переключений UI в чате для мобильных устройств
+ */
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Элементы интерфейса
+  const chatContainer = document.querySelector(".chat-container");
+  const chatSidebar = document.querySelector(".chat-container .sidebar");
+  const mainChat = document.querySelector(".main-chat");
+  const backToSidebarBtn = document.createElement("button");
+
+  // Добавляем кнопку "Назад к списку чатов" для мобильной версии
+  backToSidebarBtn.classList.add("back-to-sidebar-btn");
+  backToSidebarBtn.innerHTML =
+    '<i class="fas fa-arrow-left"></i> Back to chats';
+  backToSidebarBtn.style.display = "none";
+  mainChat.insertBefore(backToSidebarBtn, mainChat.firstChild);
+
+  // Стили для кнопки возврата к списку чатов
+  backToSidebarBtn.style.display = "none";
+  backToSidebarBtn.style.position = "absolute";
+  backToSidebarBtn.style.top = "10px";
+  backToSidebarBtn.style.left = "10px";
+  backToSidebarBtn.style.padding = "8px 12px";
+  backToSidebarBtn.style.backgroundColor = "#3498db";
+  backToSidebarBtn.style.color = "white";
+  backToSidebarBtn.style.border = "none";
+  backToSidebarBtn.style.borderRadius = "4px";
+  backToSidebarBtn.style.zIndex = "50";
+  backToSidebarBtn.style.cursor = "pointer";
+
+  // Функция проверки ширины экрана
+  function checkMobileView() {
+    return window.innerWidth <= 768;
+  }
+
+  // Переключение к основному чату (скрывает боковую панель на мобильных)
+  function showMainChat() {
+    if (checkMobileView()) {
+      chatContainer.classList.add("sidebar-active");
+      chatSidebar.style.display = "none";
+      mainChat.style.display = "block";
+      backToSidebarBtn.style.display = "block";
+    }
+  }
+
+  // Переключение к списку чатов (скрывает основной чат на мобильных)
+  function showChatList() {
+    if (checkMobileView()) {
+      chatContainer.classList.remove("sidebar-active");
+      chatSidebar.style.display = "block";
+      mainChat.style.display = "none";
+      backToSidebarBtn.style.display = "none";
+    }
+  }
+
+  // Обработчик клика на чате - переход к чату
+  document.querySelectorAll(".chat-item").forEach((item) => {
+    item.addEventListener("click", function () {
+      showMainChat();
+    });
+  });
+
+  // Обработчик клика на кнопке "Назад к списку чатов"
+  backToSidebarBtn.addEventListener("click", function () {
+    showChatList();
+  });
+
+  // Функция для динамически добавленных элементов чата
+  function setupChatItemListeners() {
+    document
+      .querySelectorAll(".chat-item:not(.has-click-listener)")
+      .forEach((item) => {
+        item.classList.add("has-click-listener");
+        item.addEventListener("click", function () {
+          showMainChat();
+        });
+      });
+  }
+
+  // Наблюдатель за изменениями в DOM для добавления обработчиков новым элементам
+  const observer = new MutationObserver(function (mutations) {
+    setupChatItemListeners();
+  });
+
+  const directMessagesList = document.getElementById("directMessagesList");
+  const groupsList = document.getElementById("groupsList");
+
+  if (directMessagesList) {
+    observer.observe(directMessagesList, { childList: true, subtree: true });
+  }
+
+  if (groupsList) {
+    observer.observe(groupsList, { childList: true, subtree: true });
+  }
+
+  // Начальная настройка для существующих элементов
+  setupChatItemListeners();
+
+  // Обработка изменения размера окна
+  window.addEventListener("resize", function () {
+    if (!checkMobileView()) {
+      // Если не мобильный вид, показываем оба элемента
+      chatSidebar.style.display = "";
+      mainChat.style.display = "";
+      backToSidebarBtn.style.display = "none";
+    } else {
+      // Для мобильного вида проверяем активный экран
+      if (chatContainer.classList.contains("sidebar-active")) {
+        chatSidebar.style.display = "none";
+        mainChat.style.display = "block";
+        backToSidebarBtn.style.display = "block";
+      } else {
+        chatSidebar.style.display = "block";
+        mainChat.style.display = "none";
+        backToSidebarBtn.style.display = "none";
+      }
+    }
+  });
+
+  // Проверяем начальный размер экрана
+  if (checkMobileView()) {
+    showChatList();
+  }
+});

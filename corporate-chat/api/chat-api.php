@@ -161,6 +161,16 @@ switch ($action) {
     case 'get_file':
         getFile($conn);
         break;
+    case 'get_unread_count':
+    case 'getunreadcount':
+        getUnreadCount();
+        break;
+    case 'mark_messages_read':
+    case 'mark_as_read':
+    case 'markasread':
+    case 'markread':
+        markMessagesRead();
+        break;
     default:
         http_response_code(404);
         debug_log("Invalid action: '" . $action . "'");
@@ -467,7 +477,7 @@ function getGroupChats() {
 }
 
 /**
- * Get messages for a specific chat
+ * Get messages for a chat
  */
 function getMessages() {
     global $conn;
@@ -506,9 +516,12 @@ function getMessages() {
                 exit;
             }
             
-            // Get messages
+            // Get messages including sender_photo_url
             $msgStmt = $conn->prepare("
-                SELECT cm.*, u.full_name as sender_name
+                SELECT cm.*, u.full_name as sender_name,
+                    COALESCE(cm.sender_photo_url, 
+                        CASE WHEN u.photo IS NOT NULL THEN CONCAT('/Maintenance_P/users/img/', u.photo) ELSE NULL END
+                    ) as sender_photo_url
                 FROM chat_messages cm
                 JOIN users u ON cm.sender_id = u.id
                 WHERE cm.direct_chat_id = :chat_id
@@ -544,9 +557,12 @@ function getMessages() {
                 exit;
             }
             
-            // Get messages
+            // Get messages including sender_photo_url
             $msgStmt = $conn->prepare("
-                SELECT cm.*, u.full_name as sender_name
+                SELECT cm.*, u.full_name as sender_name,
+                    COALESCE(cm.sender_photo_url, 
+                        CASE WHEN u.photo IS NOT NULL THEN CONCAT('/Maintenance_P/users/img/', u.photo) ELSE NULL END
+                    ) as sender_photo_url
                 FROM chat_messages cm
                 JOIN users u ON cm.sender_id = u.id
                 WHERE cm.group_id = :group_id
@@ -577,6 +593,7 @@ function getMessages() {
                 'id' => $row['id'],
                 'sender' => $row['sender_id'],
                 'sender_name' => $row['sender_name'],
+                'sender_photo_url' => $row['sender_photo_url'],
                 'text' => $row['message'],
                 'timestamp' => $row['sent_at']
             ];
@@ -1790,6 +1807,199 @@ function createDirectChat() {
     } catch(PDOException $e) {
         debug_log("Error creating direct chat: " . $e->getMessage());
         http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+/**
+ * Получить количество непрочитанных сообщений для пользователя
+ */
+function getUnreadCount() {
+    global $conn;
+    
+    // Получаем ID пользователя из параметра или сессии
+    $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : $_SESSION['user_id'];
+    
+    debug_log("Getting unread message count for user ID: " . $user_id);
+    
+    try {
+        // Проверяем существование таблицы chat_messages
+        $checkTableStmt = $conn->prepare("SHOW TABLES LIKE 'chat_messages'");
+        $checkTableStmt->execute();
+        
+        if ($checkTableStmt->rowCount() == 0) {
+            debug_log("chat_messages table doesn't exist yet");
+            echo json_encode(['success' => true, 'unread_count' => 0]);
+            exit;
+        }
+        
+        // Проверяем, существует ли таблица chat_read_status
+        $checkReadTableStmt = $conn->prepare("SHOW TABLES LIKE 'chat_read_status'");
+        $checkReadTableStmt->execute();
+        
+        if ($checkReadTableStmt->rowCount() == 0) {
+            debug_log("chat_read_status table doesn't exist, creating it");
+            // Создаем таблицу если ее нет
+            $conn->exec("
+                CREATE TABLE IF NOT EXISTS `chat_read_status` (
+                    `id` INT(11) NOT NULL AUTO_INCREMENT,
+                    `message_id` INT(11) NOT NULL,
+                    `user_id` INT(11) NOT NULL,
+                    `read_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (`id`),
+                    UNIQUE KEY `message_user` (`message_id`, `user_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+        }
+        
+        // Получаем количество непрочитанных сообщений из директ-чатов
+        $directSql = "SELECT COUNT(*) as count FROM chat_messages cm
+                    JOIN chat_direct cd ON cm.direct_chat_id = cd.id
+                    WHERE 
+                    (cd.user1_id = :user_id OR cd.user2_id = :user_id)
+                    AND cm.sender_id != :user_id
+                    AND cm.id NOT IN (
+                        SELECT message_id FROM chat_read_status 
+                        WHERE user_id = :user_id
+                    )";
+        
+        $directStmt = $conn->prepare($directSql);
+        $directStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $directStmt->execute();
+        $directCount = $directStmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        // Получаем количество непрочитанных сообщений из групповых чатов
+        $groupSql = "SELECT COUNT(*) as count FROM chat_messages cm
+                    JOIN chat_group_members cgm ON cm.group_id = cgm.group_id
+                    WHERE 
+                    cgm.user_id = :user_id
+                    AND cm.sender_id != :user_id
+                    AND cm.id NOT IN (
+                        SELECT message_id FROM chat_read_status 
+                        WHERE user_id = :user_id
+                    )";
+        
+        $groupStmt = $conn->prepare($groupSql);
+        $groupStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $groupStmt->execute();
+        $groupCount = $groupStmt->fetch(PDO::FETCH_ASSOC)['count'];
+        
+        // Суммируем количество непрочитанных сообщений
+        $totalCount = $directCount + $groupCount;
+        
+        debug_log("Unread message count for user ID $user_id: $totalCount (Direct: $directCount, Group: $groupCount)");
+        
+        echo json_encode(['success' => true, 'unread_count' => $totalCount]);
+        exit;
+        
+    } catch (PDOException $e) {
+        http_response_code(500);
+        debug_log("Database error in getUnreadCount: " . $e->getMessage());
+        echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+/**
+ * Пометить сообщения в чате как прочитанные
+ */
+function markMessagesRead() {
+    global $conn;
+    
+    // Если запрос POST, получаем данные из тела запроса
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Получаем данные из тела запроса
+        $json_data = file_get_contents('php://input');
+        $data = json_decode($json_data, true);
+        
+        $chat_id = isset($data['chat_id']) ? intval($data['chat_id']) : 0;
+        $chat_type = isset($data['chat_type']) ? $data['chat_type'] : '';
+        $user_id = isset($data['user_id']) ? intval($data['user_id']) : $_SESSION['user_id'];
+    } else {
+        // Если запрос GET, получаем данные из параметров URL
+        $chat_id = isset($_GET['chat_id']) ? intval($_GET['chat_id']) : 0;
+        $chat_type = isset($_GET['chat_type']) ? $_GET['chat_type'] : '';
+        $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : $_SESSION['user_id'];
+    }
+    
+    debug_log("Marking messages as read for chat ID: $chat_id, type: $chat_type, user ID: $user_id");
+    
+    if (!$chat_id || !$chat_type) {
+        http_response_code(400);
+        debug_log("Invalid parameters for marking messages as read");
+        echo json_encode(['success' => false, 'error' => 'Chat ID and type are required']);
+        exit;
+    }
+    
+    try {
+        // Проверяем что таблица chat_read_status существует
+        $checkTableStmt = $conn->prepare("SHOW TABLES LIKE 'chat_read_status'");
+        $checkTableStmt->execute();
+        
+        if ($checkTableStmt->rowCount() == 0) {
+            debug_log("chat_read_status table doesn't exist, creating it");
+            // Создаем таблицу статусов прочтения
+            $conn->exec("
+                CREATE TABLE IF NOT EXISTS `chat_read_status` (
+                    `id` INT(11) NOT NULL AUTO_INCREMENT,
+                    `message_id` INT(11) NOT NULL,
+                    `user_id` INT(11) NOT NULL,
+                    `read_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (`id`),
+                    UNIQUE KEY `message_user` (`message_id`, `user_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+        }
+        
+        // Получаем все непрочитанные сообщения для данного чата и пользователя
+        if ($chat_type === 'direct') {
+            $msgStmt = $conn->prepare("
+                SELECT id FROM chat_messages 
+                WHERE direct_chat_id = :chat_id AND sender_id != :user_id
+                AND id NOT IN (
+                    SELECT message_id FROM chat_read_status 
+                    WHERE user_id = :user_id
+                )
+            ");
+        } else { // group
+            $msgStmt = $conn->prepare("
+                SELECT id FROM chat_messages 
+                WHERE group_id = :chat_id AND sender_id != :user_id
+                AND id NOT IN (
+                    SELECT message_id FROM chat_read_status 
+                    WHERE user_id = :user_id
+                )
+            ");
+        }
+        
+        $msgStmt->bindParam(':chat_id', $chat_id, PDO::PARAM_INT);
+        $msgStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $msgStmt->execute();
+        
+        $unreadMessages = $msgStmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        // Отмечаем все сообщения как прочитанные
+        $marked = 0;
+        foreach ($unreadMessages as $messageId) {
+            $markStmt = $conn->prepare("
+                INSERT IGNORE INTO chat_read_status (message_id, user_id)
+                VALUES (:message_id, :user_id)
+            ");
+            $markStmt->bindParam(':message_id', $messageId, PDO::PARAM_INT);
+            $markStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+            $markStmt->execute();
+            $marked += $markStmt->rowCount();
+        }
+        
+        debug_log("Marked $marked messages as read for chat ID: $chat_id, user ID: $user_id");
+        
+        echo json_encode(['success' => true, 'marked_count' => $marked]);
+        exit;
+        
+    } catch (PDOException $e) {
+        http_response_code(500);
+        debug_log("Database error in markMessagesRead: " . $e->getMessage());
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
         exit;
     }

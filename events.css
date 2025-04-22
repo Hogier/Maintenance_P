@@ -1,3 +1,12 @@
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #34495e;
+  --accent-color: #3498db;
+  --text-color: #2c3e50;
+  --background-color: #ecf0f1;
+  --sidebar-width: 250px;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -17,7 +26,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
-  margin-left: 250px;
+  margin-left: var(--sidebar-width, 250px);
   transition: margin-left 0.3s ease;
 }
 
@@ -2244,42 +2253,70 @@ input[type="date"]:invalid::before {
   }
 }
 
-/* Updated Sidebar Navigation to match Inspections-Checklist-Portal */
+/* Updated Sidebar Navigation to match Maintenance Tasks */
 .sidebar-navigation {
-  width: 280px;
-  background-color: #2c3e50;
+  width: var(--sidebar-width, 250px);
+  background-color: var(--primary-color, #2c3e50);
   min-height: 100vh;
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 200;
+  z-index: 1001;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "back"
+    "profile"
+    "menu";
 }
 
-.menu-back-button {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: background-color 0.3s ease;
+.sidebar-navigation .user-profile-account {
+  grid-area: profile;
   display: flex;
+  flex-direction: column;
+  padding: 20px 10px;
+  cursor: pointer;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  align-items: center;
+  margin: 0 10px;
+}
+
+.sidebar-navigation .profile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: transparent;
+  padding: 5px 0;
+  border-radius: 0;
+  margin-bottom: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
   justify-content: center;
 }
 
-.menu-back-button:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+.sidebar-menu {
+  grid-area: menu;
+  padding: 15px 0;
 }
 
 .sidebar-back-button {
-  color: white;
-  text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
   display: flex;
   align-items: center;
-  transition: transform 0.3s ease;
-  padding: 2px 0;
+  justify-content: center;
+  gap: 10px;
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  padding: 20px 25px;
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .sidebar-back-button:before {
@@ -2289,6 +2326,7 @@ input[type="date"]:invalid::before {
 }
 
 .sidebar-back-button:hover {
+  background-color: var(--secondary-color, #34495e);
   transform: translateX(-5px);
   color: white;
 }
@@ -2297,24 +2335,20 @@ input[type="date"]:invalid::before {
   transform: scale(0.98);
 }
 
-.sidebar-menu {
-  padding: 15px 0;
-  flex-grow: 1;
-}
-
 .sidebar-menu-item {
-  padding: 15px 20px;
+  padding: 15px 25px;
+  color: white;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  color: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-left: 4px solid transparent;
+  gap: 10px;
+  margin-bottom: 5px;
+  position: relative;
 }
 
 .sidebar-menu-item i {
-  margin-right: 15px;
-  font-size: 18px;
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
   width: 24px;
   text-align: center;
 }
@@ -2324,25 +2358,22 @@ input[type="date"]:invalid::before {
 }
 
 .sidebar-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background-color: var(--secondary-color, #34495e);
 }
 
 .sidebar-menu-item.active {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border-left: 4px solid #3498db;
+  background-color: var(--accent-color, #3498db);
+  color: white;
 }
 
 /* Adjust main containers to accommodate fixed sidebar */
 .events-container {
-  margin-left: 280px;
-  padding: 20px;
-  transition: all 0.3s ease;
+  margin-left: var(--sidebar-width, 250px);
+  transition: margin-left 0.3s ease;
 }
 
 .user-profile-account {
-  margin-left: 280px;
+  margin-left: var(--sidebar-width, 250px);
 }
 
 /* Mobile responsive design */
@@ -2477,18 +2508,11 @@ input[type="date"]:invalid::before {
 
   .sidebar-navigation {
     transform: translateX(-100%);
-    width: 220px;
-    z-index: 1000;
-    transition: transform 0.3s ease, visibility 0.3s ease;
-    visibility: hidden;
-    will-change: transform;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    z-index: 9990;
   }
 
   .sidebar-navigation.active {
     transform: translateX(0);
-    visibility: visible;
-    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
   }
 
   .sidebar-overlay {
@@ -2507,6 +2531,36 @@ input[type="date"]:invalid::before {
 
   .user-profile-account {
     margin-left: 0;
+  }
+
+  /* Mobile user profile styles */
+  .sidebar-navigation .user-profile-account {
+    padding: 10px;
+  }
+
+  .sidebar-navigation .profile-user-info {
+    padding: 8px;
+  }
+
+  .sidebar-navigation .avatar-container {
+    width: 35px;
+    height: 35px;
+  }
+
+  .sidebar-navigation #userAvatar {
+    font-size: 18px;
+  }
+
+  .sidebar-navigation .user-department {
+    display: none;
+  }
+
+  .sidebar-navigation #logoutButton {
+    padding: 8px;
+  }
+
+  .sidebar-navigation .logout-text {
+    display: none;
   }
 }
 
@@ -2578,4 +2632,133 @@ input[type="date"]:invalid::before {
   .mobile-menu-button.menu-open {
     /* existing styles are preserved */
   }
+}
+
+/* Стили для элементов меню с баджами */
+.sidebar-menu-item.has-badge {
+  position: relative;
+}
+
+/* Контейнер для значка уведомлений */
+.chat-badge-container {
+  position: absolute;
+  top: 8px;
+  left: 28px;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  z-index: 10;
+}
+
+/* Стиль самого значка с числом уведомлений */
+.chat-badge-mini {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background-color: #e74c3c;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+  padding: 0;
+  margin: 0;
+  letter-spacing: 0;
+}
+
+/* Стили для элемента меню с активным уведомлением */
+.sidebar-menu-item.has-notification {
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.sidebar-menu-item.has-notification:hover {
+  background-color: rgba(231, 76, 60, 0.2);
+}
+
+/* Медиа-запросы для отображения значка уведомлений на мобильных устройствах */
+@media (max-width: 768px) {
+  .chat-badge-container {
+    top: 8px;
+    left: 23px;
+  }
+
+  .chat-badge-mini {
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+  }
+}
+
+/* User profile in sidebar styling */
+.sidebar-navigation .user-profile-account {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 10px;
+  margin: 0; /* Remove auto margin that pushes it to center */
+  cursor: pointer;
+  order: 2; /* Place between back button and menu items */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: center;
+}
+
+.sidebar-navigation .profile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: transparent;
+  padding: 5px 0;
+  border-radius: 0;
+  margin-bottom: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  justify-content: center;
+}
+
+.sidebar-navigation .profile-user-info:hover {
+  background-color: transparent;
+  transform: scale(1.02);
+}
+
+.sidebar-navigation .avatar-container {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-navigation #userAvatar {
+  color: #333;
+  font-size: 20px;
+}
+
+.sidebar-navigation .user-details {
+  color: white;
+}
+
+.sidebar-navigation #userName {
+  color: white;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.sidebar-navigation .user-department {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.sidebar-navigation #logoutButton {
+  display: none;
 }
