@@ -477,7 +477,7 @@ function getGroupChats() {
 }
 
 /**
- * Get messages for a specific chat
+ * Get messages for a chat
  */
 function getMessages() {
     global $conn;
@@ -516,9 +516,12 @@ function getMessages() {
                 exit;
             }
             
-            // Get messages
+            // Get messages including sender_photo_url
             $msgStmt = $conn->prepare("
-                SELECT cm.*, u.full_name as sender_name
+                SELECT cm.*, u.full_name as sender_name,
+                    COALESCE(cm.sender_photo_url, 
+                        CASE WHEN u.photo IS NOT NULL THEN CONCAT('/Maintenance_P/users/img/', u.photo) ELSE NULL END
+                    ) as sender_photo_url
                 FROM chat_messages cm
                 JOIN users u ON cm.sender_id = u.id
                 WHERE cm.direct_chat_id = :chat_id
@@ -554,9 +557,12 @@ function getMessages() {
                 exit;
             }
             
-            // Get messages
+            // Get messages including sender_photo_url
             $msgStmt = $conn->prepare("
-                SELECT cm.*, u.full_name as sender_name
+                SELECT cm.*, u.full_name as sender_name,
+                    COALESCE(cm.sender_photo_url, 
+                        CASE WHEN u.photo IS NOT NULL THEN CONCAT('/Maintenance_P/users/img/', u.photo) ELSE NULL END
+                    ) as sender_photo_url
                 FROM chat_messages cm
                 JOIN users u ON cm.sender_id = u.id
                 WHERE cm.group_id = :group_id
@@ -587,6 +593,7 @@ function getMessages() {
                 'id' => $row['id'],
                 'sender' => $row['sender_id'],
                 'sender_name' => $row['sender_name'],
+                'sender_photo_url' => $row['sender_photo_url'],
                 'text' => $row['message'],
                 'timestamp' => $row['sent_at']
             ];

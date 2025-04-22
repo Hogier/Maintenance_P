@@ -1,0 +1,14 @@
+/* Стиль для сообщений с ошибкой */
+.message-bubble.failed {
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  position: relative;
+}
+
+.message-bubble.failed::after {
+  content: "⚠️";
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  font-size: 12px;
+}

@@ -45,6 +45,9 @@ let messages = {};
 let onlineStatusInterval = null; // Переменная для хранения интервала обновления статуса
 let onlineUsersRefreshInterval = null; // Переменная для хранения интервала обновления блока онлайн-пользователей
 
+// Global photo cache
+const userPhotoCache = {};
+
 // Check if user is logged in
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -330,6 +333,11 @@ function renderChats() {
 // Get photo URL for a specific user
 async function getUserPhotoUrl(userId) {
   try {
+    // Check if we have already cached this photo
+    if (userPhotoCache[userId]) {
+      return userPhotoCache[userId];
+    }
+
     console.log(`Fetching photo for user ${userId}`);
     const response = await fetch(`./php/get_user_photo.php?user_id=${userId}`);
 
@@ -351,9 +359,14 @@ async function getUserPhotoUrl(userId) {
         photoUrl = baseUrl + photoUrl;
         console.log(`Converted to absolute URL: ${photoUrl}`);
       }
+
+      // Cache the photo URL
+      userPhotoCache[userId] = photoUrl;
       return photoUrl;
     } else {
       console.log(`No photo found for user ${userId}`);
+      // Cache a null result to avoid repeated failed requests
+      userPhotoCache[userId] = null;
       return null;
     }
   } catch (error) {
@@ -381,10 +394,13 @@ function createAvatarElement(user, size = "normal") {
   // Set initials as default content
   avatarDiv.textContent = initials;
 
-  // Try to use photo if available
-  if (user.photoUrl) {
+  // Check cached photo URL first (either from user object or global cache)
+  const cachedPhotoUrl = user.photoUrl || userPhotoCache[user.id];
+
+  if (cachedPhotoUrl) {
+    // Use cached photo
     const img = document.createElement("img");
-    img.src = user.photoUrl;
+    img.src = cachedPhotoUrl;
     img.alt = user.name;
     img.style.objectFit = "cover";
     img.style.width = "100%";
@@ -395,33 +411,50 @@ function createAvatarElement(user, size = "normal") {
     img.style.left = "0";
     img.onerror = function () {
       avatarDiv.textContent = initials; // Fallback to initials on error
+      // Remove from cache if loading failed
+      if (userPhotoCache[user.id] === cachedPhotoUrl) {
+        delete userPhotoCache[user.id];
+      }
+      if (user.photoUrl === cachedPhotoUrl) {
+        delete user.photoUrl;
+      }
     };
 
     avatarDiv.textContent = ""; // Clear any existing content
     avatarDiv.appendChild(img);
   } else {
-    // Try to fetch and cache the photo
-    getUserPhotoUrl(user.id).then((photoUrl) => {
-      if (photoUrl) {
-        user.photoUrl = photoUrl; // Cache the URL
-        const img = document.createElement("img");
-        img.src = photoUrl;
-        img.alt = user.name;
-        img.style.objectFit = "cover";
-        img.style.width = "100%";
-        img.style.height = "100%";
-        img.style.borderRadius = "50%";
-        img.style.position = "absolute";
-        img.style.top = "0";
-        img.style.left = "0";
-        img.onerror = function () {
-          avatarDiv.textContent = initials; // Fallback to initials on error
-        };
+    // No cached photo, try to fetch it in the background without causing reflow
+    if (user.id) {
+      // Start loading in background but don't change DOM until complete
+      getUserPhotoUrl(user.id).then((photoUrl) => {
+        if (photoUrl) {
+          user.photoUrl = photoUrl; // Cache the URL in user object
 
-        avatarDiv.textContent = ""; // Clear any existing content
-        avatarDiv.appendChild(img);
-      }
-    });
+          // Check if the avatar is still in the DOM before updating
+          if (avatarDiv.isConnected) {
+            const img = document.createElement("img");
+            img.src = photoUrl;
+            img.alt = user.name;
+            img.style.objectFit = "cover";
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.borderRadius = "50%";
+            img.style.position = "absolute";
+            img.style.top = "0";
+            img.style.left = "0";
+            img.onerror = function () {
+              avatarDiv.textContent = initials; // Fallback to initials on error
+            };
+
+            // Only clear text content and append img after img is loaded
+            img.onload = function () {
+              avatarDiv.textContent = ""; // Clear any existing content
+              avatarDiv.appendChild(img);
+            };
+          }
+        }
+      });
+    }
   }
 
   return avatarDiv;
@@ -807,6 +840,40 @@ async function loadMessages(chatId) {
     }
 
     if (result.messages) {
+      // Pre-fetch user photos for participants in this chat
+      if (result.messages.length > 0) {
+        // Get unique sender IDs
+        const senderIds = Array.from(
+          new Set(result.messages.map((msg) => msg.sender))
+        );
+
+        // Pre-load all photos asynchronously
+        const photoPromises = senderIds.map(async (senderId) => {
+          // Skip if we already have it cached
+          if (userPhotoCache[senderId]) return;
+
+          const sender = users.find((u) => u.id === senderId);
+          if (sender && !sender.photoUrl) {
+            const photoUrl = await getUserPhotoUrl(senderId);
+            if (photoUrl) {
+              sender.photoUrl = photoUrl;
+            }
+          }
+        });
+
+        // Wait for all photos to load but don't block rendering
+        Promise.all(photoPromises)
+          .then(() => {
+            // Re-render messages if already rendered to apply photos
+            if (messages[chatId] && messages[chatId].length > 0) {
+              renderMessages(chatId);
+            }
+          })
+          .catch((error) => {
+            console.error("Error pre-loading user photos:", error);
+          });
+      }
+
       // Fetch file information for messages that have files
       const messagesWithFiles = result.messages.filter((msg) => msg.has_file);
 
@@ -858,6 +925,142 @@ async function loadMessages(chatId) {
   } catch (error) {
     console.error("Error loading messages:", error);
   }
+}
+
+// Helper function to render messages without API fetch
+function renderMessages(chatId) {
+  if (!messages[chatId] || messages[chatId].length === 0) {
+    messagesContainer.innerHTML = `
+      <div class="welcome-message">
+        <h3>No messages yet</h3>
+        <p>Start the conversation by sending a message!</p>
+      </div>
+    `;
+    return;
+  }
+
+  messagesContainer.innerHTML = "";
+  let lastSenderId = null;
+  let lastMessageTime = null;
+
+  messages[chatId].forEach((message, index) => {
+    const isCurrentUser = message.sender === currentUser.id;
+    const isPending = message.pending === true;
+
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `message ${isCurrentUser ? "outgoing" : "incoming"}`;
+
+    // Добавляем атрибуты для группировки сообщений
+    messageDiv.setAttribute("data-sender-id", message.sender);
+
+    // Проверка, это первое сообщение от пользователя или нет
+    const isSameSender = lastSenderId === message.sender;
+
+    // Проверка времени сообщений для группировки
+    const messageTime = new Date(message.timestamp);
+    const isTimeClose =
+      lastMessageTime && messageTime - lastMessageTime < 5 * 60 * 1000; // 5 минут
+
+    // Добавляем классы для группировки
+    if (isSameSender && isTimeClose) {
+      messageDiv.classList.add("same-sender");
+    } else {
+      const messageHeader = document.createElement("div");
+      messageHeader.className = "message-header";
+
+      // Get user info for the sender
+      const sender = users.find((user) => user.id === message.sender);
+      if (sender) {
+        // Check if message has sender_photo_url directly
+        const hasSenderPhotoUrl =
+          message.sender_photo_url && message.sender_photo_url.length > 0;
+
+        // If message has photo URL, use it and also cache it
+        if (hasSenderPhotoUrl) {
+          // Cache the URL for future use
+          userPhotoCache[sender.id] = message.sender_photo_url;
+          sender.photoUrl = message.sender_photo_url;
+
+          // Create avatar with the photo URL directly from message
+          const avatar = document.createElement("div");
+          avatar.className = `chat-avatar chat-avatar-small`;
+
+          const img = document.createElement("img");
+          img.src = message.sender_photo_url;
+          img.alt = sender.name || message.sender_name;
+          img.style.objectFit = "cover";
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.borderRadius = "50%";
+          img.style.position = "absolute";
+          img.style.top = "0";
+          img.style.left = "0";
+
+          // In case the photo URL is invalid, fallback to initials
+          img.onerror = function () {
+            const initials = (sender.name || message.sender_name || "")
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .substring(0, 2)
+              .toUpperCase();
+            avatar.textContent = initials;
+
+            // Remove from caches
+            delete userPhotoCache[sender.id];
+            delete sender.photoUrl;
+          };
+
+          avatar.appendChild(img);
+          messageHeader.appendChild(avatar);
+        } else {
+          // Use the standard avatar element creator which will use cached photo if available
+          const avatar = createAvatarElement(sender, "small");
+          messageHeader.appendChild(avatar);
+        }
+
+        // Add sender name
+        const senderName = document.createElement("div");
+        senderName.className = "message-sender";
+        senderName.textContent =
+          sender.fullName || message.sender_name || `User ${sender.id}`;
+        messageHeader.appendChild(senderName);
+
+        messageDiv.appendChild(messageHeader);
+      }
+    }
+
+    const messageBubble = document.createElement("div");
+    messageBubble.className = "message-bubble";
+    if (isPending) {
+      messageBubble.classList.add("pending");
+    }
+    if (message.failed) {
+      messageBubble.classList.add("failed");
+    }
+    messageBubble.textContent = message.text;
+    messageDiv.appendChild(messageBubble);
+
+    // Handle file attachments if the message has a file
+    if (message.has_file && message.file) {
+      const fileAttachment = createFileAttachment(message.file);
+      messageDiv.appendChild(fileAttachment);
+    }
+
+    const messageTimeElement = document.createElement("div");
+    messageTimeElement.className = "message-time";
+    messageTimeElement.textContent = formatTime(message.timestamp);
+    messageDiv.appendChild(messageTimeElement);
+
+    messagesContainer.appendChild(messageDiv);
+
+    // Update tracking for message grouping
+    lastSenderId = message.sender;
+    lastMessageTime = messageTime;
+  });
+
+  // Scroll to the bottom of the messages container
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 // Show new chat options (when clicking "New Conversation")
@@ -1037,200 +1240,198 @@ async function sendMessage() {
       pending: true,
     };
 
+    // Optimistically add message to local array
     messages[currentChat.id].push(newMessage);
-    renderMessages(currentChat.id);
 
-    // Make API call to server
-    const response = await fetch("./api/chat-api.php?action=send_message", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        chat_id: currentChat.id,
-        message: messageText,
-      }),
-    });
+    // Update UI without full re-render of all messages
+    // (just append the new message to avoid flashing)
+    const lastSenderId =
+      messages[currentChat.id].length > 1
+        ? messages[currentChat.id][messages[currentChat.id].length - 2].sender
+        : null;
+
+    const isCurrentUser = true; // This is always the current user's message when sending
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `message outgoing`;
+    if (lastSenderId === currentUser.id) {
+      messageDiv.classList.add("same-sender");
+    }
+
+    messageDiv.setAttribute("data-sender-id", currentUser.id);
+    messageDiv.setAttribute("data-message-id", tempMessageId);
+
+    if (lastSenderId !== currentUser.id) {
+      const messageHeader = document.createElement("div");
+      messageHeader.className = "message-header";
+
+      // Create avatar with currentUser info (should already be cached)
+      const avatar = createAvatarElement(
+        { id: currentUser.id, name: currentUser.fullName || "You" },
+        "small"
+      );
+      messageHeader.appendChild(avatar);
+
+      const senderName = document.createElement("div");
+      senderName.className = "message-sender";
+      senderName.textContent = currentUser.fullName || "You";
+      messageHeader.appendChild(senderName);
+
+      messageDiv.appendChild(messageHeader);
+    }
+
+    const messageBubble = document.createElement("div");
+    messageBubble.className = "message-bubble pending";
+    messageBubble.textContent = messageText;
+    messageDiv.appendChild(messageBubble);
+
+    const messageTimeElement = document.createElement("div");
+    messageTimeElement.className = "message-time";
+    messageTimeElement.textContent = formatTime(new Date().toISOString());
+    messageDiv.appendChild(messageTimeElement);
+
+    messagesContainer.appendChild(messageDiv);
+
+    // Scroll to the bottom of the messages container
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // Actually send the message to the server
+    const chatId = currentChat.id;
+    const chatType = currentChat.type;
+
+    // Generate API endpoint for file upload if file is attached
+    // (skipped for brevity)
+
+    // Send the message to the server
+    const response = await fetch(
+      `/Maintenance_P/corporate-chat/api/chat-api.php?action=send_message`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message: messageText,
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to send message: ${response.status}`);
     }
 
-    // Log raw response text for debugging
-    const responseText = await response.text();
-    console.log("Raw API response:", responseText);
-
-    // Проверяем наличие ответа
-    if (!responseText || responseText.trim() === "") {
-      console.error("Empty response from server");
-      throw new Error("Server returned an empty response");
-    }
-
-    let result;
-    try {
-      // Try to parse the response as JSON
-      result = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("JSON parse error:", parseError);
-      console.log("Response that caused error:", responseText);
-      throw new Error("Invalid response from server: " + parseError.message);
-    }
-
+    const result = await response.json();
     if (!result.success) {
       throw new Error(result.error || "Failed to send message");
     }
 
     console.log("Message sent successfully:", result);
 
-    // Update the temporary message with real data
-    const messageIndex = messages[currentChat.id].findIndex(
+    // Update the temporary message with the actual message ID and remove pending status
+    const messageIndex = messages[chatId].findIndex(
       (msg) => msg.id === tempMessageId
     );
+
     if (messageIndex !== -1) {
-      messages[currentChat.id][messageIndex] = {
-        id: result.message?.id || messages[currentChat.id][messageIndex].id,
-        sender: currentUser.id,
-        text: messageText,
-        timestamp: result.message?.timestamp || new Date().toISOString(),
+      messages[chatId][messageIndex] = {
+        ...messages[chatId][messageIndex],
+        id: result.message_id,
         pending: false,
       };
+
+      // Update existing message in DOM to remove pending status
+      const pendingMessageElement = document.querySelector(
+        `[data-message-id="${tempMessageId}"]`
+      );
+      if (pendingMessageElement) {
+        pendingMessageElement.setAttribute(
+          "data-message-id",
+          result.message_id
+        );
+        const messageBubble =
+          pendingMessageElement.querySelector(".message-bubble");
+        if (messageBubble) {
+          messageBubble.classList.remove("pending");
+        }
+      }
     }
 
-    // Update UI
-    if (currentChat.type === "direct") {
-      const chat = directChats.find((c) => c.id === currentChat.id);
-      if (chat) {
-        chat.lastMessage = messageText;
-        chat.timestamp = new Date();
+    // Update last message in chat list
+    if (chatType === "direct") {
+      // Find the direct chat in the list
+      const directChatIndex = directChats.findIndex(
+        (chat) => chat.id === chatId
+      );
+      if (directChatIndex !== -1) {
+        directChats[directChatIndex].lastMessage = messageText;
+        directChats[directChatIndex].timestamp = Date.now();
+
+        // Update UI for direct chat list without full re-render
+        const chatItem = directMessagesList.querySelector(
+          `[data-chat-id="${chatId}"]`
+        );
+        if (chatItem) {
+          const lastMessageElement =
+            chatItem.querySelector(".chat-last-message");
+          if (lastMessageElement) {
+            lastMessageElement.textContent = messageText;
+          }
+
+          const chatTimeElement = chatItem.querySelector(".chat-time");
+          if (chatTimeElement) {
+            chatTimeElement.textContent = formatTime(new Date().toISOString());
+          }
+        }
       }
-      renderDirectMessages();
-    } else {
-      const chat = groupChats.find((c) => c.id === currentChat.id);
-      if (chat) {
-        chat.lastMessage = messageText;
-        chat.timestamp = new Date();
+    } else if (chatType === "group") {
+      // Find the group chat in the list
+      const groupChatIndex = groupChats.findIndex((chat) => chat.id === chatId);
+      if (groupChatIndex !== -1) {
+        groupChats[groupChatIndex].lastMessage = messageText;
+        groupChats[groupChatIndex].timestamp = Date.now();
+
+        // Update UI for group chat list without full re-render
+        const chatItem = groupsList.querySelector(`[data-chat-id="${chatId}"]`);
+        if (chatItem) {
+          const lastMessageElement =
+            chatItem.querySelector(".chat-last-message");
+          if (lastMessageElement) {
+            lastMessageElement.textContent = messageText;
+          }
+
+          const chatTimeElement = chatItem.querySelector(".chat-time");
+          if (chatTimeElement) {
+            chatTimeElement.textContent = formatTime(new Date().toISOString());
+          }
+        }
       }
-      renderGroups();
     }
-
-    // Render the updated messages
-    renderMessages(currentChat.id);
-
-    // Обновляем сообщения из API только если успешно отправили сообщение
-    loadMessages(currentChat.id);
   } catch (error) {
     console.error("Error sending message:", error);
 
-    // Remove the temporary message
-    if (messages[currentChat.id]) {
-      messages[currentChat.id] = messages[currentChat.id].filter(
-        (msg) => !msg.pending
+    // Handle failure by marking the message as failed
+    const messageIndex = messages[currentChat.id].findIndex(
+      (msg) => msg.text === originalMessage && msg.pending === true
+    );
+
+    if (messageIndex !== -1) {
+      messages[currentChat.id][messageIndex].failed = true;
+
+      // Update UI to indicate failed message
+      const pendingMessages = document.querySelectorAll(
+        ".message-bubble.pending"
       );
-      renderMessages(currentChat.id);
-    }
-
-    // Show error notification
-    const errorDiv = document.createElement("div");
-    errorDiv.className = "error-notification";
-    errorDiv.textContent = "Failed to send message: " + error.message;
-    document.body.appendChild(errorDiv);
-
-    // Restore the message to the input
-    messageInput.value = originalMessage;
-
-    // Remove notification after delay
-    setTimeout(() => {
-      errorDiv.remove();
-    }, 3000);
-  }
-}
-
-// Helper function to render messages without API fetch
-function renderMessages(chatId) {
-  if (!messages[chatId] || messages[chatId].length === 0) {
-    messagesContainer.innerHTML = `
-      <div class="welcome-message">
-        <h3>No messages yet</h3>
-        <p>Start the conversation by sending a message!</p>
-      </div>
-    `;
-    return;
-  }
-
-  messagesContainer.innerHTML = "";
-  let lastSenderId = null;
-  let lastMessageTime = null;
-
-  messages[chatId].forEach((message, index) => {
-    const isCurrentUser = message.sender === currentUser.id;
-    const isPending = message.pending === true;
-
-    const messageDiv = document.createElement("div");
-    messageDiv.className = `message ${isCurrentUser ? "outgoing" : "incoming"}`;
-
-    // Добавляем атрибуты для группировки сообщений
-    messageDiv.setAttribute("data-sender-id", message.sender);
-
-    // Проверка, это первое сообщение от пользователя или нет
-    const isSameSender = lastSenderId === message.sender;
-
-    // Проверка времени сообщений для группировки
-    const messageTime = new Date(message.timestamp);
-    const isTimeClose =
-      lastMessageTime && messageTime - lastMessageTime < 5 * 60 * 1000; // 5 минут
-
-    // Добавляем классы для группировки
-    if (isSameSender && isTimeClose) {
-      messageDiv.classList.add("same-sender");
-    } else {
-      const messageHeader = document.createElement("div");
-      messageHeader.className = "message-header";
-
-      // Get user info for the sender
-      const sender = users.find((user) => user.id === message.sender);
-      if (sender) {
-        // Create avatar
-        const avatar = createAvatarElement(sender, "small");
-        messageHeader.appendChild(avatar);
-
-        // Add sender name
-        const senderName = document.createElement("div");
-        senderName.className = "message-sender";
-        senderName.textContent = sender.fullName || `User ${sender.id}`;
-        messageHeader.appendChild(senderName);
-
-        messageDiv.appendChild(messageHeader);
+      for (const pendingMsg of pendingMessages) {
+        if (pendingMsg.textContent === originalMessage) {
+          pendingMsg.classList.add("failed");
+          break;
+        }
       }
     }
 
-    const messageBubble = document.createElement("div");
-    messageBubble.className = "message-bubble";
-    if (isPending) {
-      messageBubble.classList.add("pending");
-    }
-    messageBubble.textContent = message.text;
-    messageDiv.appendChild(messageBubble);
-
-    // Handle file attachments if the message has a file
-    if (message.has_file && message.file) {
-      const fileAttachment = createFileAttachment(message.file);
-      messageDiv.appendChild(fileAttachment);
-    }
-
-    const messageTimeElement = document.createElement("div");
-    messageTimeElement.className = "message-time";
-    messageTimeElement.textContent = formatTime(message.timestamp);
-    messageDiv.appendChild(messageTimeElement);
-
-    messagesContainer.appendChild(messageDiv);
-
-    // Update tracking for message grouping
-    lastSenderId = message.sender;
-    lastMessageTime = messageTime;
-  });
-
-  // Scroll to the bottom of the messages container
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // Notify user
+    alert("Failed to send message: " + error.message);
+  }
 }
 
 // Show chat info panel
