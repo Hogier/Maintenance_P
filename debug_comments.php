@@ -9,7 +9,7 @@ echo "<h1>Debug Comment Functionality</h1>";
 // Database connection
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);

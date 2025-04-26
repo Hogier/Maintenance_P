@@ -4,7 +4,7 @@ try {
     $host = 'localhost';
     $dbname = 'maintenancedb';
     $username = 'root';
-    $password = '';
+    $password = 'root';
     $charset = 'utf8';
 
     // Создание DSN (Data Source Name)

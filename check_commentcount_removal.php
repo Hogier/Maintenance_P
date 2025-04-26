@@ -11,7 +11,7 @@ echo "<h1>Проверка удаления столбца commentCount</h1>";
 // Параметры подключения к базе данных
 $host = 'localhost';
 $user = 'root';
-$password = '';
+$password = 'root';
 $database = 'maintenancedb';
 
 // Подключение к базе данных

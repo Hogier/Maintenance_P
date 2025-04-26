@@ -30,7 +30,7 @@ try {
     // Database connection parameters
     $host = 'localhost';
     $user = 'root';
-    $password = '';
+    $password = 'root';
     $database = 'maintenancedb';
 
     // Connect to database

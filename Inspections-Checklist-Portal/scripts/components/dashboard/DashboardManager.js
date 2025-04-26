@@ -703,7 +703,7 @@ export default class DashboardManager {
     let apiUrl = "api/calendar/events.php";
     let apiMethod = "POST";
 
-    // Match the exact database field names - without user_id
+    // Match the exact database field names
     let eventData = {
       title: title,
       description: description,

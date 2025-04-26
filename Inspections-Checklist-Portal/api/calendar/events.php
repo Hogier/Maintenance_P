@@ -31,7 +31,7 @@ try {
     // Параметры соединения с базой данных
     $servername = "localhost";
     $username = "root";
-    $password = "";
+    $password = "root";
     $dbname = "maintenancedb";
     
     file_put_contents($debug_file, "Попытка соединения с базой данных: $servername, $username, $dbname\n", FILE_APPEND);
@@ -60,7 +60,10 @@ try {
             event_date DATETIME NOT NULL,
             event_type VARCHAR(50) DEFAULT 'reminder',
             color VARCHAR(50),
+            user_id INT(11),
             is_completed TINYINT(1) DEFAULT 0,
+            related_id INT(11),
+            related_type VARCHAR(50),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )";
@@ -145,9 +148,16 @@ try {
             $color = isset($data['color']) ? $conn->real_escape_string($data['color']) : '';
             $is_completed = isset($data['is_completed']) ? ($data['is_completed'] ? 1 : 0) : 0;
             
+            // Get user_id from session
+            session_start();
+            $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1;
+            
+              file_put_contents($debug_file, "Используем user_id: " . $user_id . "
+", FILE_APPEND);
+            
             // SQL запрос для вставки
-            $sql = "INSERT INTO calendar_events (title, description, event_date, event_type, color, user_id, is_completed, related_id, related_type) 
-                VALUES ('$title', '$description', '$event_date', '$event_type', '$color', 1, $is_completed, NULL, NULL)";
+            $sql = "INSERT INTO calendar_events (title, description, event_date, event_type, color, user_id, is_completed) 
+                VALUES ('$title', '$description', '$event_date', '$event_type', '$color', $user_id, $is_completed)";
             
             file_put_contents($debug_file, "SQL запрос INSERT: $sql\n", FILE_APPEND);
             

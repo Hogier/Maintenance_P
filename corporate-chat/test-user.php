@@ -5,7 +5,7 @@ require_once '../database.php';
 // Initialize database connection
 try {
     $db = new Database();
-    $conn = new PDO("mysql:host=localhost;dbname=maintenancedb", "root", "");
+    $conn = new PDO("mysql:host=localhost;dbname=maintenancedb", "root", "root");
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {
     die("Database connection failed: " . $e->getMessage());

@@ -27,7 +27,7 @@ if (isset($data['user_id'])) {
         $host = 'localhost';
         $dbname = 'maintenancedb';
         $username = 'root';
-        $password = '';
+        $password = 'root';
         $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
