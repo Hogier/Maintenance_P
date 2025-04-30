@@ -65,10 +65,10 @@ if (!is_writable($miniDir)) {
 $allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'audio/mpeg', 'audio/mp3'];
 
 // Подключение к базе данных
-$host = 'macan.cityhost.com.ua';
-$user = 'chff6ee508';
-$password = '73b6bd56cf';  // Пустой пароль для XAMPP
-$database = 'chff6ee508';
+$host = 'localhost';
+$user = 'root';
+$password = 'root';  // Пустой пароль для XAMPP
+$database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
 if ($conn->connect_error) {

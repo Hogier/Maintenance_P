@@ -14,10 +14,10 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 
 // Параметры подключения к базе данных
-$host = 'macan.cityhost.com.ua';
-$user = 'chff6ee508';
-$password = '73b6bd56cf';
-$database = 'chff6ee508';
+$host = 'localhost';
+$user = 'root';
+$password = 'root';
+$database = 'maintenancedb';
 
 // Подключение к базе данных
 $conn = new mysqli($host, $user, $password, $database);

@@ -5,9 +5,9 @@ ini_set('display_errors', 1);
 try {
     // Подключаемся к базе данных
     $pdo = new PDO(
-        "mysql:host=macan.cityhost.com.ua;dbname=chff6ee508",
-        "chff6ee508",
-        "73b6bd56cf",
+        "mysql:host=localhost;dbname=maintenance_p",
+        "root",
+        "root",
         array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
     );
 

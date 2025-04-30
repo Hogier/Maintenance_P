@@ -7,10 +7,10 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 class Database {
-    private $host = 'macan.cityhost.com.ua';
-    private $user = 'chff6ee508';
-    private $password = '73b6bd56cf';
-    private $database = 'chff6ee508';
+    private $host = 'localhost';
+    private $user = 'root';
+    private $password = 'root';
+    private $database = 'maintenancedb';
     private $conn;
 
     public function __construct() {

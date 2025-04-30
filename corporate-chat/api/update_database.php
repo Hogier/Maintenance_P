@@ -12,10 +12,10 @@ debug_log("Starting database update process");
 
 // Подключение к базе данных
 try {
-    $host = 'macan.cityhost.com.ua';
-    $dbname = 'chff6ee508';
-    $username = 'chff6ee508';
-    $password = '73b6bd56cf';
+    $host = 'localhost';
+    $dbname = 'maintenancedb';
+    $username = 'root';
+    $password = 'root';
     $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     

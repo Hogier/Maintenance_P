@@ -52,6 +52,27 @@ header {
   margin-bottom: 50px;
 }
 
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.center-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #2196f3;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.center-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
 header h1 {
   color: #2196f3;
   font-size: 2.5em;
@@ -72,12 +93,13 @@ header h1 {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 2px solid #2196f3;
 }
 
 .menu-item:hover {
   transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
 }
 
 .menu-item h2 {
@@ -99,11 +121,13 @@ header h1 {
   color: white;
   text-decoration: none;
   border-radius: 5px;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .menu-button:hover {
-  background-color: #1976d2;
+  background-image: linear-gradient(to right, #1976d2, #2196f3, #1976d2);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .submit-button {
@@ -111,7 +135,7 @@ header h1 {
 }
 
 .submit-button:hover {
-  background-color: #f8740f;
+  background-image: linear-gradient(to right, #f8740f, #fa8100, #f8740f);
 }
 
 .maintenance-staff {
@@ -124,7 +148,7 @@ header h1 {
 }
 
 .staff-button:hover {
-  background-color: #d32f2f;
+  background-image: linear-gradient(to right, #d32f2f, #f44336, #d32f2f);
 }
 
 .event-portal {
@@ -137,7 +161,7 @@ header h1 {
 }
 
 .event-button:hover {
-  background-color: #388e3c;
+  background-image: linear-gradient(to right, #388e3c, #4caf50, #388e3c);
 }
 
 .Inspections-Portal {
@@ -150,7 +174,7 @@ header h1 {
 }
 
 .Inspections-Portal-Btn:hover {
-  background-color: #7b1fa2;
+  background-image: linear-gradient(to right, #7b1fa2, #9c27b0, #7b1fa2);
 }
 
 .user-account {
@@ -177,4 +201,26 @@ header h1 {
   .menu-item {
     padding: 20px;
   }
+
+  header {
+    margin-bottom: 20px;
+  }
+
+  .logo-container {
+    margin-bottom: 10px;
+  }
+
+  .center-logo {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* Dark gray login button */
+.menu-button[href="loginUser.html"] {
+  background-color: #444444;
+}
+
+.menu-button[href="loginUser.html"]:hover {
+  background-image: linear-gradient(to right, #333333, #444444, #333333);
 }

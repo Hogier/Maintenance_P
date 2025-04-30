@@ -13,10 +13,10 @@ echo "<h1>Миграция комментариев</h1>";
 echo "<p>Перенос комментариев из таблицы tasks в таблицу task_comments</p>";
 
 // Параметры подключения к базе данных
-$host = 'macan.cityhost.com.ua';
-$user = 'chff6ee508';
-$password = '73b6bd56cf';
-$database = 'chff6ee508';
+$host = 'localhost';
+$user = 'root';
+$password = 'root';
+$database = 'maintenancedb';
 
 // Подключение к базе данных
 $conn = new mysqli($host, $user, $password, $database);

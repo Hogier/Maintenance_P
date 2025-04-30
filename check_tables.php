@@ -9,10 +9,10 @@ header('Content-Type: text/html; charset=utf-8');
 echo "<h1>Tasks and Comments Tables Check</h1>";
 
 // Database connection
-$host = 'macan.cityhost.com.ua';
-$user = 'chff6ee508';
-$password = '73b6bd56cf';
-$database = 'chff6ee508';
+$host = 'localhost';
+$user = 'root';
+$password = 'root';
+$database = 'maintenancedb';
 
 $conn = new mysqli($host, $user, $password, $database);
 if ($conn->connect_error) {

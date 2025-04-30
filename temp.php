@@ -1,9 +1,9 @@
 <?php
 // Параметры подключения к базе данных
-$host = 'macan.cityhost.com.ua';
-$user = 'chff6ee508';
-$password = '73b6bd56cf';
-$database = 'chff6ee508';
+$host = 'localhost';
+$user = 'root';
+$password = 'root';
+$database = 'maintenancedb';
 
 try {
     // Подключение к базе данных с использованием PDO

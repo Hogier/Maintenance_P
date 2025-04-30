@@ -23,10 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Создаем прямое подключение к БД через PDO
 try {
     // Подключаемся к базе данных напрямую через PDO
-    $host = 'macan.cityhost.com.ua';
-    $dbname = 'chff6ee508';
-    $username = 'chff6ee508';
-    $password = '73b6bd56cf';
+    $host = 'localhost';
+    $dbname = 'maintenancedb';
+    $username = 'root';
+    $password = 'root';
     $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     

@@ -5,9 +5,9 @@ ini_set('display_errors', 1);
 try {
     // Подключаемся к MySQL без указания базы данных
     $pdo = new PDO(
-        "mysql:host=macan.cityhost.com.ua",
-        "chff6ee508",
-        "73b6bd56cf",
+        "mysql:host=localhost",
+        "root",
+        "root",
         array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
     );
 

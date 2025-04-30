@@ -163,10 +163,10 @@ try {
     ]);
 
     // Параметры подключения к базе данных
-    $host = 'macan.cityhost.com.ua';
-    $user = 'chff6ee508';     // Пользователь MySQL
-    $password = '73b6bd56cf';     // Пароль для MySQL
-    $database = 'chff6ee508';
+    $host = 'localhost';
+    $user = 'root';     // Пользователь MySQL
+    $password = 'root';     // Пароль для MySQL
+    $database = 'maintenancedb';
 
     // Подключение к базе данных
     try {

@@ -12,10 +12,10 @@ header('Content-Type: text/html; charset=utf-8');
 echo "<h1>Проверка исправлений системы комментариев</h1>";
 
 // Параметры подключения к БД
-$host = 'macan.cityhost.com.ua';
-$user = 'chff6ee508';
-$password = '73b6bd56cf';
-$database = 'chff6ee508';
+$host = 'localhost';
+$user = 'root';
+$password = 'root';
+$database = 'maintenancedb';
 
 // Подключение к БД
 $conn = new mysqli($host, $user, $password, $database);
